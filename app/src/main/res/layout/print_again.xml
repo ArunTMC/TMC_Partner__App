@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:orientation="vertical">
+
+
+    <Button
+        android:id="@+id/printAgain"
+        android:layout_width="450dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/orange_selected_button_background"
+        android:textColor="@color/TMC_White"
+        android:text="Yes , Print Again" />
+
+
+</LinearLayout>

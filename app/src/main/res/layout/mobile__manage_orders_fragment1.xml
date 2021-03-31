@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1">
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+
+
+            <LinearLayout
+                android:id="@+id/searchlayout"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:gravity="clip_vertical"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight=".5"
+
+                    >
+
+
+
+                    <TextView
+                        android:id="@+id/nameofFacility_Textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginBottom="1dp"
+                        android:layout_marginStart="20dp"
+                        android:singleLine="true"
+                        android:gravity="center_vertical"
+                        android:text="@string/Name_Of_the_Vendor_text"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp" />
+
+
+                    <!--      <AutoCompleteTextView
+                        android:id="@+id/search_barEdit"
+                        android:completionThreshold="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/EditTextBorderColor"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="1dp"
+                        android:gravity="center_vertical"
+                        android:maxLength="13"
+                        android:inputType="phone"
+                        android:visibility="visible"
+                        android:text="+91"
+                        android:digits="+0123456789"
+                        android:background="#00000000"
+                        android:hint="@string/Enter_the_mobile_no_text"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp" />
+
+                    -->
+
+
+                    <EditText
+                        android:id="@+id/search_barEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="1dp"
+                        android:gravity="center_vertical"
+                        android:maxLength="13"
+                        android:inputType="phone"
+                        android:visibility="gone"
+                        android:text=""
+                        android:digits="+0123456789"
+                        android:background="#00000000"
+                        android:layout_toStartOf="@+id/search_close_btn"
+                        android:hint="@string/Enter_the_mobile_no_text"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp" />
+
+
+                    <ImageView
+                        android:id="@+id/search_button"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginEnd="3dp"
+
+                        android:foregroundGravity="center_vertical"
+                        app:srcCompat="@mipmap/search_icon" />
+
+                    <ImageView
+                        android:id="@+id/search_close_btn"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="true"
+                        android:visibility="gone"
+
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginEnd="3dp"
+                        android:foregroundGravity="bottom"
+                        app:srcCompat="@mipmap/close_icon" />
+
+
+                </RelativeLayout>
+                <LinearLayout
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight=".1"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginStart="6dp"
+
+                    android:id="@+id/newOrdersSync_Layout"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:foregroundGravity="bottom"
+                        android:visibility="visible"
+                        android:layout_gravity="center_vertical"
+                        app:srcCompat="@mipmap/neworder_sync_icon" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="54dp"
+
+                android:background="@drawable/border_line"
+                />
+
+            <LinearLayout
+                android:id="@+id/statusbuttonLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+                <Spinner
+                    android:id="@+id/slotType_Spinner"
+                    android:layout_width="match_parent"
+                    android:padding="5dp"
+                    android:layout_height="wrap_content"/>
+
+
+
+            </LinearLayout>
+
+
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:scrollbars="none">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!--
+                                        <GridView
+                                            android:layout_width="match_parent"
+                                            android:layout_height="400dp"
+                                            android:id="@+id/gridview"
+                                            android:columnWidth="640dp"
+                                            android:padding="5dp"
+                                            android:horizontalSpacing="10dp"
+                                            android:verticalSpacing="10dp"
+                                            android:scrollbars="horizontal"
+
+                                            android:stretchMode="spacingWidthUniform">
+                                        </GridView>
+                    -->
+
+
+                    <Button
+                        android:id="@+id/new_Order_widget"
+                        android:layout_width="70dp"
+                        android:layout_height="35dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="@color/TMC_White"
+                        android:background="@drawable/orange_selected_button_background"
+                        android:text="@string/New_button_text" />
+
+                    <Button
+                        android:id="@+id/confirmed_Order_widget"
+                        android:layout_width="98dp"
+                        android:layout_height="35dp"
+                        android:gravity="center"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:background="@drawable/orange_non_selected_button_background"
+                        android:text="@string/Confirmed_button_text" />
+
+                    <Button
+                        android:id="@+id/ready_Order_widget"
+                        android:layout_width="wrap_content"
+                        android:layout_height="35dp"
+                        android:gravity="center"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:layout_marginStart="13dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/orange_non_selected_button_background"
+                        android:text="@string/Ready_For_Pickup_text" />
+
+                    <Button
+                        android:id="@+id/transist_Order_widget"
+                        android:layout_width="85dp"
+                        android:layout_height="35dp"
+                        android:gravity="center"
+                        android:layout_marginStart="14dp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/orange_non_selected_button_background"
+                        android:text="@string/Transit_button_text" />
+
+                    <Button
+                        android:id="@+id/delivered_Order_widget"
+                        android:layout_width="85dp"
+                        android:layout_height="35dp"
+                        android:gravity="center"
+                        android:layout_marginStart="18dp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/orange_non_selected_button_background"
+                        android:text="@string/Deliverd_button_text" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+
+                <TextView
+                    android:id="@+id/orderinstruction"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/No_Orders_Instruction_text"
+                    android:visibility="gone"
+
+                    />
+
+                <ListView
+                    android:id="@+id/manageOrders_ListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="140dp"
+                    android:divider="#DDDDDD"
+                    android:dividerHeight="10dp" />
+
+
+            </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/loadingpanelmask_dailyItemWisereport"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/TMC_proressbar_mask_Color"
+                android:alpha="0.85"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/loadingPanel_dailyItemWisereport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:gravity="center"
+                android:layout_centerInParent="true"
+                android:visibility="gone">
+
+                <com.wang.avi.AVLoadingIndicatorView
+                    android:id="@+id/loadinganim_layout"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:visibility="visible"
+                    android:layout_gravity="center"
+                    app:indicatorColor="@color/TMC_Orange"
+                    app:indicatorName="BallPulseIndicator" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/applaunchimage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+            android:visibility="gone"
+        android:src="@mipmap/image_applaunch_screen" />
+
+
+</FrameLayout>

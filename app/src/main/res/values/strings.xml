@@ -1,0 +1,165 @@
+<resources>
+    <string name="app_name">TMC Partner</string>
+
+    //Login
+    <string name="OTP_Info">We will send you One Time Password </string>
+    ///Otp_verification
+    <string name="Verify_Text">Verify </string>
+    <string name="UserInstructionTextOnOTP">Please Enter the 6-Digit Code which sent to your Number </string>
+    //vendorSelection
+    <string name="Vendor_Login_Text">Login  </string>
+    <string name="Select_Vendor">Select Any One Vendor </string>
+    <string name="Password_text">Password </string>
+
+
+    ///Alertbox
+    <string name="Enter_Correct_No">Enter your Correct 10 digit Phone Number </string>
+    <string name="OK_Text">OK </string>
+    <string name="Cancel_Text">Cancel </string>
+    <string name="Yes_Text">Yes </string>
+    <string name="No_Text">No </string>
+    <string name="Empty_Text"> </string>
+
+    <string name="Exit_Instruction">Are you sure do you want to Exit now ? </string>
+    <string name="ResetToken_Instruction">Click Yes to Reset the Token No for your Store </string>
+    <string name="Token_No_Error_Instruction">Cant Generate Token No </string>
+    <string name="Token_No_Not_Found_Instruction">Cant Find Token No </string>
+    <string name="Token_No_Not_Updated_Instruction">Cant Update Token No </string>
+
+    <string name="Enter_Correct_Password">Enter Correct Password </string>
+    <string name="Enter_Correct_OTP">Enter Correct Otp </string>
+    <string name="Enter_Password">Password Field Cannot be Empty </string>
+
+    //DashBoard
+    <string name="Manage_Orders_Text">Manage Orders </string>
+    <string name="Manage_Menu_Text">Manage Menu </string>
+
+    <string name="New_order_text">Place New Order</string>
+    <string name="Settings_text">Settings </string>
+
+    <string name="Cant_place_order">Cannot Place Order while Bill amount is 0</string>
+
+    <string name="Enter_the_mobile_no_text">Enter the Mobile Number</string>
+    <string name="Name_Of_the_Vendor_text">TMC Hasthinapuram , Chromepet</string>
+    <string name="No_Orders_Instruction_text">No Orders Available. </string>
+    <string name="New_button_text">New</string>
+    <string name="Confirmed_button_text">Confirmed</string>
+    <string name="Ready_For_Pickup_text">Ready for Pickup </string>
+    <string name="Deliverd_button_text">Delivered </string>
+    <string name="Transit_button_text">Transit </string>
+    <string name="DeliveryType">Delivery Type </string>
+
+    //DashBoard-Strings For Order According to status
+    <string name="OrderId_text">Order Id : </string>
+    <string name="Slot_Name">Slot Name : </string>
+    <string name="Generate_Token_No_text">Generate Token no </string>
+
+    <string name="Token_No_text">Token no : </string>
+    <string name="Mobile_text">Mobile : </string>
+    <string name="Print_text">Print </string>
+    <string name="Confirm_Order_text">Confirm Order </string>
+    <string name="cancel_Order_text">Cancel Order </string>
+    <string name="cancelled_Order_text">Cancelled Order </string>
+
+    //DetailedOrderReport
+    <string name="Order_Details">Order Details</string>
+    <string name="Status">Status :   </string>
+    <string name="Time">Time </string>
+    <string name="Paid_amount">Paid Amount </string>
+    <string name="Change_Status">Change Status </string>
+
+    <string name="Loading_Order_Status">Loading Status </string>
+    <string name="Loading_OrderId">Loading Order Id</string>
+    <string name="Loading_MobileNo">Loading Mobile No</string>
+    <string name="Loading_TokenNo">Loading Token No</string>
+    <string name="Loading_Time">Loading Time </string>
+    <string name="Loading_Order_Details">Loading Order Details </string>
+    <string name="Loading_paid_Amount">Loading Paid Amount </string>
+    //ASSIGNING DELIVERY PARTNER
+    <string name="NameOfDeliveryPartner">Name of the Delivery Person : </string>
+    <string name="AssignPartner">Assign Delivery Person</string>
+    <string name="DeliveryPartnersName">Delivery Person Name : </string>
+    <string name="ChangeDeliveryPartner">Change Delivery Person   </string>
+
+    //Manage Orders
+    <string name="ExpressDelivery_Text">Express Delivery </string>
+    <string name="Preorder_Text">Preorder </string>
+
+    //New Order
+    <string name="Menu_Item_category">Menu Item Category</string>
+
+    <string name="Choose_a_Category">Choose a Category</string>
+    <string name="Bill_Details">Bill Details </string>
+    <string name="Item_Total">Item Total </string>
+    <string name="Coupon_discount"> Discount </string>
+    <string name="Taxes_and_charges">GST </string>
+    <string name="To_Pay">To Pay </string>
+    <string name="Check_out"> Check Out </string>
+    <string name="Discount_percentage"> Add Discount  </string>
+    <string name="OrderType">Order Type </string>
+
+    <string-array name="OrderType">
+        <item>Store Pickup</item>
+
+        <item>Home Delivery</item>
+
+
+    </string-array>
+
+
+    <string name="CustomerName"> Name </string>
+    <string name="Customer_PhoneNumber">  Mobile No  </string>
+
+    //OrderDetails
+    <string name="Order_details">Order Details </string>
+
+
+    //Settings
+    <string name="Auto_Refreshing">Turn On Auto Refreshing </string>
+    <string name="Change_Delivery_Slot_Details">Change Delivery Slot Availability Status</string>
+    <string name="ExpressDelivery_slotDetails_Text">Express Delivery Slot Status </string>
+    <string name="Todays_Preorder_slotDetails_Text">Todays Preorder Slot Status</string>
+    <string name="Tomorrows_Preorder_slotDetails_Text">Tomorrows Preorder Slot Status</string>
+    <string name="No.of.ordersDelivered">Total No.of.Orders Delivered </string>
+
+    <string name="Change_Menu_Item_Status">Change Menu Availability Status </string>
+    <string name="Change_Menu_Item_Visibility_in_Tv">Change Menu Visibility In TV </string>
+    <string name="Change_Menu_Item_Price">Change Menu Item Price</string>
+    <string name="Version_No">Version No : 1.3.3 </string>
+    <string name="AppOrdersList">App Orders List </string>
+
+    <string name="ItemStatus">Item Status </string>
+    <string name="LogOut">Log out </string>
+    <string name="Vendor_Name">Store Name :   </string>
+
+    <string name="Mobile_Number">Mobile :   </string>
+    <string name="Consolidated_Sales_Report">Consolidated Sales Report </string>
+    <string name="Pos_Sales_Report">POS Sales Report </string>
+    <string name="App_Sales_Report">APP Sales Report </string>
+    <string name="Delivery_Partner_settlement_report">Delivery Partner Settlement Report </string>
+
+    <string name="Reset_token_no">Reset</string>
+    <string name="Current_token_no">Current Token No   : </string>
+
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="title_activity_assigning_delivery_partner">AssigningDeliveryPartner</string>
+
+    //
+    <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
+
+</resources>

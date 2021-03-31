@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PosScreen_JavaClasses.NewOrders.Pos_NewOrder_MenuItem_fragment">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/menu_Category_selecting_layout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal"
+
+            android:paddingStart="25dp"
+            android:paddingEnd="10dp">
+
+            <TextView
+                android:id="@+id/select_menuCtgy_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="21sp"
+                android:fontFamily="@font/open_sans"
+                android:text="@string/Menu_Item_category" />
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:src="@android:drawable/arrow_down_float" />
+
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp" />
+
+        <ListView
+            android:id="@+id/newOrders_MenuItem_ListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:divider="#DDDDDD"
+            android:scrollbars="none"
+            android:scrollIndicators="none"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:dividerHeight="5dp"
+            />
+
+    </LinearLayout>
+
+</FrameLayout>

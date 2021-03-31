@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:orientation="vertical"
+    tools:context=".PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center"
+        android:text="@string/Vendor_Login_Text"
+        android:fontFamily="@font/open_sans_semibold"
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:textSize="40sp"
+        />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:paddingStart="60dp"
+        android:paddingEnd="30dp"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical">
+
+
+
+        <EditText
+            android:id="@+id/pos_mobileNo_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:digits="0123456789"
+            android:layout_marginTop="50dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:hint="@string/Enter_the_mobile_no_text"
+            android:importantForAutofill="no"
+            android:inputType="phone"
+            android:maxLength="10"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textColorHint="@color/TMC_Hint_Color"
+            android:textSize="40sp"
+            />
+
+
+
+
+        <LinearLayout
+            android:id="@+id/otp_Ed_Layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:visibility="gone"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/otp_first_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:digits="0123456789"
+                android:drawablePadding="10dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:maxLength="6"
+                android:textSize="30sp"
+
+                android:singleLine="false"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textCursorDrawable="@drawable/abc_vector_test" />
+
+            <EditText
+                android:id="@+id/otp_second_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:digits="0123456789"
+                android:drawablePadding="7dp"
+                android:layout_weight="1"
+                android:textSize="30sp"
+
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textCursorDrawable="@drawable/abc_vector_test" />
+
+            <EditText
+                android:id="@+id/otp_third_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:digits="0123456789"
+                android:drawablePadding="7dp"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:layout_weight="1"
+                android:textSize="30sp"
+
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textCursorDrawable="@drawable/abc_vector_test" />
+
+            <EditText
+                android:id="@+id/otp_fourth_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:digits="0123456789"
+                android:layout_weight="1"
+                android:textSize="30sp"
+
+                android:drawablePadding="7dp"
+                android:gravity="center"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="2"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textCursorDrawable="@drawable/abc_vector_test" />
+
+
+            <EditText
+                android:id="@+id/otp_fifth_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:digits="0123456789"
+                android:layout_weight="1"
+                android:textSize="30sp"
+
+                android:drawablePadding="7dp"
+                android:gravity="center"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="2"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textCursorDrawable="@drawable/abc_vector_test" />
+            <EditText
+                android:id="@+id/otp_sixth_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:digits="0123456789"
+                android:drawablePadding="7dp"
+                android:layout_weight="1"
+                android:textSize="30sp"
+
+                android:gravity="center"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textCursorDrawable="@drawable/abc_vector_test" />
+
+
+        </LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="20dp"
+            >
+
+            <Button
+                android:id="@+id/pos_SendOtp_widget"
+                android:layout_width="match_parent"
+                android:layout_marginTop="20dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_background"
+                android:textColor="@color/TMC_White"
+                android:visibility="visible"
+                android:textSize="25sp"
+                android:fontFamily="@font/open_sans_semibold"
+
+                android:text="Send OTP" />
+
+            <Button
+                android:id="@+id/pos_VerifyOtp_widget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/button_background"
+                android:textColor="@color/TMC_White"
+                android:visibility="gone"
+                android:textSize="25sp"
+                android:fontFamily="@font/open_sans_semibold"
+
+                android:text="Verify Otp" />
+            <TextView
+                android:id="@+id/enter_MobileNo_widget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/OTP_Info"
+                android:singleLine="false"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="20sp"
+                android:visibility="visible"
+                android:fontFamily="@font/open_sans_light"
+                android:layout_marginTop="70dp"
+                />
+            <TextView
+                android:id="@+id/enter_OtpInfo_widget"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/UserInstructionTextOnOTP"
+                android:singleLine="false"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="16sp"
+                android:visibility="gone"
+                android:fontFamily="@font/open_sans_light"
+
+                android:layout_marginTop="70dp"
+                />
+        </RelativeLayout>
+
+    </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/loadingpanelmask_dailyItemWisereport"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/TMC_Hint_Color"
+            android:alpha="0.85"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/loadingPanel_dailyItemWisereport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:visibility="gone">
+
+            <com.wang.avi.AVLoadingIndicatorView
+                android:id="@+id/loadinganim_layout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="visible"
+                android:layout_gravity="center"
+                app:indicatorColor="@color/TMC_Orange"
+                app:indicatorName="BallPulseIndicator" />
+
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

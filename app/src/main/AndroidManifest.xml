@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.meatchop.tmcpartner">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/tmcicon_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/tmcicon_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TMCPartnerApp">
+        <activity android:name=".Settings.App_Sales_Report_Subctgywise"></activity>
+        <activity android:name=".Settings.GetDeliverypartnersAssignedOrders" />
+        <activity android:name=".Settings.searchScreen_OrderDetails" />
+        <activity android:name=".Settings.searchOrdersUsingMobileNumber" />
+        <activity android:name=".Settings.App_LaunchScreen" />
+        <activity android:name=".Settings.DeliveryPartnerSettlementReport" />
+        <activity android:name=".Settings.ChangeDelivery_Slot_Availability_Status" />
+        <activity android:name=".Settings.ChangeMenuItem_Price_Settings" />
+        <activity android:name=".Settings.MenuItem_List_Settings" />
+        <activity android:name=".Settings.ChangeMenuItem_Availabilty_InTV_Settings" />
+        <activity android:name=".Settings.AppSales_Report" />
+        <activity android:name=".Settings.PosSalesReport" />
+        <activity android:name=".Settings.Consolidated_Sales_Report" />
+        <activity android:name=".Settings.ChangeMenuItemStatus_Settings" />
+        <activity android:name=".MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1" />
+        <activity android:name=".MobileScreen_JavaClasses.ManageOrders.MobileScreen_AssignDeliveryPartner1" />
+        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_OtpVerificationActivity" />
+        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard" />
+        <activity android:name=".PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen" />
+
+        <service
+            android:name=".PosScreen_JavaClasses.ManageOrders.TrackingOrderDetails_ServiceClass"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".PosScreen_JavaClasses.ManageOrders.AssigningDeliveryPartner" />
+        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.Mobile_Vendor_Selection_Screen" />
+        <activity
+            android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen"
+            android:windowSoftInputMode="adjustPan" />
+        <activity android:name=".Printer_Demo_activity" />
+        <activity android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen" />
+        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen" />
+        <activity
+            android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+    </application>
+
+</manifest>

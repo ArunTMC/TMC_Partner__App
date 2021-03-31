@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+
+    tools:context=".Settings.SettingsFragment">
+
+    <!-- TODO: Update blank fragment layout
+
+    <Button
+        android:id="@+id/on"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="15dp"
+        android:text="Click to ON" />
+
+
+        <Button
+        android:id="@+id/off"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="15dp"
+        android:text="Click to OFF" />
+
+        -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:id="@+id/settings_scrollview"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:text="@string/Manage_Orders_Text"
+
+            android:textSize="18sp" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@drawable/border_line" />
+
+        <Switch
+            android:id="@+id/autoRefreshingSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:text="@string/Auto_Refreshing"
+            android:textSize="16sp"
+
+            app:thumbTint="@drawable/switch_thumb_selector"
+            app:trackTint="@drawable/switch_track_selector"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+
+        android:background="@mipmap/thick_border_line_seperator"
+        />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:text="@string/Manage_Menu_Text"
+
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+
+            android:background="@drawable/border_line" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:id="@+id/changeDeliverySlotdetails"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/Change_Delivery_Slot_Details"
+                android:textSize="16sp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:fontFamily="@font/open_sans_semibold"
+
+                />
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:id="@+id/changeMenuItemStatus"
+
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/Change_Menu_Item_Status"
+            android:textSize="16sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_semibold"
+
+            />
+    </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:id="@+id/changeMenuItemVisibilityinTv"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/Change_Menu_Item_Visibility_in_Tv"
+                android:textSize="16sp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:fontFamily="@font/open_sans_semibold"
+
+                />
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:id="@+id/changeMenuItemPrice"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/Change_Menu_Item_Price"
+                android:textSize="16sp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:fontFamily="@font/open_sans_semibold"
+
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:id="@+id/searchOrdersUsingMobileNumbers"
+            android:visibility="visible"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/AppOrdersList"
+                android:textSize="16sp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:fontFamily="@font/open_sans_semibold"
+
+                />
+        </LinearLayout>
+
+
+
+
+
+    </LinearLayout>
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:id="@+id/salesLinearLayout"
+                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
+
+                    android:background="@mipmap/thick_border_line_seperator"
+                    />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="Sales"
+
+                    android:textSize="18sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+
+                    android:background="@drawable/border_line" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/consolidatedSalesReport"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Consolidated_Sales_Report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/PosSalesReport"
+
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Pos_Sales_Report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/AppSalesReport"
+                    android:visibility="visible"
+
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/App_Sales_Report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/deliveryPartnerSettlementReport"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Delivery_Partner_settlement_report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+
+
+
+
+
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+
+        android:background="@mipmap/thick_border_line_seperator"
+        />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="General"
+
+                    android:textSize="18sp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+
+                    android:background="@drawable/border_line" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Vendor_Name"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text=""
+                        android:textSize="16sp"
+                        android:id="@+id/storeName"
+                        android:layout_marginStart="12dp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+                  <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Mobile_Number"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="+919948859549"
+                        android:textSize="16sp"
+                        android:id="@+id/userMobileNo"
+                        android:layout_marginStart="12dp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/resetTokenNoLayout"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Current_token_no"
+                        android:textSize="16sp"
+                        android:layout_gravity="center_vertical"
+
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:layout_weight="1"
+                        />
+
+                    <TextView
+                        android:id="@+id/resetTokenNO_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="5dp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="0"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp"
+
+                        />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:id="@+id/resetTokenNoButton"
+                        android:text="@string/Reset_token_no"
+                        android:textSize="13sp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginTop="5dp"
+
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/TMC_White"
+
+                        />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="15dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Version_No"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/open_sans_bold"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/logout"
+                    android:layout_marginTop="15dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/LogOut"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/open_sans_bold"/>
+                </LinearLayout>
+
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+</ScrollView>
+</LinearLayout>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/parentLayout"
+    android:paddingStart="1dp"
+    android:paddingEnd="5dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginBottom="10dp"
+
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            tools:ignore="ExtraText">
+            <TextView
+                android:id="@+id/item_NO"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:textSize="30sp"
+                android:gravity="center_vertical|center_horizontal"
+
+                android:fontFamily="@font/open_sans_bold"
+                android:text="01" />
+
+
+            <EditText
+                android:id="@+id/barcode_widget"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:focusedByDefault="true"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/EditTextBorderColor"
+                android:hint="enter barcode"
+                android:inputType="numberDecimal"
+                 />
+
+
+            <AutoCompleteTextView
+                android:id="@+id/autoComplete_widget"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:completionThreshold="1"
+                android:visibility="visible"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_weight="4.4"
+                android:backgroundTint="@color/EditTextBorderColor"
+                android:layout_gravity="center"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:layout_marginStart="30dp"
+                android:layout_marginEnd="1dp"
+                android:fontFamily="@font/open_sans_bold"
+                android:hint="Enter menu"
+                android:inputType="textCapSentences"
+         >
+
+            </AutoCompleteTextView>
+
+
+
+            <TextView
+                android:id="@+id/itemWeight_widget"
+                android:layout_height="match_parent"
+                android:textSize="16sp"
+                android:hint="Enter weight of the Item"
+                android:layout_weight="1.2"
+                android:layout_gravity="center"
+                android:visibility="visible"
+                android:layout_marginStart="10dp"
+                android:text="0"
+                android:singleLine="true"
+                android:paddingStart="15dp"
+
+                android:paddingEnd="15dp"
+                android:gravity="center_vertical|center_horizontal"
+                android:backgroundTint="@color/EditTextBorderColor"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:layout_marginEnd="5dp"
+                android:fontFamily="@font/open_sans_semibold"
+                android:layout_width="0dp" />
+
+
+             
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.5"
+                android:visibility="visible"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:layout_marginStart="10dp"
+                android:layout_gravity="center"
+                android:gravity="center_vertical|center_horizontal"
+
+                android:id="@+id/tmcUnitprice_weight_layout"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight=".7"
+                    android:id="@+id/tmcUnitprice_weightAdd_layout"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="10dp"
+                        android:background="@mipmap/plus" />
+                </LinearLayout>
+
+                 <TextView
+                android:id="@+id/itemQuantity_widget"
+                android:layout_height="match_parent"
+                android:textSize="16sp"
+                android:layout_weight="1.2"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:visibility="visible"
+                android:text="1"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:fontFamily="@font/open_sans_bold"
+                android:layout_width="0dp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".7"
+                        android:id="@+id/tmcUnitprice_weightMinus_layout"
+
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+
+                            android:layout_gravity="center"
+                            android:layout_marginStart="10dp"
+                            android:background="@mipmap/minus" />
+            </LinearLayout>
+                </LinearLayout>
+
+            <TextView
+                android:id="@+id/itemPrice_Widget"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textSize="16sp"
+                android:gravity="center_horizontal|center_vertical"
+                android:layout_gravity="center"
+                android:layout_weight=".7"
+                android:visibility="visible"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="10dp"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="100rs" />
+
+            <LinearLayout
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:id="@+id/removeItem_fromCart_widget"
+                android:layout_weight=".03"
+                android:visibility="visible"
+
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/minus_to_remove_item_widget"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="10dp"
+                    android:background="@mipmap/delete_icon" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="55dp"
+        android:layout_gravity="center"
+        android:padding="5dp"
+        android:id="@+id/addNewItem_layout"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/button_background"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@mipmap/plus_icon" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="30sp"
+            android:textColor="@color/TMC_White"
+            android:text="Add New  Item" />
+    </LinearLayout>
+
+
+</LinearLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

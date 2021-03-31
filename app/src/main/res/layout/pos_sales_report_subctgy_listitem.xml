@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ItemNameLinearaLayout"
+
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/name_and_quantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:textSize="13sp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:text="Chicken Curry Cut (4)" />
+
+        <TextView
+            android:id="@+id/price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.8"
+            android:gravity="right"
+            android:textSize="13sp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:text="TextView" />
+    </LinearLayout>
+</LinearLayout>

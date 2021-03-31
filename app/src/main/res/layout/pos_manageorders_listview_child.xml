@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/order_item_list_parentLayout"
+    android:orientation="vertical"
+    >
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/cardLayout"
+
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:padding="10dp"
+
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/orderDetailsLayout"
+
+                    android:layout_weight="3"
+
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="5dp"
+
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="160dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:text="Slot Details :"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="25sp" />
+
+                            <TextView
+                                android:id="@+id/slotName_text_widget"
+                                android:layout_width="330dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="10dp"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:text="EXPRESS DELIVERY"
+
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="22sp" />
+
+                            <TextView
+                                android:id="@+id/deliverytype_text_widget"
+                                android:layout_width="330dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="10dp"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:visibility="gone"
+                                android:text="STOREPICKUP"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="22sp" />
+
+
+
+
+
+                            <LinearLayout
+                                android:id="@+id/slotDate_linearLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+
+                                <TextView
+                                    android:id="@+id/slotDate_text_widget"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="10dp"
+                                    android:layout_weight="2"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="right"
+                                    android:text=" -  Thu, 28 Jan df (07:30 - 08:30)"
+
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="22sp" />
+
+                                <TextView
+                                    android:id="@+id/ordertype_text"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="10dp"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="right"
+                                    android:text="POS ORDER"
+
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="22sp" />
+
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight="1.8"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:text="Tokenno :"
+                                android:id="@+id/tokenNo_label_widget"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="25sp" />
+
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight=".5"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:text="35"
+                                android:id="@+id/tokenNo_text_widget"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="22sp" />
+                             <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight="3.5"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:text="12345678909876"
+                                android:id="@+id/orderid_text_widget"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="22sp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight="2"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:text=" Time : "
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="25sp" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:layout_weight="3"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="start"
+                                android:text=" 13:40:59 "
+                                android:id="@+id/orderPlacedtime_text_widget"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="20sp" />
+                            <TextView
+                                android:id="@+id/orderstatus_text_widget"
+                                android:layout_width="210dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="10dp"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="left"
+                                android:visibility="visible"
+                                android:text="READY FOR PICKUP"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="22sp" />
+
+                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/orderDetails_text_widget"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginTop="10dp"
+
+                            android:textSize="23sp"
+                            android:textColor="@color/TMC_Secondary_Text_Color"
+                            android:fontFamily="@font/open_sans"
+                            android:text="Chicken Curry Cut * 1 , Whole Meat (Skinless) * 1," />
+
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="10dp"
+                            android:layout_weight="3">
+
+
+                            <LinearLayout
+                                android:id="@+id/new_Order_Linearlayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="visible">
+
+
+                                <TextView
+                                    android:id="@+id/accept_Order_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Confirm_Order_text"
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+
+                                <TextView
+                                    android:id="@+id/cancel_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/cancel_Order_text"
+                                    android:visibility="gone"
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/confirming_order_Linearlayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+
+                                <TextView
+                                    android:id="@+id/ready_for_pickup_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Ready_For_Pickup_text"
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+
+                                <TextView
+                                    android:id="@+id/ready_for_pickup_delivered_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Deliverd_button_text"
+                                    android:visibility="gone"
+
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+
+                                <TextView
+                                    android:id="@+id/pending_order_print_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Print_text"
+
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+                                <Button
+                                    android:id="@+id/generateTokenNo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="0.5"
+                                    android:gravity="center"
+
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Generate_Token_No_text"
+
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/ready_Order_Linearlayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:paddingTop="20dp"
+                                android:paddingBottom="20dp"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/other_print_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Print_text"
+                                    android:gravity="center"
+                                    android:textAllCaps="false"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+                                <Button
+                                    android:id="@+id/transit_generateTokenNo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="0.5"
+                                    android:gravity="center"
+
+                                    android:background="@color/TMC_White"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Generate_Token_No_text"
+
+                                    android:textAllCaps="true"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="20sp" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/cancelled_Order_Linearlayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <Button
+                                    android:id="@+id/cancelled_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+
+                                    android:background="@drawable/button_background"
+                                    android:fontFamily="@font/open_sans_bold"
+
+                                    android:text="@string/cancelled_Order_text"
+                                    android:textAllCaps="false"
+                                    android:textColor="@color/TMC_White"
+                                    android:textSize="20sp" />
+
+
+                                <Button
+                                    android:id="@+id/cancelled_print_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:layout_weight="1"
+
+                                    android:background="@drawable/button_background"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:textSize="20sp" />
+
+
+                            </LinearLayout>
+
+
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.5"
+                    android:visibility="visible"
+                    android:id="@+id/deliveryPartnerAssignLayout"
+
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2.3"
+                        android:visibility="visible"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="7dp"
+                        android:orientation="vertical">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:layout_weight=".3"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="@string/DeliveryPartnersName"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="25sp" />
+
+                            <TextView
+                                android:id="@+id/deliveryPartner_name_widget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:textSize="19sp"
+                                android:gravity="right"
+
+                                android:text="TextView"
+                                android:layout_marginEnd="10dp"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+
+                                android:fontFamily="@font/open_sans_semibold"
+
+                                />
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:layout_marginStart="5dp"
+                                android:textSize="25sp"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:layout_marginTop="10dp"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:text="@string/Mobile_text" />
+
+                            <TextView
+                                android:id="@+id/deliveryPartner_mobileNo_widget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.1"
+                                android:textSize="19sp"
+                                android:layout_marginTop="10dp"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:layout_marginEnd="10dp"
+
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="right"
+                                android:text="TextView"
+                                />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="6dp"
+                            android:gravity="bottom"
+                            android:orientation="vertical">
+                            <TextView
+                                android:id="@+id/changeDeliveryPartner"
+                                android:layout_width="match_parent"
+                                android:layout_height="50dp"
+                                android:layout_marginStart="5dp"
+                                android:layout_marginTop="10dp"
+                                android:layout_marginEnd="5dp"
+                                android:layout_marginBottom="15dp"
+                                android:background="@color/TMC_White"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="@string/ChangeDeliveryPartner"
+                                android:gravity="center"
+
+                                android:textAllCaps="true"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="20sp" />
+
+                              </LinearLayout>
+
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+</LinearLayout>
+

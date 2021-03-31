@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:padding="10dp"
+    android:background="@color/TMC_Hint_Color"
+
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/parent"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:textSize="17dp"
+        android:paddingStart="30dp"
+        android:gravity="center_vertical"
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:paddingEnd="15dp"
+        android:fontFamily="@font/open_sans_bold"
+        android:text="TextView" />
+</LinearLayout>

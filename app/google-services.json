@@ -1,0 +1,795 @@
+{
+  "project_info": {
+    "project_number": "49143871485",
+    "firebase_url": "https://dosavillage-acc39.firebaseio.com",
+    "project_id": "dosavillage-acc39",
+    "storage_bucket": "dosavillage-acc39.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:68cb2dc0b5c21a58",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cafepartner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-lc3sejs6m9kfasj6gqfp6gs4ladkjpgg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cafepartner",
+            "certificate_hash": "43fa67bda6a293e2b4a13afea80b3b35485ec284"
+          }
+        },
+        {
+          "client_id": "49143871485-nckt3v5i7oshfv4en64brkkl23h5smlo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cafepartner",
+            "certificate_hash": "edfc1b57cad5731f7217ba89f7a0c15e475e3dd7"
+          }
+        },
+        {
+          "client_id": "49143871485-s2gnrba6u7l9kl5j880n9fc771tmr7d7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cafepartner",
+            "certificate_hash": "0d84fd4e4e79dcd5a8cfe1e4bba331187e8cc789"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:6f65d4d735f27ad6",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cafext"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-kl6kuhh8rr6ahds0gah19q53nappuhib.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cafext",
+            "certificate_hash": "edfc1b57cad5731f7217ba89f7a0c15e475e3dd7"
+          }
+        },
+        {
+          "client_id": "49143871485-rskt2o9bcsomnaokglkdmhegblap36i5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cafext",
+            "certificate_hash": "7aa89570a0343b50c021763629a2408cf4e4a48c"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:d35195e7035bb26e",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cgcafe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-9crocnot55jmhugf6h77t2b12637bqcl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cgcafe",
+            "certificate_hash": "edfc1b57cad5731f7217ba89f7a0c15e475e3dd7"
+          }
+        },
+        {
+          "client_id": "49143871485-tt39ruib4m37qnj4r2h5l1dalto8ilch.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cgcafe",
+            "certificate_hash": "91a871bbfcb1d6f6bf6d84c288993f7567ac2906"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:cc837c64468e8d9c",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cxtdashboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-384hsm0u6es0t79spjffn19nmdgcc3ut.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdashboard",
+            "certificate_hash": "edfc1b57cad5731f7217ba89f7a0c15e475e3dd7"
+          }
+        },
+        {
+          "client_id": "49143871485-5tm9uqe8fb1umf0hmvtlqh8bicrtho3i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdashboard",
+            "certificate_hash": "b00e2b404437e269ca693809a7b7b1ad4e3a31cb"
+          }
+        },
+        {
+          "client_id": "49143871485-f46k007j283quemvvimnsirqsk6igpfd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdashboard",
+            "certificate_hash": "15b37d9f416bfe46cf68cffa89021307c663d55f"
+          }
+        },
+        {
+          "client_id": "49143871485-kqkhdb5fvmclvt7lj7glkep8aaa73kre.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdashboard",
+            "certificate_hash": "5f9f665f9b7b3e4ed72f217243e33e1b9e2c8f5f"
+          }
+        },
+        {
+          "client_id": "49143871485-u7civc6s9eho3cqrf661gb855iat0aod.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdashboard",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:17bce1754248a777",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cxtdebug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-ihm4jhsp8kitucmqaql2c86183uelqae.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdebug",
+            "certificate_hash": "b00e2b404437e269ca693809a7b7b1ad4e3a31cb"
+          }
+        },
+        {
+          "client_id": "49143871485-mjhbn3u62926spa55sdrq9l9l7ed9fip.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdebug",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:1a20d00acd68d9aa",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cxtdisplay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-2i88rfr1jmll9pfgn28jjodd5q9tcvbo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdisplay",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-o342k6sio28lcrqttd0uv3eun7befije.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtdisplay",
+            "certificate_hash": "fa7e63e89f765061f1c3c9b337a7bbf68bfcbb65"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:0e5903620a33cc46d08b94",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cxtevent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-87vlpi8fhbdimfpmjcrmp8o599dmfkbb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtevent",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-vj3amg374ie2vctqqb8j2f6llnqn70nv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtevent",
+            "certificate_hash": "b00e2b404437e269ca693809a7b7b1ad4e3a31cb"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:49f6f5dd543c3b40",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cxtpos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-852msti1l1j79ta08uvofo7s27bllrmq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtpos",
+            "certificate_hash": "bcc012ad44d9b99134daa764ab3502e075413de8"
+          }
+        },
+        {
+          "client_id": "49143871485-b1t5vtdrc2o6o8cne71fmuj2ehost0m3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtpos",
+            "certificate_hash": "7aa89570a0343b50c021763629a2408cf4e4a48c"
+          }
+        },
+        {
+          "client_id": "49143871485-c69dsdj64mn7kh164jhc4iebm58rutgh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtpos",
+            "certificate_hash": "edfc1b57cad5731f7217ba89f7a0c15e475e3dd7"
+          }
+        },
+        {
+          "client_id": "49143871485-mn5im48k21t69lulhhca75vgqfgr9r5m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtpos",
+            "certificate_hash": "3819a21c87f7058f9c731d3a9b51014a9c84f662"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:6a08cd89f9ed914b",
+        "android_client_info": {
+          "package_name": "com.dosavillage.cxtreport"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-j2ckt4ea6st2clvtsmj6hmmmbaeghtc7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.cxtreport",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:dd333b42f58c6b73",
+        "android_client_info": {
+          "package_name": "com.dosavillage.dvmanagement"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-7dt7bv6t97cebp4365cqdtho4a7qp5b5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.dvmanagement",
+            "certificate_hash": "edfc1b57cad5731f7217ba89f7a0c15e475e3dd7"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:337db6815320cfe7",
+        "android_client_info": {
+          "package_name": "com.dosavillage.graphtutorial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-1qf8rebk4sfha9bs2iipimridheaofkl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dosavillage.graphtutorial",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:3814e87b116b679bd08b94",
+        "android_client_info": {
+          "package_name": "com.example.storage"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:0b66e1e788ae89bad08b94",
+        "android_client_info": {
+          "package_name": "com.google.firebase.nongmsauth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-99qpvrl567t3hv6p5qa77dd5t5eioctk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.google.firebase.nongmsauth",
+            "certificate_hash": "1f26d74ab673d284956eb555528314eb748ed15c"
+          }
+        },
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:139a13e79cd68e72d08b94",
+        "android_client_info": {
+          "package_name": "com.meatchop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:e3538169e7f71e35d08b94",
+        "android_client_info": {
+          "package_name": "com.meatchop.tmcpartner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49143871485:android:09d148caba8ef10cd08b94",
+        "android_client_info": {
+          "package_name": "com.meatchoppartner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXmSFUmyfKxTzuH_5Jbf4tX8ch387BjGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "49143871485-7hiv4gghio4g3h099ai6c2o50lm3s2kg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "49143871485-np6qi2pbdh5lt766906vn0fbbu2trq9c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dosavillage.cafext"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
