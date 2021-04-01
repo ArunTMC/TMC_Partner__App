@@ -195,7 +195,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         CurrentDay_date =getDay_Date_and_time();
-        CurrentDate = getDate_and_time();
+        CurrentDate = getDay_Date_and_time();
         dateSelector_text.setText(CurrentDate);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -203,7 +203,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         double y = Math.pow(dm.heightPixels/dm.ydpi,2);
         screenInches = Math.sqrt(x+y);
 
-        DateString= getDate_and_time();
+        DateString= getDay_Date_and_time();
 
         dateSelector_text.setText(CurrentDate);
 
