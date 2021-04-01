@@ -59,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -392,9 +393,29 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         try {
                             String month_in_String = getMonthString(monthOfYear);
-                            DateString = (dayOfMonth + " " + month_in_String + " " + year);
+                            String monthstring = String.valueOf(monthOfYear+1);
+                            String datestring =  String.valueOf(dayOfMonth);
 
-                            dateSelector_text.setText(dayOfMonth + " " + month_in_String + " " + year);
+                            if(datestring.length()==1){
+                                datestring="0"+datestring;
+                            }
+                            if(monthstring.length()==1){
+                                monthstring="0"+monthstring;
+                            }
+
+
+
+                            Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
+
+                            int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
+
+                            String CurrentDay =   getDayString(dayOfWeek);
+                            Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
+
+                            String CurrentDateString =datestring+monthstring+String.valueOf(year);
+                            DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+
+                            dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
                         }
                         catch (Exception e ){
@@ -2700,6 +2721,28 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         }
 
     }
+
+
+    private String getDayString(int value) {
+        if (value == 1) {
+            return "Sun";
+        }  else if (value == 2) {
+            return "Mon";
+        } else if (value == 3) {
+            return "Tue";
+        } else if (value == 4) {
+            return "Wed";
+        } else if (value == 5) {
+            return "Thu";
+        } else if (value == 6) {
+            return "Fri";
+        }
+        else if (value == 7) {
+            return "Sat";
+        }
+        return "";
+    }
+
 
 
     public void exportReport() {

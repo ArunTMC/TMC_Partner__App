@@ -77,6 +77,8 @@ public class AppSales_Report extends AppCompatActivity {
     Adapter_App_sales_Report adapater_app_sales_report;
     String finalCashAmount_pdf,finalRazorpayAmount_pdf,finalPhonepeAmount_pdf,finalPaytmAmount_pdf;
     String finalpreorderCashAmount_pdf,finalpreorderRazorpayAmount_pdf,finalpreorderPhonepeAmount_pdf,finalpreorderPaytmAmount_pdf;
+    boolean isgetOrderForSelectedDateCalled=false;
+    boolean isgetPreOrderForSelectedDateCalled=false;
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -230,8 +232,20 @@ public class AppSales_Report extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(screenInches>8){
-                    printReport();
-                }
+                    try {
+                        Thread t = new Thread() {
+                            public void run() {
+                                printReport();
+                            }
+                        };
+                        t.start();
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(AppSales_Report.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                        e.printStackTrace();
+
+                    }                }
                 else{
                     Toast.makeText(AppSales_Report.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
                 }
@@ -266,6 +280,11 @@ public class AppSales_Report extends AppCompatActivity {
     }
 
     private void getPreOrderForSelectedDate(String previousDaydate,String currentDate, String vendorKey) {
+
+        if(isgetPreOrderForSelectedDateCalled){
+            return;
+        }
+        isgetPreOrderForSelectedDateCalled=true;
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
@@ -547,6 +566,7 @@ public class AppSales_Report extends AppCompatActivity {
                                 }
                                 if (arrayLength - 1 == i1) {
                                     if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+                                        isgetOrderForSelectedDateCalled = false;
                                         getOrderForSelectedDate(DateString, vendorKey);
                                     } else {
                                         Toast.makeText(AppSales_Report.this, "There is no Pre Order On this Date ", Toast.LENGTH_LONG).show();
@@ -562,6 +582,7 @@ public class AppSales_Report extends AppCompatActivity {
                                         CouponDiscount = 0;
                                         Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
+                                        isgetOrderForSelectedDateCalled = false;
 
                                         addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
 
@@ -585,6 +606,7 @@ public class AppSales_Report extends AppCompatActivity {
                                 CouponDiscount = 0;
                                 Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
+                                isgetOrderForSelectedDateCalled = false;
 
                                 addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
 
@@ -608,6 +630,7 @@ public class AppSales_Report extends AppCompatActivity {
                             CouponDiscount=0;
                             Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
+                            isgetOrderForSelectedDateCalled = false;
 
                             addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
                             getOrderForSelectedDate(DateString, vendorKey);
@@ -673,6 +696,7 @@ public class AppSales_Report extends AppCompatActivity {
                 paymentMode_DiscountOrderid.clear();
 
                 Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                isgetOrderForSelectedDateCalled = false;
 
                 getOrderForSelectedDate(DateString, vendorKey);
 
@@ -712,49 +736,41 @@ public class AppSales_Report extends AppCompatActivity {
     }
 
     private void printReport() {
-
-        Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[Order_Item_List.size()];
-
-
+        try {
+            Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[Order_Item_List.size()];
 
 
-        for (int i=0; i<Order_Item_List.size(); i++) {
-            String key = Order_Item_List.get(i);
+            for (int i = 0; i < Order_Item_List.size(); i++) {
+                String key = Order_Item_List.get(i);
 
-            Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
-            String itemName ="" ;
-            String weight ="" ;
+                Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
+                String itemName = "";
+                String weight = "";
 
-            String TMCprice ="";
+                String TMCprice = "";
 
-            try
-            {
-            itemName =  itemRow.getItemname();
-            }
-            catch (Exception e)
-            {
-            e.printStackTrace();
-            }
+                try {
+                    itemName = itemRow.getItemname();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
 
+                try {
+                    weight = Objects.requireNonNull(itemRow).getWeightingrams();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    weight = "";
+                }
+                if ((weight.equals("g")) || weight.equals(" g")) {
+                    String name_quantity = " * (" + itemRow.getQuantity() + ")";
+                    weight = (String.valueOf(name_quantity));
 
-            try {
-                weight = Objects.requireNonNull(itemRow).getWeightingrams();
-            }
-            catch (Exception e ){
-                e.printStackTrace();
-                weight = "";
-            }
-            if((weight.equals("g"))||weight.equals(" g")){
-                String name_quantity = " * (" + itemRow.getQuantity() + ")";
-                weight=(String.valueOf(name_quantity));
+                } else {
+                    String name_quantity = " *  (" + itemRow.getQuantity() + ")" + " - " + weight;
 
-            }
-            else {
-                String name_quantity =  " *  (" + itemRow.getQuantity() + ")" + " - " + weight;
-
-                weight=(String.valueOf(name_quantity));
-            }
+                    weight = (String.valueOf(name_quantity));
+                }
 
                 int indexofbraces = itemName.indexOf("(");
                 if (indexofbraces >= 0) {
@@ -774,7 +790,7 @@ public class AppSales_Report extends AppCompatActivity {
                     TMCprice = "";
                 }
                 try {
-                    itemName = itemName +  weight;
+                    itemName = itemName + weight;
                     Printer_POJO_ClassArray[i] = new Printer_POJO_Class("SubCtgyName", itemName, TMCprice);
 
                 } catch (Exception e) {
@@ -784,55 +800,54 @@ public class AppSales_Report extends AppCompatActivity {
             }
 
 
-        PrinterFunctions.PortDiscovery(portName, portSettings);
+            PrinterFunctions.PortDiscovery(portName, portSettings);
 
-        PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
-        Log.i("tag", "The Meat Chop"    );
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
+            PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+            Log.i("tag", "The Meat Chop");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : App SALES REPORT" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
-        Log.i("tag", "Printer log"+CurrentDate    );
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : App SALES REPORT" + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
+            Log.i("tag", "Printer log" + CurrentDate);
 
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
             for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
@@ -840,9 +855,9 @@ public class AppSales_Report extends AppCompatActivity {
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                 String itemName_weight, itemPrice;
-                    itemName_weight = Printer_POJO_ClassArray[i].getItemname_report();
+                itemName_weight = Printer_POJO_ClassArray[i].getItemname_report();
 
-                    itemPrice = "Rs. " + Printer_POJO_ClassArray[i].getTmcprice_report();
+                itemPrice = "Rs. " + Printer_POJO_ClassArray[i].getTmcprice_report();
                 if (itemName_weight.length() == 10) {
                     //16spaces
                     itemName_weight = itemName_weight + "                ";
@@ -959,298 +974,255 @@ public class AppSales_Report extends AppCompatActivity {
                 }
 
 
-
-
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 48, itemName_weight  );
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 48, itemName_weight);
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice+"\n");
-                Log.i("tag", "Printer log itemName_weight itemPrice  "+itemName_weight + "" + itemPrice + ""     );
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice + "\n");
+                Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
 
             }
             //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
 
 
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n"+"Final Sales Break Up"+"\n");
-
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "EXPRESS DELIVERY  SALES" + "\n");
-
-
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-
-
-
-
-        for (int i = 0; i < paymentModeArray.size(); i++) {
-            String Payment_Amount="",key = paymentModeArray.get(i);
-            Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
-            Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-
-            double payment_AmountDouble =0;
-
-            DecimalFormat decimalFormat = new DecimalFormat("0.00");
-
-            if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalCashAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Cash Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Card Sales";
-
-                }
-            }
-            if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalRazorpayAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Razorpay Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Razorpay Sales";
-
-                }
-
-            }
-            if ((key.toUpperCase().equals(Constants.PAYTM))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalPaytmAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Paytm Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Paytm Sales";
-
-                }
-
-
-            }
-            if ((key.toUpperCase().equals(Constants.PHONEPE))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalPhonepeAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Phonepe Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Phonepe Sales";
-
-                }
-
-            }
-
-
-
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "Final Sales Break Up" + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key+"     " +"Rs : "+Payment_Amount+"\n");
-            Log.i("tag", "Printer log key key  "+key+"Rs : "+Payment_Amount );
-
-
-
-
-
-
-
-        }
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "PREORDER SALES" + "\n");
-
-
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-
-
-
-
-
-        for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
-            String Payment_Amount="",key = preorder_paymentModeArray.get(i);
-            Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
-            Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-            double payment_AmountDouble =0;
-            DecimalFormat decimalFormat = new DecimalFormat("0.00");
-
-            if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalpreorderCashAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Cash Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Card Sales";
-
-                }
-            }
-            if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalpreorderRazorpayAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Razorpay Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Razorpay Sales";
-
-                }
-
-            }
-            if ((key.toUpperCase().equals(Constants.PAYTM))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalpreorderPaytmAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Paytm Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Paytm Sales";
-
-                }
-
-
-            }
-            if ((key.toUpperCase().equals(Constants.PHONEPE))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(finalpreorderPhonepeAmount_pdf);
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Phonepe Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key="Phonepe Sales";
-
-                }
-
-            }
-
-
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key+"     " +"Rs : "+Payment_Amount+"\n");
-            Log.i("tag", "Printer log key key  "+key+"Rs : "+Payment_Amount );
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "EXPRESS DELIVERY  SALES" + "\n");
 
 
-
-
-
-
-
-        }
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-
-
-
-
-        for (int j = 0; j < finalBillDetails.size(); j++)
-        {
-            String key = finalBillDetails.get(j);
-            String value = FinalBill_hashmap.get(key);
-            value = "RS : "+value;
-            if (Objects.requireNonNull(value).length() == 7) {
-                //7spaces
-                value = key+"       " + value;
-            }
-            if (value.length() == 8) {
-                //6spaces
-                value = key+"      " + value;
-            }
-            if (value.length() == 9) {
-                //5spaces
-                value =key+ "     " + value;
-            }
-            if (value.length() == 10) {
-                //4spaces
-                value =key+ "    " + value;
-            }
-            if (value.length() == 11) {
-                //3spaces
-                value =key+ "   " + value;
-            }
-            if (value.length() == 12) {
-                //2spaces
-                value =key+ "  " + value;
-            }
-            if (value.length() == 13) {
-                //1spaces
-                value = key+" " + value;
-            }
-            if (value.length() == 14) {
-                //no space
-                value =key+ "" + value;
-            }
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value+"\n");
-            Log.i("tag", "Printer log key key"+value );
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
+            for (int i = 0; i < paymentModeArray.size(); i++) {
+                String Payment_Amount = "", key = paymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
+                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+                double payment_AmountDouble = 0;
+
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+                if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalCashAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalRazorpayAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Razorpay Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Razorpay Sales";
+
+                    }
+
+                }
+                if ((key.toUpperCase().equals(Constants.PAYTM))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalPaytmAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Paytm Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Paytm Sales";
+
+                    }
+
+
+                }
+                if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalPhonepeAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Phonepe Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Phonepe Sales";
+
+                    }
+
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+
+            }
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "PREORDER SALES" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+            for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
+                String Payment_Amount = "", key = preorder_paymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
+                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                double payment_AmountDouble = 0;
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+                if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderCashAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderRazorpayAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Razorpay Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Razorpay Sales";
+
+                    }
+
+                }
+                if ((key.toUpperCase().equals(Constants.PAYTM))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderPaytmAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Paytm Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Paytm Sales";
+
+                    }
+
+
+                }
+                if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderPhonepeAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Phonepe Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Phonepe Sales";
+
+                    }
+
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+
+            }
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+            for (int j = 0; j < finalBillDetails.size(); j++) {
+                String key = finalBillDetails.get(j);
+                String value = FinalBill_hashmap.get(key);
+                value = "RS : " + value;
+                if (Objects.requireNonNull(value).length() == 7) {
+                    //7spaces
+                    value = key + "       " + value;
+                }
+                if (value.length() == 8) {
+                    //6spaces
+                    value = key + "      " + value;
+                }
+                if (value.length() == 9) {
+                    //5spaces
+                    value = key + "     " + value;
+                }
+                if (value.length() == 10) {
+                    //4spaces
+                    value = key + "    " + value;
+                }
+                if (value.length() == 11) {
+                    //3spaces
+                    value = key + "   " + value;
+                }
+                if (value.length() == 12) {
+                    //2spaces
+                    value = key + "  " + value;
+                }
+                if (value.length() == 13) {
+                    //1spaces
+                    value = key + " " + value;
+                }
+                if (value.length() == 14) {
+                    //no space
+                    value = key + "" + value;
+                }
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value + "\n");
+                Log.i("tag", "Printer log key key" + value);
+
+
+            }
+
+            PrinterFunctions.PreformCut(portName, portSettings, 1);
+        }
+        catch(Exception e ){
+            e.printStackTrace();
+            Toast.makeText(AppSales_Report.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
 
         }
-
-        PrinterFunctions.PreformCut(portName, portSettings, 1);
-
     }
 
 
@@ -1333,7 +1305,7 @@ public class AppSales_Report extends AppCompatActivity {
                              }
 
 
-                            Calendar myCalendar = new GregorianCalendar(year, month, dayOfMonth);
+                            Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
 
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
@@ -1349,6 +1321,8 @@ public class AppSales_Report extends AppCompatActivity {
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             //getOrderForSelectedDate(DateString, vendorKey);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+                            isgetPreOrderForSelectedDateCalled =false;
+                            isgetOrderForSelectedDateCalled = false;
 
                             getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
 
@@ -1364,7 +1338,10 @@ public class AppSales_Report extends AppCompatActivity {
 
 
     private void getOrderForSelectedDate(String dateString, String vendorKey) {
-
+        if(isgetOrderForSelectedDateCalled){
+            return;
+        }
+        isgetOrderForSelectedDateCalled=true;
         Adjusting_Widgets_Visibility(true);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
                 new com.android.volley.Response.Listener<JSONObject>() {

@@ -690,7 +690,24 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
-                printRecipt(selectedBillDetails);
+
+
+            try {
+                Thread t = new Thread() {
+                    public void run() {
+                        printRecipt(selectedBillDetails);
+                    }
+                };
+                t.start();
+            }
+            catch(Exception e ){
+                e.printStackTrace();
+
+                new_to_pay_Amount=0;
+                old_taxes_and_charges_Amount=0;
+                old_total_Amount=0;
+
+            }
             }
 
         });
@@ -720,7 +737,22 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
 
-                printRecipt(selectedBillDetails);
+                try {
+                    Thread t = new Thread() {
+                        public void run() {
+                            printRecipt(selectedBillDetails);
+                        }
+                    };
+                    t.start();
+                }
+                catch(Exception e ){
+                    e.printStackTrace();
+
+                    new_to_pay_Amount=0;
+                    old_taxes_and_charges_Amount=0;
+                    old_total_Amount=0;
+
+                }
             }
         });
 
@@ -752,8 +784,22 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
 
-                printRecipt(selectedBillDetails);
+                try {
+                    Thread t = new Thread() {
+                        public void run() {
+                            printRecipt(selectedBillDetails);
+                        }
+                    };
+                    t.start();
+                }
+                catch(Exception e ){
+                    e.printStackTrace();
 
+                    new_to_pay_Amount=0;
+                    old_taxes_and_charges_Amount=0;
+                    old_total_Amount=0;
+
+                }
 
             }
         });
@@ -793,8 +839,23 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                 modal_manageOrders_pojo_class.setTokenno(tokenNo);
                                 pos_manageOrderFragment.showProgressBar(false);
                                 notifyDataSetChanged();
-                                printRecipt(selectedOrderr);
 
+                                try {
+                                    Thread t = new Thread() {
+                                        public void run() {
+                                            printRecipt(selectedOrderr);
+                                        }
+                                    };
+                                    t.start();
+                                }
+                                catch(Exception e ){
+                                    e.printStackTrace();
+
+                                    new_to_pay_Amount=0;
+                                    old_taxes_and_charges_Amount=0;
+                                    old_total_Amount=0;
+
+                                }
                             }
                         }
                     }

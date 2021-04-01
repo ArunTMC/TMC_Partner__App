@@ -1718,7 +1718,14 @@ public class Pos_ManageOrderFragment extends Fragment {
             }
 
 
-
+            if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                    public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                        return object2.getOrderdeliveredtime().compareTo(object1.getOrderdeliveredtime());
+                    }
+                });
+            }
+            /*
             if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
                 Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
                     public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
@@ -1741,6 +1748,8 @@ public class Pos_ManageOrderFragment extends Fragment {
             }
 
 
+
+             */
 
              showProgressBar(false);
             isnewOrdersSyncButtonClicked=false;

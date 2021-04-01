@@ -379,7 +379,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-                            Calendar myCalendar = new GregorianCalendar(year, month, dayOfMonth);
+                            Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
 
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 

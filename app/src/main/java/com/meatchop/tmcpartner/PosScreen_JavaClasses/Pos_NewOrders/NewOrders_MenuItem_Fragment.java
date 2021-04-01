@@ -39,6 +39,7 @@ import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.AppSales_Report;
 import com.pos.printer.PrinterFunctions;
 
 import org.json.JSONArray;
@@ -385,11 +386,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     }
 
     private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt) {
-
+        try {
             Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
             double oldSavedAmount = 0;
-        String CouponDiscount ="0";
-        for (int i = 0; i < cart_item_list.size(); i++) {
+            String CouponDiscount = "0";
+            for (int i = 0; i < cart_item_list.size(); i++) {
                 double savedAmount;
                 String itemUniqueCode = cart_item_list.get(i);
                 Modal_NewOrderItems modal_newOrderItems = cart_Item_hashmap.get(itemUniqueCode);
@@ -414,7 +415,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             }
 
-        Printer_POJO_Class Printer_POJO_ClassArraytotal = new Printer_POJO_Class(itemTotalwithoutGst, discountAmountt, totaltaxAmount, payableAmount, oldSavedAmount);
+            Printer_POJO_Class Printer_POJO_ClassArraytotal = new Printer_POJO_Class(itemTotalwithoutGst, discountAmountt, totaltaxAmount, payableAmount, oldSavedAmount);
             PrinterFunctions.PortDiscovery(portName, portSettings);
             PrinterFunctions.OpenCashDrawer(portName, portSettings, 0, 4);
 
@@ -702,86 +703,86 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
  */
-        CouponDiscount = "0";
+            CouponDiscount = "0";
 
-         CouponDiscount = Printer_POJO_ClassArraytotal.getTotaldiscount();
+            CouponDiscount = Printer_POJO_ClassArraytotal.getTotaldiscount();
 
-        if(!CouponDiscount.equals("0")) {
-            CouponDiscount = "Rs. " + CouponDiscount + ".00";
+            if (!CouponDiscount.equals("0")) {
+                CouponDiscount = "Rs. " + CouponDiscount + ".00";
 
-            if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
+                if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
 
-                if (CouponDiscount.length() == 4) {
-                    //20spaces
-                    //NEW TOTAL =4
-                    CouponDiscount = "Discount Amount                   " + CouponDiscount;
+                    if (CouponDiscount.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        CouponDiscount = "Discount Amount                   " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        CouponDiscount = "Discount Amount                " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        CouponDiscount = "Discount Amount               " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        CouponDiscount = " Discount Amount              " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = " Discount Amount             " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = " Discount Amount            " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount            " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount           " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount           " + CouponDiscount;
+
+                    }
+
+
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, CouponDiscount + "\n");
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
                 }
-                if (CouponDiscount.length() == 5) {
-                    //21spaces
-                    //NEW TOTAL =5
-                    CouponDiscount = "Discount Amount                 " + CouponDiscount;
-                }
-                if (CouponDiscount.length() == 6) {
-                    //20spaces
-                    //NEW TOTAL =6
-                    CouponDiscount = "Discount Amount                " + CouponDiscount;
-                }
-
-                if (CouponDiscount.length() == 7) {
-                    //19spaces
-                    //NEW TOTAL =7
-                    CouponDiscount = "Discount Amount               " + CouponDiscount;
-                }
-                if (CouponDiscount.length() == 8) {
-                    //18spaces
-                    //NEW TOTAL =8
-                    CouponDiscount = " Discount Amount              " + CouponDiscount;
-                }
-                if (CouponDiscount.length() == 9) {
-                    //17spaces
-                    //NEW TOTAL =9
-                    CouponDiscount = " Discount Amount             " + CouponDiscount;
-                }
-                if (CouponDiscount.length() == 10) {
-                    //16spaces
-                    //NEW TOTAL =9
-                    CouponDiscount = " Discount Amount            " + CouponDiscount;
-                }
-                if (CouponDiscount.length() == 11) {
-                    //15spaces
-                    //NEW TOTAL =9
-                    CouponDiscount = "Discount Amount            " + CouponDiscount;
-                }
-                if (CouponDiscount.length() == 12) {
-                    //14spaces
-                    //NEW TOTAL =9
-                    CouponDiscount = "Discount Amount           " + CouponDiscount;
-                }
-
-                if (CouponDiscount.length() == 13) {
-                    //13spaces
-                    //NEW TOTAL =9
-                    CouponDiscount = "Discount Amount           " + CouponDiscount;
-
-                }
-
-
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, CouponDiscount + "\n");
-
-
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
             }
-        }
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             String NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
             try {
                 if (NetTotal.contains(".")) {
-                    int netTotaLint =Integer.parseInt(NetTotal);
+                    int netTotaLint = Integer.parseInt(NetTotal);
                     int netdiscountAmountint = Integer.parseInt(discountAmountt);
                     netTotaL = netTotaLint - netdiscountAmountint;
 
@@ -789,54 +790,52 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                     double nettotalDouble = Double.parseDouble(NetTotal);
                     double discountAmountDouble = Double.parseDouble(discountAmountt);
-                    netTotaL =( Integer.parseInt(String.valueOf(nettotalDouble))) - (Integer.parseInt(String.valueOf(discountAmountDouble)));
+                    netTotaL = (Integer.parseInt(String.valueOf(nettotalDouble))) - (Integer.parseInt(String.valueOf(discountAmountDouble)));
 
                 }
-                NetTotal =  String.valueOf(netTotaL);
+                NetTotal = String.valueOf(netTotaL);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
 
             }
-            catch (Exception e ){
-             e.printStackTrace();
-                 NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
+            if (NetTotal.length() > 6) {
+
+                if (NetTotal.length() == 7) {
+                    //24spaces
+                    //NEW TOTAL =9
+                    NetTotal = " NET TOTAL                       Rs. " + NetTotal;
+                }
+                if (NetTotal.length() == 8) {
+                    //23spaces
+                    //NEW TOTAL =9
+                    NetTotal = "  NET TOTAL                       Rs. " + NetTotal;
+                }
+                if (NetTotal.length() == 9) {
+                    //22spaces
+                    //NEW TOTAL =9
+                    NetTotal = "  NET TOTAL                      Rs. " + NetTotal;
+                }
+                if (NetTotal.length() == 10) {
+                    //21spaces
+                    //NEW TOTAL =9
+                    NetTotal = "  NET TOTAL                    Rs. " + NetTotal;
+                }
+                if (NetTotal.length() == 11) {
+                    //20spaces
+                    //NEW TOTAL =9
+                    NetTotal = "  NET TOTAL                   Rs. " + NetTotal;
+                }
+                if (NetTotal.length() == 12) {
+                    //19spaces
+                    //NEW TOTAL =9
+                    NetTotal = "  NET TOTAL                  Rs. " + NetTotal;
+                }
+            } else {
+                NetTotal = " NET TOTAL                    Rs.  " + NetTotal;
 
             }
-        if (NetTotal.length() >6) {
-
-            if (NetTotal.length() == 7) {
-                //24spaces
-                //NEW TOTAL =9
-                NetTotal = " NET TOTAL                       Rs. " + NetTotal;
-            }
-            if (NetTotal.length() == 8) {
-                //23spaces
-                //NEW TOTAL =9
-                NetTotal = "  NET TOTAL                       Rs. " + NetTotal;
-            }
-            if (NetTotal.length() == 9) {
-                //22spaces
-                //NEW TOTAL =9
-                NetTotal = "  NET TOTAL                      Rs. " + NetTotal;
-            }
-            if (NetTotal.length() == 10) {
-                //21spaces
-                //NEW TOTAL =9
-                NetTotal = "  NET TOTAL                    Rs. " + NetTotal;
-            }
-            if (NetTotal.length() == 11) {
-                //20spaces
-                //NEW TOTAL =9
-                NetTotal = "  NET TOTAL                   Rs. " + NetTotal;
-            }
-            if (NetTotal.length() == 12) {
-                //19spaces
-                //NEW TOTAL =9
-                NetTotal = "  NET TOTAL                  Rs. " + NetTotal;
-            }
-        }
-        else{
-            NetTotal = " NET TOTAL                    Rs.  " + NetTotal;
-
-        }
 
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, NetTotal + "\n");
 
@@ -861,7 +860,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 0, userMobile + "           "+ "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 0, userMobile + "           " + "\n");
 /*
             PrinterFunctions.SetLineSpacing(portName, portSettings, 120);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -876,7 +875,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1,  "\n"+"Thank you for choosing us !!!  " + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, "\n" + "Thank you for choosing us !!!  " + "\n");
 
 
             PrinterFunctions.PreformCut(portName, portSettings, 1);
@@ -886,46 +885,75 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             Log.i("tag", "printer Log    " + PrinterFunctions.OpenPort(portName, portSettings));
 
             Log.i("tag", "printer Log    " + PrinterFunctions.CheckStatus(portName, portSettings, 2));
+            if (!isPrintedSecondTime) {
+                showProgressBar(false);
 
-               if(!isPrintedSecondTime) {
-                   showProgressBar(false);
+                openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cart_Item_hashmap, payment_mode);
 
-                   openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cart_Item_hashmap, payment_mode);
+            } else {
+                cart_Item_List.clear();
+                cart_Item_hashmap.clear();
+                cart_item_list.clear();
+                cartItem_hashmap.clear();
+                ispaymentMode_Clicked = false;
+                isOrderDetailsMethodCalled = false;
 
-                }
+                isPaymentDetailsMethodCalled = false;
+                isOrderTrackingDetailsMethodCalled = false;
+                new_to_pay_Amount = 0;
+                old_taxes_and_charges_Amount = 0;
+                old_total_Amount = 0;
+                createEmptyRowInListView("empty");
+                CallAdapter();
+                discountAmount = "0";
+
+                discount_Edit_widget.setText("0");
+                finaltoPayAmount = "0";
+                discount_rs_text_widget.setText(discountAmount);
+
+                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                mobileNo_Edit_widget.setText("");
+                isPrintedSecondTime = false;
+                showProgressBar(false);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            cart_Item_List.clear();
+            cart_Item_hashmap.clear();
+            cart_item_list.clear();
+            cartItem_hashmap.clear();
+            ispaymentMode_Clicked = false;
+            isOrderDetailsMethodCalled = false;
+
+            isPaymentDetailsMethodCalled = false;
+            isOrderTrackingDetailsMethodCalled = false;
+            new_to_pay_Amount = 0;
+            old_taxes_and_charges_Amount = 0;
+            old_total_Amount = 0;
+            createEmptyRowInListView("empty");
+            CallAdapter();
+            discountAmount = "0";
+
+            discount_Edit_widget.setText("0");
+            finaltoPayAmount = "0";
+            discount_rs_text_widget.setText(discountAmount);
+
+            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+            mobileNo_Edit_widget.setText("");
+            isPrintedSecondTime = false;
+            showProgressBar(false);
+            Toast.makeText(mContext,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
 
 
-                else{
-                    cart_Item_List.clear();
-                    cart_Item_hashmap.clear();
-                    cart_item_list.clear();
-                   cartItem_hashmap.clear();
-                    ispaymentMode_Clicked=false;
-                    isOrderDetailsMethodCalled = false;
-
-                    isPaymentDetailsMethodCalled=false;
-                    isOrderTrackingDetailsMethodCalled=false;
-                   new_to_pay_Amount = 0;
-                    old_taxes_and_charges_Amount = 0;
-                    old_total_Amount = 0;
-                    createEmptyRowInListView("empty");
-                    CallAdapter();
-                    discountAmount ="0";
-
-                   CouponDiscount = "0";
-                    discount_Edit_widget .setText("0");
-                    finaltoPayAmount = "0";
-                    discount_rs_text_widget .setText(discountAmount);
-
-                    total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                    taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                    total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-
-                    mobileNo_Edit_widget.setText("");
-                    isPrintedSecondTime=false;
-                   showProgressBar(false);
-
-               }
+        }
     }
 
     private void openPrintAgainDialog(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_Item_List, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode) {
@@ -952,7 +980,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             showProgressBar(true);
 
 
-                            printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount);
+                                     printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount);
+
                             dialog.cancel();
                         }
                     });
@@ -1626,7 +1655,10 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         if (message.equals("success")) {
                             // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                             // startTwice.main();
-                            printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,discountAmount);
+
+
+                                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,discountAmount);
+
 
                         }
                         else{

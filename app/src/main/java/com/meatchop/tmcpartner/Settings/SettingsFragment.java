@@ -273,7 +273,7 @@ double screenInches;
         AppSalesReport.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(mContext, App_Sales_Report_Subctgywise.class);
+                Intent i = new Intent(mContext, AppSales_Report.class);
                 mContext.startActivity(i);
             }
         });

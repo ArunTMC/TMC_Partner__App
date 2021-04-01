@@ -235,7 +235,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
-                                android:visibility="visible">
+                                android:visibility="gone">
 
 
                                 <TextView
@@ -359,7 +359,7 @@
                                 android:orientation="horizontal"
                                 android:paddingTop="20dp"
                                 android:paddingBottom="20dp"
-                                android:visibility="gone">
+                                android:visibility="visible">
 
                                 <TextView
                                     android:id="@+id/other_print_button_widget"

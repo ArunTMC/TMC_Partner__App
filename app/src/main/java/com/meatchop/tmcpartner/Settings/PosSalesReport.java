@@ -104,7 +104,7 @@ public class PosSalesReport extends AppCompatActivity {
     double screenInches;
     String CurrentDate;
     String DateString;
-
+    boolean isgetOrderForSelectedDateCalled=false;
     double CouponDiscount=0;
     ListView posSalesReport_Listview;
     ScrollView scrollView;
@@ -194,7 +194,18 @@ public class PosSalesReport extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(screenInches>8){
-                    printReport();
+
+                    try {
+                                printReport();
+
+                    }
+                    catch(Exception e ){
+
+                        Toast.makeText(PosSalesReport.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                        e.printStackTrace();
+
+                    }
                 }
                 else{
                     Toast.makeText(PosSalesReport.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
@@ -226,419 +237,405 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
     private void printReport() {
-        Printer_POJO_Class[] PrinterSuCtgyNameArray = new Printer_POJO_Class[tmcSubCtgykey.size()];
+        try {
+            Printer_POJO_Class[] PrinterSuCtgyNameArray = new Printer_POJO_Class[tmcSubCtgykey.size()];
 
-        Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[Order_Item_List.size()];
-        for (int subCtgyCount = 0; subCtgyCount < tmcSubCtgykey.size(); subCtgyCount++) {
-            int i_value = 0;
+            Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[Order_Item_List.size()];
+            for (int subCtgyCount = 0; subCtgyCount < tmcSubCtgykey.size(); subCtgyCount++) {
+                int i_value = 0;
 
-            String SubCtgyName, menuid, SubCtgykey;
-            SubCtgykey = tmcSubCtgykey.get(subCtgyCount).toString();
-            Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
-            SubCtgyName = subCtgyName_object.getTmcsubctgyname();
-            for (int i = 0; i < Order_Item_List.size(); i++) {
-                menuid = Order_Item_List.get(i);
-                Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
-
-
-                String subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
-                if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
-                    String itemName = (itemRow.getItemname());
-                    int indexofbraces = itemName.indexOf("(");
-                    if (indexofbraces >= 0) {
-                        itemName = (itemName.substring(0, indexofbraces));
-
-                    }
-                    if (itemName.length() > 19) {
-                        itemName = (itemName.substring(0, 19));
-                        itemName = itemName + "..";
-                    }
+                String SubCtgyName, menuid, SubCtgykey;
+                SubCtgykey = tmcSubCtgykey.get(subCtgyCount).toString();
+                Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
+                SubCtgyName = subCtgyName_object.getTmcsubctgyname();
+                for (int i = 0; i < Order_Item_List.size(); i++) {
+                    menuid = Order_Item_List.get(i);
+                    Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
 
 
-                    String KilogramString = "", Quantity = "", TMCprice = "";
-                    try {
-                        KilogramString = itemRow.getWeightingrams();
-                        if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg"))) && (!(KilogramString.equals("0")))) {
-                            Quantity = KilogramString + "g";
-                        } else {
-                            Quantity = itemRow.getQuantity() + "pc";
+                    String subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
+                    if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
+                        String itemName = (itemRow.getItemname());
+                        int indexofbraces = itemName.indexOf("(");
+                        if (indexofbraces >= 0) {
+                            itemName = (itemName.substring(0, indexofbraces));
+
                         }
-                    } catch (Exception e) {
-                        Quantity = itemRow.getQuantity() + "pc";
+                        if (itemName.length() > 19) {
+                            itemName = (itemName.substring(0, 19));
+                            itemName = itemName + "..";
+                        }
+
+
+                        String KilogramString = "", Quantity = "", TMCprice = "";
+                        try {
+                            KilogramString = itemRow.getWeightingrams();
+                            if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg"))) && (!(KilogramString.equals("0")))) {
+                                Quantity = KilogramString + "g";
+                            } else {
+                                Quantity = itemRow.getQuantity() + "pc";
+                            }
+                        } catch (Exception e) {
+                            Quantity = itemRow.getQuantity() + "pc";
+
+                        }
+                        try {
+                            TMCprice = String.valueOf(itemRow.getTmcprice());
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            TMCprice = "";
+                        }
+                        try {
+                            itemName = itemName + "-" + Quantity;
+                            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(SubCtgyName, itemName, TMCprice);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                     }
-                    try {
-                        TMCprice = String.valueOf(itemRow.getTmcprice());
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        TMCprice = "";
-                    }
-                    try {
-                        itemName = itemName + "-" + Quantity;
-                        Printer_POJO_ClassArray[i] = new Printer_POJO_Class(SubCtgyName, itemName, TMCprice);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
                 }
+
+                PrinterSuCtgyNameArray[subCtgyCount] = new Printer_POJO_Class(SubCtgyName);
+
+
             }
 
-            PrinterSuCtgyNameArray[subCtgyCount] = new Printer_POJO_Class(SubCtgyName);
 
+            PrinterFunctions.PortDiscovery(portName, portSettings);
 
-        }
-
-
-        PrinterFunctions.PortDiscovery(portName, portSettings);
-
-        PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
-        Log.i("tag", "The Meat Chop"    );
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : POS SALES REPORT" + "\n");
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
-        Log.i("tag", "Printer log"+CurrentDate    );
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-        for (int subCtgyKeyCount = 0; subCtgyKeyCount < PrinterSuCtgyNameArray.length; subCtgyKeyCount++) {
-            String subCtgyname = PrinterSuCtgyNameArray[subCtgyKeyCount].getSubCtgyName();
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+            PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 1, 0, 1, 0, 1, 0, 30, 0, "" + "\n"+subCtgyname + "\n"+ "\n");
-            Log.i("tag", "Printer log subCtgyname "+subCtgyname    );
-
-
-            for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
-
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                String itemName_weight, itemPrice, subCtgyNameFromItemDesp;
-                subCtgyNameFromItemDesp = Printer_POJO_ClassArray[i].getSubCtgyName();
-                if (subCtgyNameFromItemDesp.equals(subCtgyname)) {
-                    itemName_weight = Printer_POJO_ClassArray[i].getItemname_report();
-
-                    itemPrice = "Rs. " + Printer_POJO_ClassArray[i].getTmcprice_report();
-                    if (itemName_weight.length() == 10) {
-                        //16spaces
-                        itemName_weight = itemName_weight + "                ";
-                    }
-                    if (itemName_weight.length() == 11) {
-                        //15spaces
-                        itemName_weight = itemName_weight + "               ";
-                    }
-                    if (itemName_weight.length() == 12) {
-                        //14spaces
-                        itemName_weight = itemName_weight + "              ";
-                    }
-                    if (itemName_weight.length() == 13) {
-                        //13spaces
-                        itemName_weight = itemName_weight + "             ";
-                    }
-                    if (itemName_weight.length() == 14) {
-                        //12spaces
-                        itemName_weight = itemName_weight + "            ";
-                    }
-                    if (itemName_weight.length() == 15) {
-                        //11spaces
-                        itemName_weight = itemName_weight + "           ";
-                    }
-                    if (itemName_weight.length() == 16) {
-                        //10spaces
-                        itemName_weight = itemName_weight + "          ";
-                    }
-                    if (itemName_weight.length() == 17) {
-                        //9spaces
-                        itemName_weight = itemName_weight + "         ";
-                    }
-                    if (itemName_weight.length() == 18) {
-                        //8spaces
-                        itemName_weight = itemName_weight + "        ";
-                    }
-                    if (itemName_weight.length() == 19) {
-                        //7spaces
-                        itemName_weight = itemName_weight + "       ";
-                    }
-                    if (itemName_weight.length() == 20) {
-                        //6spaces
-                        itemName_weight = itemName_weight + "      ";
-                    }
-                    if (itemName_weight.length() == 21) {
-                        //5spaces
-                        itemName_weight = itemName_weight + "     ";
-                    }
-                    if (itemName_weight.length() == 22) {
-                        //4spaces
-                        itemName_weight = itemName_weight + "    ";
-                    }
-                    if (itemName_weight.length() == 23) {
-                        //3spaces
-                        itemName_weight = itemName_weight + "   ";
-                    }
-                    if (itemName_weight.length() == 24) {
-                        //2spaces
-                        itemName_weight = itemName_weight + "  ";
-                    }
-                    if (itemName_weight.length() == 25) {
-                        //1spaces
-                        itemName_weight = itemName_weight + " ";
-                    }
-                    if (itemName_weight.length() == 26) {
-                        //0spaces
-                        itemName_weight = itemName_weight + "";
-                    }
-                    if (itemName_weight.length() == 27) {
-                        //0spaces
-                        itemName_weight = itemName_weight + "";
-                    }
-                    if (itemName_weight.length() == 28) {
-                        //0spaces
-                        itemName_weight = itemName_weight + "";
-                    }
-                    if (itemName_weight.length() == 29) {
-                        //0spaces
-                        itemName_weight = itemName_weight + "";
-                    }
-                    if (itemName_weight.length() == 30) {
-                        //0spaces
-                        itemName_weight = itemName_weight + "";
-                    }
-
-
-
-
-
-                    if (itemPrice.length() == 8) {
-                        //4spaces
-                        itemPrice = "    " + itemPrice;
-                    }
-                    if (itemPrice.length() == 9) {
-                        //3spaces
-                        itemPrice = "   " + itemPrice;
-                    }
-                    if (itemPrice.length() == 10) {
-                        //2spaces
-                        itemPrice = "  " + itemPrice;
-                    }
-                    if (itemPrice.length() == 11) {
-                        //1spaces
-                        itemPrice = " " + itemPrice;
-                    }
-                    if (itemPrice.length() == 12) {
-                        //0spaces
-                        itemPrice = "" + itemPrice;
-                    }
-                    if (itemPrice.length() == 13) {
-                        //0spaces
-                        itemPrice = "" + itemPrice;
-                    }
-                    if (itemPrice.length() == 14) {
-                        //no space
-                        itemPrice = "" + itemPrice;
-                    }
-
-
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 48, itemName_weight  );
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice+"\n");
-                    Log.i("tag", "Printer log itemName_weight itemPrice  "+itemName_weight + "" + itemPrice + ""     );
-
-                }
-            }
-            //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
-
-
-
-
-
-
-
-        }
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n"+"Final Sales Break Up"+"\n");
-
-
-
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-        for (int i = 0; i < paymentModeArray.size(); i++) {
-                double payment_AmountDouble =0;
-            double payment_AmountDiscDouble =0;
-
-            String Payment_Amount="",key = paymentModeArray.get(i);
-               Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
-            Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
-
-            Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-            DecimalFormat decimalFormat = new DecimalFormat("0.00");
-
-
-
-
-
-
-            if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
-                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                    payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Cash Sales";
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Card Sales";
-
-                }
-            }
-            if ((key.toUpperCase().equals("CARD"))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
-                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                    payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Card Sales";
-
-                }
-                catch(Exception e){
-                    e.printStackTrace();
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Card Sales";
-
-                }
-            }
-            if ((key.toUpperCase().equals("UPI"))) {
-                try {
-                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
-                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                    payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Upi Sales";
-
-                }
-                catch(Exception e){
-                    payment_AmountDouble = 0.00;
-                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                    key = "Upi Sales";
-
-                    e.printStackTrace();
-
-                }
-            }
-
-
-
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+            Log.i("tag", "The Meat Chop");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-               PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-               PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key+"     " +"Rs : "+Payment_Amount+"\n");
-              Log.i("tag", "Printer log key key  "+key+"Rs : "+Payment_Amount );
-
-           }
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
 
 
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
 
-        for (int j = 0; j < finalBillDetails.size(); j++)
-        {
-            String key = finalBillDetails.get(j);
-            String value = FinalBill_hashmap.get(key);
-            value = "RS : "+value;
-            if (Objects.requireNonNull(value).length() == 7) {
-                //7spaces
-                value = key+"       " + value;
-            }
-            if (value.length() == 8) {
-                //6spaces
-                value = key+"      " + value;
-            }
-            if (value.length() == 9) {
-                //5spaces
-                value =key+ "     " + value;
-            }
-            if (value.length() == 10) {
-                //4spaces
-                value =key+ "    " + value;
-            }
-            if (value.length() == 11) {
-                //3spaces
-                value =key+ "   " + value;
-            }
-            if (value.length() == 12) {
-                //2spaces
-                value =key+ "  " + value;
-            }
-            if (value.length() == 13) {
-                //1spaces
-                value = key+" " + value;
-            }
-            if (value.length() == 14) {
-                //no space
-                value =key+ "" + value;
-            }
-             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value+"\n");
-            Log.i("tag", "Printer log key key"+value );
 
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : POS SALES REPORT" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
+            Log.i("tag", "Printer log" + CurrentDate);
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+            for (int subCtgyKeyCount = 0; subCtgyKeyCount < PrinterSuCtgyNameArray.length; subCtgyKeyCount++) {
+                String subCtgyname = PrinterSuCtgyNameArray[subCtgyKeyCount].getSubCtgyName();
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 1, 0, 1, 0, 1, 0, 30, 0, "" + "\n" + subCtgyname + "\n" + "\n");
+                Log.i("tag", "Printer log subCtgyname " + subCtgyname);
+
+
+                for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    String itemName_weight, itemPrice, subCtgyNameFromItemDesp;
+                    subCtgyNameFromItemDesp = Printer_POJO_ClassArray[i].getSubCtgyName();
+                    if (subCtgyNameFromItemDesp.equals(subCtgyname)) {
+                        itemName_weight = Printer_POJO_ClassArray[i].getItemname_report();
+
+                        itemPrice = "Rs. " + Printer_POJO_ClassArray[i].getTmcprice_report();
+                        if (itemName_weight.length() == 10) {
+                            //16spaces
+                            itemName_weight = itemName_weight + "                ";
+                        }
+                        if (itemName_weight.length() == 11) {
+                            //15spaces
+                            itemName_weight = itemName_weight + "               ";
+                        }
+                        if (itemName_weight.length() == 12) {
+                            //14spaces
+                            itemName_weight = itemName_weight + "              ";
+                        }
+                        if (itemName_weight.length() == 13) {
+                            //13spaces
+                            itemName_weight = itemName_weight + "             ";
+                        }
+                        if (itemName_weight.length() == 14) {
+                            //12spaces
+                            itemName_weight = itemName_weight + "            ";
+                        }
+                        if (itemName_weight.length() == 15) {
+                            //11spaces
+                            itemName_weight = itemName_weight + "           ";
+                        }
+                        if (itemName_weight.length() == 16) {
+                            //10spaces
+                            itemName_weight = itemName_weight + "          ";
+                        }
+                        if (itemName_weight.length() == 17) {
+                            //9spaces
+                            itemName_weight = itemName_weight + "         ";
+                        }
+                        if (itemName_weight.length() == 18) {
+                            //8spaces
+                            itemName_weight = itemName_weight + "        ";
+                        }
+                        if (itemName_weight.length() == 19) {
+                            //7spaces
+                            itemName_weight = itemName_weight + "       ";
+                        }
+                        if (itemName_weight.length() == 20) {
+                            //6spaces
+                            itemName_weight = itemName_weight + "      ";
+                        }
+                        if (itemName_weight.length() == 21) {
+                            //5spaces
+                            itemName_weight = itemName_weight + "     ";
+                        }
+                        if (itemName_weight.length() == 22) {
+                            //4spaces
+                            itemName_weight = itemName_weight + "    ";
+                        }
+                        if (itemName_weight.length() == 23) {
+                            //3spaces
+                            itemName_weight = itemName_weight + "   ";
+                        }
+                        if (itemName_weight.length() == 24) {
+                            //2spaces
+                            itemName_weight = itemName_weight + "  ";
+                        }
+                        if (itemName_weight.length() == 25) {
+                            //1spaces
+                            itemName_weight = itemName_weight + " ";
+                        }
+                        if (itemName_weight.length() == 26) {
+                            //0spaces
+                            itemName_weight = itemName_weight + "";
+                        }
+                        if (itemName_weight.length() == 27) {
+                            //0spaces
+                            itemName_weight = itemName_weight + "";
+                        }
+                        if (itemName_weight.length() == 28) {
+                            //0spaces
+                            itemName_weight = itemName_weight + "";
+                        }
+                        if (itemName_weight.length() == 29) {
+                            //0spaces
+                            itemName_weight = itemName_weight + "";
+                        }
+                        if (itemName_weight.length() == 30) {
+                            //0spaces
+                            itemName_weight = itemName_weight + "";
+                        }
+
+
+                        if (itemPrice.length() == 8) {
+                            //4spaces
+                            itemPrice = "    " + itemPrice;
+                        }
+                        if (itemPrice.length() == 9) {
+                            //3spaces
+                            itemPrice = "   " + itemPrice;
+                        }
+                        if (itemPrice.length() == 10) {
+                            //2spaces
+                            itemPrice = "  " + itemPrice;
+                        }
+                        if (itemPrice.length() == 11) {
+                            //1spaces
+                            itemPrice = " " + itemPrice;
+                        }
+                        if (itemPrice.length() == 12) {
+                            //0spaces
+                            itemPrice = "" + itemPrice;
+                        }
+                        if (itemPrice.length() == 13) {
+                            //0spaces
+                            itemPrice = "" + itemPrice;
+                        }
+                        if (itemPrice.length() == 14) {
+                            //no space
+                            itemPrice = "" + itemPrice;
+                        }
+
+
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 48, itemName_weight);
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice + "\n");
+                        Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
+
+                    }
+                }
+                //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
+
+
+            }
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "Final Sales Break Up" + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            for (int i = 0; i < paymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = paymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
+
+                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("CARD"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("UPI"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                    } catch (Exception e) {
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                        e.printStackTrace();
+
+                    }
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+            }
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            for (int j = 0; j < finalBillDetails.size(); j++) {
+                String key = finalBillDetails.get(j);
+                String value = FinalBill_hashmap.get(key);
+                value = "RS : " + value;
+                if (Objects.requireNonNull(value).length() == 7) {
+                    //7spaces
+                    value = key + "       " + value;
+                }
+                if (value.length() == 8) {
+                    //6spaces
+                    value = key + "      " + value;
+                }
+                if (value.length() == 9) {
+                    //5spaces
+                    value = key + "     " + value;
+                }
+                if (value.length() == 10) {
+                    //4spaces
+                    value = key + "    " + value;
+                }
+                if (value.length() == 11) {
+                    //3spaces
+                    value = key + "   " + value;
+                }
+                if (value.length() == 12) {
+                    //2spaces
+                    value = key + "  " + value;
+                }
+                if (value.length() == 13) {
+                    //1spaces
+                    value = key + " " + value;
+                }
+                if (value.length() == 14) {
+                    //no space
+                    value = key + "" + value;
+                }
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value + "\n");
+                Log.i("tag", "Printer log key key" + value);
+
+
+            }
+
+            PrinterFunctions.PreformCut(portName, portSettings, 1);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            Toast.makeText(PosSalesReport.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
 
         }
-
-    PrinterFunctions.PreformCut(portName, portSettings, 1);
-
     }
     @Override
     protected void onResume() {
@@ -798,12 +795,13 @@ public class PosSalesReport extends AppCompatActivity {
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         try {
                             String month_in_String = getMonthString(monthOfYear);
-                            Calendar myCalendar = new GregorianCalendar(year, month, dayOfMonth);
+                            Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
 
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
                             String CurrentDay =   getDayString(dayOfWeek);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+                            isgetOrderForSelectedDateCalled = false;
 
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             getOrderForSelectedDate(DateString, vendorKey);
@@ -817,6 +815,10 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
     private void getOrderForSelectedDate(String dateString, String vendorKey) {
+        if(isgetOrderForSelectedDateCalled){
+            return;
+        }
+        isgetOrderForSelectedDateCalled = true;
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
@@ -2085,7 +2087,7 @@ public class PosSalesReport extends AppCompatActivity {
         SimpleDateFormat day = new SimpleDateFormat("EEE");
         String CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
         CurrentDate = df.format(c);
 
         CurrentDate = CurrentDay + ", " + CurrentDate;

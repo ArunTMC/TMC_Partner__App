@@ -90,6 +90,8 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
     public static HashMap<String, String> Pos_couponDiscount_hashmap = new HashMap();
 
 
+   boolean isgetPreOrderForSelectedDateCalled =false;
+   boolean isgetOrderForSelectedDateCalled = false;
 
     public static List<String> couponDiscountOrderidArray;
     public static HashMap<String, String> couponDiscount_hashmap = new HashMap();
@@ -330,7 +332,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             }
 
 
-                            Calendar myCalendar = new GregorianCalendar(year, month, dayOfMonth);
+                            Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
 
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
@@ -344,7 +346,8 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay(CurrentDateString);
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
-
+                            isgetPreOrderForSelectedDateCalled = false;
+                            isgetOrderForSelectedDateCalled = false;
                             //getOrderForSelectedDate(DateString, vendorKey);
                             getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
 
@@ -362,7 +365,11 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
     private void getOrderForSelectedDate(String dateString, String vendorKey) {
 
+        if(isgetOrderForSelectedDateCalled){
+            return;
+        }
 
+        isgetOrderForSelectedDateCalled = true;
         Adjusting_Widgets_Visibility(true);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
@@ -773,6 +780,12 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
     private void getPreOrderForSelectedDate(String previousDaydate,String currentDate, String vendorKey) {
+        isgetOrderForSelectedDateCalled = false;
+        if(isgetPreOrderForSelectedDateCalled){
+            return;
+        }
+
+        isgetPreOrderForSelectedDateCalled= true;
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
@@ -995,6 +1008,8 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                     if (arrayLength - 1 == i1) {
                                         if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+                                            isgetOrderForSelectedDateCalled = false;
+
                                             getOrderForSelectedDate(DateString, vendorKey);
                                         } else {
                                             Toast.makeText(Consolidated_Sales_Report.this, "There is no Pre Order On this Date ", Toast.LENGTH_LONG).show();
@@ -1014,6 +1029,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
                                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                                            isgetOrderForSelectedDateCalled = false;
 
                                             getOrderForSelectedDate(DateString, vendorKey);
 
@@ -1041,6 +1057,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                 ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
                                 Toast.makeText(Consolidated_Sales_Report.this, "There is no PreOrder On this Date ", Toast.LENGTH_LONG).show();
 
+                                isgetOrderForSelectedDateCalled = false;
 
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                                 getOrderForSelectedDate(DateString, vendorKey);
@@ -1065,6 +1082,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             itemDespTotalAmount =0;
                             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
+                            isgetOrderForSelectedDateCalled = false;
 
                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                             getOrderForSelectedDate(DateString, vendorKey);
@@ -1135,6 +1153,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
                 ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
+                isgetOrderForSelectedDateCalled = false;
 
                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                 getOrderForSelectedDate(DateString, vendorKey);
