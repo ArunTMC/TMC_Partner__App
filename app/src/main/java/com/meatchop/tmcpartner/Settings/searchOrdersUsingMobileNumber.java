@@ -72,7 +72,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
     List<Modal_ManageOrders_Pojo_Class> ordersList;
     public static String completemenuItem;
-    static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
+    public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
     String Currenttime,FormattedTime,CurrentDate,formattedDate,CurrentDay,TodaysDate;
     List<String> slotnameChoosingSpinnerData;
     Spinner slotType_Spinner;

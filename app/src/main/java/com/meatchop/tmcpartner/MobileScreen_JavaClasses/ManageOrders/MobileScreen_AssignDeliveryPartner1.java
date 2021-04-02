@@ -32,7 +32,7 @@ import java.util.Map;
 public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
     ListView deliveryPartners_list_widget;
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
-    String vendorKey = "vendor_1", orderKey;
+    String vendorKey = "vendor_1", orderKey,IntentFrom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +41,7 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
         deliveryPartners_list_widget = findViewById(R.id.deliveryPartners_list_widget);
         deliveryPartnerList = new ArrayList<>();
         orderKey = getIntent().getStringExtra("TrackingTableKey");
+        IntentFrom = getIntent().getStringExtra("IntentFrom");
         addemptydetails(orderKey);
         getDeliveryPartnerList();
     }
@@ -134,7 +135,7 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
                                     // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                                     deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
 
-                                    Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey);
+                                    Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey,IntentFrom);
 
                                     deliveryPartners_list_widget.setAdapter(adapter_mobile_assignDeliveryPartner1);
 

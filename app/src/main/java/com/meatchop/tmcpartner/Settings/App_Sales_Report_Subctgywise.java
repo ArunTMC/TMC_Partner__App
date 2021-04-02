@@ -1521,6 +1521,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
             }
         }
+
+
+
         try{
             cash_amount = cash_amount-cash_Discount_amount;
             finalCashAmount_pdf=String.valueOf(cash_amount);

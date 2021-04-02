@@ -27,6 +27,8 @@ import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDelivery
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
+import com.meatchop.tmcpartner.Settings.searchScreen_OrderDetails;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,15 +40,16 @@ import java.util.Map;
 public class Adapter_Mobile_AssignDeliveryPartner1 extends ArrayAdapter<AssignDeliveryPartner_PojoClass> {
         Context mContext;
         List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
-        String OrderKey;
+        String OrderKey,IntentFrom;
 
 
 
-public Adapter_Mobile_AssignDeliveryPartner1(Context mContext, List<AssignDeliveryPartner_PojoClass> deliveryPartnerList, String orderKey) {
+public Adapter_Mobile_AssignDeliveryPartner1(Context mContext, List<AssignDeliveryPartner_PojoClass> deliveryPartnerList, String orderKey, String intentFrom) {
         super(mContext, R.layout.mobile_screen_assigning_deliverypartner_listitem1, deliveryPartnerList);
         this.OrderKey=orderKey;
         this.mContext=mContext;
         this.deliveryPartnerList=deliveryPartnerList;
+        this.IntentFrom=intentFrom;
         }
 
 
@@ -126,23 +129,52 @@ public void onResponse(@NonNull JSONObject response) {
         mContext.startActivity(intent);
 
      */
-            for(int i=0;i<Mobile_ManageOrders1.sorted_OrdersList.size();i++){
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Mobile_ManageOrders1.sorted_OrdersList.get(i);
-                String TrackingTableKey  = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                if(TrackingTableKey.equals(OrderKey)){
-                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+            if(IntentFrom.equals("MobileManageOrders")){
+                for(int i=0;i<Mobile_ManageOrders1.sorted_OrdersList.size();i++){
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Mobile_ManageOrders1.sorted_OrdersList.get(i);
+                    String TrackingTableKey  = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
+                    if(TrackingTableKey.equals(OrderKey)){
+                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
 
+                    }
                 }
+                Intent i = new Intent(mContext, MobileScreen_Dashboard.class);
+                i.putExtra("key", OrderKey);
+                i.putExtra("deliveryuserkey", deliveryPartnerKey);
+                i.putExtra("deliveryusermobileno", deliveryPartnerMobileNo);
+                i.putExtra("deliveryusername", deliveryPartnerName);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                mContext.startActivity(i);
             }
-            Intent i = new Intent(mContext, MobileScreen_Dashboard.class);
-            i.putExtra("key",OrderKey);
-            i.putExtra("deliveryuserkey",deliveryPartnerKey);
-            i.putExtra("deliveryusermobileno",deliveryPartnerMobileNo);
-            i.putExtra("deliveryusername",deliveryPartnerName);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            mContext.startActivity(i);
+            if(IntentFrom.equals("MobileSearchOrders")){
+                for(int i = 0; i< searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++){
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
+                    String TrackingTableKey  = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
+                    if(TrackingTableKey.equals(OrderKey)){
+                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                    }
+                }
+
+
+
+
+                Intent i = new Intent(mContext, searchOrdersUsingMobileNumber.class);
+                i.putExtra("key", OrderKey);
+                i.putExtra("deliveryuserkey", deliveryPartnerKey);
+                i.putExtra("deliveryusermobileno", deliveryPartnerMobileNo);
+                i.putExtra("deliveryusername", deliveryPartnerName);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                mContext.startActivity(i);
+
+            }
+
+
+
         }
         } catch (JSONException e) {
         e.printStackTrace();

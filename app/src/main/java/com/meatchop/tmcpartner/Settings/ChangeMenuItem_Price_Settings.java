@@ -106,9 +106,14 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                         try {
                             sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
                             discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
-                            CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
-                            CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
+                            if(discount_percentage<=100) {
+                                CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
+                            }
+                            else{
+                                Toast.makeText(ChangeMenuItem_Price_Settings.this,"Discount Percentage can't be greater than 100 %",Toast.LENGTH_SHORT).show();
 
+                            }
 
                         } catch (Exception e) {
                             e.printStackTrace();

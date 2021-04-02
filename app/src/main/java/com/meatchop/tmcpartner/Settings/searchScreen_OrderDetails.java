@@ -248,6 +248,8 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(searchScreen_OrderDetails.this, MobileScreen_AssignDeliveryPartner1.class);
                 intent.putExtra("TrackingTableKey",modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
+                intent.putExtra("IntentFrom","AppOrdersList");
+
                 startActivityForResult(intent,1234);
 
 

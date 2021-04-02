@@ -55,7 +55,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
     String coupondiscountAmount,useraddreskey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,
-            deliverydistance,deliverypartnerKey,deliverypartnerName,deliveryPartnerNumber,ordertype,fromActivityName;
+            deliverydistance,deliverypartnerKey,deliverypartnerName="",deliveryPartnerNumber="",ordertype,fromActivityName;
     double screenInches;
     LinearLayout showlocation,deliveryPartnerAssignLayout;
     @Override
@@ -111,6 +111,35 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = bundle.getParcelable("data");
         fromActivityName = bundle.getString("From");
+        try{
+            deliveryPartnerNumber=getIntent().getStringExtra("deliveryusermobileno");
+            deliverypartnerName=getIntent().getStringExtra("deliveryusername");
+            if((deliverypartnerName.equals(""))||(deliveryPartnerNumber.equals(""))){
+                try{
+                    deliverypartnerName = String.valueOf(modal_manageOrders_pojo_class.getDeliveryPartnerName());
+                    deliveryPartnerNumber = String.valueOf(modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo());
+
+                }
+                catch(Exception r){
+                    r.printStackTrace();
+                }
+
+            }
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                deliveryPartnerNumber = String.valueOf(modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo());
+                deliverypartnerName = String.valueOf(modal_manageOrders_pojo_class.getDeliveryPartnerName());
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+        }
+
+
         try{
             ordertype = String.valueOf(modal_manageOrders_pojo_class.getOrderType().toUpperCase());
         }
@@ -245,20 +274,18 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         catch (Exception e){
         e.printStackTrace();
     }
-        if(!modal_manageOrders_pojo_class.getOrderstatus().equals(Constants.NEW_ORDER_STATUS)) {
+        if((!modal_manageOrders_pojo_class.getOrderstatus().equals(Constants.NEW_ORDER_STATUS))||(!fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder"))) {
 
-            String mobileno =String.valueOf(modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo());
-            String name =String.valueOf(modal_manageOrders_pojo_class.getDeliveryPartnerName());
 
-            if(!mobileno.equals("null")){
-                deliveryPartner_mobileNo_widget.setText(mobileno);
+            if(!deliveryPartnerNumber.equals("null")){
+                deliveryPartner_mobileNo_widget.setText(deliveryPartnerNumber);
             }
             else{
                 deliveryPartner_mobileNo_widget.setText("Not Assigned");
 
             }
-            if(!name.equals("null")){
-                deliveryPartner_name_widget.setText(name);
+            if(!deliverypartnerName.equals("null")){
+                deliveryPartner_name_widget.setText(deliverypartnerName);
 
             }
             else{
@@ -294,6 +321,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MobileScreen_OrderDetails1.this, MobileScreen_AssignDeliveryPartner1.class);
                 intent.putExtra("TrackingTableKey",modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
+                intent.putExtra("IntentFrom",fromActivityName);
+
                 startActivityForResult(intent,1234);
 
 
