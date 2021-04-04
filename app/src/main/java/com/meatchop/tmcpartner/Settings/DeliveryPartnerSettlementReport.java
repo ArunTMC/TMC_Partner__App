@@ -236,6 +236,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 preorderpaymentMode_DiscountHashmap.clear();
                 CouponDiscount = 0;
                 CouponDiscount_preorder =0;
+                getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
+
                 addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
 
 
