@@ -536,7 +536,7 @@ public class AppSales_Report extends AppCompatActivity {
                                             e.printStackTrace();
                                         }
                                     } else {
-                                        Toast.makeText(AppSales_Report.this, "- ", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(AppSales_Report.this, "- "+orderid, Toast.LENGTH_LONG).show();
                                             Log.d(Constants.TAG, "repeated orderid e: "+orderid);
 
                                     }
@@ -1502,7 +1502,7 @@ public class AppSales_Report extends AppCompatActivity {
 
                                             }
                                             else{
-                                                Toast.makeText(AppSales_Report.this, "- ", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(AppSales_Report.this, "- "+orderid, Toast.LENGTH_LONG).show();
 
                                             }
 
