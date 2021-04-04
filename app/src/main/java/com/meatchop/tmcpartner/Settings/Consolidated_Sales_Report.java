@@ -61,6 +61,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -658,6 +660,23 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                         if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
                             try {
 
+
+                                try{
+                                    try {
+                                        Collections.sort(Order_Item_List, new Comparator<String>() {
+                                            public int compare(final String object1, final String object2) {
+                                                return object1.compareTo(object2);
+                                            }
+                                        });
+                                    }
+                                    catch(Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
                                 Adjusting_Widgets_Visibility(false);
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                                 adapater_pos_sales_report = new Adapter_ConsolidatedSalesReport_listview(Consolidated_Sales_Report.this, Order_Item_List, OrderItem_hashmap);
@@ -706,6 +725,16 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                 if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
                     try {
+                        try {
+                            Collections.sort(Order_Item_List, new Comparator<String>() {
+                                public int compare(final String object1, final String object2) {
+                                    return object1.compareTo(object2);
+                                }
+                            });
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
 
                         Adjusting_Widgets_Visibility(false);
                         addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);

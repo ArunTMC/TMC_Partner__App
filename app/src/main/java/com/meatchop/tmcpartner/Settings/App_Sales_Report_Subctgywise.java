@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
@@ -24,6 +25,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
@@ -38,7 +40,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +131,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         totalAmt_with_CouponDiscount = findViewById(R.id.totalAmt_with_CouponDiscount);
         totalGST_Amt = findViewById(R.id.totalGST_Amt);
         final_sales = findViewById(R.id.final_sales);
+        final_sales = findViewById(R.id.final_sales);
+        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        cashOnDelivery = findViewById(R.id.cashOnDelivery);
+        Razorpay = findViewById(R.id.Razorpay);
+        Paytm  = findViewById(R.id.paytmSales);
+        Phonepe  = findViewById(R.id.Phonepe);
         cashSales = findViewById(R.id.cashSales);
         cardSales = findViewById(R.id.cardSales);
         upiSales  = findViewById(R.id.upiSales);
@@ -190,9 +201,98 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
+
+
+        dateSelectorLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+
+                try {
+                    openDatePicker();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+
+
     }
 
 
+    private void openDatePicker() {
+
+
+        final Calendar cldr = Calendar.getInstance();
+
+        int day = cldr.get(Calendar.DAY_OF_MONTH);
+        int month = cldr.get(Calendar.MONTH);
+        int year = cldr.get(Calendar.YEAR);
+        // date picker dialog
+
+
+        datepicker = new DatePickerDialog(App_Sales_Report_Subctgywise.this,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        try {
+                            Log.d(Constants.TAG, "getOrderDetailsUsingApi year: " + year);
+                            Log.d(Constants.TAG, "getOrderDetailsUsingApi monthOfYear: " + monthOfYear);
+                            Log.d(Constants.TAG, "getOrderDetailsUsingApi dayOfMonth: " + dayOfMonth);
+
+
+                            Order_Item_List.clear();
+                            OrderItem_hashmap.clear();
+                            finalBillDetails.clear();
+                            FinalBill_hashmap.clear();
+                            paymentModeHashmap.clear();
+                            paymentModeArray.clear();
+                            paymentMode_DiscountHashmap.clear();
+                            paymentMode_DiscountOrderid.clear();
+                            preorder_paymentModeHashmap.clear();
+                            preorder_paymentModeArray.clear();
+                            String month_in_String = getMonthString(monthOfYear);
+                            String monthstring = String.valueOf(monthOfYear+1);
+                            String datestring =  String.valueOf(dayOfMonth);
+                            if(datestring.length()==1){
+                                datestring="0"+datestring;
+                            }
+                            if(monthstring.length()==1){
+                                monthstring="0"+monthstring;
+                            }
+
+
+                            Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
+
+                            int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
+
+                            String CurrentDay =   getDayString(dayOfWeek);
+                            Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
+
+
+
+
+
+                            String CurrentDateString =datestring+monthstring+String.valueOf(year);
+                            PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay(CurrentDateString);
+                            dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+                            //getOrderForSelectedDate(DateString, vendorKey);
+                            DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+
+                            getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+
+                        }
+                        catch (Exception e ){
+                            e.printStackTrace();
+                        }
+                    }
+                }, year, month, day);
+        datepicker.show();
+    }
 
 
     @Override
@@ -248,6 +348,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 modal_orderDetails.tmcsubctgyname = subCtgyName;
                                 //  tmcSubCtgykey.add(subCtgyKey);
                                 SubCtgyKey_hashmap.put(subCtgyKey,modal_orderDetails);
+
+
+
 
                             }
                         } catch (JSONException e) {
@@ -1171,6 +1274,18 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
         try {
             dataList.clear();
+            try {
+                Collections.sort(tmcSubCtgykey, new Comparator<String>() {
+                    public int compare(final String object1, final String object2) {
+                        return object1.compareTo(object2);
+                    }
+                });
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+
+
             for (String SubCtgykey : tmcSubCtgykey) {
                 int i_value = 0;
                 String subCtgyTotal ="0";
@@ -1193,6 +1308,21 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     Log.d(Constants.TAG, "before for " + e.getMessage());
 
                 }
+
+                try {
+                    Collections.sort(Order_Item_List, new Comparator<String>() {
+                        public int compare(final String object1, final String object2) {
+                            return object1.compareTo(object2);
+                        }
+                    });
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
                 for (int j = 0; j < Order_Item_List.size(); j++) {
                     menuid = Order_Item_List.get(j);
                     Modal_OrderDetails itemDetailsfromHashmap = OrderItem_hashmap.get(menuid);

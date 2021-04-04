@@ -62,6 +62,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -1199,6 +1201,23 @@ public class PosSalesReport extends AppCompatActivity {
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
       try {
           dataList.clear();
+
+
+          try {
+              Collections.sort(tmcSubCtgykey, new Comparator<String>() {
+                  public int compare(final String object1, final String object2) {
+                      return object1.compareTo(object2);
+                  }
+              });
+          }
+          catch(Exception e){
+              e.printStackTrace();
+          }
+
+
+
+
+
           for (String SubCtgykey : tmcSubCtgykey) {
               int i_value = 0;
               String subCtgyTotal ="0";
@@ -1221,6 +1240,23 @@ public class PosSalesReport extends AppCompatActivity {
                   Log.d(Constants.TAG, "before for " + e.getMessage());
 
               }
+
+
+
+              try {
+                  Collections.sort(Order_Item_List, new Comparator<String>() {
+                      public int compare(final String object1, final String object2) {
+                          return object1.compareTo(object2);
+                      }
+                  });
+              }
+              catch(Exception e){
+                  e.printStackTrace();
+              }
+
+
+
+
               for (int j = 0; j < Order_Item_List.size(); j++) {
                   menuid = Order_Item_List.get(j);
                   Modal_OrderDetails itemDetailsfromHashmap = OrderItem_hashmap.get(menuid);
