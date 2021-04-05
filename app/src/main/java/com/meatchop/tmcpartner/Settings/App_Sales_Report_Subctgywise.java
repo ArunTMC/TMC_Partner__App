@@ -2,9 +2,13 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -198,9 +202,63 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
         scrollView.fullScroll(View.FOCUS_UP);
 
+        PrintReport_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(screenInches>8){
+                    try {
+                        Thread t = new Thread() {
+                            public void run() {
+                                printReport();
+                            }
+                        };
+                        t.start();
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(App_Sales_Report_Subctgywise.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                        e.printStackTrace();
+
+                    }                }
+                else{
+                    Toast.makeText(App_Sales_Report_Subctgywise.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
 
 
+
+        generateReport_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int writeExternalStoragePermission = ContextCompat.checkSelfPermission(App_Sales_Report_Subctgywise.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
+                // If do not grant write external storage permission.
+                if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                    // Request user to grant write external storage permission.
+                    ActivityCompat.requestPermissions(App_Sales_Report_Subctgywise.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                } else {
+                    Adjusting_Widgets_Visibility(true);
+
+                    try {
+                       // exportReport();
+                    }catch (Exception e ){
+                        e.printStackTrace();
+                    }                }
+            }
+        });
+
+
+
+
+        loadingpanelmask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(App_Sales_Report_Subctgywise.this,"Loading.... Please Wait",Toast.LENGTH_SHORT).show();
+            }
+        });
 
 
         dateSelectorLayout.setOnClickListener(new View.OnClickListener() {
@@ -221,6 +279,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
+    }
+
+    private void printReport() {
     }
 
 

@@ -363,9 +363,10 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
             </HorizontalScrollView>
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
+                android:visibility="visible"
+                android:layout_gravity="right"
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal">
 
@@ -374,7 +375,7 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight=".0"
-                    android:gravity="right">
+                    android:gravity="left">
 
 
                     <TextView

@@ -35,11 +35,21 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Aut
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -79,6 +89,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     int slottypefromSpinner=0;
     static Adapter_Mobile_SearchOrders_usingMobileNumber_ListView adapter_mobileSearchOrders_usingMobileNumber_listView;
     static Adapter_Pos_SearchOrders_usingMobileNumber adapter_PosSearchOrders_usingMobileNumber_listView;
+    Workbook wb;
+    Sheet sheet=null;
+    private static String[] columns = {"Delivery Type","Token No", "Order Status",
+            "Order Placed Time","Slot Date","Slot Time Range","Order Ready Time","Order Delivered Time ","Orderid","User Address","User Mobile"};
 
     private String SERVER_PATH = "wss://hx9itd7ji2.execute-api.ap-south-1.amazonaws.com/Dev";
     WebSocket webSocket;
@@ -154,7 +168,17 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         dateSelector_text.setText(Todaysdate);
         getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
 
+        try{
+            wb=new HSSFWorkbook();
+            //Now we are creating sheet
 
+            sheet = wb.createSheet("RazorpayDetails");
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -209,10 +233,11 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 Toast.makeText(searchOrdersUsingMobileNumber.this, "Loading.... Please Wait", Toast.LENGTH_SHORT).show();
             }
         });
+        generateReport_Layout.setVisibility(View.GONE);
         generateReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ordersList.clear();
+              /*  ordersList.clear();
                 sorted_OrdersList.clear();
                 array_of_orderId.clear();
 
@@ -223,6 +248,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 isSearchButtonClicked = false;
                 orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
                 getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
+           */
+                Adjusting_Widgets_Visibility(true);
+
+                AddDatatoExcelSheet();
             }
         });
 
@@ -347,6 +376,118 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     }
 
 
+    private void AddDatatoExcelSheet() {
+        int rowNum = 1;
+
+
+
+        for (int ii = 0; ii < ordersList.size(); ii++) {
+
+            Modal_ManageOrders_Pojo_Class itemRow = ordersList.get(ii);
+
+
+
+            Cell headercell = null;
+
+            org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 12);
+            headerFont.setColor(HSSFColor.RED.index);
+
+            CellStyle headerCellStyle = wb.createCellStyle();
+            headerCellStyle.setFillForegroundColor(HSSFColor.BLUE.index);
+            headerCellStyle.setFont(headerFont);
+
+
+            org.apache.poi.ss.usermodel.Font contentFont = wb.createFont();
+            contentFont.setBold(false);
+            contentFont.setFontHeightInPoints((short) 10);
+            contentFont.setColor(HSSFColor.BLACK.index);
+
+            CellStyle cellStyle = wb.createCellStyle();
+            cellStyle.setFont(contentFont);
+
+
+            //Now column and row
+            Row headerRow = sheet.createRow(0);
+
+            for (int i = 0; i < columns.length; i++) {
+                headercell = headerRow.createCell(i);
+                headercell.setCellValue(columns[i]);
+                headercell.setCellStyle(headerCellStyle);
+            }
+
+            try {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(itemRow.getDeliverytype());
+                row.createCell(1).setCellValue(itemRow.getTokenno());
+                row.createCell(2).setCellValue(itemRow.getOrderstatus());
+                row.createCell(3).setCellValue(itemRow.getOrderplacedtime());
+                row.createCell(4).setCellValue(itemRow.getSlotdate());
+                row.createCell(5).setCellValue(itemRow.getSlottimerange());
+                row.createCell(6).setCellValue(itemRow.getOrderreadytime());
+                row.createCell(7).setCellValue(itemRow.getOrderdeliveredtime());
+                row.createCell(8).setCellValue(itemRow.getOrderid());
+                row.createCell(9).setCellValue(itemRow.getUseraddress());
+                row.createCell(10).setCellValue(itemRow.getUsermobile());
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+            sheet.setColumnWidth(0, (10 * 200));
+            sheet.setColumnWidth(1, (10 * 200));
+
+
+            if (rowNum == ordersList.size()-1) {
+//                Toast.makeText(getApplicationContext(),+ordersList.size(),Toast.LENGTH_LONG).show();
+
+                GenerateExcelSheet();
+            }
+
+
+        }
+
+    }
+
+    private void GenerateExcelSheet() {
+
+
+        File file = new File(getExternalFilesDir(null),"WorkbookdetailwithDataXLLS.xls");
+        FileOutputStream outputStream =null;
+
+        try {
+            outputStream=new FileOutputStream(file);
+            wb.write(outputStream);
+            Adjusting_Widgets_Visibility(false);
+
+            Toast.makeText(getApplicationContext(),"File Created",Toast.LENGTH_LONG).show();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+            Adjusting_Widgets_Visibility(false);
+
+            Toast.makeText(getApplicationContext(),"File can't be  Created",Toast.LENGTH_LONG).show();
+            try {
+                outputStream.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+    }
 
     private void openDatePicker() {
 
@@ -425,11 +566,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
-                        mobile_jsonString =response.toString();
+                      try {
+                          Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                          mobile_jsonString = response.toString();
 
-                        convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
-
+                          convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
+                      }
+                      catch (Exception e){
+                          e.printStackTrace();
+                      }
 
 
 
@@ -438,18 +583,19 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 },new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Toast.makeText(searchOrdersUsingMobileNumber.this,"There is no Order  on "+SlotDate,Toast.LENGTH_LONG).show();
-                ordersList.clear();
-                array_of_orderId.clear();
+                try {
+                    Toast.makeText(searchOrdersUsingMobileNumber.this, "There is no Order  on " + SlotDate, Toast.LENGTH_LONG).show();
+                    ordersList.clear();
+                    array_of_orderId.clear();
 
-                adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
-                Adjusting_Widgets_Visibility(false);
-                appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+//                adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+                    Adjusting_Widgets_Visibility(false);
+                    appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                    Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
-                error.printStackTrace();
+                    error.printStackTrace();
 
                 /*if(orderStatus.equals("TODAYS"+Constants.PREORDER_SLOTNAME)){
 
@@ -467,8 +613,11 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 }
 
                  */
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-
+                    Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         })
         {

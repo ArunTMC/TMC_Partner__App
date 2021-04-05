@@ -46,6 +46,14 @@ import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.pos.printer.PrinterFunctions;
 
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -208,6 +216,7 @@ public class AppSales_Report extends AppCompatActivity {
         }catch(Exception e ){
             e.printStackTrace();;
         }
+
         loadingpanelmask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -247,8 +256,12 @@ public class AppSales_Report extends AppCompatActivity {
 
                         e.printStackTrace();
 
-                    }                }
+                    }                
+                }
                 else{
+                    
+                    
+                  //  AddDatatoExcelSheet();
                     Toast.makeText(AppSales_Report.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
                 }
             }
@@ -280,6 +293,7 @@ public class AppSales_Report extends AppCompatActivity {
 
 
     }
+
 
     private void getPreOrderForSelectedDate(String previousDaydate,String currentDate, String vendorKey) {
 
