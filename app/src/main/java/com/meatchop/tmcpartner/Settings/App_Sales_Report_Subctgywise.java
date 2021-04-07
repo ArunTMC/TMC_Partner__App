@@ -7,10 +7,15 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -28,17 +33,31 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
+import com.pos.printer.PrinterFunctions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,18 +73,15 @@ import java.util.Map;
 import java.util.Objects;
 
 public class App_Sales_Report_Subctgywise extends AppCompatActivity {
-    LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
+    LinearLayout PrintReport_Layout, generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView totalSales_headingText, cashSales, cardSales, upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey;
-    String finalCashAmount_pdf,finalRazorpayAmount_pdf,finalPhonepeAmount_pdf,finalPaytmAmount_pdf;
-    String finalpreorderCashAmount_pdf,finalpreorderRazorpayAmount_pdf,finalpreorderPhonepeAmount_pdf,finalpreorderPaytmAmount_pdf;
+    String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf, finalPaytmAmount_pdf;
+    String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf;
     Adapater_Pos_Sales_Report adapter = new Adapater_Pos_Sales_Report();
-    TextView Phonepe,Razorpay,Paytm, cashOnDelivery;
-    TextView appOrdersCount_textwidget,preorder_cashOnDelivery,preorder_Phonepe,preorder_Razorpay,preorder_paytmSales;
-
-
-
+    TextView Phonepe, Razorpay, Paytm, cashOnDelivery;
+    TextView appOrdersCount_textwidget, preorder_cashOnDelivery, preorder_Phonepe, preorder_Razorpay, preorder_paytmSales;
 
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
@@ -76,45 +92,46 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     public static HashMap<String, Modal_OrderDetails> SubCtgyKey_hashmap = new HashMap();
 
     public static List<String> paymentModeArray;
-    public static HashMap<String, Modal_OrderDetails>  paymentModeHashmap  = new HashMap();;
+    public static HashMap<String, Modal_OrderDetails> paymentModeHashmap = new HashMap();
+    ;
 
     public static List<String> finalBillDetails;
     public static HashMap<String, String> FinalBill_hashmap = new HashMap();
 
 
-
-
     public static List<String> preorder_paymentModeArray;
-    public static HashMap<String, Modal_OrderDetails>  preorder_paymentModeHashmap  = new HashMap();;
+    public static HashMap<String, Modal_OrderDetails> preorder_paymentModeHashmap = new HashMap();
+    ;
 
 
     public static List<String> preorderpaymentMode_DiscountOrderid;
-    public static HashMap<String, Modal_OrderDetails>  preorderpaymentMode_DiscountHashmap  = new HashMap();;
+    public static HashMap<String, Modal_OrderDetails> preorderpaymentMode_DiscountHashmap = new HashMap();
+    ;
 
     public static List<String> array_of_orderId;
 
 
-
-
     public static List<String> paymentMode_DiscountOrderid;
-    public static HashMap<String, Modal_OrderDetails>  paymentMode_DiscountHashmap  = new HashMap();;
+    public static HashMap<String, Modal_OrderDetails> paymentMode_DiscountHashmap = new HashMap();
+    ;
 
     public static List<String> SubCtgywiseTotalArray;
-    public static HashMap<String, String>  SubCtgywiseTotalHashmap  = new HashMap();;
+    public static HashMap<String, String> SubCtgywiseTotalHashmap = new HashMap();
+    ;
 
 
     List<ListData> dataList = new ArrayList<>();
 
     public static List<String> tmcSubCtgykey;
     String portName = "USB";
-    int portSettings=0,totalGstAmount=0;
+    int portSettings = 0, totalGstAmount = 0;
 
-    public static HashMap<String,  List<Modal_OrderDetails>> tmcSubCtgywise_sorted_hashmap = new HashMap();
+    public static HashMap<String, List<Modal_OrderDetails>> tmcSubCtgywise_sorted_hashmap = new HashMap();
     double screenInches;
-    String CurrentDate,PreviousDateString;
+    String CurrentDate, PreviousDateString;
     String DateString;
 
-    double CouponDiscount=0;
+    double CouponDiscount = 0;
     ListView posSalesReport_Listview;
     ScrollView scrollView;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -139,17 +156,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
         cashOnDelivery = findViewById(R.id.cashOnDelivery);
         Razorpay = findViewById(R.id.Razorpay);
-        Paytm  = findViewById(R.id.paytmSales);
-        Phonepe  = findViewById(R.id.Phonepe);
+        Paytm = findViewById(R.id.paytmSales);
+        Phonepe = findViewById(R.id.Phonepe);
         cashSales = findViewById(R.id.cashSales);
         cardSales = findViewById(R.id.cardSales);
-        upiSales  = findViewById(R.id.upiSales);
-        scrollView  = findViewById(R.id.scrollView);
+        upiSales = findViewById(R.id.upiSales);
+        scrollView = findViewById(R.id.scrollView);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
 
         appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
         preorder_cashOnDelivery = findViewById(R.id.preorder_cashOnDelivery);
-        preorder_Phonepe  = findViewById(R.id.preorder_Phonepe);
+        preorder_Phonepe = findViewById(R.id.preorder_Phonepe);
         preorder_Razorpay = findViewById(R.id.preorder_Razorpay);
         preorder_paytmSales = findViewById(R.id.preorder_paytmSales);
 
@@ -158,7 +175,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         Order_Item_List = new ArrayList<>();
         finalBillDetails = new ArrayList<>();
         tmcSubCtgykey = new ArrayList<>();
-        SubCtgyKey_List =new ArrayList<>();
+        SubCtgyKey_List = new ArrayList<>();
         paymentModeArray = new ArrayList<>();
         SubCtgywiseTotalArray = new ArrayList<>();
         paymentMode_DiscountOrderid = new ArrayList<>();
@@ -172,9 +189,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         dateSelector_text.setText(CurrentDate);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+        screenInches = Math.sqrt(x + y);
 
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
@@ -182,7 +199,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
         vendorKey = sharedPreferences.getString("VendorKey", "vendor_1");
         CurrentDate = getDate();
-        DateString= getDate();
+        DateString = getDate();
 
         dateSelector_text.setText(CurrentDate);
 
@@ -199,13 +216,13 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         preorder_paymentModeArray.clear();
         preorderpaymentMode_DiscountOrderid.clear();
         preorderpaymentMode_DiscountHashmap.clear();
-        getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+        getPreOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
         scrollView.fullScroll(View.FOCUS_UP);
 
         PrintReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(screenInches>8){
+                if (screenInches > 8) {
                     try {
                         Thread t = new Thread() {
                             public void run() {
@@ -213,20 +230,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             }
                         };
                         t.start();
-                    }
-                    catch(Exception e ){
-                        Toast.makeText(App_Sales_Report_Subctgywise.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Toast.makeText(App_Sales_Report_Subctgywise.this, "Printer is Not Working !! Please Restart the Device", Toast.LENGTH_SHORT).show();
 
                         e.printStackTrace();
 
-                    }                }
-                else{
-                    Toast.makeText(App_Sales_Report_Subctgywise.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(App_Sales_Report_Subctgywise.this, "Cant Find a Printer", Toast.LENGTH_LONG).show();
                 }
             }
         });
-
-
 
 
         generateReport_Layout.setOnClickListener(new View.OnClickListener() {
@@ -243,20 +257,19 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     Adjusting_Widgets_Visibility(true);
 
                     try {
-                       // exportReport();
-                    }catch (Exception e ){
+                        exportReport();
+                    } catch (Exception e) {
                         e.printStackTrace();
-                    }                }
+                    }
+                }
             }
         });
-
-
 
 
         loadingpanelmask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(App_Sales_Report_Subctgywise.this,"Loading.... Please Wait",Toast.LENGTH_SHORT).show();
+                Toast.makeText(App_Sales_Report_Subctgywise.this, "Loading.... Please Wait", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -266,23 +279,517 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             public void onClick(View view) {
 
 
-
                 try {
                     openDatePicker();
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
 
 
-
-
     }
 
     private void printReport() {
+            try {
+                Printer_POJO_Class[] PrinterSuCtgyNameArray = new Printer_POJO_Class[tmcSubCtgykey.size()];
+
+                Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[Order_Item_List.size()];
+                for (int subCtgyCount = 0; subCtgyCount < tmcSubCtgykey.size(); subCtgyCount++) {
+                    int i_value = 0;
+
+                    String SubCtgyName, menuid, SubCtgykey;
+                    SubCtgykey = tmcSubCtgykey.get(subCtgyCount).toString();
+                    Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
+                    SubCtgyName = subCtgyName_object.getTmcsubctgyname();
+                    for (int i = 0; i < Order_Item_List.size(); i++) {
+                        menuid = Order_Item_List.get(i);
+                        Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
+
+
+                        String subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
+                        if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
+                            String itemName = (itemRow.getItemname());
+                            int indexofbraces = itemName.indexOf("(");
+                            if (indexofbraces >= 0) {
+                                itemName = (itemName.substring(0, indexofbraces));
+
+                            }
+                            if (itemName.length() > 19) {
+                                itemName = (itemName.substring(0, 19));
+                                itemName = itemName + "..";
+                            }
+
+
+                            String KilogramString = "", Quantity = "", TMCprice = "";
+                            try {
+                                KilogramString = itemRow.getWeightingrams();
+                                if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg"))) && (!(KilogramString.equals("0")))) {
+                                    Quantity = KilogramString + "g";
+                                } else {
+                                    Quantity = itemRow.getQuantity() + "pc";
+                                }
+                            } catch (Exception e) {
+                                Quantity = itemRow.getQuantity() + "pc";
+
+                            }
+                            try {
+                                TMCprice = String.valueOf(itemRow.getTmcprice());
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                TMCprice = "";
+                            }
+                            try {
+                                itemName = itemName + "-" + Quantity;
+                                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(SubCtgyName, itemName, TMCprice);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+
+                    PrinterSuCtgyNameArray[subCtgyCount] = new Printer_POJO_Class(SubCtgyName);
+
+
+                }
+
+                PrinterFunctions.PortDiscovery(portName, portSettings);
+
+                PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+                Log.i("tag", "The Meat Chop");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : POS SALES REPORT" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
+                Log.i("tag", "Printer log" + CurrentDate);
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                for (int subCtgyKeyCount = 0; subCtgyKeyCount < PrinterSuCtgyNameArray.length; subCtgyKeyCount++) {
+                    String subCtgyname = PrinterSuCtgyNameArray[subCtgyKeyCount].getSubCtgyName();
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 1, 0, 1, 0, 1, 0, 30, 0, "" + "\n" + subCtgyname + "\n" + "\n");
+                    Log.i("tag", "Printer log subCtgyname " + subCtgyname);
+
+
+                    for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        String itemName_weight, itemPrice, subCtgyNameFromItemDesp;
+                        subCtgyNameFromItemDesp = Printer_POJO_ClassArray[i].getSubCtgyName();
+                        if (subCtgyNameFromItemDesp.equals(subCtgyname)) {
+                            itemName_weight = Printer_POJO_ClassArray[i].getItemname_report();
+
+                            itemPrice = "Rs. " + Printer_POJO_ClassArray[i].getTmcprice_report();
+                            if (itemName_weight.length() == 10) {
+                                //16spaces
+                                itemName_weight = itemName_weight + "                ";
+                            }
+                            if (itemName_weight.length() == 11) {
+                                //15spaces
+                                itemName_weight = itemName_weight + "               ";
+                            }
+                            if (itemName_weight.length() == 12) {
+                                //14spaces
+                                itemName_weight = itemName_weight + "              ";
+                            }
+                            if (itemName_weight.length() == 13) {
+                                //13spaces
+                                itemName_weight = itemName_weight + "             ";
+                            }
+                            if (itemName_weight.length() == 14) {
+                                //12spaces
+                                itemName_weight = itemName_weight + "            ";
+                            }
+                            if (itemName_weight.length() == 15) {
+                                //11spaces
+                                itemName_weight = itemName_weight + "           ";
+                            }
+                            if (itemName_weight.length() == 16) {
+                                //10spaces
+                                itemName_weight = itemName_weight + "          ";
+                            }
+                            if (itemName_weight.length() == 17) {
+                                //9spaces
+                                itemName_weight = itemName_weight + "         ";
+                            }
+                            if (itemName_weight.length() == 18) {
+                                //8spaces
+                                itemName_weight = itemName_weight + "        ";
+                            }
+                            if (itemName_weight.length() == 19) {
+                                //7spaces
+                                itemName_weight = itemName_weight + "       ";
+                            }
+                            if (itemName_weight.length() == 20) {
+                                //6spaces
+                                itemName_weight = itemName_weight + "      ";
+                            }
+                            if (itemName_weight.length() == 21) {
+                                //5spaces
+                                itemName_weight = itemName_weight + "     ";
+                            }
+                            if (itemName_weight.length() == 22) {
+                                //4spaces
+                                itemName_weight = itemName_weight + "    ";
+                            }
+                            if (itemName_weight.length() == 23) {
+                                //3spaces
+                                itemName_weight = itemName_weight + "   ";
+                            }
+                            if (itemName_weight.length() == 24) {
+                                //2spaces
+                                itemName_weight = itemName_weight + "  ";
+                            }
+                            if (itemName_weight.length() == 25) {
+                                //1spaces
+                                itemName_weight = itemName_weight + " ";
+                            }
+                            if (itemName_weight.length() == 26) {
+                                //0spaces
+                                itemName_weight = itemName_weight + "";
+                            }
+                            if (itemName_weight.length() == 27) {
+                                //0spaces
+                                itemName_weight = itemName_weight + "";
+                            }
+                            if (itemName_weight.length() == 28) {
+                                //0spaces
+                                itemName_weight = itemName_weight + "";
+                            }
+                            if (itemName_weight.length() == 29) {
+                                //0spaces
+                                itemName_weight = itemName_weight + "";
+                            }
+                            if (itemName_weight.length() == 30) {
+                                //0spaces
+                                itemName_weight = itemName_weight + "";
+                            }
+
+
+                            if (itemPrice.length() == 8) {
+                                //4spaces
+                                itemPrice = "    " + itemPrice;
+                            }
+                            if (itemPrice.length() == 9) {
+                                //3spaces
+                                itemPrice = "   " + itemPrice;
+                            }
+                            if (itemPrice.length() == 10) {
+                                //2spaces
+                                itemPrice = "  " + itemPrice;
+                            }
+                            if (itemPrice.length() == 11) {
+                                //1spaces
+                                itemPrice = " " + itemPrice;
+                            }
+                            if (itemPrice.length() == 12) {
+                                //0spaces
+                                itemPrice = "" + itemPrice;
+                            }
+                            if (itemPrice.length() == 13) {
+                                //0spaces
+                                itemPrice = "" + itemPrice;
+                            }
+                            if (itemPrice.length() == 14) {
+                                //no space
+                                itemPrice = "" + itemPrice;
+                            }
+
+
+                            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 48, itemName_weight);
+                            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice + "\n");
+                            Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
+
+                        }
+                    }
+                    //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
+
+
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "Final Sales Break Up" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                for (int i = 0; i < paymentModeArray.size(); i++) {
+                    String Payment_Amount = "", key = paymentModeArray.get(i);
+                    Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
+                    Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+                    double payment_AmountDouble = 0;
+
+                    DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+                    if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalCashAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Cash Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Card Sales";
+
+                        }
+                    }
+                    if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalRazorpayAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Razorpay Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Razorpay Sales";
+
+                        }
+
+                    }
+                    if ((key.toUpperCase().equals(Constants.PAYTM))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalPaytmAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Paytm Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Paytm Sales";
+
+                        }
+
+
+                    }
+                    if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalPhonepeAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Phonepe Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Phonepe Sales";
+
+                        }
+
+                    }
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                    Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+
+                }
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "PREORDER SALES" + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
+                    String Payment_Amount = "", key = preorder_paymentModeArray.get(i);
+                    Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
+                    Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                    double payment_AmountDouble = 0;
+                    DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+                    if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalpreorderCashAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Cash Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Card Sales";
+
+                        }
+                    }
+                    if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalpreorderRazorpayAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Razorpay Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Razorpay Sales";
+
+                        }
+
+                    }
+                    if ((key.toUpperCase().equals(Constants.PAYTM))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalpreorderPaytmAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Paytm Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Paytm Sales";
+
+                        }
+
+
+                    }
+                    if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalpreorderPhonepeAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Phonepe Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Phonepe Sales";
+
+                        }
+
+                    }
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                    Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+
+                }
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                for (int j = 0; j < finalBillDetails.size(); j++) {
+                    String key = finalBillDetails.get(j);
+                    String value = FinalBill_hashmap.get(key);
+                    value = "RS : " + value;
+                    if (Objects.requireNonNull(value).length() == 7) {
+                        //7spaces
+                        value = key + "       " + value;
+                    }
+                    if (value.length() == 8) {
+                        //6spaces
+                        value = key + "      " + value;
+                    }
+                    if (value.length() == 9) {
+                        //5spaces
+                        value = key + "     " + value;
+                    }
+                    if (value.length() == 10) {
+                        //4spaces
+                        value = key + "    " + value;
+                    }
+                    if (value.length() == 11) {
+                        //3spaces
+                        value = key + "   " + value;
+                    }
+                    if (value.length() == 12) {
+                        //2spaces
+                        value = key + "  " + value;
+                    }
+                    if (value.length() == 13) {
+                        //1spaces
+                        value = key + " " + value;
+                    }
+                    if (value.length() == 14) {
+                        //no space
+                        value = key + "" + value;
+                    }
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value + "\n");
+                    Log.i("tag", "Printer log key key" + value);
+
+
+                }
+
+                PrinterFunctions.PreformCut(portName, portSettings, 1);
+            }
+
+          catch(Exception e ){
+            e.printStackTrace();
+            Toast.makeText(App_Sales_Report_Subctgywise.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+        }
     }
+
+
+
+
+
+
+
 
 
     private void openDatePicker() {
@@ -2864,5 +3371,603 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
         return CurrentDate;
     }
+
+    public void exportReport() {
+        if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) {
+            return;
+        }
+        String extstoragedir = Environment.getExternalStorageDirectory().toString();
+        String state = Environment.getExternalStorageState();
+        Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
+        File fol = new File(extstoragedir, "testpdf");
+        File folder = new File(fol, "pdf");
+        if (!folder.exists()) {
+            boolean bool = folder.mkdirs();
+        }
+        try {
+            String filename = "POS Sales Report_" + System.currentTimeMillis() + ".pdf";
+            final File file = new File(folder, filename);
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+
+            // if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            // document = new PdfDocument(new PdfWriter("MyFirstInvoice.pdf"));
+
+            Document layoutDocument = new Document();
+            PdfWriter.getInstance(layoutDocument, fOut);
+            layoutDocument.open();
+
+            addVendorDetails(layoutDocument);
+            addItemRows(layoutDocument);
+
+            layoutDocument.close();
+            Adjusting_Widgets_Visibility(false);
+
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+
+            Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
+            pdfViewIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+            pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            pdfViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            Intent intent = Intent.createChooser(pdfViewIntent, "Open File");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            try {
+                Adjusting_Widgets_Visibility(false);
+
+                startActivityForResult(intent, OPENPDF_ACTIVITY_REQUEST_CODE);
+            } catch (ActivityNotFoundException e) {
+                // Instruct the user to install a PDF reader here, or something
+            }
+            // }
+        } catch (IOException e) {
+            Adjusting_Widgets_Visibility(false);
+
+            Log.i("error", e.getLocalizedMessage());
+        } catch (Exception ex) {
+            Adjusting_Widgets_Visibility(false);
+
+            ex.printStackTrace();
+        }
+    }
+
+    private void addVendorDetails(Document layoutDocument) {
+        try {
+            SharedPreferences sharedPreferences
+                    = getSharedPreferences("VendorLoginData",
+                    MODE_PRIVATE);
+
+            String Vendorname = sharedPreferences.getString("VendorName", "");
+
+            com.itextpdf.text.Font boldFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 22, Font.BOLDITALIC);
+            com.itextpdf.text.Paragraph titlepara = new com.itextpdf.text.Paragraph("POS SALES REPORT");
+            titlepara.setSpacingBefore(5);
+            titlepara.setFont(boldFont);
+            titlepara.setAlignment(Element.ALIGN_CENTER);
+            layoutDocument.add(titlepara);
+
+            String vendorname = "Vendor: " + Vendorname;
+            com.itextpdf.text.Paragraph vendorpara = new com.itextpdf.text.Paragraph(vendorname);
+            vendorpara.setSpacingBefore(20);
+            vendorpara.setAlignment(Element.ALIGN_LEFT);
+            layoutDocument.add(vendorpara);
+
+            com.itextpdf.text.Paragraph datepara = new com.itextpdf.text.Paragraph("Date: " + DateString);
+            datepara.setAlignment(Element.ALIGN_LEFT);
+            datepara.setSpacingBefore(5);
+            datepara.setSpacingAfter(20);
+            layoutDocument.add(datepara);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void addItemRows(Document layoutDocument) {
+        try {
+            String rsunit = "Rs.";
+            PdfPTable table = new PdfPTable(3);
+            table.setWidthPercentage(100);
+
+            PdfPCell itemcell = new PdfPCell(new Phrase("Item"));
+            itemcell.setBorder(Rectangle.NO_BORDER);
+            itemcell.setBackgroundColor(BaseColor.GREEN);
+            itemcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            itemcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            itemcell.setPaddingLeft(10);
+            itemcell.setFixedHeight(30);
+            table.addCell(itemcell);
+
+            PdfPCell qtycell = new PdfPCell(new Phrase("Quantity"));
+            qtycell.setBorder(Rectangle.NO_BORDER);
+            qtycell.setBackgroundColor(BaseColor.GREEN);
+            qtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            qtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            qtycell.setFixedHeight(30);
+            table.addCell(qtycell);
+
+            PdfPCell pricecell = new PdfPCell(new Phrase("Price"));
+            pricecell.setBorder(Rectangle.NO_BORDER);
+            pricecell.setBackgroundColor(BaseColor.GREEN);
+            pricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            pricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            pricecell.setFixedHeight(30);
+            pricecell.setPaddingRight(10);
+            table.addCell(pricecell);
+
+
+            PdfPCell itemnamecell = null;
+            PdfPCell itemqtycell = null;
+            PdfPCell itempricecell = null;
+         /*   for (int i = 0; i < Order_Item_List.size(); i++) {
+                String key = Order_Item_List.get(i);
+
+                Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
+                String itemName = itemRow.getItemname();
+                Log.i(Constants.TAG, "size" + (itemRow.getItemname()));
+
+
+          */
+
+            for (String SubCtgykey : tmcSubCtgykey) {
+                int i_value = 0;
+
+                String SubCtgyName, menuid;
+                Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
+                SubCtgyName = subCtgyName_object.getTmcsubctgyname();
+                for (int j = 0; j < Order_Item_List.size(); j++) {
+                    menuid = Order_Item_List.get(j);
+                    Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
+                    String itemName = itemRow.getItemname();
+                    String subCtgyKey_fromHashmap = "";
+                    try {
+                        subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                    if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
+
+                        if (i_value != 0) {
+
+                            itemnamecell = new PdfPCell(new Phrase((itemName)));
+                            itemnamecell.setBorder(Rectangle.BOTTOM);
+                            itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itemnamecell.setMinimumHeight(30);
+                            itemnamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            itemnamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itemnamecell.setPaddingLeft(10);
+                            String KilogramString = "", Quantity = "";
+                            try {
+                                KilogramString = itemRow.getWeightingrams();
+                                //   if(KilogramString != null &&(!KilogramString.equals(""))&&(!(KilogramString.equals("0.00Kg")))&&(!(KilogramString.equals("0")))) {
+                                Quantity = KilogramString;
+                                   /* }
+                                    else{
+                                        Quantity =  itemRow.getQuantity();
+                                    }
+
+                                    */
+                            } catch (Exception e) {
+                                //  Quantity =  itemRow.getQuantity();
+                                e.printStackTrace();
+                            }
+                            if (!Quantity.equals("0.0") && (!Quantity.equals("0.00")) && (!Quantity.equals("0"))) {
+
+                                double weightinGrams = Double.parseDouble(Quantity);
+                                double kilogram = weightinGrams * 0.001;
+                                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+                                Quantity = String.valueOf(decimalFormat.format(kilogram) + "Kg");
+
+
+                            } else {
+                                Quantity = itemRow.getQuantity() + "Pc";
+
+                            }
+
+                            itemqtycell = new PdfPCell(new Phrase("" + Quantity));
+                            itemqtycell.setBorder(Rectangle.BOTTOM);
+                            itemqtycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itemqtycell.setMinimumHeight(30);
+                            itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                            itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                            String totalval = rsunit + String.format(itemRow.getTmcprice());
+                            itempricecell = new PdfPCell(new Phrase(totalval));
+                            itempricecell.setBorder(Rectangle.BOTTOM);
+                            itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itempricecell.setMinimumHeight(30);
+                            itempricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            itempricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itempricecell.setPaddingRight(10);
+
+
+                            table.addCell(itemnamecell);
+                            table.addCell(itemqtycell);
+                            table.addCell(itempricecell);
+                        }
+                    }
+                    if (i_value == 0) {
+                        i_value = 1;
+                        j = j - 1;
+                        PdfPCell SubCtgycell = new PdfPCell(new Phrase(SubCtgyName));
+                        SubCtgycell.setBorder(Rectangle.NO_BORDER);
+                        SubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        SubCtgycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        SubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        SubCtgycell.setPaddingLeft(10);
+                        SubCtgycell.setFixedHeight(30);
+                        table.addCell(SubCtgycell);
+
+                        PdfPCell qtySubCtgycell = new PdfPCell(new Phrase(""));
+                        qtySubCtgycell.setBorder(Rectangle.NO_BORDER);
+                        qtySubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        qtySubCtgycell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        qtySubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        qtySubCtgycell.setFixedHeight(30);
+                        table.addCell(qtySubCtgycell);
+
+
+                        PdfPCell priceSubCtgycell = new PdfPCell(new Phrase(""));
+                        priceSubCtgycell.setBorder(Rectangle.NO_BORDER);
+                        priceSubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        priceSubCtgycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        priceSubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        priceSubCtgycell.setFixedHeight(30);
+                        priceSubCtgycell.setPaddingRight(10);
+                        table.addCell(priceSubCtgycell);
+
+
+                    }
+                }
+            }
+
+
+            //}
+            layoutDocument.add(table);
+
+
+            PdfPTable tablePaymentModetitle = new PdfPTable(1);
+            tablePaymentModetitle.setWidthPercentage(100);
+            tablePaymentModetitle.setSpacingBefore(20);
+
+
+            PdfPCell paymentModertitle;
+            paymentModertitle = new PdfPCell(new Phrase("EXPRESS DELIVERY"));
+            paymentModertitle.setBorder(Rectangle.NO_BORDER);
+            paymentModertitle.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            paymentModertitle.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModertitle.setFixedHeight(25);
+            paymentModertitle.setPaddingRight(20);
+            tablePaymentModetitle.addCell(paymentModertitle);
+            layoutDocument.add(tablePaymentModetitle);
+
+
+
+
+
+            PdfPTable tablePaymentMode = new PdfPTable(4);
+            tablePaymentMode.setWidthPercentage(100);
+            tablePaymentMode.setSpacingBefore(20);
+            PdfPCell paymentModeemptycell;
+            PdfPCell paymentModeemptycellone;
+            PdfPCell paymentModeitemkeycell;
+
+            PdfPCell paymentModeitemValueCell;
+            String Payment_Amount = "0";
+            double payment_AmountDouble =0.0;
+            for (int i = 0; i < paymentModeArray.size(); i++) {
+                String key = paymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
+                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+
+
+
+                if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalCashAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalRazorpayAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Razorpay Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Razorpay Sales";
+
+                    }
+
+                }
+                if ((key.toUpperCase().equals(Constants.PAYTM))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalPaytmAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Paytm Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Paytm Sales";
+
+                    }
+
+
+                }
+                if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalPhonepeAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Phonepe Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Phonepe Sales";
+
+                    }
+
+                }
+
+
+
+                paymentModeemptycell = new PdfPCell(new Phrase(""));
+                paymentModeemptycell.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycell.setFixedHeight(25);
+                tablePaymentMode.addCell(paymentModeemptycell);
+
+                paymentModeemptycellone = new PdfPCell(new Phrase(""));
+                paymentModeemptycellone.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycellone.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycellone.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycellone.setFixedHeight(25);
+                tablePaymentMode.addCell(paymentModeemptycellone);
+
+                paymentModeitemkeycell = new PdfPCell(new Phrase(key+" :  "));
+                paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemkeycell.setMinimumHeight(25);
+                paymentModeitemkeycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemkeycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablePaymentMode.addCell(paymentModeitemkeycell);
+
+
+                paymentModeitemValueCell = new PdfPCell(new Phrase("Rs. " + Payment_Amount));
+                paymentModeitemValueCell.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemValueCell.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemValueCell.setMinimumHeight(25);
+                paymentModeitemValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemValueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeitemValueCell.setPaddingRight(10);
+                tablePaymentMode.addCell(paymentModeitemValueCell);
+
+
+
+
+
+            }
+            layoutDocument.add(tablePaymentMode);
+
+
+            PdfPTable tablepreorderPaymentModetitle = new PdfPTable(1);
+            tablepreorderPaymentModetitle.setWidthPercentage(100);
+            tablepreorderPaymentModetitle.setSpacingBefore(20);
+
+
+            PdfPCell paymentModePreordertitle;
+            paymentModePreordertitle = new PdfPCell(new Phrase("PREORDER"));
+            paymentModePreordertitle.setBorder(Rectangle.NO_BORDER);
+            paymentModePreordertitle.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            paymentModePreordertitle.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModePreordertitle.setFixedHeight(25);
+            paymentModePreordertitle.setPaddingRight(20);
+
+            tablepreorderPaymentModetitle.addCell(paymentModePreordertitle);
+            layoutDocument.add(tablepreorderPaymentModetitle);
+
+
+
+
+            PdfPTable tablepreorderPaymentMode = new PdfPTable(4);
+            tablepreorderPaymentMode.setWidthPercentage(100);
+            tablepreorderPaymentMode.setSpacingBefore(20);
+            PdfPCell PreorderpaymentModeemptycell;
+            PdfPCell PreorderpaymentModeitemkeycell;
+            PdfPCell PreorderpaymentModeemptycellone;
+
+            PdfPCell PreorderpaymentModeitemValueCell;
+
+            String preorder_Payment_Amount = "0";
+
+
+            for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
+                String key = preorder_paymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
+                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+
+
+                if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderCashAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals(Constants.RAZORPAY))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderRazorpayAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Razorpay Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Razorpay Sales";
+
+                    }
+
+                }
+                if ((key.toUpperCase().equals(Constants.PAYTM))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderPaytmAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Paytm Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Paytm Sales";
+
+                    }
+
+
+                }
+                if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderPhonepeAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Phonepe Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Phonepe Sales";
+
+                    }
+
+                }
+
+
+                PreorderpaymentModeemptycell = new PdfPCell(new Phrase(""));
+                PreorderpaymentModeemptycell.setBorder(Rectangle.NO_BORDER);
+                PreorderpaymentModeemptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                PreorderpaymentModeemptycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PreorderpaymentModeemptycell.setFixedHeight(25);
+                tablepreorderPaymentMode.addCell(PreorderpaymentModeemptycell);
+
+                PreorderpaymentModeemptycellone = new PdfPCell(new Phrase(""));
+                PreorderpaymentModeemptycellone.setBorder(Rectangle.NO_BORDER);
+                PreorderpaymentModeemptycellone.setHorizontalAlignment(Element.ALIGN_LEFT);
+                PreorderpaymentModeemptycellone.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PreorderpaymentModeemptycellone.setFixedHeight(25);
+                tablepreorderPaymentMode.addCell(PreorderpaymentModeemptycellone);
+
+                PreorderpaymentModeitemkeycell = new PdfPCell(new Phrase(key+" :  "));
+                PreorderpaymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                PreorderpaymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
+                PreorderpaymentModeitemkeycell.setMinimumHeight(25);
+                PreorderpaymentModeitemkeycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                PreorderpaymentModeitemkeycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablepreorderPaymentMode.addCell(PreorderpaymentModeitemkeycell);
+
+
+                PreorderpaymentModeitemValueCell = new PdfPCell(new Phrase("Rs. " + Payment_Amount));
+                PreorderpaymentModeitemValueCell.setBorderColor(BaseColor.LIGHT_GRAY);
+                PreorderpaymentModeitemValueCell.setBorder(Rectangle.NO_BORDER);
+                PreorderpaymentModeitemValueCell.setMinimumHeight(25);
+                PreorderpaymentModeitemValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                PreorderpaymentModeitemValueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PreorderpaymentModeitemValueCell.setPaddingRight(10);
+                tablepreorderPaymentMode.addCell(PreorderpaymentModeitemValueCell);
+
+
+
+
+
+            }
+            layoutDocument.add(tablepreorderPaymentMode);
+
+
+
+            PdfPTable table1 = new PdfPTable(4);
+            table1.setWidthPercentage(100);
+            table1.setSpacingBefore(20);
+            PdfPCell emptycell;
+            PdfPCell emptycellone;
+            PdfPCell emptycelltwo;
+            for (int i = 0; i < finalBillDetails.size(); i++) {
+                String key = finalBillDetails.get(i);
+                String value = FinalBill_hashmap.get(key);
+                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+                Log.d("ExportReportActivity", "itemTotalRowsList value " + value);
+
+
+                emptycell = new PdfPCell(new Phrase(""));
+                emptycell.setBorder(Rectangle.NO_BORDER);
+                emptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                emptycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                emptycell.setFixedHeight(25);
+                table1.addCell(emptycell);
+
+                emptycellone = new PdfPCell(new Phrase(""));
+                emptycellone.setBorder(Rectangle.NO_BORDER);
+                emptycellone.setHorizontalAlignment(Element.ALIGN_LEFT);
+                emptycellone.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                emptycellone.setFixedHeight(25);
+                table1.addCell(emptycellone);
+
+                itemqtycell = new PdfPCell(new Phrase(key + ":   "));
+                itemqtycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                itemqtycell.setBorder(Rectangle.NO_BORDER);
+                itemqtycell.setMinimumHeight(25);
+                itemqtycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                table1.addCell(itemqtycell);
+                itempricecell = new PdfPCell(new Phrase("Rs. " + value));
+                itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                itempricecell.setBorder(Rectangle.NO_BORDER);
+                itempricecell.setMinimumHeight(25);
+                itempricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                itempricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                itempricecell.setPaddingRight(10);
+                table1.addCell(itempricecell);
+
+
+            }
+            layoutDocument.add(table1);
+
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
 
 }

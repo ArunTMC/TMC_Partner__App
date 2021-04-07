@@ -497,8 +497,28 @@ public class Pos_ManageOrderFragment extends Fragment {
                 showOrderInstructionText(false);
                 isSearchButtonClicked =false;
 
-                getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
-                saveCurrentStatusInSharedPref(orderStatus);
+                sorted_OrdersList.clear();
+
+
+                if(selected_OrderType == 0 ){
+
+                    getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
+
+                }
+                if(selected_OrderType == 1 ) {
+                     String PreviousDaydate = getDatewithNameofthePreviousDay();
+
+                    String Todaysdate = getDatewithNameoftheDay();
+                    getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+                }
+                if(selected_OrderType == 2 ) {
+                    String Todaysdate = getDatewithNameoftheDay();
+
+                    String TomorrowsDate = getTomorrowsDate();
+                    getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
+                }
+
+               saveCurrentStatusInSharedPref(orderStatus);
 
                 //displayorderDetailsinListview(orderStatus,ordersList,slottypefromSpinner);
 
