@@ -460,8 +460,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
-                notifyDataSetChanged();
             }
         });
         cancel_button_widget.setOnClickListener(new View.OnClickListener() {
@@ -472,7 +470,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 changestatusto =Constants.CANCELLED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 Log.i("Tag","0"+OrderKey);
-                ChangeStatusOftheOrder(changestatusto,OrderKey, Currenttime);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
@@ -504,7 +501,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
             }
         });
 
