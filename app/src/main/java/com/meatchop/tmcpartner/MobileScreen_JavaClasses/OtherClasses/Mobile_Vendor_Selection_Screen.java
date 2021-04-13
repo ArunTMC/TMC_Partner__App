@@ -23,6 +23,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
@@ -47,7 +51,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private String mobile_vendorAddressline1,mobile_vendorAddressline2,mobile_vendorPincode;
     private String mobile_vendorStatus, mobile_vendorFssaino;
     private String mobile_vendorLatitude;
-    private String mobile_vendorLongitude;
+    private String mobile_vendorLongitude,newtoken="";
     private ArrayAdapter mobile_spinner_aAdapter;
     private Button mobile_vendorDetails_verification_button;
     private  Boolean mobile_vendorLogin = false;
@@ -98,7 +102,16 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
         */
 
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                if (task.isSuccessful()) {
+                    newtoken = task.getResult().getToken();
+                    Log.i("tag","token:  "+newtoken);
+                }
 
+            }
+        });
 
 
 
@@ -112,7 +125,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                     loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
             //       String UserRole = checkAdminUserorNot(mobile_userPhoneNumber);
 
-                    VerifyPasswordandGetVendorKey();
+                    VerifyPasswordandGetVendorKey(newtoken);
                 }
                 else {
                     loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
@@ -240,7 +253,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         return data;
     }
 
-    private void VerifyPasswordandGetVendorKey() {
+    private void VerifyPasswordandGetVendorKey(String newtoken) {
         // String params = "?name="+VendorName+"&vendor_password="+password;
         //final String APIwithParameters = VerifyPasswordApi+params;
 
@@ -256,7 +269,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
                     if(responseBody.equals("Success")){
                         mobile_vendorLogin = true;
-                        UploadVendorUserDetailsInDB();
+                        UploadVendorUserDetailsInDB(newtoken);
 
                     }
                     else {
@@ -314,13 +327,14 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
 
 
-    private void UploadVendorUserDetailsInDB() {
+    private void UploadVendorUserDetailsInDB(String newtoken) {
 
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("vendorkey", mobile_vendorKey);
             jsonObject.put("Status", "Login");
             jsonObject.put("mobileno", mobile_userPhoneNumber);
+            jsonObject.put("fcmtoken", newtoken);
             jsonObject.put("appname", "TMCPARTNERAPP");
 
 

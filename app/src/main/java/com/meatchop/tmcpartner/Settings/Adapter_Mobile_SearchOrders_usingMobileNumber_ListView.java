@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,9 +26,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
@@ -37,7 +39,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,9 +50,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
     String portName = "USB";
     int portSettings=0,totalGstAmount=0;
     List<Modal_ManageOrders_Pojo_Class> ordersList;
-    String changestatusto,orderStatus,OrderKey;
-    String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay;
+    String changestatusto,orderStatus,OrderKey,deliveryPersonName="";
+    String Currenttime,MenuItems,orderStatusFromArray,FormattedTime,CurrentDate,formattedDate,CurrentDay,deliverytype;
     public searchOrdersUsingMobileNumber mobile_manageOrders1;
+    public static  BottomSheetDialog bottomSheetDialog;
+    String deliverypartnerName;
 
 
     public Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, searchOrdersUsingMobileNumber mobile_manageOrders1, String orderStatus) {
@@ -95,9 +98,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         final TextView slottime_text_widget = listViewItem.findViewById(R.id.slottime_text_widget);
         final TextView slotdate_text_widget = listViewItem.findViewById(R.id.slotdate_text_widget);
         final TextView orderstatus_text_widget = listViewItem.findViewById(R.id.orderstatus_text_widget);
+        final Button ready_for_pickup_delivered_button_widget = listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
+        final TextView deliveryType_text_widget = listViewItem.findViewById(R.id.deliveryType_text_widget);
 
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
+        final LinearLayout deliveryTypeLayout =listViewItem.findViewById(R.id.deliveryTypeLayout);
 
         final LinearLayout new_Order_Linearlayout =listViewItem.findViewById(R.id.new_Order_Linearlayout);
         final LinearLayout confirming_order_Linearlayout =listViewItem.findViewById(R.id.confirming_order_Linearlayout);
@@ -110,16 +116,38 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         final Button cancel_button_widget = listViewItem.findViewById(R.id.cancel_button_widget);
 
         final Button ready_for_pickup_button_widget = listViewItem.findViewById(R.id.ready_for_pickup_button_widget);
-        final Button pending_order_print_button_widget = listViewItem.findViewById(R.id.pending_order_print_button_widget);
+        final Button pending_order_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.pending_order_assignDeliveryperson_button_widget);
 
-        final Button other_print_button_widget = listViewItem.findViewById(R.id.other_print_button_widget);
-        final Button cancelled_print_button_widget = listViewItem.findViewById(R.id.cancelled_print_button_widget);
+        final Button other_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.other_assignDeliveryperson_button_widget);
+        final Button cancelled_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.cancelled_assignDeliveryperson_button_widget);
         final Button generateTokenNo_button_widget = listViewItem.findViewById(R.id.generateTokenNo_button_widget);
         final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
         ordertypeLayout.setVisibility(View.GONE);
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
         Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.sorted_OrdersList.get(pos));
         orderStatus = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
+
+
+        try {
+            deliverytype =  modal_manageOrders_pojo_class.getDeliverytype().toUpperCase();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        try{
+            deliveryPersonName = modal_manageOrders_pojo_class.getDeliveryPartnerName().toString();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            deliveryPersonName="";
+        }
+
+
+
         if(orderStatus.equals(Constants.NEW_ORDER_STATUS)){
             ordertype_text_widget.setVisibility(View.VISIBLE);
             new_Order_Linearlayout.setVisibility(View.VISIBLE);
@@ -161,18 +189,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         }
         if(orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)){
 
-            /*Log.i("Tag","ItemName   "+String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()));
-
-            if(String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()).equals("Cancelled")) {
-                new_Order_Linearlayout.setVisibility(View.GONE);
-                ready_Order_Linearlayout.setVisibility(View.GONE);
-                confirming_order_Linearlayout.setVisibility(View.GONE);
-                cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
-            }
-
-             */
-
-            //if(String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()).equals("Delivered")){
 
             ordertype_text_widget.setVisibility(View.VISIBLE);
 
@@ -180,41 +196,15 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             ready_Order_Linearlayout.setVisibility(View.VISIBLE);
             confirming_order_Linearlayout.setVisibility(View.GONE);
             cancelled_Order_Linearlayout.setVisibility(View.GONE);
-            //  }
+
 
         }
-        String orderStatusFromArray = modal_manageOrders_pojo_class.getOrderstatus();
-
-            try {
-            if (orderStatusFromArray.equals(Constants.CONFIRMED_ORDER_STATUS)) {
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
-            pending_order_print_button_widget.setVisibility(View.VISIBLE);
-            } else {
-            pending_order_print_button_widget.setVisibility(View.GONE);
-
-            }
-            }
-            }
-            catch (Exception e){
+        try {
+             orderStatusFromArray = modal_manageOrders_pojo_class.getOrderstatus();
+        }
+        catch (Exception e){
             e.printStackTrace();
-            }
-
-
-            try {
-            if (orderStatusFromArray.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
-            other_print_button_widget.setVisibility(View.VISIBLE);
-            } else {
-            other_print_button_widget.setVisibility(View.GONE);
-
-            }
-            }
-
-            }catch (Exception e){
-            e.printStackTrace();
-            }
+        }
 
 
 
@@ -314,6 +304,87 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             e.printStackTrace();
         }
 
+        try {
+            if (orderStatusFromArray.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                    pending_order_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
+                    generateTokenNo_button_widget.setVisibility(View.GONE);
+
+                } else {
+                    pending_order_assignDeliveryperson_button_widget.setVisibility(View.GONE);
+                    generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+
+                }
+            }
+            else{
+                try {
+                    String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                    if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                        other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
+                        transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+
+                    } else {
+                        other_assignDeliveryperson_button_widget.setVisibility(View.GONE);
+                        transit_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+
+
+                    }
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            if((deliveryPersonName.length()>0)&&(!deliveryPersonName.equals(""))){
+                pending_order_assignDeliveryperson_button_widget.setText("Change Delivery Partner");
+                other_assignDeliveryperson_button_widget.setText("Change Delivery Partner");
+                cancelled_assignDeliveryperson_button_widget.setText("Change Delivery Partner");
+
+            }
+            else{
+                pending_order_assignDeliveryperson_button_widget.setText("Assign Delivery Partner");
+                other_assignDeliveryperson_button_widget.setText("Assign Delivery Partner");
+                cancelled_assignDeliveryperson_button_widget.setText("Assign Delivery Partner");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
+            ready_for_pickup_button_widget.setVisibility(View.GONE);
+            if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+
+                ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+            }
+            else{
+                ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+                ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            }
+            slotName_text_widget.setVisibility(View.GONE);
+            deliveryType_text_widget.setVisibility(View.VISIBLE);
+            try {
+                deliveryType_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverytype()));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        else{
+            ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+            ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            slotName_text_widget.setVisibility(View.VISIBLE);
+            deliveryTypeLayout.setVisibility(View.GONE);
+        }
+
 
 
         try {
@@ -396,7 +467,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             public void onClick(View view) {
                 Intent intent = new Intent (mContext, MobileScreen_OrderDetails1.class);
                 Bundle bundle = new Bundle();
-                bundle.putString("From","MobileSearchOrders");
+                bundle.putString("From","AppOrdersList");
 
                 bundle.putParcelable("data", modal_manageOrders_pojo_class);
                 intent.putExtras(bundle);
@@ -478,7 +549,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
             }
         });
 
@@ -507,64 +577,97 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
 
-        pending_order_print_button_widget.setOnClickListener(new View.OnClickListener() {
+        pending_order_assignDeliveryperson_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
-                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
-                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
-                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
-                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
-                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
-                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
-                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
+                try {
+                    deliverypartnerName = modal_manageOrders_pojo_class.getDeliveryPartnerName();
+                    if(deliverypartnerName.equals(null)){
+                        deliverypartnerName="null";
 
-                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
-                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    deliverypartnerName="null";
+                }
+                if(!deliverypartnerName.equals("null")) {
+                    String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    showBottomSheetDialog(Orderkey,deliverypartnerName);
 
-                selectedBillDetails.add(selectedOrder);
-             //   printRecipt("totaltaxAmount","payableAmount","OrderID",selectedBillDetails);
+                }
+                else{
+                    String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    showBottomSheetDialog(Orderkey,"null");
+
+                }
+
+
+
             }
 
         });
-        other_print_button_widget.setOnClickListener(new View.OnClickListener() {
+        other_assignDeliveryperson_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
-                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
-                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
-                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
-                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
-                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
-                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
-                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
+                try {
+                    deliverypartnerName = modal_manageOrders_pojo_class.getDeliveryPartnerName();
+                    if(deliverypartnerName.equals(null)){
+                        deliverypartnerName="null";
 
-                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
-                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    deliverypartnerName="null";
+                }
+                if(!deliverypartnerName.equals("null")) {
+                    String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    showBottomSheetDialog(Orderkey,deliverypartnerName);
 
-                selectedBillDetails.add(selectedOrder);
-              //  printRecipt("totaltaxAmount","payableAmount","OrderID",selectedBillDetails);
+                }
+                else{
+                    String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    showBottomSheetDialog(Orderkey,"null");
+
+                }
+
+
+
+
+
 
             }
         });
 
-        cancelled_print_button_widget.setOnClickListener(new View.OnClickListener() {
+        cancelled_assignDeliveryperson_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
-                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
-                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
-                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
-                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
-                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
-                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
-                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
+                try {
+                    deliverypartnerName = modal_manageOrders_pojo_class.getDeliveryPartnerName();
+                    if(deliverypartnerName.equals(null)){
+                        deliverypartnerName="null";
 
-                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
-                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    deliverypartnerName="null";
+                }
+                if(!deliverypartnerName.equals("null")) {
+                    String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    showBottomSheetDialog(Orderkey,deliverypartnerName);
 
-                selectedBillDetails.add(selectedOrder);
-              //  printRecipt("totaltaxAmount","payableAmount","OrderID",selectedBillDetails);
+                }
+                else{
+                    String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    showBottomSheetDialog(Orderkey,"null");
+
+                }
+
+
+
+
 
             }
         });
@@ -577,7 +680,19 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         return  listViewItem ;
 
     }
+    private void showBottomSheetDialog(String orderkey, String deliverypartnerName) {
 
+          bottomSheetDialog = new BottomSheetDialog(mContext);
+        bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
+
+        ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
+
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, mobile_manageOrders1.deliveryPartnerList,orderkey,"AppOrdersList", deliverypartnerName);
+
+        ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+        bottomSheetDialog.show();
+    }
 
     private void generatingTokenNo(String vendorkey, String orderDetailsKey) {
 

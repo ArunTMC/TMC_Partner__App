@@ -21,11 +21,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_orderDetails_itemDesp_listview1;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_AssignDeliveryPartner1;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
@@ -35,12 +35,14 @@ import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class searchScreen_OrderDetails extends AppCompatActivity {
-    TextView mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
+    public static TextView mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
             ,deliveryPartner_name_widget,deliveryPartner_mobileNo_widget,delivery_type_widget,slotTime_Range_textwidget;
     TextView distancebetweencustomer_vendortext_widget,discounttext_widget,addresstype_textwidget,AddressLine2_textwidget,landmark_textwidget,AddressLine1_textwidget,total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
     Button changeDeliveryPartner;
@@ -51,9 +53,12 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
     String coupondiscountAmount,useraddreskey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,
-            deliverypartnerKey,deliverypartnerName,deliveryPartnerNumber;
+            deliverypartnerKey,deliverypartnerName,deliveryPartnerNumber,DeliveryPersonList;
     double screenInches;
     LinearLayout showlocation,deliveryPartnerAssignLayout;
+    public static BottomSheetDialog bottomSheetDialog;
+
+     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,14 +92,27 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         mobileNotext_widget = findViewById(R.id.mobileNotext_widget);
         showlocation = findViewById(R.id.showlocation);
         deliveryPartnerAssignLayout = findViewById(R.id.deliveryPartnerAssignLayout);
-
-        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-
-
-        vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
-        vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
+        deliveryPartnerList = new ArrayList<>();
+        try {
+            SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
 
+            vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
+            vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
+            DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
+
+            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         OrderdItems_desp = new ArrayList<>();
 
 
@@ -246,11 +264,15 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(searchScreen_OrderDetails.this, MobileScreen_AssignDeliveryPartner1.class);
+              /*  Intent intent = new Intent(searchScreen_OrderDetails.this, MobileScreen_AssignDeliveryPartner1.class);
                 intent.putExtra("TrackingTableKey",modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
                 intent.putExtra("IntentFrom","AppOrdersList");
 
                 startActivityForResult(intent,1234);
+
+               */
+                String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                showBottomSheetDialog(Orderkey);
 
 
 
@@ -327,6 +349,76 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
         Helper.getListViewSize(itemDesp_listview, screenInches);
 
+    }
+
+    private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
+        if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
+            try {
+                String ordertype = "#", orderid = "";
+                //  sorted_OrdersList.clear();
+
+                //converting jsonSTRING into array
+                JSONObject jsonObject = new JSONObject(deliveryPersonList);
+                JSONArray JArray = jsonObject.getJSONArray("content");
+                Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                int i1 = 0;
+                int arrayLength = JArray.length();
+                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                for (; i1 < (arrayLength); i1++) {
+
+                    try {
+                        JSONObject json = JArray.getJSONObject(i1);
+                        AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                        assignDeliveryPartner_pojoClass.deliveryPartnerStatus = String.valueOf(json.get("status"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerKey = String.valueOf(json.get("key"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("mobileno"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerName = String.valueOf(json.get("name"));
+
+                        // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+
+                        //  Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey,IntentFrom);
+
+                        //deliveryPartners_list_widget.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                }
+
+                try{
+                    Collections.sort(deliveryPartnerList, new Comparator<AssignDeliveryPartner_PojoClass>() {
+                        public int compare(AssignDeliveryPartner_PojoClass result1, AssignDeliveryPartner_PojoClass result2) {
+                            return result1.getDeliveryPartnerName().compareTo(result2.getDeliveryPartnerName());
+                        }
+                    });
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+    private void showBottomSheetDialog(String orderkey) {
+
+        bottomSheetDialog = new BottomSheetDialog(searchScreen_OrderDetails.this);
+        bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
+
+        ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
+
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(searchScreen_OrderDetails.this, deliveryPartnerList,orderkey,"AppOrdersListOrderDetails", deliverypartnerName);
+
+        ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+        bottomSheetDialog.show();
     }
 
     private void CalculateDistanceviaApi(TextView distancebetweencustomer_vendortext_widget) throws JSONException {

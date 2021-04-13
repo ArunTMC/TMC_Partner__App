@@ -30,8 +30,12 @@ import com.android.volley.Request;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.itextpdf.text.ExceptionConverter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_AutoCompleteManageOrdersItem;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_AssignDeliveryPartner1;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
@@ -76,14 +80,19 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     String mobile_jsonString,orderStatus,vendorKey,vendorname,TAG = "Tag";
     String DateString,PreviousDateString;
     ListView manageOrders_ListView;
-    LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel,newOrdersSync_Layout;
+   public LinearLayout PrintReport_Layout;
+    public LinearLayout generateReport_Layout;
+    public LinearLayout dateSelectorLayout;
+    public static LinearLayout loadingpanelmask;
+    public static LinearLayout loadingPanel;
+    public LinearLayout newOrdersSync_Layout;
     DatePickerDialog datepicker;
 
     List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
     List<Modal_ManageOrders_Pojo_Class> ordersList;
     public static String completemenuItem;
     public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
-    String Currenttime,FormattedTime,CurrentDate,formattedDate,CurrentDay,TodaysDate;
+    String Currenttime,FormattedTime,CurrentDate,formattedDate,CurrentDay,TodaysDate,DeliveryPersonList;
     List<String> slotnameChoosingSpinnerData;
     Spinner slotType_Spinner;
     int slottypefromSpinner=0;
@@ -103,15 +112,30 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     String portName = "USB";
     int portSettings=0,totalGstAmount=0;
     public static List<String> array_of_orderId;
+    List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_orders_using_mobile_number);
-        SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-        vendorKey = (shared.getString("VendorKey", "vendor_1"));
-        vendorname = (shared.getString("VendorName", ""));
+        deliveryPartnerList = new ArrayList<>();
 
-        DisplayMetrics dm = new DisplayMetrics();
+        try{
+           SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+           vendorKey = (shared.getString("VendorKey", "vendor_1"));
+           vendorname = (shared.getString("VendorName", ""));
+
+           SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
+           DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
+
+           ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+       }
+       catch (Exception e){
+           e.printStackTrace();
+       }
+
+         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
         double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
@@ -148,31 +172,39 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         mobile_delivered_Order_widget = findViewById(R.id.delivered_Order_widget);
 
         newOrdersSync_Layout = findViewById(R.id.newOrdersSync_Layout);
-        TodaysDate = getDate();
-        PreviousDateString = getDatewithNameofthePreviousDay();
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         mobile_nameofFacility_Textview.setText(vendorname);
+        try{
+            TodaysDate = getDate();
+            PreviousDateString = getDatewithNameofthePreviousDay();
+            //Now we are creating sheet
 
-        Adjusting_Widgets_Visibility(true);
-        String Todaysdate = getDatewithNameoftheDay();
-        PreviousDateString = getDatewithNameofthePreviousDay();
+            Adjusting_Widgets_Visibility(true);
+            String Todaysdate = getDatewithNameoftheDay();
+            PreviousDateString = getDatewithNameofthePreviousDay();
 
-        isSearchButtonClicked = false;
-        orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
-        ordersList.clear();
-        sorted_OrdersList.clear();
-        array_of_orderId.clear();
+            isSearchButtonClicked = false;
+            orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
+            ordersList.clear();
+            sorted_OrdersList.clear();
+            array_of_orderId.clear();
 
-        dateSelector_text.setText(Todaysdate);
-        getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
+            dateSelector_text.setText(Todaysdate);
+            getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
         try{
             wb=new HSSFWorkbook();
             //Now we are creating sheet
 
-            sheet = wb.createSheet("RazorpayDetails");
+            sheet = wb.createSheet("ApporderDetails");
 
 
         }
@@ -373,6 +405,60 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
+    }
+
+    private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
+        if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
+            try {
+                String ordertype = "#", orderid = "";
+              //  sorted_OrdersList.clear();
+
+                //converting jsonSTRING into array
+                JSONObject jsonObject = new JSONObject(deliveryPersonList);
+                JSONArray JArray = jsonObject.getJSONArray("content");
+                Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                int i1 = 0;
+                int arrayLength = JArray.length();
+                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                for (; i1 < (arrayLength); i1++) {
+
+                    try {
+                        JSONObject json = JArray.getJSONObject(i1);
+                        AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                        assignDeliveryPartner_pojoClass.deliveryPartnerStatus = String.valueOf(json.get("status"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerKey = String.valueOf(json.get("key"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("mobileno"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerName = String.valueOf(json.get("name"));
+
+                        // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+
+                        //  Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey,IntentFrom);
+
+                        //deliveryPartners_list_widget.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+
+                }
+                try{
+                    Collections.sort(deliveryPartnerList, new Comparator<AssignDeliveryPartner_PojoClass>() {
+                        public int compare(AssignDeliveryPartner_PojoClass result1, AssignDeliveryPartner_PojoClass result2) {
+                            return result1.getDeliveryPartnerName().compareTo(result2.getDeliveryPartnerName());
+                        }
+                    });
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

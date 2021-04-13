@@ -1,10 +1,11 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.TMCPartnerApp" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/TMC_Orange</item>
         <item name="colorPrimaryDark">@color/TMC_Primary_Text_Color</item>
         <item name="colorAccent">@color/TMC_Orange_border</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q"> false </item>
     </style>
 
 </resources>

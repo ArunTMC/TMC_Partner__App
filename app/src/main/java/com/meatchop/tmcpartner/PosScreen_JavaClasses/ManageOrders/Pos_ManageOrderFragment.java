@@ -505,18 +505,25 @@ public class Pos_ManageOrderFragment extends Fragment {
                     getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
 
                 }
+
+
                 if(selected_OrderType == 1 ) {
                      String PreviousDaydate = getDatewithNameofthePreviousDay();
 
                     String Todaysdate = getDatewithNameoftheDay();
                     getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
                 }
+
+
+
+                
                 if(selected_OrderType == 2 ) {
                     String Todaysdate = getDatewithNameoftheDay();
 
                     String TomorrowsDate = getTomorrowsDate();
                     getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
                 }
+
 
                saveCurrentStatusInSharedPref(orderStatus);
 

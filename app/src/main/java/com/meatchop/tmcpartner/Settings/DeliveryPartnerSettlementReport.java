@@ -42,6 +42,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.R;
 
@@ -58,6 +59,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -109,7 +112,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
     double CouponDiscount=0,Gst_from_array =0 ,CouponDiscount_preorder = 0;
 
-    private JSONArray result;
+    private JSONArray result = new JSONArray();
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
     String deliveryPartnerStatus,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerName;
@@ -1089,13 +1092,13 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                     // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                                     deliveryPartner_arrayList.add(modal_deliveryPartner);
 
+
+
                                     Adapter_DeliveryPartnerList_Spinner adapter_deliveryPartnerList_spinner= new Adapter_DeliveryPartnerList_Spinner(DeliveryPartnerSettlementReport.this,deliveryPartner_arrayList,DeliveryPartnerSettlementReport.this);
 
                                     deliveryPartnerSelectionSpinner.setAdapter(adapter_deliveryPartnerList_spinner);
+
                                     Adjusting_Widgets_Visibility(false);
-
-
-
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -1109,6 +1112,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                             }
+
 
 
 
@@ -2629,7 +2633,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         String CurrentDay = day.format(c);
 
         SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
+        String CurrentDate = df.format(c);
 
 
 

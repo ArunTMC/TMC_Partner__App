@@ -109,6 +109,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         final TextView ordertype_text_widget = listViewItem.findViewById(R.id.ordertype_text);
         final TextView orderPlacedtime_text_widget = listViewItem.findViewById(R.id.orderPlacedtime_text_widget);
         final TextView orderstatus_text_widget = listViewItem.findViewById(R.id.orderstatus_text_widget);
+        final TextView ready_for_pickup_delivered_button_widget =listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
+        final TextView deliverytype_text_widget =listViewItem.findViewById(R.id.deliverytype_text_widget);
 
         final Button generateTokenNo_text_widget = listViewItem.findViewById(R.id.generateTokenNo);
         final Button readyorder_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo);
@@ -226,28 +228,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType().toUpperCase()));
         orderPlacedtime_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderplacedtime()));
         slotName_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getSlotname()));
-        if(orderStatusFromArray.equals(Constants.CONFIRMED_ORDER_STATUS)){
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
-                pending_order_print_button_widget.setVisibility(View.VISIBLE);
-            }
-            else{
-                pending_order_print_button_widget.setVisibility(View.GONE);
-
-            }
-        }
-
-
-        if(orderStatusFromArray.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
-                other_print_button_widget.setVisibility(View.VISIBLE);
-            }
-            else{
-                other_print_button_widget.setVisibility(View.GONE);
-
-            }
-        }
+        String orderType = String.format(" %s", modal_manageOrders_pojo_class.getOrderType().toUpperCase());
 
         try {
             orderstatus_text_widget.setVisibility(View.VISIBLE);
@@ -327,9 +308,63 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
 
 
+        if(orderStatusFromArray.equals(Constants.CONFIRMED_ORDER_STATUS)){
+            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
+                pending_order_print_button_widget.setVisibility(View.VISIBLE);
+                generateTokenNo_text_widget.setVisibility(View.GONE);
+
+            }
+            else{
+                pending_order_print_button_widget.setVisibility(View.GONE);
+                generateTokenNo_text_widget.setVisibility(View.VISIBLE);
+
+            }
+        }
+
+
+        if(orderStatusFromArray.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
+            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
+                other_print_button_widget.setVisibility(View.VISIBLE);
+                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
+
+            }
+            else{
+                other_print_button_widget.setVisibility(View.GONE);
+                readyorder_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+
+            }
+        }
 
         //deliveryPartner_name_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliveryPartnerName()));
         //  deliveryPartner_mobileNo_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo()));
+        if (orderType.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
+            ready_for_pickup_button_widget.setVisibility(View.GONE);
+            if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+
+                ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+            }
+            else{
+                ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+                ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            }
+            slotName_text_widget.setVisibility(View.GONE);
+            deliverytype_text_widget.setVisibility(View.VISIBLE);
+            try {
+                deliverytype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverytype()));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        else{
+            ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+            ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            slotName_text_widget.setVisibility(View.VISIBLE);
+            deliverytype_text_widget.setVisibility(View.GONE);
+        }
+
 
         try {
             JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();
@@ -494,8 +529,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                searchOrdersUsingMobileNumber.sorted_OrdersList.remove(pos);
-                notifyDataSetChanged();
+
             }
         });
         cancel_button_widget.setOnClickListener(new View.OnClickListener() {
@@ -580,8 +614,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                searchOrdersUsingMobileNumber.sorted_OrdersList.remove(pos);
-                notifyDataSetChanged();
+
             }
         });
 

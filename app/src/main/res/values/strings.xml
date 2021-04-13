@@ -53,6 +53,7 @@
     <string name="OrderId_text">Order Id : </string>
     <string name="Slot_Name">Slot Name : </string>
     <string name="Generate_Token_No_text">Generate Token no </string>
+    <string name="Regenerate_Token_No_text">Regenerate Token no </string>
 
     <string name="Token_No_text">Token no : </string>
     <string name="Mobile_text">Mobile : </string>
@@ -125,7 +126,7 @@
     <string name="Change_Menu_Item_Status">Change Menu Availability Status </string>
     <string name="Change_Menu_Item_Visibility_in_Tv">Change Menu Visibility In TV </string>
     <string name="Change_Menu_Item_Price">Change Menu Item Price</string>
-    <string name="Version_No">Version No : 1.3.5 </string>
+    <string name="Version_No">Version No : 1.3.6 </string>
     <string name="AppOrdersList">App Orders List </string>
 
     <string name="ItemStatus">Item Status </string>

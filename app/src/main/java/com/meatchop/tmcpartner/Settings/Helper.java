@@ -24,7 +24,7 @@ public class Helper {
           //          Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
                 }
                 else {
-                    totalHeight += listItem.getMeasuredHeight() + 30;
+                    totalHeight += listItem.getMeasuredHeight() ;
               //      Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
                 }
             }

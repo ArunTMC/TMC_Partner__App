@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
         android:allowBackup="true"
@@ -35,6 +36,25 @@
         <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_OtpVerificationActivity" />
         <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard" />
         <activity android:name=".PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_name" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/TMC_Orange" />
+
+
+        <meta-data
+            android:name="com.google.firebandroid.permission.SYSTEM_ALERT_WINDOWase.messaging.default_notification_channel_id"
+            android:value="fetchh-channel"/>
+
+
+        <service android:name=".MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <service
             android:name=".PosScreen_JavaClasses.ManageOrders.TrackingOrderDetails_ServiceClass"

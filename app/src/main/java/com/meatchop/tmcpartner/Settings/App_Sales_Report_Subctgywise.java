@@ -216,6 +216,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         preorder_paymentModeArray.clear();
         preorderpaymentMode_DiscountOrderid.clear();
         preorderpaymentMode_DiscountHashmap.clear();
+        SubCtgywiseTotalArray.clear();
+        SubCtgywiseTotalHashmap.clear();
         getPreOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
         scrollView.fullScroll(View.FOCUS_UP);
 
@@ -823,6 +825,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             paymentMode_DiscountOrderid.clear();
                             preorder_paymentModeHashmap.clear();
                             preorder_paymentModeArray.clear();
+                            SubCtgywiseTotalArray.clear();
+                            SubCtgywiseTotalHashmap.clear();
+                            tmcSubCtgykey.clear();
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
@@ -978,10 +983,13 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         paymentModeHashmap.clear();
         paymentModeArray.clear();
         array_of_orderId.clear();
+        SubCtgywiseTotalArray.clear();
+        SubCtgywiseTotalHashmap.clear();
         preorder_paymentModeArray.clear();
         preorder_paymentModeHashmap.clear();
         paymentMode_DiscountHashmap.clear();
         paymentMode_DiscountOrderid.clear();
+        dataList.clear();
         preorderpaymentMode_DiscountOrderid.clear();
         preorderpaymentMode_DiscountHashmap.clear();
         //    addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
@@ -1240,10 +1248,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         paymentModeArray.clear();
                                         paymentMode_DiscountHashmap.clear();
                                         paymentMode_DiscountOrderid.clear();
+                                        SubCtgywiseTotalArray.clear();
+                                        SubCtgywiseTotalHashmap.clear();
                                         CouponDiscount = 0;
                                         Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
-
+                                        tmcSubCtgykey.clear();
                                         addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
                                         Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
                                         Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
@@ -1264,9 +1274,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             paymentModeArray.clear();
                                             paymentMode_DiscountHashmap.clear();
                                             paymentMode_DiscountOrderid.clear();
+                                            SubCtgywiseTotalArray.clear();
+                                            SubCtgywiseTotalHashmap.clear();
                                             CouponDiscount = 0;
                                             Helper.getListViewSize(posSalesReport_Listview, screenInches);
-
+                                            tmcSubCtgykey.clear();
 
                                             addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
 
@@ -1287,10 +1299,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 paymentModeArray.clear();
                                 paymentMode_DiscountHashmap.clear();
                                 paymentMode_DiscountOrderid.clear();
+                                SubCtgywiseTotalArray.clear();
+                                SubCtgywiseTotalHashmap.clear();
                                 CouponDiscount = 0;
                                 Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
-
+                                tmcSubCtgykey.clear();
                                 addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
 
                                 getOrderForSelectedDate(DateString, vendorKey);
@@ -1311,8 +1325,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             paymentMode_DiscountHashmap.clear();
                             paymentMode_DiscountOrderid.clear();
                             CouponDiscount=0;
+                            SubCtgywiseTotalArray.clear();
+                            SubCtgywiseTotalHashmap.clear();
+                            dataList.clear();
+                            tmcSubCtgykey.clear();
                             Helper.getListViewSize(posSalesReport_Listview, screenInches);
-
 
                             addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
                             getOrderForSelectedDate(DateString, vendorKey);
@@ -1376,7 +1393,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 paymentModeArray.clear();
                 paymentMode_DiscountHashmap.clear();
                 paymentMode_DiscountOrderid.clear();
-
+                SubCtgywiseTotalArray.clear();
+                SubCtgywiseTotalHashmap.clear();
+                dataList.clear();
                 Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
                 getOrderForSelectedDate(DateString, vendorKey);
@@ -1477,6 +1496,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                     }
                                     if ((ordertype.equals(Constants.APPORDER))) {
+                                        if(slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))||(slotname.equals(""))){
 
                                         if(json.has("deliverytype"))
                                         {
@@ -1512,7 +1532,6 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
-                                        if(slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))||(slotname.equals(""))){
 
 
                                             if (json.has("paymentmode")) {
@@ -1747,7 +1766,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             preorder_paymentModeHashmap.clear();
                             paymentMode_DiscountHashmap.clear();
                             paymentMode_DiscountOrderid.clear();
+                            SubCtgywiseTotalArray.clear();
+                            SubCtgywiseTotalHashmap.clear();
                             CouponDiscount=0;
+                            tmcSubCtgykey.clear();
+
+
+
+                            dataList.clear();
                             Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
 
@@ -1790,11 +1816,15 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     FinalBill_hashmap.clear();
                     paymentModeHashmap.clear();
                     paymentModeArray.clear();
+                    SubCtgywiseTotalArray.clear();
+                    SubCtgywiseTotalHashmap.clear();
                     preorder_paymentModeArray.clear();
+                    tmcSubCtgykey.clear();
                     preorder_paymentModeHashmap.clear();
                     paymentMode_DiscountHashmap.clear();
                     paymentMode_DiscountOrderid.clear();
                     CouponDiscount=0;
+                    dataList.clear();
                     Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
 

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:padding="15dp"
+    android:padding="10dp"
 
-    android:layout_marginStart="10dp"
-    android:layout_marginEnd="10dp"
+
     android:orientation="horizontal"
     android:layout_height="wrap_content">
     <LinearLayout
@@ -20,33 +19,71 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="55dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="5dp"
-                android:textSize="15sp"
-                android:textColor="@color/TMC_Primary_Text_Color"
+                android:layout_marginEnd="1dp"
                 android:fontFamily="@font/open_sans_bold"
-                android:text="@string/CustomerName" />
+                android:gravity="left"
+                android:text="Name"
+                android:visibility="gone"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/deliveryPartner_name_widget"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="4.7"
-                android:textSize="15sp"
-                android:gravity="right"
-                android:layout_marginEnd="10dp"
-                android:textColor="@color/TMC_Primary_Text_Color"
 
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="1dp"
+                android:textSize="15sp"
+                android:text="Rajendran Swiggy"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:fontFamily="@font/open_sans_bold" />
+
+            <TextView
+                android:layout_width="75dp"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginStart="10dp"
+                android:gravity="right"
+                android:visibility="gone"
+
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:text="@string/Mobile_Number"
                 android:fontFamily="@font/open_sans_bold"
-                android:text="" />
+                />
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:gravity="left"
+                android:layout_weight="1"
+
+                android:layout_marginStart="3dp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:text="+919597580128"
+                android:id="@+id/deliveryPartner_mobileNo_widget"
+                android:fontFamily="@font/open_sans_bold"
+                />
+            <Button
+                android:id="@+id/assignPartner_widget"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/button_background"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Assign"
+                android:textAllCaps="false"
+                android:textColor="@color/TMC_White"
+                android:textSize="15sp" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-
+            android:visibility="gone"
             android:orientation="horizontal">
 
     <LinearLayout
@@ -77,7 +114,6 @@
                 android:text="@string/Mobile_text" />
 
             <TextView
-                android:id="@+id/deliveryPartner_mobileNo_widget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.2"
@@ -140,16 +176,7 @@
         >
 
 
-        <Button
-            android:id="@+id/assignPartner_widget"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/button_background"
-            android:fontFamily="@font/open_sans_bold"
-            android:text="@string/AssignPartner"
-            android:textAllCaps="false"
-            android:textColor="@color/TMC_White"
-            android:textSize="15sp" />
+
     </LinearLayout>
         </LinearLayout>
     </LinearLayout>

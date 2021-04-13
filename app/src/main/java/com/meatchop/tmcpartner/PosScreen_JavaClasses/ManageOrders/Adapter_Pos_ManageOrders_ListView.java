@@ -217,10 +217,16 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         String orderType = String.format(" %s", modal_manageOrders_pojo_class.getOrderType().toUpperCase());
 
 
-        if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
             if (orderType.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
                 ready_for_pickup_button_widget.setVisibility(View.GONE);
-                ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+                if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+
+                    ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+                }
+                else{
+                    ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+                    ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+                }
                 slotName_text_widget.setVisibility(View.GONE);
                 deliverytype_text_widget.setVisibility(View.VISIBLE);
                 try {
@@ -236,13 +242,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 slotName_text_widget.setVisibility(View.VISIBLE);
                 deliverytype_text_widget.setVisibility(View.GONE);
             }
-        }
-        else{
-            ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
-            ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
-            slotName_text_widget.setVisibility(View.VISIBLE);
-            deliverytype_text_widget.setVisibility(View.GONE);
-        }
+
+
 
 
 

@@ -277,8 +277,8 @@ double screenInches;
                 mContext.startActivity(i);
             }
         });
-
-
+//AppSales_Report
+//App_Sales_Report_Subctgywise
 
 
         PosSalesReport.setOnClickListener(new OnClickListener() {

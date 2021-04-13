@@ -213,8 +213,8 @@ public class Pos_LoginScreen extends AppCompatActivity {
                                               if (userStateDetails.getUserState() == UserState.SIGNED_IN) {
                                                   Log.i("Tag", "Intialization Success 2");
 
-                                                  // loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
-                                                  //  loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
+                                                   loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
+                                                    loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
                                                   SharedPreferences sh
                                                           = getSharedPreferences("VendorLoginData",
                                                           MODE_PRIVATE);

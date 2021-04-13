@@ -413,7 +413,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:visibility="gone"
+                            android:visibility="visible"
                             android:orientation="horizontal"
                             android:id="@+id/confirming_order_Linearlayout"
                             >
@@ -460,7 +460,7 @@
 
 
                             <Button
-                                android:id="@+id/pending_order_print_button_widget"
+                                android:id="@+id/pending_order_assignDeliveryperson_button_widget"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
@@ -474,7 +474,7 @@
 
                                 android:textColor="@color/TMC_White"
                                 android:background="@drawable/button_background"
-                                android:text="@string/Print_text" />
+                                android:text="@string/AssignPartner" />
                             <Button
                                 android:id="@+id/generateTokenNo_button_widget"
                                 android:layout_width="wrap_content"
@@ -511,14 +511,14 @@
                                 android:layout_weight="1"
                                 android:layout_marginStart="5dp"
                                 android:layout_marginEnd="5dp"
-                                android:id="@+id/other_print_button_widget"
+                                android:id="@+id/other_assignDeliveryperson_button_widget"
                                 android:fontFamily="@font/open_sans_bold"
                                 android:textAllCaps="false"
                                 android:textSize="15sp"
 
                                 android:textColor="@color/TMC_White"
                                 android:background="@drawable/button_background"
-                                android:text="@string/Print_text" />
+                                android:text="@string/AssignPartner" />
 
                             <Button
                                 android:id="@+id/transit_generateTokenNo_button_widget"
@@ -535,7 +535,7 @@
 
                                 android:textColor="@color/TMC_White"
                                 android:background="@drawable/button_background"
-                                android:text="@string/Generate_Token_No_text" />
+                                android:text="@string/Regenerate_Token_No_text" />
 
                         </LinearLayout>
 
@@ -566,7 +566,7 @@
 
 
                             <Button
-                                android:id="@+id/cancelled_print_button_widget"
+                                android:id="@+id/cancelled_assignDeliveryperson_button_widget"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"

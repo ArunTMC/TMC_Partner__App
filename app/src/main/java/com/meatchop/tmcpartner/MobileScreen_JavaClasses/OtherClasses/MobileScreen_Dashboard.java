@@ -2,12 +2,17 @@ package com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,7 +29,10 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
@@ -42,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class MobileScreen_Dashboard extends AppCompatActivity {
@@ -77,6 +86,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
                     vendorKey = (shared.getString("VendorKey", "vendor_1"));
                     completemenuItem = getMenuItemusingStoreId(vendorKey);
+                    getDeliveryPartnerList();
                     getMarinadeMenuItemusingStoreId(vendorKey);
                 }
                 catch (Exception e){
@@ -86,7 +96,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         });
         //
 
-
+   //     goToNotificationSettings();
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
@@ -169,6 +179,120 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
     }
+
+
+
+    public void goToNotificationSettings() {
+
+        String packageName = getPackageName();
+
+        try {
+            Intent intent = new Intent();
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+
+                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName);
+                intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+
+            } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+
+                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra("android.provider.extra.APP_PACKAGE", packageName);
+
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                intent.putExtra("app_package", packageName);
+                intent.putExtra("app_uid", getApplicationInfo().uid);
+
+            } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.addCategory(Intent.CATEGORY_DEFAULT);
+                intent.setData(Uri.parse("package:" + packageName));
+
+            } else {
+                return;
+            }
+
+            startActivity(intent);
+
+        } catch (Exception e) {
+            // log goes here
+
+        }
+
+    }
+
+    private void getDeliveryPartnerList() {
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorKey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+                            //converting jsonSTRING into array
+                           String DeliveryPersonListString = response.toString();
+                            SharedPreferences sharedPreferences
+                                    = getSharedPreferences("DeliveryPersonList",
+                                    MODE_PRIVATE);
+
+                            SharedPreferences.Editor myEdit
+                                    = sharedPreferences.edit();
+
+
+                            myEdit.putString(
+                                    "DeliveryPersonListString",
+                                    DeliveryPersonListString);
+                            myEdit.apply();
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(MobileScreen_Dashboard.this).add(jsonObjectRequest);
+    }
+
+
+
 
 
     private String getMenuItemusingStoreId(String vendorKey) {
