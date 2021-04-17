@@ -59,6 +59,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 channel.setDescription("Description");
                 channel.setVibrationPattern(new long[]{400, 400});
                 channel.setShowBadge(true);
+
                 channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     channel.setAllowBubbles(true);
@@ -84,12 +85,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                                 .setStyle(bigText)
                                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                                 .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
+                                .setAutoCancel(true)
                                 .setContentIntent(pendingIntent);
 
 
 
 
-
+                notificationBuilder.build().flags |= Notification.FLAG_AUTO_CANCEL;
 
                 notificationManager.notify(0, notificationBuilder.build());
 
@@ -121,12 +123,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                                 .setVibrate(new long[]{400, 400})
                                 .setStyle(bigPictureStyle)
                                 .setPriority(Notification.PRIORITY_MAX)
+                                .setAutoCancel(true)
 
                                 .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
                                 .setContentIntent(pendingIntent);
 
 
 
+                notificationBuilder.build().flags |= Notification.FLAG_AUTO_CANCEL;
 
 
                 notificationManager.notify(0, notificationBuilder.build());

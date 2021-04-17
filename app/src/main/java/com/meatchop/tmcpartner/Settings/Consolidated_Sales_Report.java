@@ -468,7 +468,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                     if(json.has("slotname")) {
                                         try{
                                             slotname =  String.valueOf(json.get("slotname")).toUpperCase();
-                                            modal_orderDetails.ordertype = String.valueOf(json.get("slotname")).toUpperCase();
+                                            modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                             Log.d(Constants.TAG, "OrderType: " + slotname);
 
                                         }catch(Exception e ){
@@ -477,7 +477,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                     }
                                     else {
-                                        modal_orderDetails.ordertype = "There is no slotname";
+                                        modal_orderDetails.slotname = "There is no slotname";
                                         Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
 
                                     }
@@ -528,12 +528,8 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                                     modal_orderDetails.deliverytype = String.valueOf(json.get("deliverytype"));
                                                     deliverytype =  String.valueOf(json.get("deliverytype"));
 
-                                                    if(deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)){
-                                                        slotname =  String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
-                                                        modal_orderDetails.slotname =String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
-                                                        Log.d(Constants.TAG, "deliverytype: " + String.valueOf(json.get("orderid")));
 
-                                                    }
+
                                                     Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
 
                                                 }catch (Exception e){
@@ -918,7 +914,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         if (json.has("slotname")) {
                                             try {
                                                 slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                modal_orderDetails.ordertype = String.valueOf(json.get("slotname")).toUpperCase();
+                                                modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                                 Log.d(Constants.TAG, "OrderType: " + slotname);
 
                                             } catch (Exception e) {
@@ -926,7 +922,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             }
 
                                         } else {
-                                            modal_orderDetails.ordertype = "There is no slotname";
+                                            modal_orderDetails.slotname = "There is no slotname";
                                             Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
 
                                         }

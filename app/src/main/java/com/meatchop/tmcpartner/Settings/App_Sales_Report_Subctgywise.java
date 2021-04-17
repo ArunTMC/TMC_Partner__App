@@ -3471,7 +3471,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             String Vendorname = sharedPreferences.getString("VendorName", "");
 
             com.itextpdf.text.Font boldFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 22, Font.BOLDITALIC);
-            com.itextpdf.text.Paragraph titlepara = new com.itextpdf.text.Paragraph("POS SALES REPORT");
+            com.itextpdf.text.Paragraph titlepara = new com.itextpdf.text.Paragraph("APP SALES REPORT");
             titlepara.setSpacingBefore(5);
             titlepara.setFont(boldFont);
             titlepara.setAlignment(Element.ALIGN_CENTER);
@@ -3495,6 +3495,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
     private void addItemRows(Document layoutDocument) {
         try {
+
             String rsunit = "Rs.";
             PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
@@ -3541,6 +3542,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
             for (String SubCtgykey : tmcSubCtgykey) {
                 int i_value = 0;
+                String subCtgyTotal ="0";
+                double subCtgyTotaldouble = 0;
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                 String SubCtgyName, menuid;
                 Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
@@ -3556,6 +3560,19 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         e.printStackTrace();
 
                     }
+
+                    try{
+                        subCtgyTotal = SubCtgywiseTotalHashmap.get(SubCtgykey);
+                        subCtgyTotaldouble = Double.parseDouble(subCtgyTotal);
+                        subCtgyTotal = decimalFormat.format(subCtgyTotaldouble);
+                    }
+                    catch (Exception e){
+                        subCtgyTotal= "0";
+                        e.printStackTrace();
+                    }
+
+
+
                     if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
 
                         if (i_value != 0) {
@@ -3586,7 +3603,6 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                 double weightinGrams = Double.parseDouble(Quantity);
                                 double kilogram = weightinGrams * 0.001;
-                                DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                 Quantity = String.valueOf(decimalFormat.format(kilogram) + "Kg");
 
 
@@ -3638,7 +3654,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         table.addCell(qtySubCtgycell);
 
 
-                        PdfPCell priceSubCtgycell = new PdfPCell(new Phrase(""));
+                        PdfPCell priceSubCtgycell = new PdfPCell(new Phrase(subCtgyTotal));
                         priceSubCtgycell.setBorder(Rectangle.NO_BORDER);
                         priceSubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                         priceSubCtgycell.setHorizontalAlignment(Element.ALIGN_RIGHT);

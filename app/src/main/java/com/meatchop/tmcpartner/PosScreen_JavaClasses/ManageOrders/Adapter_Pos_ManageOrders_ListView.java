@@ -273,31 +273,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
 
-        try {
-            ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType()));
-            orderType =  modal_manageOrders_pojo_class.getOrderType().toUpperCase();
-            if (orderType.equals(Constants.POSORDER)){
-                tokenNo_label_widget.setVisibility(View.GONE);
-                tokenNo_text_widget.setVisibility(View.GONE);
 
-                slotDate_linearLayout.setVisibility(View.GONE);
-                other_print_button_widget.setVisibility(View.VISIBLE);
-
-                generateTokenNo_text_widget.setVisibility(View.GONE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
-            }
-            else{
-                tokenNo_label_widget.setVisibility(View.VISIBLE);
-                tokenNo_text_widget.setVisibility(View.VISIBLE);
-                slotDate_linearLayout.setVisibility(View.VISIBLE);
-                generateTokenNo_text_widget.setVisibility(View.VISIBLE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
-
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
 
 
 
@@ -388,7 +364,35 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
         }
 
+        try {
+            ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType()));
+            orderType = modal_manageOrders_pojo_class.getOrderType().toUpperCase();
+            if(orderStatusfromArray.equals(Constants.DELIVERED_ORDER_STATUS)){
 
+                if (orderType.equals(Constants.POSORDER)) {
+                tokenNo_label_widget.setVisibility(View.GONE);
+                tokenNo_text_widget.setVisibility(View.GONE);
+
+                slotDate_linearLayout.setVisibility(View.GONE);
+                other_print_button_widget.setVisibility(View.VISIBLE);
+                    changeDeliveryPartner.setVisibility(View.GONE);
+                generateTokenNo_text_widget.setVisibility(View.GONE);
+                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
+            } else {
+                tokenNo_label_widget.setVisibility(View.VISIBLE);
+                tokenNo_text_widget.setVisibility(View.VISIBLE);
+                slotDate_linearLayout.setVisibility(View.VISIBLE);
+                generateTokenNo_text_widget.setVisibility(View.GONE);
+                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
+                    changeDeliveryPartner.setVisibility(View.VISIBLE);
+                    other_print_button_widget.setVisibility(View.VISIBLE);
+
+                }
+        }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
         try {
             JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();

@@ -1423,12 +1423,7 @@ public class AppSales_Report extends AppCompatActivity {
                                                 modal_orderDetails.deliverytype = String.valueOf(json.get("deliverytype"));
                                                 deliverytype =  String.valueOf(json.get("deliverytype"));
 
-                                                if(deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)){
-                                                    slotname =  String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
-                                                    modal_orderDetails.slotname =String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
-                                                    Log.d(Constants.TAG, "deliverytype: " + String.valueOf(json.get("orderid")));
 
-                                                }
                                                 Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
 
                                             }catch (Exception e){

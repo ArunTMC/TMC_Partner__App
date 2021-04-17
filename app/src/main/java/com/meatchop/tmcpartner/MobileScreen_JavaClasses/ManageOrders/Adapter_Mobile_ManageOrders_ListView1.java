@@ -176,18 +176,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         }
         if(orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)){
 
-            /*Log.i("Tag","ItemName   "+String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()));
-
-            if(String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()).equals("Cancelled")) {
-                new_Order_Linearlayout.setVisibility(View.GONE);
-                ready_Order_Linearlayout.setVisibility(View.GONE);
-                confirming_order_Linearlayout.setVisibility(View.GONE);
-                cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
-            }
-
-             */
-
-            //if(String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()).equals("Delivered")){
 
             ordertype_text_widget.setVisibility(View.VISIBLE);
 
@@ -216,33 +204,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             e.printStackTrace();
         }
 
-
-
-
-        try {
-            ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType()));
-            ordertype =  modal_manageOrders_pojo_class.getOrderType().toUpperCase();
-            if (ordertype.equals(Constants.POSORDER)){
-                tokenNoLayout.setVisibility(View.GONE);
-                slotTimeLayout.setVisibility(View.GONE);
-                slotDateLayout.setVisibility(View.GONE);
-                other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
-
-                generateTokenNo_button_widget.setVisibility(View.GONE);
-                transit_generateTokenNo_button_widget.setVisibility(View.GONE);
-            }
-            else{
-                tokenNoLayout.setVisibility(View.VISIBLE);
-                slotTimeLayout.setVisibility(View.VISIBLE);
-                slotDateLayout.setVisibility(View.VISIBLE);
-                generateTokenNo_button_widget.setVisibility(View.VISIBLE);
-                transit_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
-
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
 
 
 
@@ -351,39 +312,13 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 transit_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
             }
         }
-    /*    if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-            if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
-                ready_for_pickup_button_widget.setVisibility(View.GONE);
-                ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
-                deliveryTypeLayout.setVisibility(View.VISIBLE);
-                try {
-                    deliveryType_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverytype()));
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
 
-
-            }
-            else{
-                ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
-                ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
-                deliveryTypeLayout.setVisibility(View.GONE);
-
-            }
-        }
-        else{
-            ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
-            ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
-            deliveryTypeLayout.setVisibility(View.GONE);
-
-        }
-        */
         if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
             ready_for_pickup_button_widget.setVisibility(View.GONE);
             if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-
+                other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
                 ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+
             }
             else{
                 ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
@@ -423,6 +358,38 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         catch (Exception e){
             e.printStackTrace();
         }
+
+
+
+        try {
+            ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType()));
+            ordertype =  modal_manageOrders_pojo_class.getOrderType().toUpperCase();
+            if(orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                if (ordertype.equals(Constants.POSORDER)) {
+                    tokenNoLayout.setVisibility(View.GONE);
+                    slotTimeLayout.setVisibility(View.GONE);
+                    slotDateLayout.setVisibility(View.GONE);
+                    other_assignDeliveryperson_button_widget.setVisibility(View.GONE);
+
+                    generateTokenNo_button_widget.setVisibility(View.GONE);
+                    transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+                } else {
+                    tokenNoLayout.setVisibility(View.VISIBLE);
+                    slotTimeLayout.setVisibility(View.VISIBLE);
+                    slotDateLayout.setVisibility(View.VISIBLE);
+                    generateTokenNo_button_widget.setVisibility(View.GONE);
+                    transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+                    other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
+
+
+                }
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
 
 
 
@@ -958,7 +925,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 jsonObject.put("orderstatus", changestatusto);
                 jsonObject.put("orderconfirmedtime", "");
                 jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", Currenttime);
+                jsonObject.put("orderreadytime", currenttime);
                 jsonObject.put("orderpickeduptime", "");
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
@@ -969,7 +936,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 jsonObject.put("key", OrderKey);
                 jsonObject.put("orderstatus", changestatusto);
                 jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", Currenttime);
+                jsonObject.put("ordercancelledtime", currenttime);
                 jsonObject.put("orderreadytime", "");
                 jsonObject.put("orderpickeduptime", "");
                 jsonObject.put("orderdeliverytime", "");
@@ -978,7 +945,18 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 Log.i("tag","listenertoken"+ "");
             }
 
-
+            if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                jsonObject.put("key", OrderKey);
+                jsonObject.put("orderstatus", changestatusto);
+                jsonObject.put("orderconfirmedtime", "");
+                jsonObject.put("ordercancelledtime", "");
+                jsonObject.put("orderreadytime", "");
+                jsonObject.put("orderpickeduptime", "");
+                jsonObject.put("orderdeliverytime", currenttime);
+                jsonObject.put("deliveryuserlat", "");
+                jsonObject.put("deliveryuserlong", "");
+                Log.i("tag","listenertoken"+ "");
+            }
 
 
 
@@ -1041,3 +1019,31 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
 
 }
+ /*    if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+            if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
+                ready_for_pickup_button_widget.setVisibility(View.GONE);
+                ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+                deliveryTypeLayout.setVisibility(View.VISIBLE);
+                try {
+                    deliveryType_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverytype()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+            }
+            else{
+                ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+                ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+                deliveryTypeLayout.setVisibility(View.GONE);
+
+            }
+        }
+        else{
+            ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+            ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            deliveryTypeLayout.setVisibility(View.GONE);
+
+        }
+        */

@@ -332,6 +332,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
             jsonObject.put("Status", "Login");
             jsonObject.put("mobileno", pos_userPhoneNumber);
             jsonObject.put("appname", "TMCPARTNERAPP");
+            jsonObject.put("fcmtoken", "");
 
 
 
@@ -354,7 +355,6 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                         }
                         else {
 
-                            saveVendorLoginStatus();
 
                             Adjusting_Widgets_Visibility(false);
                             saveVendorLoginStatus();
