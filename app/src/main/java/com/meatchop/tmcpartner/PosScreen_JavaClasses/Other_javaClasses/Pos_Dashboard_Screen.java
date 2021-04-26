@@ -125,26 +125,26 @@ catch (Exception e){
 
 
     private String getMenuItemusingStoreId() {
-        Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+        //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
            try {
                gettingMenuItemRetryCount = 0;
-               Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
+               //Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
 
-               Log.d(TAG, "starting:onResponse ");
+               //Log.d(TAG, "starting:onResponse ");
 
-               Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+               //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                completemenuItem = new String(String.valueOf(response));
                try {
                    JSONArray JArray = response.getJSONArray("content");
-                   Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                   //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                    int i1 = 0;
                    int arrayLength = JArray.length();
-                   Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                   //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                    for (; i1 < (arrayLength); i1++) {
@@ -158,7 +158,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.key = "";
-                               Log.d(Constants.TAG, "There is no key for this Menu: " );
+                               //Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                            }
@@ -169,7 +169,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.applieddiscountpercentage = "";
-                               Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
                            }
@@ -179,7 +179,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.barcode = "";
-                               Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
 
 
                            }
@@ -190,7 +190,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.grossweightingrams = "";
-                               Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
 
 
                            }
@@ -204,7 +204,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.displayno = "";
-                               Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
 
 
                            }
@@ -214,7 +214,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.gstpercentage = "";
-                               Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
 
 
                            }
@@ -224,7 +224,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.itemavailability = "";
-                               Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
 
                            }
@@ -234,7 +234,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.itemname = "";
-                               Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
 
                            }
@@ -245,7 +245,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.pricetypeforpos = "";
-                               Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
 
 
                            }
@@ -258,7 +258,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.itemuniquecode = "";
-                               Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                            }
@@ -269,7 +269,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.menuboarddisplayname = "";
-                               Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
 
                            }
@@ -280,7 +280,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.showinmenuboard = "";
-                               Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
 
 
                            }
@@ -290,7 +290,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.grossweight = "";
-                               Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
 
 
                            }
@@ -300,7 +300,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.tmcctgykey = "";
-                               Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
 
 
                            }
@@ -310,7 +310,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.tmcprice = "";
-                               Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
 
                            }
@@ -320,7 +320,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.tmcpriceperkg = "";
-                               Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
 
                            }
@@ -330,7 +330,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.tmcsubctgykey = "";
-                               Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
+                               //Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
 
                            }
@@ -341,7 +341,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.menuItemId = "";
-                               Log.d(Constants.TAG, "There is no key for this Menu: "  );
+                               //Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
                            }
@@ -353,7 +353,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.netweight = "";
-                               Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
+                               //Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
 
                            }    if(json.has("portionsize")){
@@ -362,7 +362,7 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.portionsize = "";
-                               Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
+                               //Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
 
 
                            }
@@ -372,21 +372,21 @@ catch (Exception e){
 
                            MenuList.add(modal_menuItem);
 
-                           Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                           //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                        } catch (JSONException e) {
                            e.printStackTrace();
-                           Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                           Log.d(Constants.TAG, "e: " + e.getMessage());
-                           Log.d(Constants.TAG, "e: " + e.toString());
+                           //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                           //Log.d(Constants.TAG, "e: " + e.getMessage());
+                           //Log.d(Constants.TAG, "e: " + e.toString());
 
                        }
 
 
                    }
 
-                   Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                   //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                } catch (JSONException e) {
@@ -395,10 +395,10 @@ catch (Exception e){
                saveMenuIteminSharedPreference(MenuList);
 
 
-               Log.d(TAG, "sending :Response " + completemenuItem);
+               //Log.d(TAG, "sending :Response " + completemenuItem);
 
 
-               Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+               //Log.d(TAG, "MenuItems: " + completemenuItem.toString());
            }
            catch (Exception e){
                e.printStackTrace();
@@ -414,13 +414,13 @@ catch (Exception e){
                 if (gettingMenuItemRetryCount>0){
                     gettingMenuItemRetryCount = gettingMenuItemRetryCount-1;
                //     getMenuItemusingStoreId();
-                    Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
+                    //Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
 
 
                 }
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                  Toast.makeText(Pos_Dashboard_Screen.this,"Error in Getting Menu Item ",Toast.LENGTH_LONG).show();
                 error.printStackTrace();
             }
@@ -481,23 +481,23 @@ catch (Exception e){
 
 
     private void getMarinadeMenuItemusingStoreId(String vendorKey) {
-        Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+        //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMarinadeMenuItems,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 try{
-                    Log.d(TAG, "starting:onResponse ");
+                    //Log.d(TAG, "starting:onResponse ");
 
-                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                    //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                     try {
                         JSONArray JArray = response.getJSONArray("content");
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                         for (; i1 < (arrayLength); i1++) {
@@ -511,7 +511,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.key = "";
-                                    Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                    //Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                                 }
@@ -522,7 +522,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.applieddiscountpercentage = "";
-                                    Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -532,7 +532,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.barcode = "";
-                                    Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -543,7 +543,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.displayno = "";
-                                    Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -553,7 +553,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.gstpercentage = "";
-                                    Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -563,7 +563,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.itemavailability = "";
-                                    Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -573,7 +573,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.itemname = "";
-                                    Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -585,7 +585,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.pricetypeforpos = "";
-                                    Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -597,7 +597,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.itemuniquecode = "";
-                                    Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -608,7 +608,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.menuboarddisplayname = "";
-                                    Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -619,7 +619,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.showinmenuboard = "";
-                                    Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -630,7 +630,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.grossweight = "";
-                                    Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -641,7 +641,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.grossweightingrams = "";
-                                    Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -653,7 +653,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.netweight = "";
-                                    Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
+                                    //Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
 
                                 }    if(json.has("portionsize")){
@@ -662,7 +662,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.portionsize = "";
-                                    Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
+                                    //Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
 
 
                                 }
@@ -675,7 +675,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcctgykey = "";
-                                    Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -685,7 +685,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcprice = "";
-                                    Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -695,7 +695,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcpriceperkg = "";
-                                    Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -705,7 +705,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcsubctgykey = "";
-                                    Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -716,7 +716,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.menuItemId = "";
-                                    Log.d(Constants.TAG, "There is no key for this Menu: "  );
+                                    //Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
                                 }
@@ -727,21 +727,21 @@ catch (Exception e){
 
                                 MarinadeMenuList.add(modal_menuItem);
 
-                                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MarinadeMenuList);
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MarinadeMenuList);
 
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                Log.d(Constants.TAG, "e: " + e.getMessage());
-                                Log.d(Constants.TAG, "e: " + e.toString());
+                                //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                //Log.d(Constants.TAG, "e: " + e.toString());
 
                             }
 
 
                         }
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray MarinademenuListFull: " + MarinadeMenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray MarinademenuListFull: " + MarinadeMenuList);
 
 
                     } catch (JSONException e) {
@@ -766,9 +766,9 @@ catch (Exception e){
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                 Toast.makeText(Pos_Dashboard_Screen.this,"Error in Getting Marinade Menu Item ",Toast.LENGTH_LONG).show();
 
                 error.printStackTrace();

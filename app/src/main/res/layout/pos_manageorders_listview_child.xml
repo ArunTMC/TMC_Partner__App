@@ -279,7 +279,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
-                                android:visibility="gone">
+                                android:visibility="visible">
 
 
                                 <TextView
@@ -307,15 +307,16 @@
                                     android:layout_marginTop="10dp"
                                     android:layout_marginEnd="5dp"
                                     android:layout_weight="1"
-                                    android:gravity="center"
-
                                     android:background="@color/TMC_White"
+
                                     android:fontFamily="@font/open_sans_bold"
+                                    android:gravity="center"
                                     android:text="@string/Print_text"
 
                                     android:textAllCaps="true"
                                     android:textColor="@color/TMC_Orange"
                                     android:textSize="20sp" />
+
                                 <Button
                                     android:id="@+id/generateTokenNo"
                                     android:layout_width="wrap_content"
@@ -325,7 +326,7 @@
                                     android:layout_marginEnd="5dp"
                                     android:layout_weight="0.5"
                                     android:gravity="center"
-
+                                    android:visibility="gone"
                                     android:background="@color/TMC_White"
                                     android:fontFamily="@font/open_sans_bold"
                                     android:text="@string/Generate_Token_No_text"
@@ -342,7 +343,7 @@
                                 android:orientation="horizontal"
                                 android:paddingTop="20dp"
                                 android:paddingBottom="20dp"
-                                android:visibility="visible">
+                                android:visibility="gone">
 
                                 <TextView
                                     android:id="@+id/other_print_button_widget"
@@ -372,7 +373,7 @@
                                     android:background="@color/TMC_White"
                                     android:fontFamily="@font/open_sans_bold"
                                     android:text="@string/Deliverd_button_text"
-                                    android:visibility="gone"
+                                    android:visibility="visible"
 
                                     android:textAllCaps="true"
                                     android:textColor="@color/TMC_Orange"
@@ -387,6 +388,7 @@
                                     android:layout_marginEnd="5dp"
                                     android:layout_weight="0.5"
                                     android:gravity="center"
+                                    android:visibility="gone"
 
                                     android:background="@color/TMC_White"
                                     android:fontFamily="@font/open_sans_bold"

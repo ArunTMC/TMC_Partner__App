@@ -66,8 +66,8 @@ Button on,off;
 Context mContext;
 @SuppressLint("UseSwitchCompatOrMaterialCode")
 Switch autoRefreshingSwitch;
-LinearLayout changeMenuItemStatus,logout,consolidatedSalesReport,PosSalesReport,AppSalesReport,changeMenuItemVisibilityinTv
-    ,changeMenuItemPrice,changeDeliverySlotdetails,deliveryPartnerSettlementReport,searchOrdersUsingMobileNumbers;
+LinearLayout delivered_orders_list,changeMenuItemStatus,logout,consolidatedSalesReport,PosSalesReport,AppSalesReport,changeMenuItemVisibilityinTv
+    ,changeMenuItemPrice,changeDeliverySlotdetails,deliveryPartnerSettlementReport,searchOrdersUsingMobileNumbers,posOrdersList;
 String UserRole, MenuItems,UserPhoneNumber,vendorkey,vendorName;
 TextView userMobileNo,resetTokenNO_text,storeName,App_Sales_Report_text,Pos_Sales_Report_text;
 LinearLayout resetTokenNoLayoutj,salesLinearLayout;
@@ -129,6 +129,7 @@ double screenInches;
         settings_scrollview = view.findViewById(R.id.settings_scrollview);
         autoRefreshingSwitch = view.findViewById(R.id.autoRefreshingSwitch);
         changeMenuItemStatus = view.findViewById(R.id.changeMenuItemStatus);
+        delivered_orders_list = view.findViewById(R.id.delivered_orders_list);
         consolidatedSalesReport = view.findViewById(R.id.consolidatedSalesReport);
         PosSalesReport = view.findViewById(R.id.PosSalesReport);
         AppSalesReport = view.findViewById(R.id.AppSalesReport);
@@ -140,6 +141,7 @@ double screenInches;
         changeDeliverySlotdetails = view.findViewById(R.id.changeDeliverySlotdetails);
         storeName = view.findViewById(R.id.storeName);
         salesLinearLayout = view.findViewById(R.id.salesLinearLayout);
+        posOrdersList = view.findViewById(R.id.pos_orders_list);
       //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -241,7 +243,14 @@ double screenInches;
             }
         });
 
+        delivered_orders_list.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
+                Intent intent = new Intent(mContext, DeliveredOrdersTimewiseReport.class);
+                startActivity(intent);
+            }
+        });
         changeDeliverySlotdetails.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -258,6 +267,17 @@ double screenInches;
                 startActivity(intent);
             }
         });
+
+
+        posOrdersList.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, Pos_Orders_List.class);
+                startActivity(intent);
+            }
+        });
+
+
         changeMenuItemVisibilityinTv.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -341,10 +361,10 @@ double screenInches;
     private void initializeCache() {
         long size = 0;
         size += getDirSize(mContext.getCacheDir());
-        Log.i(Constants.TAG,"Cache Memory :1 "+size);
+        //Log.i(Constants.TAG,"Cache Memory :1 "+size);
 
         size += getDirSize(mContext.getExternalCacheDir());
-        Log.i(Constants.TAG,"Cache Memory :2 "+size);
+        //Log.i(Constants.TAG,"Cache Memory :2 "+size);
 
     }*/
 
@@ -377,7 +397,7 @@ double screenInches;
             File dir = context.getCacheDir();
           long cacheSize =  getDirSize(dir);
 
-            Log.i(Constants.TAG,"Cache Memory :"+cacheSize);
+            //Log.i(Constants.TAG,"Cache Memory :"+cacheSize);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -443,10 +463,10 @@ double screenInches;
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
 
 
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONObject result  = response.getJSONObject("content");
@@ -467,9 +487,9 @@ double screenInches;
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -503,9 +523,9 @@ double screenInches;
             public void onResponse(@NonNull JSONObject response) {
 
 
-                Log.d(Constants.TAG, "api: " + Constants.api_ResetTokenNo+vendorkey);
+                //Log.d(Constants.TAG, "api: " + Constants.api_ResetTokenNo+vendorkey);
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
                 try {
                     String tokenNo = response.getString("tokenNumber");
                     resetTokenNO_text.setText(tokenNo);
@@ -516,9 +536,9 @@ double screenInches;
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }

@@ -62,6 +62,9 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
     List<Modal_ManageOrders_Pojo_Class> ordersList;
     String changestatusto,orderStatus,OrderKey;
     String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay;
+    public Pos_Orders_List Pos_Orders_List;
+    public DeliveredOrdersTimewiseReport deliveredOrdersTimewiseReport;
+
     public searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber;
     public Adapter_Pos_SearchOrders_usingMobileNumber(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber, String orderStatus) {
         super(mContext, R.layout.pos_manageorders_listview_child, ordersList);
@@ -72,6 +75,26 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         this.orderStatus=orderStatus;
 
 
+    }
+
+    public Adapter_Pos_SearchOrders_usingMobileNumber(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_Orders_List Pos_Orders_List) {
+        super(mContext, R.layout.pos_manageorders_listview_child, ordersList);
+        this.Pos_Orders_List = Pos_Orders_List;
+        OrderdItems_desp =new ArrayList<>();
+        this.mContext=mContext;
+        this.ordersList=ordersList;
+
+        this.orderStatus="DELIVERED";
+    }
+
+    public Adapter_Pos_SearchOrders_usingMobileNumber(Context mContext, List<Modal_ManageOrders_Pojo_Class> sorted_ordersList, String orderStatus) {
+        super(mContext, R.layout.pos_manageorders_listview_child, sorted_ordersList);
+        this.Pos_Orders_List = Pos_Orders_List;
+        OrderdItems_desp =new ArrayList<>();
+        this.mContext=mContext;
+        this.ordersList=sorted_ordersList;
+
+        this.orderStatus="DELIVERED";
     }
 
     @Override
@@ -112,8 +135,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         final TextView ready_for_pickup_delivered_button_widget =listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
         final TextView deliverytype_text_widget =listViewItem.findViewById(R.id.deliverytype_text_widget);
 
-        final Button generateTokenNo_text_widget = listViewItem.findViewById(R.id.generateTokenNo);
-        final Button readyorder_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo);
+        //final Button generateTokenNo_text_widget = listViewItem.findViewById(R.id.generateTokenNo);
+       // final Button readyorder_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo);
         final TextView slotName_text_widget = listViewItem.findViewById(R.id.slotName_text_widget);
         final TextView slotDate_text_widget = listViewItem.findViewById(R.id.slotDate_text_widget);
         //final TextView slotTime_text_widget = listViewItem.findViewById(R.id.slotTime_text_widget);
@@ -145,7 +168,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
-        Log.i("Tag","Order Pos:   "+ searchOrdersUsingMobileNumber.sorted_OrdersList.get(pos));
+        ////Log.i("Tag","Order Pos:   "+ searchOrdersUsingMobileNumber.sorted_OrdersList.get(pos));
 
         orderStatus = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
         if(orderStatus.equals(Constants.NEW_ORDER_STATUS)){
@@ -194,7 +217,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
         if(orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)){
 
-            /*Log.i("Tag","ItemName   "+String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()));
+            /*////Log.i("Tag","ItemName   "+String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()));
 
             if(String.format(" %s ", modal_manageOrders_pojo_class.getOrder_orderStatus()).equals("Cancelled")) {
                 new_Order_Linearlayout.setVisibility(View.GONE);
@@ -224,7 +247,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         tokenNo_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getTokenno()));
         String orderid  = (String.format(" %s", modal_manageOrders_pojo_class.getOrderid()));
         orderid_text_widget.setText(String.format("#"+orderid));
-        Log.i("tag","orderid"+ orderid);
+        ////Log.i("tag","orderid"+ orderid);
         ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType().toUpperCase()));
         orderPlacedtime_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderplacedtime()));
         slotName_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getSlotname()));
@@ -308,34 +331,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
 
 
-        if(orderStatusFromArray.equals(Constants.CONFIRMED_ORDER_STATUS)){
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
-                pending_order_print_button_widget.setVisibility(View.VISIBLE);
-                generateTokenNo_text_widget.setVisibility(View.GONE);
 
-            }
-            else{
-                pending_order_print_button_widget.setVisibility(View.GONE);
-                generateTokenNo_text_widget.setVisibility(View.VISIBLE);
-
-            }
-        }
-
-
-        if(orderStatusFromArray.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
-                other_print_button_widget.setVisibility(View.VISIBLE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
-
-            }
-            else{
-                other_print_button_widget.setVisibility(View.GONE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
-
-            }
-        }
 
         //deliveryPartner_name_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliveryPartnerName()));
         //  deliveryPartner_mobileNo_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo()));
@@ -368,7 +364,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         try {
             JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();
-            Log.i("tag","array.length()"+ array.length());
+            ////Log.i("tag","array.length()"+ array.length());
             String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
             String itemDesp="";
@@ -398,7 +394,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 } else {
 
-                    Log.i("tag", "array.lengrh(i" + json.length());
+                    ////Log.i("tag", "array.lengrh(i" + json.length());
 
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
@@ -411,7 +407,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                     }
                     //      orderDetails_text_widget.setText(String.format(itemDesp));
-                    Log.i("tag", "array.lengrh(i" + json.length());
+                    ////Log.i("tag", "array.lengrh(i" + json.length());
 
 
                 }
@@ -452,7 +448,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             }
         });
 
-        readyorder_generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
+        /*readyorder_generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
@@ -480,11 +476,51 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedBillDetails.add(selectedOrder);
                 generatingTokenNo(vendorkey,orderDetailsKey, selectedBillDetails);
 
-                Log.i("tag","orderkey1"+ OrderKey);
+                ////Log.i("tag","orderkey1"+ OrderKey);
             }
         });
 
 
+
+        generateTokenNo_text_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
+                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
+                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
+                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
+                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
+                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
+                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
+                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
+                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
+                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
+                selectedOrder.useraddress=modal_manageOrders_pojo_class.getUseraddress();
+                selectedOrder.orderType=modal_manageOrders_pojo_class.getOrderType();
+                selectedOrder.slotname=modal_manageOrders_pojo_class.getSlotname();
+                selectedOrder.slotdate=modal_manageOrders_pojo_class.getSlotdate();
+                selectedOrder.slottimerange=modal_manageOrders_pojo_class.getSlottimerange();
+                selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
+                selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
+                selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
+
+                selectedBillDetails.add(selectedOrder);
+                generatingTokenNo(vendorkey,orderDetailsKey, selectedBillDetails);
+
+                ////Log.i("tag","orderkey1"+ OrderKey);
+
+
+            }
+        });
+
+
+
+
+
+         */
 
         //1
         confirmed_Order_button_widget.setOnClickListener(new View.OnClickListener() {
@@ -497,9 +533,9 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
 
 
-                Log.i("tag","orderkey1"+ OrderKey);
+                ////Log.i("tag","orderkey1"+ OrderKey);
 
-                Log.i("Tag","0"+OrderKey);
+                ////Log.i("Tag","0"+OrderKey);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.VISIBLE);
@@ -539,14 +575,14 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 changestatusto =Constants.CANCELLED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                ////Log.i("Tag","0"+OrderKey);
                 ChangeStatusOftheOrder(changestatusto,OrderKey, Currenttime);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
 
-                Log.i("Tag",""+changestatusto+OrderKey);
+                ////Log.i("Tag",""+changestatusto+OrderKey);
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
@@ -554,44 +590,6 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 notifyDataSetChanged();
             }
         });
-
-
-
-        generateTokenNo_text_widget.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
-                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
-                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
-                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
-                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
-                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
-                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
-                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
-                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
-                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
-                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
-                selectedOrder.useraddress=modal_manageOrders_pojo_class.getUseraddress();
-                selectedOrder.orderType=modal_manageOrders_pojo_class.getOrderType();
-                selectedOrder.slotname=modal_manageOrders_pojo_class.getSlotname();
-                selectedOrder.slotdate=modal_manageOrders_pojo_class.getSlotdate();
-                selectedOrder.slottimerange=modal_manageOrders_pojo_class.getSlottimerange();
-                selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
-                selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
-                selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
-
-                selectedBillDetails.add(selectedOrder);
-                generatingTokenNo(vendorkey,orderDetailsKey, selectedBillDetails);
-
-                Log.i("tag","orderkey1"+ OrderKey);
-
-
-            }
-        });
-
-
 
 
 
@@ -604,7 +602,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 Currenttime = getDate_and_time();
 
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                ////Log.i("Tag","0"+OrderKey);
 
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.VISIBLE);
@@ -626,6 +624,16 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             public void onClick(View v) {
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
+
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String ordertype = (String.format("%s", modal_manageOrders_pojo_class.getOrderType()));
+                String orderstatus = (String.format("%s", modal_manageOrders_pojo_class.getOrderstatus()));
+
+
+
+
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
                 selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
                 selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
@@ -645,36 +653,131 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
-                printRecipt(selectedBillDetails);
+
+                if (ordertype.equals(Constants.POSORDER)) {
+                    try {
+                        Thread t = new Thread() {
+                            public void run() {
+                                printRecipt(selectedBillDetails);
+                            }
+                        };
+                        t.start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        new_to_pay_Amount = 0;
+                        old_taxes_and_charges_Amount = 0;
+                        old_total_Amount = 0;
+
+                    }
+                } else {
+                    try {
+                        String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                        if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                            try {
+                                Thread t = new Thread() {
+                                    public void run() {
+                                        printRecipt(selectedBillDetails);
+                                    }
+                                };
+                                t.start();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                                new_to_pay_Amount = 0;
+                                old_taxes_and_charges_Amount = 0;
+                                old_total_Amount = 0;
+
+                            }
+                        } else {
+                            generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
         });
         other_print_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
+                List<Modal_ManageOrders_Pojo_Class> selectedBillDetails = new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
-                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
-                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
-                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
-                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
-                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
-                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
-                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
-                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
-                selectedOrder.useraddress=modal_manageOrders_pojo_class.getUseraddress();
-                selectedOrder.orderType=modal_manageOrders_pojo_class.getOrderType();
-                selectedOrder.slotname=modal_manageOrders_pojo_class.getSlotname();
-                selectedOrder.slotdate=modal_manageOrders_pojo_class.getSlotdate();
-                selectedOrder.slottimerange=modal_manageOrders_pojo_class.getSlottimerange();
+
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String ordertype = (String.format("%s", modal_manageOrders_pojo_class.getOrderType()));
+                String orderstatus = (String.format("%s", modal_manageOrders_pojo_class.getOrderstatus()));
+
+
+                selectedOrder.orderstatus = modal_manageOrders_pojo_class.getOrderstatus();
+
+                selectedOrder.usermobile = modal_manageOrders_pojo_class.getUsermobile();
+                selectedOrder.tokenno = modal_manageOrders_pojo_class.getTokenno();
+                selectedOrder.payableamount = modal_manageOrders_pojo_class.getPayableamount();
+                selectedOrder.itemdesp = modal_manageOrders_pojo_class.getItemdesp();
+                selectedOrder.orderid = modal_manageOrders_pojo_class.getOrderid();
+                selectedOrder.paymentmode = modal_manageOrders_pojo_class.getPaymentmode();
+                selectedOrder.coupondiscamount = modal_manageOrders_pojo_class.getCoupondiscamount();
+                selectedOrder.useraddress = modal_manageOrders_pojo_class.getUseraddress();
+                selectedOrder.orderType = modal_manageOrders_pojo_class.getOrderType();
+                selectedOrder.slotname = modal_manageOrders_pojo_class.getSlotname();
+                selectedOrder.slotdate = modal_manageOrders_pojo_class.getSlotdate();
+                selectedOrder.slottimerange = modal_manageOrders_pojo_class.getSlottimerange();
                 selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
+                if (ordertype.equals(Constants.POSORDER)) {
+                    try {
+                        Thread t = new Thread() {
+                            public void run() {
+                                printRecipt(selectedBillDetails);
+                            }
+                        };
+                        t.start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
 
-                printRecipt(selectedBillDetails);
+                        new_to_pay_Amount = 0;
+                        old_taxes_and_charges_Amount = 0;
+                        old_total_Amount = 0;
+
+                    }
+                } else {
+                    try {
+                        String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                        if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                            try {
+                                Thread t = new Thread() {
+                                    public void run() {
+                                        printRecipt(selectedBillDetails);
+                                    }
+                                };
+                                t.start();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                                new_to_pay_Amount = 0;
+                                old_taxes_and_charges_Amount = 0;
+                                old_total_Amount = 0;
+
+                            }
+                        } else {
+                            generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
 
@@ -683,6 +786,17 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             public void onClick(View v) {
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
+
+
+
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String ordertype = (String.format("%s", modal_manageOrders_pojo_class.getOrderType()));
+                String orderstatus = (String.format("%s", modal_manageOrders_pojo_class.getOrderstatus()));
+
+
+
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
                 selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
                 selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
@@ -703,10 +817,50 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
+                if (ordertype.equals(Constants.POSORDER)) {
+                    try {
+                        Thread t = new Thread() {
+                            public void run() {
+                                printRecipt(selectedBillDetails);
+                            }
+                        };
+                        t.start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
 
-                printRecipt(selectedBillDetails);
+                        new_to_pay_Amount = 0;
+                        old_taxes_and_charges_Amount = 0;
+                        old_total_Amount = 0;
 
+                    }
+                } else {
+                    try {
+                        String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                        if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                            try {
+                                Thread t = new Thread() {
+                                    public void run() {
+                                        printRecipt(selectedBillDetails);
+                                    }
+                                };
+                                t.start();
+                            } catch (Exception e) {
+                                e.printStackTrace();
 
+                                new_to_pay_Amount = 0;
+                                old_taxes_and_charges_Amount = 0;
+                                old_total_Amount = 0;
+
+                            }
+                        } else {
+                            generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
 
@@ -730,12 +884,12 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             public void onResponse(@NonNull JSONObject response) {
 
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                ////Log.d(Constants.TAG, "Responsewwwww: " + response);
                 try {
                     String tokenNo = response.getString("tokenNumber");
                     OrderdItems_desp.clear();
-                    UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
-                    UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
+                //    UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
+
                     try {
                         for (int i = 0; i < selectedOrderr.size(); i++) {
 
@@ -755,6 +909,18 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                         e.printStackTrace();
                     }
 
+
+                    try{
+                        UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+
+
                 } catch (JSONException e) {
                     new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Found_Instruction,
                             R.string.OK_Text,R.string.Empty_Text,
@@ -772,14 +938,14 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                     e.printStackTrace();
                 }
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                ////Log.d(Constants.TAG, "Responsewwwww: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                ////Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
                 searchOrdersUsingMobileNumber.showProgressBar(false);
 
                 new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Error_Instruction,
@@ -823,7 +989,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
             jsonObject.put("key", orderDetailsKey);
             jsonObject.put("tokenno", tokenNo);
-            Log.i("tag","listenertoken"+ "");
+            ////Log.i("tag","listenertoken"+ "");
 
 
 
@@ -834,10 +1000,10 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            ////Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        ////Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -864,14 +1030,14 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     }
                 }
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                ////Log.d(Constants.TAG, "Responsewwwww: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                ////Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
                 searchOrdersUsingMobileNumber.showProgressBar(false);
 
                 new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Updated_Instruction,
@@ -913,7 +1079,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             double quantity = Double.parseDouble(setOrderAmountDetails.getQuantity());
             //find total amount with out GST
             double new_total_amountfromArray = Double.parseDouble(setOrderAmountDetails.getItemFinalPrice());
-            Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+            ////Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
             new_total_amount = new_total_amountfromArray;
             double newtotalamount_withoutGST = new_total_amount*quantity;
             old_total_Amount = old_total_Amount + newtotalamount_withoutGST;
@@ -1905,11 +2071,11 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         PrinterFunctions.PreformCut(portName,portSettings,1);
         //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
-        Log.i("tag","printer Log    "+                PrinterFunctions.PortDiscovery(portName,portSettings));
+        ////Log.i("tag","printer Log    "+                PrinterFunctions.PortDiscovery(portName,portSettings));
 
-        Log.i("tag","printer Log    "+                PrinterFunctions.OpenPort( portName, portSettings));
+        ////Log.i("tag","printer Log    "+                PrinterFunctions.OpenPort( portName, portSettings));
 
-        Log.i("tag","printer Log    "+        PrinterFunctions.CheckStatus( portName, portSettings,2));
+        ////Log.i("tag","printer Log    "+        PrinterFunctions.CheckStatus( portName, portSettings,2));
 
         new_to_pay_Amount=0;
         old_taxes_and_charges_Amount=0;
@@ -1956,7 +2122,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                ////Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
@@ -1968,7 +2134,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                ////Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
@@ -1980,7 +2146,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                ////Log.i("tag","listenertoken"+ "");
             }
 
 
@@ -1991,10 +2157,10 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            ////Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        ////Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -2022,16 +2188,16 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                        */
                     }
                 }
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                ////Log.d(Constants.TAG, "Responsewwwww: " + response);
                 searchOrdersUsingMobileNumber.showProgressBar(false);
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                ////Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
                 searchOrdersUsingMobileNumber.showProgressBar(false);
                 error.printStackTrace();
             }

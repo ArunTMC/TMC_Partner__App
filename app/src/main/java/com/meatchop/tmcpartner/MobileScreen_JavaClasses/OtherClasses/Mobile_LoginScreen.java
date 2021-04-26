@@ -89,7 +89,7 @@ public class Mobile_LoginScreen extends AppCompatActivity {
 
                     @Override
                     public void onResult(UserStateDetails userStateDetails) {
-                        Log.i("INIT", "onResult: " + userStateDetails.getUserState());
+                        //Log.i("INIT", "onResult: " + userStateDetails.getUserState());
                         if(userStateDetails.getUserState() == UserState.SIGNED_IN){
 
                             SharedPreferences sh
@@ -97,7 +97,7 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                                     MODE_PRIVATE);
 
                             vendorLoginStatusBoolean = sh.getBoolean("VendorLoginStatus",false);
-                            Log.i("Tag","VendorLoginStatus"+vendorLoginStatusBoolean);
+                            //Log.i("Tag","VendorLoginStatus"+vendorLoginStatusBoolean);
                             runOnUiThread(new Runnable() {
 
                                 @Override
@@ -144,14 +144,14 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "Sign-up callback state: " + signUpResult.getConfirmationState());
+                        //Log.d(TAG, "Sign-up callback state: " + signUpResult.getConfirmationState());
                         if (!signUpResult.getConfirmationState()) {
                             final UserCodeDeliveryDetails details = signUpResult.getUserCodeDeliveryDetails();
-                            Log.d(TAG, "Sign-up callback state: " + details.getDestination());
+                            //Log.d(TAG, "Sign-up callback state: " + details.getDestination());
                         } else {
 
                             StartSignIN(mobileNo_String);
-                            Log.d(TAG, "Sign-up  " );
+                            //Log.d(TAG, "Sign-up  " );
                         }
                     }
                 });
@@ -166,7 +166,7 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                         StartSignIN(mobileNo_String);
                     }
                 });
-                Log.e(TAG, "Sign-up error", e);
+                //Log.e(TAG, "Sign-up error", e);
             }
         });
 
@@ -182,19 +182,19 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "UserName"+mobileNo_String);
+                        //Log.d(TAG, "UserName"+mobileNo_String);
 
-                        Log.d(TAG, "Log-in callback state: " + signInResult.getSignInState());
+                        //Log.d(TAG, "Log-in callback state: " + signInResult.getSignInState());
                         switch (signInResult.getSignInState()) {
                             case DONE:
-                                Log.d(TAG,"Log-in done.");
-                                Log.d(TAG,"Email: " + signInResult.getCodeDetails());
+                                //Log.d(TAG,"Log-in done.");
+                                //Log.d(TAG,"Email: " + signInResult.getCodeDetails());
                                 break;
                             case SMS_MFA:
-                                Log.d(TAG,"Please confirm sign-in with SMS.");
+                                //Log.d(TAG,"Please confirm sign-in with SMS.");
                                 break;
                             case NEW_PASSWORD_REQUIRED:
-                                Log.d(TAG,"Please confirm sign-in with new password.");
+                                //Log.d(TAG,"Please confirm sign-in with new password.");
                                 break;
                             case CUSTOM_CHALLENGE:
 
@@ -207,11 +207,11 @@ public class Mobile_LoginScreen extends AppCompatActivity {
 
                                 startActivity(i);
                                 finish();
-                                Log.d(TAG," Custom challenge.");
+                                //Log.d(TAG," Custom challenge.");
                                 break;
                             default:
 
-                                Log.d(TAG,"Unsupported Log-in confirmation: " + signInResult.getSignInState());
+                                //Log.d(TAG,"Unsupported Log-in confirmation: " + signInResult.getSignInState());
                                 break;
                         }
                     }
@@ -220,7 +220,7 @@ public class Mobile_LoginScreen extends AppCompatActivity {
 
             @Override
             public void onError(final Exception e) {
-                Log.e(TAG, "Log-in error", e);
+                //Log.e(TAG, "Log-in error", e);
             }
         });
 

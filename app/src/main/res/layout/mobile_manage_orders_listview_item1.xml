@@ -465,6 +465,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginStart="5dp"
                                 android:layout_marginEnd="5dp"
+                                android:visibility="gone"
 
                                 android:fontFamily="@font/open_sans_bold"
                                 android:textAllCaps="false"
@@ -528,6 +529,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginStart="5dp"
                                 android:layout_marginEnd="5dp"
+                                android:visibility="gone"
 
                                 android:fontFamily="@font/open_sans_bold"
                                 android:textAllCaps="false"
@@ -535,7 +537,7 @@
 
                                 android:textColor="@color/TMC_White"
                                 android:background="@drawable/button_background"
-                                android:text="@string/Regenerate_Token_No_text" />
+                                android:text="yy" />
 
                         </LinearLayout>
 

@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
@@ -139,7 +140,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         cartItem_hashmap.clear();
 
 
-        Log.d(TAG, "starting: ");
+        //Log.d(TAG, "starting: ");
     }
 
     @Override
@@ -245,7 +246,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
                             }
-                            Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
+                            //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
 
 
                             runOnUiThread(new Runnable() {
@@ -262,10 +263,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
 
                             Currenttime = getDate_and_time();
-                            Log.d(TAG, "Currenttime: " + Currenttime);
+                            //Log.d(TAG, "Currenttime: " + Currenttime);
 
                             long sTime = System.currentTimeMillis();
-                            Log.i(TAG, "date and time " + sTime);
+                            //Log.i(TAG, "date and time " + sTime);
 
 
 
@@ -386,7 +387,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     }
 
     private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt) {
-        try {
+
             Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
             double oldSavedAmount = 0;
             String CouponDiscount = "0";
@@ -880,15 +881,20 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             PrinterFunctions.PreformCut(portName, portSettings, 1);
             //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
-            Log.i("tag", "printer Log    " + PrinterFunctions.PortDiscovery(portName, portSettings));
+            //Log.i("tag", "printer Log    " + PrinterFunctions.PortDiscovery(portName, portSettings));
 
-            Log.i("tag", "printer Log    " + PrinterFunctions.OpenPort(portName, portSettings));
+            //Log.i("tag", "printer Log    " + PrinterFunctions.OpenPort(portName, portSettings));
 
-            Log.i("tag", "printer Log    " + PrinterFunctions.CheckStatus(portName, portSettings, 2));
-            if (!isPrintedSecondTime) {
+            //Log.i("tag", "printer Log    " + PrinterFunctions.CheckStatus(portName, portSettings, 2));
+           /* if (!isPrintedSecondTime) {
                 showProgressBar(false);
+                //isPrintedSecondTime = true;
+                //showProgressBar(true);
 
-                openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cart_Item_hashmap, payment_mode);
+
+
+
+                openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode);
 
             } else {
                 cart_Item_List.clear();
@@ -921,8 +927,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            */
             cart_Item_List.clear();
             cart_Item_hashmap.clear();
             cart_item_list.clear();
@@ -938,7 +944,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             createEmptyRowInListView("empty");
             CallAdapter();
             discountAmount = "0";
-
+            CouponDiscount = "0";
             discount_Edit_widget.setText("0");
             finaltoPayAmount = "0";
             discount_rs_text_widget.setText(discountAmount);
@@ -950,50 +956,53 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             mobileNo_Edit_widget.setText("");
             isPrintedSecondTime = false;
             showProgressBar(false);
-            Toast.makeText(mContext,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
 
 
-        }
+
+
+
+
+
     }
 
     private void openPrintAgainDialog(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_Item_List, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode) {
 
 
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Dialog dialog = new Dialog(getActivity());
-                    dialog.setContentView(R.layout.print_again);
-                    dialog.setTitle("Do you Want to Print Again !!!! ");
-                    dialog.setCanceledOnTouchOutside(false);
-                    dialog.setCancelable(false);
+    runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Dialog dialog = new Dialog(getActivity());
+                        dialog.setContentView(R.layout.print_again);
+                        dialog.setTitle("Do you Want to Print Again !!!! ");
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setCancelable(false);
 
-                    Button printAgain = (Button) dialog.findViewById(R.id.printAgain);
-
-
-                    printAgain.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                          isPrintedSecondTime=true;
-                            showProgressBar(true);
+                        Button printAgain = (Button) dialog.findViewById(R.id.printAgain);
 
 
-                                     printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount);
+                        printAgain.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                isPrintedSecondTime = true;
+                                showProgressBar(true);
 
-                            dialog.cancel();
-                        }
-                    });
+
+                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount);
+
+                                dialog.cancel();
+                            }
+                        });
 
 
-                    dialog.show();
+                        dialog.show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-                catch (WindowManager.BadTokenException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+            });
+        }
 
 
       /*  new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Exit_Instruction,
@@ -1027,10 +1036,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 });
 
        */
-    }
+
 
     void CallAdapter() {
-        Log.e(TAG, "AdapterCalled  ");
+        //Log.e(TAG, "AdapterCalled  ");
 
 
       //  adapter_cartItem_listview= new Adapter_CartItem_Listview(mContext,cartItem_hashmap, MenuItems,NewOrders_MenuItem_Fragment.this);
@@ -1067,13 +1076,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.neworders_menu_item_fragment, container, false);
         rootView.setTag("RecyclerViewFragment");
-        Log.d(TAG, "onCreateView: ");
+        //Log.d(TAG, "onCreateView: ");
         listview = rootView.findViewById(R.id.listview);
 
         recyclerView = rootView.findViewById(R.id.recyclerView);
         MenuItems=getData();
 
-        Log.i(TAG, "call adapter cart_Item " + getData());
+        //Log.i(TAG, "call adapter cart_Item " + getData());
 
         completemenuItem= getMenuItemfromString(MenuItems);
         createEmptyRowInListView("empty");
@@ -1094,10 +1103,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 //converting jsonSTRING into array
                 JSONObject jsonObject = new JSONObject(menulist);
                 JSONArray JArray = jsonObject.getJSONArray("content");
-                Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                 int i1 = 0;
                 int arrayLength = JArray.length();
-                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                 for (; i1 < (arrayLength); i1++) {
@@ -1122,7 +1131,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 double doubleAmount = Double.parseDouble(tmcpriceperkg);
                                 int intAmount = (int) Math.ceil(doubleAmount);
 
-                                Log.i("Tag", "doubleAmount" + String.valueOf(intAmount));
+                                //Log.i("Tag", "doubleAmount" + String.valueOf(intAmount));
                                 newOrdersPojoClass.tmcpriceperkg = String.valueOf(json.get("tmcpriceperkg"));
                             }catch (Exception e ){
                                 Toast.makeText(mContext,"Can't Convert  PriceperKg for "+ItemName+"in Menu Item",Toast.LENGTH_LONG).show();
@@ -1169,7 +1178,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 double doubleAmount = Double.parseDouble(tmcprice);
                                 int intAmount = (int) Math.ceil(doubleAmount);
 
-                                Log.i("Tag", "doubleAmount" + String.valueOf(intAmount));
+                                //Log.i("Tag", "doubleAmount" + String.valueOf(intAmount));
                                 newOrdersPojoClass.tmcprice = String.valueOf(json.get("tmcprice"));
                             }catch (Exception e ){
                                 Toast.makeText(mContext,"Can't Convert  tmcPrice for "+ItemName+"in Menu Item",Toast.LENGTH_LONG).show();
@@ -1246,28 +1255,28 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                         else{
                             newOrdersPojoClass.tmcsubctgykey = "0";
                             Toast.makeText(mContext,"TMC tmcsubctgykey Json is Missing",Toast.LENGTH_LONG).show();
-                            Log.i("Tag", "TMC tmcsubctgykey Json is Missing"+ String.valueOf(newOrdersPojoClass.getTmcsubctgykey()));
+                            //Log.i("Tag", "TMC tmcsubctgykey Json is Missing"+ String.valueOf(newOrdersPojoClass.getTmcsubctgykey()));
 
                         }
                         newOrdersPojoClass.quantity = "";
-                        Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                         MenuList.add(newOrdersPojoClass);
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                        Log.d(Constants.TAG, "e: " + e.getMessage());
-                        Log.d(Constants.TAG, "e: " + e.toString());
+                        //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                        //Log.d(Constants.TAG, "e: " + e.getMessage());
+                        //Log.d(Constants.TAG, "e: " + e.toString());
 
                     }
 
 
                 }
 
-                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
             } catch (JSONException e) {
@@ -1305,7 +1314,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
               }
 
 
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
 
               try {
                    discountpercentageDecimal = (100 - discountPercentage) / 100;
@@ -1336,8 +1345,8 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 try{
                     new_total_amount = new_total_amountfromArray;
                     old_total_Amount = old_total_Amount + new_total_amount;
-                    Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
-                    Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
+                    //Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
+                    //Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
 
 
                 }
@@ -1349,7 +1358,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                 try{
                      taxes_and_chargesfromArray = Double.parseDouble(newOrderItems.getGstpercentage());
-                    Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
+                    //Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
 
                     taxes_and_chargesfromArray = ((taxes_and_chargesfromArray * new_total_amountfromArray) / 100);
 
@@ -1364,9 +1373,9 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 try{
                     newOrderItems.setGstAmount(String.valueOf(decimalFormat.format(taxes_and_chargesfromArray)));
 
-                    Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
-                    Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
-                    Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+                    //Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
+                    //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
+                    //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
                     new_taxes_and_charges_Amount = taxes_and_chargesfromArray;
                     old_taxes_and_charges_Amount = old_taxes_and_charges_Amount + new_taxes_and_charges_Amount;
 
@@ -1642,14 +1651,14 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+            //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
                     jsonObject, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(@NonNull JSONObject response) {
 
-                    Log.d(Constants.TAG, "Response: " + response);
+                    //Log.d(Constants.TAG, "Response: " + response);
                     try {
                         String message = response.getString("message");
                         if (message.equals("success")) {
@@ -1677,9 +1686,9 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(@NonNull VolleyError error) {
-                    Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                    Log.d(Constants.TAG, "Error: " + error.getMessage());
-                    Log.d(Constants.TAG, "Error: " + error.toString());
+                    //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                    //Log.d(Constants.TAG, "Error: " + error.toString());
                     showProgressBar(false);
                     isOrderDetailsMethodCalled = false;
 
@@ -1738,25 +1747,25 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             }
 
 
-            Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+            //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderItemDetailsTable,
                     jsonObject, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(@NonNull JSONObject response) {
 
-                    Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
+                    //Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
                     try {
                         String message = response.getString("message");
                         if (message.equals("success")) {
                             //   printRecipt(taxAmount,payableAmount,orderid,cart_Item_List);
                         }
                         else{
-                            Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + response);
+                            //Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + response);
 
                         }
                     } catch (JSONException e) {
-                        Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + response);
+                        //Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + response);
 
                         e.printStackTrace();
                     }
@@ -1764,10 +1773,10 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(@NonNull VolleyError error) {
-                    Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                    Log.d(Constants.TAG, "Error: " + error.getMessage());
-                    Log.d(Constants.TAG, "Error: " + error.toString());
-                    Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + error);
+                    //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                    //Log.d(Constants.TAG, "Error: " + error.toString());
+                    //Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + error);
 
                     error.printStackTrace();
                 }
@@ -1801,10 +1810,10 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
         String orderid = String.valueOf(sTime);
         String orderplacedDate_time = getDate_and_time();
-        Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
 
         SharedPreferences sh
                 = mContext.getSharedPreferences("VendorLoginData",
@@ -1829,18 +1838,18 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         }
 
 
-        Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
-        Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
+        //Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
+        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderTrackingDetailsTable,
                 orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
 
-                Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
+                //Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
                 try {
                     String message = response.getString("message");
                     if(message .equals( "success")){
@@ -1859,9 +1868,9 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 isOrderTrackingDetailsMethodCalled = false;
 
                 error.printStackTrace();
@@ -1922,14 +1931,14 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         }
 
 
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInPaymentDetailsTable,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
 
-                Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
+                //Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
                 try {
                     String message = response.getString("message");
                     if(message .equals( "success")){
@@ -1949,9 +1958,9 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 isPaymentDetailsMethodCalled = false;
 
                 error.printStackTrace();
@@ -2146,57 +2155,57 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
             if(pricetype_of_pos.equals("tmcprice")) {
                 int new_total_amountfromArray = Integer.parseInt(modal_newOrderItems.getPricePerItem());
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
 
                 new_total_amount = new_total_amountfromArray;
                 old_total_Amount = old_total_Amount + new_total_amount;
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
-                Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
+                //Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
 
 
                 int taxes_and_chargesfromArray = Integer.parseInt(modal_newOrderItems.getGstpercentage());
-                Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
 
                 taxes_and_chargesfromArray = ((taxes_and_chargesfromArray * new_total_amountfromArray) / 100);
 
 
                 modal_newOrderItems.setGstAmount(String.valueOf(taxes_and_chargesfromArray));
-                Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
-                Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
                 new_taxes_and_charges_Amount = taxes_and_chargesfromArray;
                 int subTotal_perItem=new_total_amount+new_taxes_and_charges_Amount;
                 modal_newOrderItems.setSubTotal_perItem(String.valueOf(subTotal_perItem));
                 old_taxes_and_charges_Amount = old_taxes_and_charges_Amount + new_taxes_and_charges_Amount;
-                Log.i(TAG, "add_amount_ForBillDetails new_taxes_and_charges_Amount" + new_taxes_and_charges_Amount);
-                Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails new_taxes_and_charges_Amount" + new_taxes_and_charges_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
 
 
             }
             if (pricetype_of_pos.equals("tmcpriceperkg")) {
                 int new_total_amountfromArray = Integer.parseInt(modal_newOrderItems.getPricePerItem());
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
 
                 new_total_amount = new_total_amountfromArray;
                 old_total_Amount = old_total_Amount + new_total_amount;
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
-                Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
+                //Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
 
 
                 int taxes_and_chargesfromArray = Integer.parseInt(modal_newOrderItems.getGstpercentage());
-                Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
 
                 taxes_and_chargesfromArray = ((taxes_and_chargesfromArray * new_total_amountfromArray) / 100);
-                Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
-                Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
                 new_taxes_and_charges_Amount = taxes_and_chargesfromArray;
                 int subTotal_perItem=new_total_amount+new_taxes_and_charges_Amount;
                 modal_newOrderItems.setSubTotal_perItem(String.valueOf(subTotal_perItem));
 
                 old_taxes_and_charges_Amount = old_taxes_and_charges_Amount + new_taxes_and_charges_Amount;
-                Log.i(TAG, "add_amount_ForBillDetails new_taxes_and_charges_Amount" + new_taxes_and_charges_Amount);
-                Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails new_taxes_and_charges_Amount" + new_taxes_and_charges_Amount);
+                //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
 
 
             }
@@ -2231,14 +2240,14 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
     public void getMenuItemUsingBarCode(String barcode,int position) {
 
 
-            Log.e(TAG, "Got barcode isBarcodeEntered getMenuItemUsingBarCode" + isdataFetched);
+            //Log.e(TAG, "Got barcode isBarcodeEntered getMenuItemUsingBarCode" + isdataFetched);
             isdataFetched = true;
 
             if (barcode.length() == 13) {
-                Log.e(TAG, "Got barcode isBarcodeEntered getMenuItemUsingBarCode" + isdataFetched);
+                //Log.e(TAG, "Got barcode isBarcodeEntered getMenuItemUsingBarCode" + isdataFetched);
                 String itemWeight;
-                Log.e(TAG, "1 barcode " + barcode);
-                Log.e(TAG, "Got barcode isBarcodeEntered getMenuItemUsingBarCode" + isdataFetched);
+                //Log.e(TAG, "1 barcode " + barcode);
+                //Log.e(TAG, "Got barcode isBarcodeEntered getMenuItemUsingBarCode" + isdataFetched);
 
                 for (int i = 0; i < NewOrders_MenuItem_Fragment.completemenuItem.size(); i++) {
 
@@ -2267,7 +2276,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         newItem_newOrdersPojoClass.itemFinalPrice = "";
 
                         if (modal_newOrderItems.getGrossweight().equals("") && modal_newOrderItems.getNetweight().equals("")) {
-                            Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
+                            //Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
                             newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getPortionsize());
 
                             //     itemWeightTextview_widget.setText(String.valueOf(modal_newOrderItems.getPortionsize()));
@@ -2275,7 +2284,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                             itemWeight = String.valueOf(modal_newOrderItems.getPortionsize());
                         } else if (modal_newOrderItems.getNetweight().equals("")) {
 
-                            Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
+                            //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
 
                             newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
                             //   itemWeightTextview_widget.setText(String.valueOf(modal_newOrderItems.getGrossweight()));
@@ -2284,7 +2293,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
                         } else if (modal_newOrderItems.getGrossweight().equals("")) {
-                            Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
+                            //Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
                             newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getNetweight());
 
                             //     itemWeightTextview_widget.setText(String.valueOf(modal_newOrderItems.getNetweight()));
@@ -2293,7 +2302,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
                         } else {
-                            Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
+                            //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
                             //   itemWeightTextview_widget.setText(String.valueOf(modal_newOrderItems.getGrossweight()));
 
                             newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
@@ -2315,8 +2324,8 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 int item_total;
                 String itemuniquecode = barcode.substring(0, 9);
                 String itemWeight = barcode.substring(9, 14);
-                Log.e(TAG, "1 barcode uniquecode" + itemuniquecode);
-                Log.e(TAG, "1 barcode itemweight" + itemWeight);
+                //Log.e(TAG, "1 barcode uniquecode" + itemuniquecode);
+                //Log.e(TAG, "1 barcode itemweight" + itemWeight);
 
                 for (int i = 0; i < NewOrders_MenuItem_Fragment.completemenuItem.size(); i++) {
 
@@ -2349,16 +2358,16 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         int weight = Integer.parseInt(itemWeight);
                         if (weight < 1000) {
                             item_total = (priceperKg * weight);
-                            Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
+                            //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
 
-                            Log.e("TAG", "adapter 9 item_total weight" + weight);
+                            //Log.e("TAG", "adapter 9 item_total weight" + weight);
 
-                            Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
+                            //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
 
                             item_total = item_total / 1000;
-                            Log.e("TAG", "adapter 9 item_total " + item_total);
+                            //Log.e("TAG", "adapter 9 item_total " + item_total);
 
-                            Log.e("TAg", "weight2" + weight);
+                            //Log.e("TAg", "weight2" + weight);
                             cart_Item_List.get(position).setPricePerItem(String.valueOf(item_total));
                             cart_Item_List.get(position).setItemFinalWeight(String.valueOf(weight));
 
@@ -2372,20 +2381,20 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         if (weight == 1000) {
 
                          //   itemPrice_Widget.setText(String.valueOf(priceperKg));
-                            Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getItemname());
-                            Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
-                            Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
-                            Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
+                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                            //Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getItemname());
+                            //Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
+                            //Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
+                            //Log.e("TAG", "adapter 10" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
 
                             itemInCart.get(getAdapterPosition()).setPricePerItem(String.valueOf(priceperKg));
                             itemInCart.get(getAdapterPosition()).setItemFinalWeight(String.valueOf(weight));
 
-                            Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getItemname());
-                            Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
-                            Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
-                            Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
+                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                            //Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getItemname());
+                            //Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
+                            //Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
+                            //Log.e("TAG", "adapter 10.1" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
 
 
                             newOrders_menuItem_fragment.add_amount_ForBillDetails();
@@ -2394,32 +2403,32 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         }
 
                         if (weight > 1000) {
-                            Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getItemname());
-                            Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
-                            Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
-                            Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
+                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                            //Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getItemname());
+                            //Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
+                            //Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
+                            //Log.e("TAG", "adapter 11" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
 
-                            Log.e("TAg", "weight3" + weight);
+                            //Log.e("TAg", "weight3" + weight);
 
                             int itemquantity = weight - 1000;
-                            Log.e("TAg", "weight itemquantity" + itemquantity);
+                            //Log.e("TAg", "weight itemquantity" + itemquantity);
 
                             item_total = (price_per_kg * itemquantity) / 1000;
 
 
-                            Log.e("TAg", "weight item_total" + item_total);
+                            //Log.e("TAg", "weight item_total" + item_total);
 
                             itemInCart.get(getAdapterPosition()).setPricePerItem(String.valueOf(priceperKg + item_total));
                             itemInCart.get(getAdapterPosition()).setItemFinalWeight(String.valueOf(weight));
-                            Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getItemname());
-                            Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
-                            Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
-                            Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
+                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                            //Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getItemname());
+                            //Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
+                            //Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getItemFinalPrice());
+                            //Log.e("TAG", "adapter 11.1" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
 
                             itemPrice_Widget.setText(String.valueOf(priceperKg + item_total));
-                            Log.e("TAg", "weight item_total+price" + item_total + priceperKg);
+                            //Log.e("TAg", "weight item_total+price" + item_total + priceperKg);
                             newOrders_menuItem_fragment.add_amount_ForBillDetails();
                             NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
@@ -2428,10 +2437,10 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
                         // newItem_newOrdersPojoClass.pricePerItem = modal_newOrderItems.getTmcpriceperkg();
-                        Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getItemname());
-                        Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
-                        Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getPricePerItem());
-                        Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
+                        //Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getItemname());
+                        //Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getItemFinalWeight());
+                        //Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getPricePerItem());
+                        //Log.e("TAG", "adapter 12" + itemInCart.get(getAdapterPosition()).getTmcpriceperkg());
 
                     }
 
@@ -2442,7 +2451,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                         }
 
-                        Log.e(TAG, "Got barcode getMenuItemUsingBarCode" + isdataFetched);
+                        //Log.e(TAG, "Got barcode getMenuItemUsingBarCode" + isdataFetched);
 
                         newItem_newOrdersPojoClass.itemFinalWeight = itemWeight;
                         addItemIntheCart(newItem_newOrdersPojoClass, itemWeight, itemuniquecode);
@@ -2468,8 +2477,8 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                  old_ItemUniqueCode = modal_newOrderItems.getItemuniquecode().toString();
                 if(old_ItemUniqueCode.equals(itemUniquecode)){
-               /* Log.e(TAG, "newItem_uniqueCode  "+old_ItemUniqueCode);
-                Log.e(TAG, "itemUniquecode "+itemUniquecode);
+               /* //Log.e(TAG, "newItem_uniqueCode  "+old_ItemUniqueCode);
+                //Log.e(TAG, "itemUniquecode "+itemUniquecode);
                 quantity  = Integer.parseInt(modal_newOrderItems.getQuantity());
                 quantity=quantity+1;
 
@@ -2511,7 +2520,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
         }else{
-            Log.e(TAG, "2nd else "+itemUniquecode);
+            //Log.e(TAG, "2nd else "+itemUniquecode);
 
             addItemsNormallyIntheCart(newItem_newOrdersPojoClass,itemWeight);
 
@@ -2527,16 +2536,16 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
     }
 
     public  void addItemsNormallyIntheCart(Modal_NewOrderItems newItem_newOrdersPojoClass, String itemWeight) {
-        Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
+        //Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
         int last_ItemInCart = NewOrders_MenuItem_Fragment.cart_Item_List.size() - 1;
-        Log.e(TAG, "barcode uniquecode last_ItemInCart" + last_ItemInCart);
-        Log.e(TAG, "barcode uniquecode itemWeight" + itemWeight);
-        Log.e(TAG, "barcode uniquecode getItemFinalPrice" + newItem_newOrdersPojoClass.getPricePerItem());
-        Log.e(TAG, "barcode uniquecode getItemFinalWeight" + newItem_newOrdersPojoClass.getItemFinalWeight());
+        //Log.e(TAG, "barcode uniquecode last_ItemInCart" + last_ItemInCart);
+        //Log.e(TAG, "barcode uniquecode itemWeight" + itemWeight);
+        //Log.e(TAG, "barcode uniquecode getItemFinalPrice" + newItem_newOrdersPojoClass.getPricePerItem());
+        //Log.e(TAG, "barcode uniquecode getItemFinalWeight" + newItem_newOrdersPojoClass.getItemFinalWeight());
 
         Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cart_Item_List.get(last_ItemInCart);
         if (String.valueOf(modal_newOrderItems.getItemname()).equals("")) {
-            Log.e(TAG, "barcode in if  " + modal_newOrderItems.getItemname());
+            //Log.e(TAG, "barcode in if  " + modal_newOrderItems.getItemname());
 
             modal_newOrderItems.setItemname(newItem_newOrdersPojoClass.getItemname());
             modal_newOrderItems.setTmcpriceperkg(newItem_newOrdersPojoClass.getTmcpriceperkg());
@@ -2556,14 +2565,14 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             newItem_newOrdersPojoClass.setItemPrice_quantityBased(newItem_newOrdersPojoClass.getItemPrice_quantityBased());
 
 
-            Log.e(TAG, "barcode in if before cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+            //Log.e(TAG, "barcode in if before cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
 
             // NewOrders_MenuItem_Fragment.cart_Item_List.add(last_ItemInCart,modal_newOrderItems);
-            Log.e(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+            //Log.e(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
             //    newOrders_menuItem_fragment.add_amount_ForBillDetails();
             // cart_Item_List.add(last_ItemInCart,modal_newOrderItems);
-            Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
-            Log.e(TAG, "Got barcode addItemIntheCart" +
+            //Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+            //Log.e(TAG, "Got barcode addItemIntheCart" +
                     "" +
                     ""+isdataFetched);
 

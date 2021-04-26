@@ -101,7 +101,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         deliveryPartnerList = new ArrayList<>();
 
         try {
-            SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+            SharedPreferences shared = getApplicationContext().getSharedPreferences("Vendor//LoginData", MODE_PRIVATE);
 
 
             vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
@@ -472,10 +472,10 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 //converting jsonSTRING into array
                 JSONObject jsonObject = new JSONObject(deliveryPersonList);
                 JSONArray JArray = jsonObject.getJSONArray("content");
-                Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                 int i1 = 0;
                 int arrayLength = JArray.length();
-                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                 for (; i1 < (arrayLength); i1++) {
@@ -488,7 +488,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                         assignDeliveryPartner_pojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("mobileno"));
                         assignDeliveryPartner_pojoClass.deliveryPartnerName = String.valueOf(json.get("name"));
 
-                        // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                         deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
 
                         //  Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey,IntentFrom);
@@ -519,7 +519,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
 
     private void CalculateDistanceviaApi(TextView distancebetweencustomer_vendortext_widget) throws JSONException {
-        Log.i("Tag", "Latlangcal");
+        //Log.i("Tag", "Latlangcal");
 
 
         String url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=" + customerlatitude + "," + customerLongitutde + "&destinations=" + vendorLatitude + "," + vendorLongitude + "&mode=driving&language=en-EN&sensor=false&key=AIzaSyDYkZGOckF609Cjt6mnyNX9QhTY9-kAqGY";
@@ -530,23 +530,23 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
                 try {
 
-                    Log.d(Constants.TAG, "CalculateDistanceviaApi " + response.toString());
+                    //Log.d(Constants.TAG, "CalculateDistanceviaApi " + response.toString());
 
                     JSONArray rowsArray = (JSONArray) response.get("rows");
-                    Log.d(Constants.TAG, "rows" + rowsArray.toString());
+                    //Log.d(Constants.TAG, "rows" + rowsArray.toString());
                     JSONObject elements = rowsArray.getJSONObject(0);
-                    Log.d(Constants.TAG, "elements" + elements.toString());
+                    //Log.d(Constants.TAG, "elements" + elements.toString());
 
                     JSONArray elementsArray = (JSONArray) elements.get("elements");
-                    Log.d(Constants.TAG, "elementsArray" + elementsArray.toString());
+                    //Log.d(Constants.TAG, "elementsArray" + elementsArray.toString());
 
                     JSONObject distance = elementsArray.getJSONObject(0);
-                    Log.d(Constants.TAG, "distance" + distance.toString());
+                    //Log.d(Constants.TAG, "distance" + distance.toString());
                     JSONObject jsondistance = distance.getJSONObject("distance");
-                    Log.d(Constants.TAG, "jsondistance :" + jsondistance);
+                    //Log.d(Constants.TAG, "jsondistance :" + jsondistance);
 
                     String distanceinString = jsondistance.getString("text");
-                    Log.d(Constants.TAG, "distanceinString :" + distanceinString);
+                    //Log.d(Constants.TAG, "distanceinString :" + distanceinString);
                     distancebetweencustomer_vendortext_widget.setText(distanceinString);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -557,9 +557,9 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error2: " + error.getMessage());
-                Log.d(Constants.TAG, "Error3: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error2: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error3: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -581,7 +581,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 startActivity(MapIntent);
             }
         }catch (NullPointerException nu){
-            Log.e(Constants.TAG, "NullPointerException", nu.getCause());
+            //Log.e(Constants.TAG, "NullPointerException", nu.getCause());
 
             Toast.makeText(MobileScreen_OrderDetails1.this,"Can't Open Map",Toast.LENGTH_LONG).show();
         }
@@ -613,7 +613,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             //find total amount with out GST
             try {
                 new_total_amountfromArray = Double.parseDouble(getOrderAmountDetails.getItemFinalPrice());
-                Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
             }
             catch (Exception e ){
                 e.printStackTrace();
@@ -634,8 +634,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             }catch (Exception e){
                 e.printStackTrace();
             }
-            Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
-            Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
+            //Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
+            //Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
 
             getOrderAmountDetails.setTotalAmountWithoutGst(String.valueOf(decimalFormat.format(old_total_Amount)));
 
@@ -650,14 +650,14 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 e.printStackTrace();
             }
             //find total GST amount
-            Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
+            //Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
             //taxes_and_chargesfromArray = ((taxes_and_chargesfromArray * new_total_amountfromArray) / 100);
 
 
 
-            Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
-            Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
-            Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+            //Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
+            //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
+            //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
             new_taxes_and_charges_Amount = taxes_and_chargesfromArray;
             old_taxes_and_charges_Amount=old_taxes_and_charges_Amount+new_taxes_and_charges_Amount;
             getOrderAmountDetails.setTotalGstAmount(String.valueOf(decimalFormat.format(old_taxes_and_charges_Amount)));

@@ -249,7 +249,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int writeExternalStoragePermission = ContextCompat.checkSelfPermission(App_Sales_Report_Subctgywise.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
+                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
                 // If do not grant write external storage permission.
                 if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
                     // Request user to grant write external storage permission.
@@ -364,7 +364,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
-                Log.i("tag", "The Meat Chop");
+                //Log.i("tag", "The Meat Chop");
 
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
@@ -394,13 +394,13 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : POS SALES REPORT" + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Report : APP SALES REPORT" + "\n");
 
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
-                Log.i("tag", "Printer log" + CurrentDate);
+                //Log.i("tag", "Printer log" + CurrentDate);
 
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
@@ -411,7 +411,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                     PrinterFunctions.PrintText(portName, portSettings, 1, 0, 1, 0, 1, 0, 30, 0, "" + "\n" + subCtgyname + "\n" + "\n");
-                    Log.i("tag", "Printer log subCtgyname " + subCtgyname);
+                    //Log.i("tag", "Printer log subCtgyname " + subCtgyname);
 
 
                     for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
@@ -544,7 +544,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice + "\n");
-                            Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
+                            //Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
 
                         }
                     }
@@ -567,7 +567,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 for (int i = 0; i < paymentModeArray.size(); i++) {
                     String Payment_Amount = "", key = paymentModeArray.get(i);
                     Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
-                    Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                    //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
                     double payment_AmountDouble = 0;
 
@@ -634,7 +634,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                     PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
-                    Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+                    //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
 
 
                 }
@@ -657,7 +657,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
                     String Payment_Amount = "", key = preorder_paymentModeArray.get(i);
                     Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
-                    Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                    //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
                     double payment_AmountDouble = 0;
                     DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
@@ -722,7 +722,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                     PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
-                    Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+                    //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
 
 
                 }
@@ -771,7 +771,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                     PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value + "\n");
-                    Log.i("tag", "Printer log key key" + value);
+                    //Log.i("tag", "Printer log key key" + value);
 
 
                 }
@@ -810,9 +810,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         try {
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi year: " + year);
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi monthOfYear: " + monthOfYear);
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi dayOfMonth: " + dayOfMonth);
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi year: " + year);
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi monthOfYear: " + monthOfYear);
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi dayOfMonth: " + dayOfMonth);
 
 
                             Order_Item_List.clear();
@@ -844,7 +844,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
                             String CurrentDay =   getDayString(dayOfWeek);
-                            Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
+                            //Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
 
 
 
@@ -881,14 +881,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONArray result  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "Response: " + result);
+                            //Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
-                            Log.d("Constants.TAG", "Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -897,9 +897,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                     JSONObject json = result.getJSONObject(i1);
 
                                     String subCtgyKey  = String.valueOf(json.get("key"));
-                                    Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
+                                    //Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
                                     String subCtgyName = String.valueOf(json.get("subctgyname"));
-                                    Log.d(Constants.TAG, "subCtgyName: " + subCtgyName);
+                                    //Log.d(Constants.TAG, "subCtgyName: " + subCtgyName);
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
                                     modal_orderDetails.tmcsubctgykey = subCtgyKey;
                                     modal_orderDetails.tmcsubctgyname = subCtgyName;
@@ -907,14 +907,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                     SubCtgyKey_hashmap.put(subCtgyKey,modal_orderDetails);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
                                 Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
                                 String subCtgyKey  = String.valueOf("Miscellaneous");
-                                Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
+                                //Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
                                 String subCtgyName = String.valueOf("Miscellaneous Item");
 
                                 modal_orderDetails.tmcsubctgykey = subCtgyKey;
@@ -936,9 +936,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -999,16 +999,16 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
                             String paymentMode = "", ordertype = "", orderid = "", slotname = "";
 
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
                             if(arrayLength>0){
 
@@ -1017,14 +1017,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                     try {
                                         JSONObject json = JArray.getJSONObject(i1);
                                         Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                        //    Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+                                        //    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
                                         JSONArray itemdesp;
 
                                         if (json.has("ordertype")) {
                                             try {
                                                 modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                                 ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                                Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+                                                //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -1032,7 +1032,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                         } else {
                                             modal_orderDetails.ordertype = "There is no OrderType";
-                                            Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                         }
@@ -1041,7 +1041,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             try {
                                                 modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                                 slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
+                                                //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -1051,7 +1051,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                         } else {
                                             modal_orderDetails.slotname = String.valueOf("");
-                                            Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("slotname")));
+                                            //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("slotname")));
 
 
                                         }
@@ -1062,7 +1062,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 try {
                                                     paymentMode = String.valueOf(json.get("paymentmode")).toUpperCase();
                                                     modal_orderDetails.paymentmode = String.valueOf(json.get("paymentmode")).toUpperCase();
-                                                    Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+                                                    //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -1071,7 +1071,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                             } else {
                                                 modal_orderDetails.paymentmode = "There is no payment mode";
-                                                Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+                                                //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                             }
@@ -1084,7 +1084,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     itemdesp = json.getJSONArray("itemdesp");
                                                     modal_orderDetails.itemdesp = itemdesp;
 
-                                                    Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
+                                                    //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -1092,7 +1092,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                             } else {
 
-                                                Log.d(Constants.TAG, "There is no itemdesp: ");
+                                                //Log.d(Constants.TAG, "There is no itemdesp: ");
 
 
                                             }
@@ -1104,14 +1104,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
 
 
-                                                    Log.d(Constants.TAG, "orderid has been succesfully  retrived");
+                                                    //Log.d(Constants.TAG, "orderid has been succesfully  retrived");
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
                                             } else {
 
-                                                Log.d(Constants.TAG, "There is no orderid: ");
+                                                //Log.d(Constants.TAG, "There is no orderid: ");
 
 
                                             }
@@ -1158,7 +1158,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                                                                 } else {
-                                                                    Log.d(Constants.TAG, "orderid already availabe");
+                                                                    //Log.d(Constants.TAG, "orderid already availabe");
 
                                                                 }
                                                             } else {
@@ -1184,11 +1184,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                                     }
 
 
-                                                                    Log.d(Constants.TAG, "mode already availabe");
+                                                                    //Log.d(Constants.TAG, "mode already availabe");
 
 
                                                                 } else {
-                                                                    Log.d(Constants.TAG, "orderid already availabe");
+                                                                    //Log.d(Constants.TAG, "orderid already availabe");
 
                                                                 }
                                                             }
@@ -1199,7 +1199,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                         }
 
 
-                                                        Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                     } catch (Exception e) {
                                                         e.printStackTrace();
                                                     }
@@ -1222,7 +1222,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME))) {
                                                         getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
                                                     } else {
-                                                        Log.d(Constants.TAG, "This order is not an Apporder e: ");
+                                                        //Log.d(Constants.TAG, "This order is not an Apporder e: ");
 
                                                     }
 
@@ -1231,7 +1231,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 }
                                             } else {
                                                 Toast.makeText(App_Sales_Report_Subctgywise.this, "- ", Toast.LENGTH_LONG).show();
-                                                Log.d(Constants.TAG, "repeated orderid e: "+orderid);
+                                                //Log.d(Constants.TAG, "repeated orderid e: "+orderid);
 
                                             }
                                         }
@@ -1255,9 +1255,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                         tmcSubCtgykey.clear();
                                         addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
-                                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                                     }
                                     if (arrayLength - 1 == i1) {
@@ -1402,9 +1402,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                 addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -1443,16 +1443,16 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
                             String paymentMode="",ordertype = "",orderid = "",slotname="",deliverytype="";
 
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for (; i1 < (arrayLength); i1++) {
@@ -1460,14 +1460,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 try {
                                     JSONObject json = JArray.getJSONObject(i1);
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-//                                    Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+//                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
                                     JSONArray itemdesp;
 
                                     if (json.has("ordertype")) {
                                         try {
                                             modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                             ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                            Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
                                         } catch (Exception e) {
                                             e.printStackTrace();
@@ -1475,7 +1475,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                     } else {
                                         modal_orderDetails.ordertype = "There is no OrderType";
-                                        Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+                                        //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
@@ -1483,7 +1483,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         try {
                                             modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                             slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                            Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
+                                            //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
 
                                         } catch (Exception e) {
 
@@ -1491,7 +1491,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         }
 
                                     } else {
-                                        Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("orderid")));
+                                        //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("orderid")));
 
 
                                     }
@@ -1507,14 +1507,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 if(deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)){
                                                     slotname =  String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
                                                     modal_orderDetails.slotname =String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
-                                                    Log.d(Constants.TAG, "deliverytype: " + String.valueOf(json.get("orderid")));
+                                                    //Log.d(Constants.TAG, "deliverytype: " + String.valueOf(json.get("orderid")));
 
                                                 }
-                                                Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
+                                                //Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
 
                                             }catch (Exception e){
                                                 e.printStackTrace();
-                                                Log.d(Constants.TAG, "deliverytype:2 " + String.valueOf(json.get("orderid")));
+                                                //Log.d(Constants.TAG, "deliverytype:2 " + String.valueOf(json.get("orderid")));
 
                                             }
 
@@ -1522,7 +1522,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         else
                                         {
                                             modal_orderDetails.deliverytype = "There is no deliverytype";
-                                            Log.d(Constants.TAG, " deliverytype3: " + String.valueOf(json.get("orderid")));
+                                            //Log.d(Constants.TAG, " deliverytype3: " + String.valueOf(json.get("orderid")));
 
 
                                         }
@@ -1539,7 +1539,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 try {
                                                     paymentMode = String.valueOf(json.get("paymentmode")).toUpperCase();
                                                     modal_orderDetails.paymentmode = String.valueOf(json.get("paymentmode")).toUpperCase();
-                                                    Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+                                                    //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -1548,7 +1548,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                             } else {
                                                 modal_orderDetails.paymentmode = "There is no payment mode";
-                                                Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+                                                //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                             }
@@ -1561,7 +1561,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     itemdesp = json.getJSONArray("itemdesp");
                                                     modal_orderDetails.itemdesp = itemdesp;
 
-                                                    Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
+                                                    //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -1569,7 +1569,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                             } else {
 
-                                                Log.d(Constants.TAG, "There is no itemdesp: ");
+                                                //Log.d(Constants.TAG, "There is no itemdesp: ");
 
 
                                             }
@@ -1581,14 +1581,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
 
 
-                                                    Log.d(Constants.TAG, "orderid has been succesfully  retrived");
+                                                    //Log.d(Constants.TAG, "orderid has been succesfully  retrived");
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
                                             } else {
 
-                                                Log.d(Constants.TAG, "There is no orderid: ");
+                                                //Log.d(Constants.TAG, "There is no orderid: ");
 
 
                                             }
@@ -1642,7 +1642,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                                                             } else {
-                                                                Log.d(Constants.TAG, "mode already availabe");
+                                                                //Log.d(Constants.TAG, "mode already availabe");
 
                                                             }
                                                         } else {
@@ -1669,11 +1669,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                                 }
 
 
-                                                                Log.d(Constants.TAG, "mode already availabe");
+                                                                //Log.d(Constants.TAG, "mode already availabe");
 
 
                                                             } else {
-                                                                Log.d(Constants.TAG, "mode already availabe");
+                                                                //Log.d(Constants.TAG, "mode already availabe");
 
                                                             }
                                                         }
@@ -1684,7 +1684,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     }
 
 
-                                                    Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
@@ -1707,7 +1707,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, slotname);
                                     }
                                     else{
-                                        Log.d(Constants.TAG, "This order is not an Apporder e: " );
+                                        //Log.d(Constants.TAG, "This order is not an Apporder e: " );
 
                                     }
 
@@ -1718,9 +1718,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                     e.printStackTrace();
                                     Adjusting_Widgets_Visibility(false);
 
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                                 }
 
@@ -1835,9 +1835,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -1888,6 +1888,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 int i_value = 0;
                 String subCtgyTotal ="0";
                 double subCtgyTotaldouble = 0;
+            //    Log.d(Constants.TAG, "SubCtgykey " + SubCtgykey);
+
                 String SubCtgyName = "", ItemName_Quantity_weight, Price, menuid;
                 Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
                 try{
@@ -1903,7 +1905,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     SubCtgyName = Objects.requireNonNull(subCtgyName_object).getTmcsubctgyname();
                 } catch (Exception e) {
                     SubCtgyName = "";
-                    Log.d(Constants.TAG, "before for " + e.getMessage());
+                   // Log.d(Constants.TAG, "before for " + e.getMessage());
 
                 }
 
@@ -1923,8 +1925,20 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                 for (int j = 0; j < Order_Item_List.size(); j++) {
                     menuid = Order_Item_List.get(j);
+                  //  Log.d(Constants.TAG, "SubCtgykey menuid " + menuid);
+                  //  Log.d(Constants.TAG, "SubCtgykey w " + SubCtgykey);
+
                     Modal_OrderDetails itemDetailsfromHashmap = OrderItem_hashmap.get(menuid);
-                    String subCtgyKey_fromHashmap = itemDetailsfromHashmap.getTmcsubctgykey();
+                   // Log.d(Constants.TAG, "SubCtgykey itemDetailsfromHashmap " + itemDetailsfromHashmap.getItemname());
+                    String subCtgyKey_fromHashmap ="";
+                    try {
+                         subCtgyKey_fromHashmap = itemDetailsfromHashmap.getTmcsubctgykey();
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+            //        Log.d(Constants.TAG, "SubCtgykey subCtgyKey_fromHashmap " + subCtgyKey_fromHashmap );
+
                     if (i_value != 0) {
                         if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
                             double weightinGrams = 0;
@@ -1947,7 +1961,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             } catch (Exception e) {
                                 weightinGrams = 0;
                             }
+                            String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
 
+                            if(itemname.equals("Fresh Goat Meat - Curry Cut")){
+                                Log.i("TAG", "Key : "+ String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
+                            }
                             double kilogram = weightinGrams * 0.001;
                             String KilogramString = String.valueOf(decimalFormat.format(kilogram) + "Kg");
 
@@ -2064,7 +2082,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2087,7 +2105,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2115,7 +2133,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2138,7 +2156,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2166,7 +2184,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2189,7 +2207,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2217,7 +2235,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2240,7 +2258,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2391,15 +2409,15 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode, String slotname) {
         //   DecimalFormat decimalFormat = new DecimalFormat("0.00");
         String newOrderWeightInGrams = null,tmcprice_string="";
-        double newweight,gstAmount;
+        double newweight,gstAmount = 0;
         try {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
 
             for(int i=0; i < jsonArray.length(); i++) {
-                Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
+                //Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
 
                 JSONObject json = jsonArray.getJSONObject(i);
-                Log.d(Constants.TAG, "this json" +json.toString());
+                //Log.d(Constants.TAG, "this json" +json.toString());
 
                 Modal_OrderDetails modal_orderDetails_ItemDesp = new Modal_OrderDetails();
 
@@ -2599,6 +2617,674 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
                     modal_orderDetails_ItemDesp.ordertype = modal_orderDetailsfromResponse.getOrdertype();
                     modal_orderDetails_ItemDesp.paymentmode = modal_orderDetailsfromResponse.getPaymentmode();
+
+
+
+
+
+                    if (json.has("marinadeitemdesp")) {
+                        Modal_OrderDetails marinade_modal_orderDetails_ItemDesp = new Modal_OrderDetails();
+                        double marinadesObjectgstAmount=0,marinadesObjectpayableAmount=0,marinadesObjectquantity;
+
+                        try {
+                            marinadesObjectquantity = Double.parseDouble(String.valueOf(json.get("quantity")));
+                        }
+                        catch (Exception e ){
+                            e.printStackTrace();
+                            marinadesObjectquantity = 1;
+                        }
+
+                        JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
+                        String marinadeitemmenuItemId = String.valueOf(marinadesObject.get("menuitemid"));
+                        String marinadeitemName = String.valueOf(marinadesObject.get("itemname"));
+
+
+                        String subCtgyKey = "";
+                        try {
+                            if (marinadesObject.has("tmcsubctgykey")) {
+                                subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                                if (subCtgyKey.equals("") || subCtgyKey.equals("0")) {
+                                    marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
+                                    subCtgyKey = String.valueOf("Miscellaneous");
+                                } else {
+                                    marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                                    subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+
+                                }
+
+                            } else {
+                                marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
+                                subCtgyKey = String.valueOf("Miscellaneous");
+                            }
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+
+                            marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
+                            subCtgyKey = String.valueOf("Miscellaneous");
+
+
+                        }
+
+
+                        try {
+                            if (marinadesObject.has("grossweight")) {
+                                newOrderWeightInGrams = String.valueOf(marinadesObject.get("grossweight"));
+                                if((newOrderWeightInGrams.contains("Kg"))||(newOrderWeightInGrams.contains("KG"))||(newOrderWeightInGrams.contains("kg"))){
+                                    newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
+
+                                    double newOrderWeightInGrams_double = Double.parseDouble(newOrderWeightInGrams);
+                                    newOrderWeightInGrams_double = newOrderWeightInGrams_double*1000;
+                                    newOrderWeightInGrams = String.valueOf(newOrderWeightInGrams_double);
+                                }
+                                newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
+
+
+
+                                marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams + "g");
+
+                                marinade_modal_orderDetails_ItemDesp.grossweight = String.valueOf(newOrderWeightInGrams);
+
+
+
+                            }
+                            else {
+                                if (json.has("grossweightingrams")) {
+                                    try {
+                                        newOrderWeightInGrams =  String.valueOf(marinadesObject.get("grossweightingrams"));
+                                        if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+                                            newOrderWeightInGrams =newOrderWeightInGrams.replaceAll("[^\\d.]", "");
+                                            marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams+"g");
+
+                                            marinade_modal_orderDetails_ItemDesp.grossweight = String.valueOf(newOrderWeightInGrams);
+                                        }
+                                        else {
+                                            if (marinadesObject.has("netweight")) {
+
+                                                try {
+                                                    newOrderWeightInGrams = String.valueOf(marinadesObject.get("netweight"));
+                                                    if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+
+                                                        newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
+                                                        String lastThree_weightInGrams = null;
+                                                        if (newOrderWeightInGrams != null && newOrderWeightInGrams.length() >= 3) {
+                                                            lastThree_weightInGrams = newOrderWeightInGrams.substring(newOrderWeightInGrams.length() - 3);
+                                                        }
+                                                        marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(lastThree_weightInGrams + "g");
+
+                                                        marinade_modal_orderDetails_ItemDesp.netweight = String.valueOf(lastThree_weightInGrams);
+                                                    }
+                                                    else{
+                                                        if (marinadesObject.has("portionsize")) {
+
+                                                            try {
+
+                                                                newOrderWeightInGrams = String.valueOf(marinadesObject.get("portionsize"));
+
+                                                                marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
+
+                                                                marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                                marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                                                marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf("");
+                                                            }
+
+                                                        }
+                                                    }
+
+                                                }catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                                    marinade_modal_orderDetails_ItemDesp.netweight = String.valueOf("");
+                                                }
+                                            }
+                                            else{
+                                                if (marinadesObject.has("portionsize")) {
+
+                                                    try {
+
+                                                        newOrderWeightInGrams = String.valueOf(marinadesObject.get("portionsize"));
+
+                                                        marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
+
+                                                        marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                                        marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf("");
+                                                    }
+
+                                                }
+                                            }
+
+
+
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                        marinade_modal_orderDetails_ItemDesp.grossweight = String.valueOf("");
+                                    }
+
+                                }
+
+                                else {
+                                    if (marinadesObject.has("netweight")) {
+                                        try {
+                                            newOrderWeightInGrams = String.valueOf(marinadesObject.get("netweight"));
+
+                                            if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+
+                                                String lastThree_weightInGrams = null;
+                                                if (newOrderWeightInGrams != null && newOrderWeightInGrams.length() >= 3) {
+                                                    lastThree_weightInGrams = newOrderWeightInGrams.substring(newOrderWeightInGrams.length() - 3);
+                                                }
+                                                marinade_modal_orderDetails_ItemDesp.netweight = String.valueOf(lastThree_weightInGrams);
+                                                marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(lastThree_weightInGrams + "g");
+
+                                            }
+                                            else{
+                                                if (marinadesObject.has("portionsize")) {
+
+                                                    try {
+
+                                                        newOrderWeightInGrams = String.valueOf(marinadesObject.get("portionsize"));
+
+                                                        marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
+
+                                                        marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                                        marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf("");
+                                                    }
+
+                                                }
+                                            }
+
+
+                                        }catch (Exception e) {
+                                            e.printStackTrace();
+                                            marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                            marinade_modal_orderDetails_ItemDesp.netweight = String.valueOf("");
+                                        }
+
+                                    }
+                                    else{
+                                        if (marinadesObject.has("portionsize")) {
+
+                                            try {
+
+                                                newOrderWeightInGrams = String.valueOf(marinadesObject.get("portionsize"));
+
+                                                marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
+
+                                                marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                                                marinade_modal_orderDetails_ItemDesp.portionsize = String.valueOf("");
+                                            }
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            marinade_modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
+
+                            marinade_modal_orderDetails_ItemDesp.grossweight = String.valueOf("");
+
+                        }
+
+
+                        if(marinadesObject.has("tmcprice")) {
+                            try {
+                                marinadesObjectpayableAmount = Double.parseDouble(String.valueOf(marinadesObject.get("tmcprice")));
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                        if(marinadesObject.has("gstamount")) {
+                            try {
+                                marinadesObjectgstAmount = Double.parseDouble(String.valueOf(marinadesObject.get("gstamount")));
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                        if(marinadesObject.has("quantity")) {
+                            try {
+                                marinadesObjectquantity = Double.parseDouble(String.valueOf(json.get("quantity")));
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+
+                        try{
+                            marinadesObjectpayableAmount = marinadesObjectpayableAmount+marinadesObjectgstAmount;
+                            marinadesObjectpayableAmount = marinadesObjectpayableAmount*marinadesObjectquantity;
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        marinade_modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
+
+                        marinade_modal_orderDetails_ItemDesp.tmcprice = (String.valueOf(marinadesObjectpayableAmount));
+                        marinade_modal_orderDetails_ItemDesp.gstamount = String.valueOf(marinadesObjectgstAmount);
+                        marinade_modal_orderDetails_ItemDesp.quantity = String.valueOf(json.get("quantity"));
+                        marinade_modal_orderDetails_ItemDesp.itemname = marinadeitemName+" - Marinade ";
+
+
+
+                        if(slotname.equals(Constants.PREORDER_SLOTNAME)){
+                            if(paymentMode.equals(Constants.PAYTM)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!preorder_paymentModeArray.contains(paymentMode)) {
+                                    preorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getPaytmSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setPaytmSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setPaytmSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+                            if(paymentMode.equals(Constants.PHONEPE)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!preorder_paymentModeArray.contains(paymentMode)) {
+                                    preorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getPhonepeSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+
+                            if(paymentMode.equals(Constants.RAZORPAY)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!preorder_paymentModeArray.contains(paymentMode)) {
+                                    preorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getRazorpaySales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setRazorpaySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setRazorpaySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+                            if(paymentMode.equals(Constants.CASH_ON_DELIVERY)) {
+                                double payment_tmcprice = 0, payment_gstamount = 0;
+                                if (!preorder_paymentModeArray.contains(paymentMode)) {
+                                    preorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCashOndeliverySales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                } else {
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+                        }
+
+
+                        if((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))){
+                            if(paymentMode.equals(Constants.PAYTM)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!paymentModeArray.contains(paymentMode)) {
+                                    paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getPaytmSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setPaytmSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setPaytmSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+                            if(paymentMode.equals(Constants.PHONEPE)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!paymentModeArray.contains(paymentMode)) {
+                                    paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getPhonepeSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+
+                            if(paymentMode.equals(Constants.RAZORPAY)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!paymentModeArray.contains(paymentMode)) {
+                                    paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getRazorpaySales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setRazorpaySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setRazorpaySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+                            if(paymentMode.equals(Constants.CASH_ON_DELIVERY)) {
+                                double payment_tmcprice = 0, payment_gstamount = 0;
+                                if (!paymentModeArray.contains(paymentMode)) {
+                                    paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCashOndeliverySales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                } else {
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        paymentModeHashmap.put(paymentMode, paymentDetails);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+                        }
+
+
+
+
+
+                        if (Order_Item_List.contains(marinadeitemmenuItemId)) {
+                            double payableAmount_marinade=0,quantity_marinade=0,gstAmount_marinade=0;
+                            Modal_OrderDetails modal_orderDetails_itemDespfrom_hashMap = OrderItem_hashmap.get(marinadeitemmenuItemId);
+                            double tmcprice_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
+                            int quantity_from_HashMap = Integer.parseInt(modal_orderDetails_itemDespfrom_hashMap.getQuantity());
+                            double gstAmount_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getGstamount());
+                            try {
+                                payableAmount_marinade = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                quantity_marinade = marinadesObjectquantity + quantity_from_HashMap;
+                                gstAmount_marinade = gstAmount + gstAmount_from_HashMap;
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            modal_orderDetails_itemDespfrom_hashMap.setQuantity(String.valueOf((quantity_marinade)));
+                            modal_orderDetails_itemDespfrom_hashMap.setFinalAmount(String.valueOf((payableAmount_marinade)));
+                            modal_orderDetails_itemDespfrom_hashMap.setGstamount(String.valueOf((gstAmount_marinade)));
+
+
+
+                        }
+                        else{
+                            Order_Item_List.add(marinadeitemmenuItemId);
+
+                            OrderItem_hashmap.put(marinadeitemmenuItemId, marinade_modal_orderDetails_ItemDesp);
+                        }
+
+
+                    }
+
+
+
                     String subCtgyKey = "";
                     try {
                         if (json.has("tmcsubctgykey")) {
@@ -3158,7 +3844,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
 
                                 intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
-                                Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
+                                //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
 
 
                                 modal_orderDetails_itemDespfrom_hashMap.setWeightingrams(String.valueOf((intOldOrder_WeightInGrams)));
@@ -3185,7 +3871,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     //  add_amount_ForBillDetails(OrderdItems_desp);
                 }
                 else{
-                    Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
+                    //Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
                     Adjusting_Widgets_Visibility(false);
 
                 }
@@ -3346,11 +4032,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
         calendar.add(Calendar.DATE, -1);
 
@@ -3366,7 +4052,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
 
         return yesterdayAsString;
     }
@@ -3408,7 +4094,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
-        Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
+        //Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
         File fol = new File(extstoragedir, "testpdf");
         File folder = new File(fol, "pdf");
         if (!folder.exists()) {
@@ -3454,7 +4140,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         } catch (IOException e) {
             Adjusting_Widgets_Visibility(false);
 
-            Log.i("error", e.getLocalizedMessage());
+            //Log.i("error", e.getLocalizedMessage());
         } catch (Exception ex) {
             Adjusting_Widgets_Visibility(false);
 
@@ -3535,7 +4221,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                 Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
                 String itemName = itemRow.getItemname();
-                Log.i(Constants.TAG, "size" + (itemRow.getItemname()));
+                //Log.i(Constants.TAG, "size" + (itemRow.getItemname()));
 
 
           */
@@ -3705,7 +4391,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             for (int i = 0; i < paymentModeArray.size(); i++) {
                 String key = paymentModeArray.get(i);
                 Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
@@ -3849,7 +4535,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
                 String key = preorder_paymentModeArray.get(i);
                 Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
 
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
@@ -3969,9 +4655,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             for (int i = 0; i < finalBillDetails.size(); i++) {
                 String key = finalBillDetails.get(i);
                 String value = FinalBill_hashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
-                Log.d("ExportReportActivity", "itemTotalRowsList value " + value);
+                //Log.d("ExportReportActivity", "itemTotalRowsList value " + value);
 
 
                 emptycell = new PdfPCell(new Phrase(""));

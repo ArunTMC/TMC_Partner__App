@@ -48,7 +48,7 @@ public class Adapter_AutoCompleteManageOrdersItem extends ArrayAdapter<Modal_Man
 
     public void setHandler(Handler handler) { this.handler = handler; }
     private void sendHandlerMessage(String bundlestr) {
-        Log.i(Constants.TAG,"createBillDetails in AutoComplete");
+        ////Log.i(Constants.TAG,"createBillDetails in AutoComplete");
 
         Message msg =  new Message();
         Bundle bundle = new Bundle();
@@ -69,10 +69,10 @@ public class Adapter_AutoCompleteManageOrdersItem extends ArrayAdapter<Modal_Man
             //converting jsonSTRING into array
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray JArray  = jsonObject.getJSONArray("content");
-            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
             int i1=0;
             int arrayLength = JArray.length();
-            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+            ////Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
             for(;i1<(arrayLength);i1++) {
@@ -80,7 +80,7 @@ public class Adapter_AutoCompleteManageOrdersItem extends ArrayAdapter<Modal_Man
                 try {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
 
                     manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
                     manageOrdersPojoClass.payableamount = String.valueOf(json.get("payableamount"));
@@ -138,15 +138,15 @@ public class Adapter_AutoCompleteManageOrdersItem extends ArrayAdapter<Modal_Man
                     ordersList.add(manageOrdersPojoClass);
 
 
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
+                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
 
 
 
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                 }
 
@@ -179,7 +179,7 @@ public class Adapter_AutoCompleteManageOrdersItem extends ArrayAdapter<Modal_Man
         menuItemName_widget.setText(menuuItem.getUsermobile());
         CardView menuItem_CardLayout = convertView.findViewById(R.id.addItem_to_Cart_Layout);
 
-        Log.d(TAG, "Auto 2  menu in  Menulist"+ordersList.size());
+        ////Log.d(TAG, "Auto 2  menu in  Menulist"+ordersList.size());
 
 
 

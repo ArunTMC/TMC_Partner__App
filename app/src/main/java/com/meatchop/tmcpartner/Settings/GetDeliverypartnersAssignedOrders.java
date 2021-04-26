@@ -49,11 +49,11 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
         try {
             JSONObject jsonObject = new JSONObject(assignedOrdersString);
             JSONArray JArray = jsonObject.getJSONArray("content");
-            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
             int i1 = 0;
             String ordertype = "#";
             int arrayLength = JArray.length();
-            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
             for (; i1 < (arrayLength); i1++) {
@@ -62,7 +62,7 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
                 try {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray orderstatus: " + String.valueOf(json.get("orderstatus")));
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderstatus: " + String.valueOf(json.get("orderstatus")));
 
 
                     if (json.has("orderid")) {
@@ -112,7 +112,7 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
                             manageOrdersPojoClass.itemdesp = itemdesp;
 
                         } else {
-                            Log.i(Constants.TAG, "Can't Get itemDesp");
+                            //Log.i(Constants.TAG, "Can't Get itemDesp");
                         }
 
                     } catch (Exception e) {
@@ -308,22 +308,22 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
                     }
                     ordersList.add(manageOrdersPojoClass);
 
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                     isnewOrdersSyncButtonClicked = false;
 
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                 }
 
 
             }
 
-            Log.d(Constants.TAG, "convertingJsonStringintoArray orderlist: " + ordersList);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray orderlist: " + ordersList);
 
             //saveorderDetailsInLocal(ordersList);
             displayorderDetailsinListview(ordersList);

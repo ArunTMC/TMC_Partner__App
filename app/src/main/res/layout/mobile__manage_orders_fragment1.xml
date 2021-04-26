@@ -168,12 +168,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:orientation="vertical">
+                android:orientation="horizontal">
                 <Spinner
                     android:id="@+id/slotType_Spinner"
                     android:layout_width="match_parent"
                     android:padding="5dp"
+                    android:visibility="gone"
                     android:layout_height="wrap_content"/>
+
+                <Button
+                    android:id="@+id/todaysOrder"
+                    android:layout_width="85dp"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textColor="@color/TMC_White"
+                    android:background="@drawable/orange_selected_button_background"
+                    android:text="@string/TodaysOrderText" />
+
+
+                <Button
+                    android:id="@+id/tomorrowsOrder"
+                    android:layout_width="85dp"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:background="@drawable/orange_non_selected_button_background"
+                    android:text="@string/TomorrowsOrderText" />
+
+
+
+
 
 
 
@@ -184,6 +216,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
+                android:visibility="visible"
+                android:id="@+id/horizontalScrollview"
                 android:scrollbars="none">
 
 
@@ -210,7 +244,7 @@
 
                     <Button
                         android:id="@+id/new_Order_widget"
-                        android:layout_width="70dp"
+                        android:layout_width="85dp"
                         android:layout_height="35dp"
                         android:layout_marginStart="20dp"
                         android:layout_marginTop="10dp"
@@ -223,7 +257,7 @@
 
                     <Button
                         android:id="@+id/confirmed_Order_widget"
-                        android:layout_width="98dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="35dp"
                         android:gravity="center"
                         android:layout_marginStart="12dp"
@@ -251,7 +285,7 @@
 
                     <Button
                         android:id="@+id/transist_Order_widget"
-                        android:layout_width="85dp"
+                        android:layout_width="100dp"
                         android:layout_height="35dp"
                         android:gravity="center"
                         android:layout_marginStart="14dp"
@@ -264,7 +298,7 @@
 
                     <Button
                         android:id="@+id/delivered_Order_widget"
-                        android:layout_width="85dp"
+                        android:layout_width="120dp"
                         android:layout_height="35dp"
                         android:gravity="center"
                         android:layout_marginStart="18dp"
@@ -299,7 +333,7 @@
                     android:id="@+id/manageOrders_ListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="140dp"
+                    android:layout_marginTop="165dp"
                     android:divider="#DDDDDD"
                     android:dividerHeight="10dp" />
 
@@ -313,7 +347,7 @@
                 android:alpha="0.85"
                 android:layout_centerInParent="true"
                 android:orientation="vertical"
-                android:visibility="visible" />
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/loadingPanel_dailyItemWisereport"

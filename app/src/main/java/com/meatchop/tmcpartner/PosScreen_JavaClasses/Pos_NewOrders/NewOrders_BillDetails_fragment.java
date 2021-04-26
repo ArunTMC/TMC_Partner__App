@@ -86,14 +86,14 @@ public class NewOrders_BillDetails_fragment extends Fragment {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(Constants.TAG,"createBillDetails in bill details");
+            //Log.i(Constants.TAG,"createBillDetails in bill details");
 
             String newTotalAmount = intent.getStringExtra("newTotalAmount");
             String newTaxandChargesAmount = intent.getStringExtra("newTaxandChargesAmount");
             String newAmount_toPay = intent.getStringExtra("newAmount_toPay");
 
 
-            Log.i(Constants.TAG,"createBillDetails in bill details  "+newTotalAmount);
+            //Log.i(Constants.TAG,"createBillDetails in bill details  "+newTotalAmount);
 
         }
     };

@@ -111,7 +111,7 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
 
             final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
-            Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.ordersList.get(pos));
+            //Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.ordersList.get(pos));
 
 
 
@@ -215,7 +215,7 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             try {
 
                 JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();
-                Log.i("tag","array.length()"+ array.length());
+                //Log.i("tag","array.length()"+ array.length());
                 String b= array.toString();
                 modal_manageOrders_pojo_class.setItemdesp_string(b);
                 String itemDesp="";
@@ -247,7 +247,7 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
 
                     } else {
 
-                        Log.i("tag", "array.lengrh(i" + json.length());
+                        //Log.i("tag", "array.lengrh(i" + json.length());
 
                         String itemName = String.valueOf(json.get("itemname"));
                         String price = String.valueOf(json.get("tmcprice"));
@@ -261,7 +261,7 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
                         }
 
                         //        orderDetails_text_widget.setText(String.format(itemDesp));
-                        Log.i("tag", "array.lengrh(i" + json.length());
+                        //Log.i("tag", "array.lengrh(i" + json.length());
 
 
                     }

@@ -154,11 +154,11 @@ Button button;
 
                 PrinterFunctions.PreformCut(portName,portSettings,1);
               //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
-                Log.i("tag","printer Log    "+                PrinterFunctions.PortDiscovery(portName,portSettings));
+                //Log.i("tag","printer Log    "+                PrinterFunctions.PortDiscovery(portName,portSettings));
 
-                Log.i("tag","printer Log    "+                PrinterFunctions.OpenPort( portName, portSettings));
+                //Log.i("tag","printer Log    "+                PrinterFunctions.OpenPort( portName, portSettings));
 
-                Log.i("tag","printer Log    "+        PrinterFunctions.CheckStatus( portName, portSettings,2));
+                //Log.i("tag","printer Log    "+        PrinterFunctions.CheckStatus( portName, portSettings,2));
 
 
             }

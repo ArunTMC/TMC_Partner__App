@@ -147,14 +147,14 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             result  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "Response: " + result);
+                            //Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
-                            Log.d("Constants.TAG", "Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -163,7 +163,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                                     JSONObject json = result.getJSONObject(i1);
 
                                     pos_vendorNameString = String.valueOf(json.get("name"));
-                                    Log.d(Constants.TAG, "JsonName: " + pos_vendorNameString);
+                                    //Log.d(Constants.TAG, "JsonName: " + pos_vendorNameString);
 
                                     if (!VendorName_arrayList.contains(pos_vendorNameString)) {
                                         VendorName_arrayList.add(pos_vendorNameString);
@@ -172,9 +172,9 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -193,9 +193,9 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -260,7 +260,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
             public void onResponse(@NonNull JSONObject response) {
 
                 try {
-                    Log.d(Constants.TAG, "response: " + response.get("body"));
+                    //Log.d(Constants.TAG, "response: " + response.get("body"));
                     String responseBody = String.valueOf(response.get("body"));
 
                     if(responseBody.equals("Success")){
@@ -286,9 +286,9 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -339,7 +339,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateUserDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -376,14 +376,14 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 }
 
 
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -408,7 +408,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     }
 
     private void saveVendorLoginStatus() {
-        Log.i(Constants.TAG,"VendorLoginStatus"+ pos_vendorLogin);
+        //Log.i(Constants.TAG,"VendorLoginStatus"+ pos_vendorLogin);
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);

@@ -99,7 +99,7 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
             subCtgyItem_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
+                    //Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
 
                             SubCtgyKey=getVendorData(i,"key");
                              getMenuItemsbasedOnSubCtgy(SubCtgyKey);
@@ -158,7 +158,7 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
             public void onResponse(@NonNull JSONObject response) {
 
 
-                Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                 
                 loadingpanelmask.setVisibility(View.GONE);
@@ -170,7 +170,7 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
                
                 int i1 = 0;
                 int arrayLength = JArray.length();
-                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                 for (; i1 < (arrayLength); i1++) {
@@ -185,14 +185,14 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
                         newOrdersPojoClass.displayno =String.valueOf(json.get("displayno"));
                         marinadeMenuList.add(newOrdersPojoClass);
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + marinadeMenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + marinadeMenuList);
 
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                        Log.d(Constants.TAG, "e: " + e.getMessage());
-                        Log.d(Constants.TAG, "e: " + e.toString());
+                        //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                        //Log.d(Constants.TAG, "e: " + e.getMessage());
+                        //Log.d(Constants.TAG, "e: " + e.toString());
 
                     }
 
@@ -220,9 +220,9 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                 error.printStackTrace();
             }
         }) {
@@ -293,7 +293,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, api_Update_DeliverySlotDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -304,7 +304,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
 
                     String message =  response.getString("message");
                     if(message.equals("success")) {
-                        Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
+                        //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
                     }
 
 
@@ -317,9 +317,9 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -404,9 +404,9 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -440,7 +440,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
             public void onResponse(@NonNull JSONObject response) {
 
                 try {
-                    Log.d(Constants.TAG, "response from subCtgy: " + response.get("content"));
+                    //Log.d(Constants.TAG, "response from subCtgy: " + response.get("content"));
                     result  = response.getJSONArray("content");
 
                     JSONArray content = (JSONArray) response.get("content");
@@ -454,7 +454,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                                 String key = String.valueOf(json.get("key"));
                                 String subctgyname = String.valueOf(json.get("subctgyname"));
                                 String displayNo = String.valueOf(json.get("displayno"));
-                                Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
+                                //Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
                                 if (!subCtgyName_arrayList.contains(subctgyname)) {
                                     subCtgyName_arrayList.add(subctgyname);
 
@@ -481,9 +481,9 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -549,7 +549,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
 
     private void ChangeAvailabilityInMenuItemDB(String menuItemKey, String availability) {
         Adjusting_Widgets_Visibility(true);
-        Log.d(TAG, " uploaduserDatatoDB.");
+        //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("key", menuItemKey);
@@ -560,13 +560,13 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateMenuItemDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                 Log.d(Constants.TAG, "Response: " + response);
+                 //Log.d(Constants.TAG, "Response: " + response);
                 Adjusting_Widgets_Visibility(false);
             }
         }, new Response.ErrorListener() {
@@ -574,9 +574,9 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
             public void onErrorResponse(@NonNull VolleyError error) {
                 Adjusting_Widgets_Visibility(false);
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -635,7 +635,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                         selected_CtgyItems.isMarinadeItem =false;
                     }
                         displaying_menuItems.add(selected_CtgyItems);
-                        Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
+                        //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
                         Adjusting_Widgets_Visibility(false);
                         try{
                             Collections.sort(displaying_menuItems, new Comparator<Modal_MenuItem_Settings>() {
@@ -675,10 +675,10 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                 //converting jsonSTRING into array
                 JSONObject jsonObject = new JSONObject(menulist);
                 JSONArray JArray = jsonObject.getJSONArray("content");
-                Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                 int i1 = 0;
                 int arrayLength = JArray.length();
-                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                 for (; i1 < (arrayLength); i1++) {
@@ -688,10 +688,10 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                         Modal_MenuItem_Settings newOrdersPojoClass = new Modal_MenuItem_Settings();
                         newOrdersPojoClass.itemname = String.valueOf(json.get("itemname"));
                         newOrdersPojoClass.key = String.valueOf(json.get("key"));
-                        Log.d("Constants.TAG", "out If : " + String.valueOf(json.get("itemname")));
+                        //Log.d("Constants.TAG", "out If : " + String.valueOf(json.get("itemname")));
 
                         if(String.valueOf(json.get("key")).equals("a065b1ce-0c12-4359-a593-97e85ddbb552")){
-                            Log.d("Constants.TAG", "in If : " + String.valueOf(json.get("itemname")));
+                            //Log.d("Constants.TAG", "in If : " + String.valueOf(json.get("itemname")));
 
                         }
                         newOrdersPojoClass.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
@@ -699,24 +699,24 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                         newOrdersPojoClass.barcode = String.valueOf(json.get("barcode"));
                         newOrdersPojoClass.itemuniquecode = String.valueOf(json.get("itemuniquecode"));
 
-                        Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                         MenuList.add(newOrdersPojoClass);
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                        Log.d(Constants.TAG, "e: " + e.getMessage());
-                        Log.d(Constants.TAG, "e: " + e.toString());
+                        //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                        //Log.d(Constants.TAG, "e: " + e.getMessage());
+                        //Log.d(Constants.TAG, "e: " + e.toString());
 
                     }
 
 
                 }
 
-                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
             } catch (JSONException e) {
@@ -741,7 +741,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
     public void ChangeMarinadeMenuitemAvailabilityStatus(String marinadeItemKey, String availability, String barcode) {
         Adjusting_Widgets_Visibility(true);
 
-        Log.d(TAG, " uploaduserDatatoDB.");
+        //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("key", marinadeItemKey);
@@ -752,13 +752,13 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateMarinadeMenuItemDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
                 Adjusting_Widgets_Visibility(false);
 
             }
@@ -767,9 +767,9 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
             public void onErrorResponse(@NonNull VolleyError error) {
                 Adjusting_Widgets_Visibility(false);
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }

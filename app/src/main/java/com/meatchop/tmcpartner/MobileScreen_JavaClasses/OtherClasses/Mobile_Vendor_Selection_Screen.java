@@ -88,7 +88,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 mobile_vendorNameString = mobile_vendor_selecting_spinner.getSelectedItem().toString();
-                Log.d(Constants.TAG, "VendorName: " + mobile_vendorNameString);
+                //Log.d(Constants.TAG, "VendorName: " + mobile_vendorNameString);
 
             }
 
@@ -107,7 +107,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
                 if (task.isSuccessful()) {
                     newtoken = task.getResult().getToken();
-                    Log.i("tag","token:  "+newtoken);
+                    //Log.i("tag","token:  "+newtoken);
                 }
 
             }
@@ -150,14 +150,14 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
 
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                              result  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "Response: " + result);
+                            //Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
-                            Log.d("Constants.TAG", "Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -167,7 +167,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
                                     mobile_vendorNameString = String.valueOf(json.get("name"));
                                     mobile_vendorKey = String.valueOf(json.get("key"));
-                                    Log.d(Constants.TAG, "JsonName: " + mobile_vendorNameString);
+                                    //Log.d(Constants.TAG, "JsonName: " + mobile_vendorNameString);
 
                                     if (!VendorName_arrayList.contains(mobile_vendorNameString)) {
                                         VendorName_arrayList.add(mobile_vendorNameString);
@@ -179,9 +179,9 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                                     loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                     loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -200,9 +200,9 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                 },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -264,7 +264,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
             public void onResponse(@NonNull JSONObject response) {
 
                 try {
-                    Log.d(Constants.TAG, "response: " + response.get("body"));
+                    //Log.d(Constants.TAG, "response: " + response.get("body"));
                     String responseBody = String.valueOf(response.get("body"));
 
                     if(responseBody.equals("Success")){
@@ -289,9 +289,9 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
             public void onErrorResponse(@NonNull VolleyError error) {
                 loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                 loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -342,13 +342,13 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateUserDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
 
                 try {
                     String statuscode=response.getString("statusCode");
@@ -384,9 +384,9 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -410,7 +410,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     }
 
     private void saveVendorLoginStatus() {
-        Log.i(Constants.TAG,"VendorLoginStatus"+ mobile_vendorLogin);
+        //Log.i(Constants.TAG,"VendorLoginStatus"+ mobile_vendorLogin);
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);

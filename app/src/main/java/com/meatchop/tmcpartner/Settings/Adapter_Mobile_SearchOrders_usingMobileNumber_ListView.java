@@ -53,6 +53,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
     String changestatusto,orderStatus,OrderKey,deliveryPersonName="";
     String Currenttime,MenuItems,orderStatusFromArray,FormattedTime,CurrentDate,formattedDate,CurrentDay,deliverytype;
     public searchOrdersUsingMobileNumber mobile_manageOrders1;
+    public  Pos_Orders_List Pos_Orders_List;
     public static  BottomSheetDialog bottomSheetDialog;
     String deliverypartnerName;
 
@@ -66,7 +67,23 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         this.orderStatus=orderStatus;
 
     }
+    public Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_Orders_List Pos_Orders_List) {
+        super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
 
+        this.Pos_Orders_List =  Pos_Orders_List;
+        this.mContext=mContext;
+        this.ordersList=ordersList;
+        this.orderStatus="DELIVERED";
+
+    }
+
+    public Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> sorted_ordersList, String orderStatus) {
+        super(mContext, R.layout.mobile_manage_orders_listview_item1,  sorted_ordersList);
+
+        this.mContext=mContext;
+        this.ordersList=sorted_ordersList;
+        this.orderStatus="DELIVERED";
+    }
 
 
     @Nullable
@@ -120,11 +137,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
         final Button other_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.other_assignDeliveryperson_button_widget);
         final Button cancelled_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.cancelled_assignDeliveryperson_button_widget);
-        final Button generateTokenNo_button_widget = listViewItem.findViewById(R.id.generateTokenNo_button_widget);
-        final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
+    //    final Button generateTokenNo_button_widget = listViewItem.findViewById(R.id.generateTokenNo_button_widget);
+     //   final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
         ordertypeLayout.setVisibility(View.GONE);
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
-        Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.sorted_OrdersList.get(pos));
+        //Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.sorted_OrdersList.get(pos));
         orderStatus = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
 
 
@@ -208,8 +225,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
 
-        Log.i("tag","orderStatusFromArray"+ orderStatusFromArray);
-        Log.i("tag","orderStatus"+ orderStatus);
+        //Log.i("tag","orderStatusFromArray"+ orderStatusFromArray);
+        //Log.i("tag","orderStatus"+ orderStatus);
         try {
             orderstatus_text_widget.setVisibility(View.VISIBLE);
 
@@ -309,11 +326,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                 if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                     pending_order_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
-                    generateTokenNo_button_widget.setVisibility(View.GONE);
+              //      generateTokenNo_button_widget.setVisibility(View.GONE);
 
                 } else {
                     pending_order_assignDeliveryperson_button_widget.setVisibility(View.GONE);
-                    generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+                //    generateTokenNo_button_widget.setVisibility(View.VISIBLE);
 
                 }
             }
@@ -322,11 +339,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                     String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                     if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                         other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
-                        transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+                  //      transit_generateTokenNo_button_widget.setVisibility(View.GONE);
 
                     } else {
                         other_assignDeliveryperson_button_widget.setVisibility(View.GONE);
-                        transit_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+                        //transit_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
 
 
                     }
@@ -390,7 +407,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         try {
 
             JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();
-            Log.i("tag","array.length()"+ array.length());
+            //Log.i("tag","array.length()"+ array.length());
             String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
             String itemDesp="";
@@ -422,7 +439,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 } else {
 
-                    Log.i("tag", "array.lengrh(i" + json.length());
+                    //Log.i("tag", "array.lengrh(i" + json.length());
 
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
@@ -436,7 +453,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                     }
 
             //        orderDetails_text_widget.setText(String.format(itemDesp));
-                    Log.i("tag", "array.lengrh(i" + json.length());
+                    //Log.i("tag", "array.lengrh(i" + json.length());
 
 
                 }
@@ -476,7 +493,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             }
         });
 
-        generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
+     /*   generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
@@ -485,7 +502,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 generatingTokenNo(vendorkey,orderDetailsKey);
 
-                Log.i("tag","orderkey1"+ OrderKey);
+                //Log.i("tag","orderkey1"+ OrderKey);
             }
         });
 
@@ -499,13 +516,15 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 generatingTokenNo(vendorkey,orderDetailsKey);
 
-                Log.i("tag","orderkey1"+ OrderKey);
+                //Log.i("tag","orderkey1"+ OrderKey);
 
 
             }
         });
 
 
+
+      */
 
 
 
@@ -517,13 +536,13 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 Currenttime = getDate_and_time();
                 changestatusto =Constants.CONFIRMED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("tag","orderkey1"+ OrderKey);
+                //Log.i("tag","orderkey1"+ OrderKey);
                 String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                 String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
 
                 generatingTokenNo(vendorkey,orderDetailsKey);
 
-                Log.i("Tag","0"+OrderKey);
+                //Log.i("Tag","0"+OrderKey);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.VISIBLE);
@@ -540,12 +559,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 changestatusto =Constants.CANCELLED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                //Log.i("Tag","0"+OrderKey);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
-                Log.i("Tag",""+changestatusto+OrderKey);
+                //Log.i("Tag",""+changestatusto+OrderKey);
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
@@ -561,7 +580,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 Currenttime = getDate_and_time();
 
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                //Log.i("Tag","0"+OrderKey);
 
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.VISIBLE);
@@ -702,9 +721,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             public void onResponse(@NonNull JSONObject response) {
 
 
-                Log.d(Constants.TAG, "api: " + Constants.api_generateTokenNo+vendorkey);
+                //Log.d(Constants.TAG, "api: " + Constants.api_generateTokenNo+vendorkey);
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
                 try {
                     String tokenNo = response.getString("tokenNumber");
                     UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
@@ -728,9 +747,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Error_Instruction,
                         R.string.OK_Text,R.string.Empty_Text,
                         new TMCAlertDialogClass.AlertListener() {
@@ -771,7 +790,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 jsonObject.put("key", orderDetailsKey);
                 jsonObject.put("tokenno", tokenNo);
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
 
 
 
@@ -782,10 +801,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -801,14 +820,14 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                     }
                 }
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Updated_Instruction,
                         R.string.OK_Text,R.string.Empty_Text,
                         new TMCAlertDialogClass.AlertListener() {
@@ -875,7 +894,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
@@ -887,7 +906,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
@@ -899,7 +918,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
             }
 
 
@@ -910,10 +929,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -934,15 +953,15 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                         notifyDataSetChanged();
                     }
                 }
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
                 mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
 
                 error.printStackTrace();

@@ -195,31 +195,103 @@
         </LinearLayout>
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:gravity="center_vertical"
-            android:id="@+id/searchOrdersUsingMobileNumbers"
-            android:visibility="visible"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="@string/AppOrdersList"
-                android:textSize="16sp"
-                android:textColor="@color/TMC_Primary_Text_Color"
-                android:fontFamily="@font/open_sans_semibold"
-
-                />
-        </LinearLayout>
-
-
-
 
 
     </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:id="@+id/manageordersLinearLayout"
+
+                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
+
+                    android:background="@mipmap/thick_border_line_seperator"
+                    />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="Manage Orders"
+
+                    android:textSize="18sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+
+                    android:background="@drawable/border_line" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/searchOrdersUsingMobileNumbers"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/AppOrdersList"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/pos_orders_list"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/PosOrdersList"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/delivered_orders_list"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/DeliveredOrdersTimewise_report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+            </LinearLayout>
 
 
 
@@ -230,6 +302,7 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:id="@+id/salesLinearLayout"
+
                 android:orientation="vertical">
                 <View
                     android:layout_width="match_parent"

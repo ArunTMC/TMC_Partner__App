@@ -49,8 +49,8 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
                     android:id="@+id/dateSelectorLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginTop="5dp"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
 
@@ -60,8 +60,8 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
                         android:layout_marginStart="13dp"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_semibold"
-                        android:text="Date"
                         android:gravity="center_vertical"
+                        android:text="Date"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="12sp" />
 
@@ -96,30 +96,6 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
                     android:textColor="@color/TMC_Primary_Text_Color"
                     android:textSize="14sp" />
 
-
-                <!--      <AutoCompleteTextView
-                    android:id="@+id/search_barEdit"
-                    android:completionThreshold="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/EditTextBorderColor"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginBottom="1dp"
-                    android:gravity="center_vertical"
-                    android:maxLength="13"
-                    android:inputType="phone"
-                    android:visibility="visible"
-                    android:text="+91"
-                    android:digits="+0123456789"
-                    android:background="#00000000"
-                    android:hint="@string/Enter_the_mobile_no_text"
-                    android:textColor="@color/TMC_Primary_Text_Color"
-                    android:textSize="14sp" />
-
-                -->
 
 
                 <EditText
@@ -232,6 +208,12 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
                 android:text="0"
                 android:textColor="@color/TMC_Orange"
                 android:textSize="16sp" />
+
+            <Spinner
+                android:id="@+id/SlotrangeSelector_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
 
         </LinearLayout>
@@ -369,8 +351,7 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
                 android:layout_gravity="right"
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal">
-
-                <LinearLayout
+               <LinearLayout
                     android:id="@+id/generateReport_Layout"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

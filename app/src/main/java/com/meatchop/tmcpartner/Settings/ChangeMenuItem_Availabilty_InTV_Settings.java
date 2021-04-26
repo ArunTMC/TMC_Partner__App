@@ -81,7 +81,7 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
         subCtgyItem_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
+                //Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
 
                 String SubCtgyKey=getVendorData(i,"key");
                 getMenuItemsbasedOnSubCtgy(SubCtgyKey);
@@ -131,7 +131,7 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
             public void onResponse(@NonNull JSONObject response) {
 
                 try {
-                    Log.d(Constants.TAG, "response from subCtgy: " + response.get("content"));
+                    //Log.d(Constants.TAG, "response from subCtgy: " + response.get("content"));
                     result  = response.getJSONArray("content");
 
                     JSONArray content = (JSONArray) response.get("content");
@@ -145,7 +145,7 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
                                 String key = String.valueOf(json.get("key"));
                                 String subctgyname = String.valueOf(json.get("subctgyname"));
                                 String displayNo = String.valueOf(json.get("displayno"));
-                                Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
+                                //Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
                                 if (!subCtgyName_arrayList.contains(subctgyname)) {
                                     subCtgyName_arrayList.add(subctgyname);
 
@@ -172,9 +172,9 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -240,7 +240,7 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
 
     private void ChangeAvailabilityInMenuItemDB(String menuItemKey, String availability) {
         Adjusting_Widgets_Visibility(true);
-        Log.d(TAG, " uploaduserDatatoDB.");
+        //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("key", menuItemKey);
@@ -251,13 +251,13 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateMenuItemDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
                 Adjusting_Widgets_Visibility(false);
             }
         }, new Response.ErrorListener() {
@@ -265,9 +265,9 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
             public void onErrorResponse(@NonNull VolleyError error) {
                 Adjusting_Widgets_Visibility(false);
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -327,7 +327,7 @@ public class ChangeMenuItem_Availabilty_InTV_Settings extends AppCompatActivity 
                 catch (Exception e){
                     e.printStackTrace();
                 }
-                Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
+                //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
                 Adjusting_Widgets_Visibility(false);
                 Adapter_ChangeMenuItemAvailabilityInTV adapter_menutem_availability_settings = new Adapter_ChangeMenuItemAvailabilityInTV(ChangeMenuItem_Availabilty_InTV_Settings.this, displaying_menuItems, ChangeMenuItem_Availabilty_InTV_Settings.this);
 

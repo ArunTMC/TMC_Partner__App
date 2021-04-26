@@ -96,7 +96,7 @@ public class Pos_ManageOrderFragment extends Fragment {
     SwipeRefreshLayout swipeRefreshLayout;
     List<String> slotnameChoosingSpinnerData;
     Spinner slotType_Spinner;
-    Button expressOrder_widget,preorder_widget;
+    Button todaysOrder_widget,tomorrowsorder_widget;
     static Adapter_Pos_ManageOrders_ListView manageOrdersListViewAdapter;
     private String SERVER_PATH = "wss://hx9itd7ji2.execute-api.ap-south-1.amazonaws.com/Dev";
      WebSocket webSocket;
@@ -152,8 +152,8 @@ public class Pos_ManageOrderFragment extends Fragment {
         ordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         slotnameChoosingSpinnerData= new ArrayList<>();
        // swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
-        expressOrder_widget = view.findViewById(R.id.expressOrder_widget);
-        preorder_widget = view.findViewById(R.id.preorder_widget);
+        todaysOrder_widget = view.findViewById(R.id.todaysOrder_widget);
+        tomorrowsorder_widget = view.findViewById(R.id.tomorrowsorder_widget);
         preorderdate_layout = view.findViewById(R.id.preorderdate_layout);
         radioBtn_Grp =view.findViewById(R.id.radioBtn_Grp);
 
@@ -200,7 +200,11 @@ public class Pos_ManageOrderFragment extends Fragment {
             showOrderInstructionText(false);
             isSearchButtonClicked =false;
 
-            getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
+
+            String Todaysdate = getDatewithNameoftheDay();
+            isSearchButtonClicked =false;
+            String PreviousDaydate = getDatewithNameofthePreviousDay();
+            getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
 
         }
         if(selected_OrderType == 1 ) {
@@ -209,11 +213,11 @@ public class Pos_ManageOrderFragment extends Fragment {
             isSearchButtonClicked =false;
 
             String Todaysdate = getDatewithNameoftheDay();
-            String PreviousDaydate = getDatewithNameofthePreviousDay();
 
-            getOrderDetailsUsingOrderSlotDate(PreviousDaydate,Todaysdate, vendorKey, orderStatus);
+            String TomorrowsDate = getTomorrowsDate();
+            getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
         }
-        if(selected_OrderType == 2 ) {
+     /*   if(selected_OrderType == 2 ) {
             showProgressBar(true);
             showOrderInstructionText(false);
             isSearchButtonClicked =false;
@@ -222,6 +226,8 @@ public class Pos_ManageOrderFragment extends Fragment {
             String TomorrowsDate = getTomorrowsDate();
             getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
         }
+
+      */
 /*
        setDataForSpinner();
 
@@ -229,7 +235,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 selected_OrderType = position;
-                Log.i("Spinner","position   "+position);
+                //Log.i("Spinner","position   "+position);
                 if(selected_OrderType == 0 ){
                     showProgressBar();
 
@@ -258,60 +264,48 @@ public class Pos_ManageOrderFragment extends Fragment {
 
  */
 
-        expressOrder_widget.setOnClickListener(new View.OnClickListener() {
+        todaysOrder_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                expressOrder_widget.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.orange_selected_button_background));
-                expressOrder_widget.setTextColor(Color.WHITE);
+                todaysOrder_widget.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.orange_selected_button_background));
+                todaysOrder_widget.setTextColor(Color.WHITE);
 
 
-                preorder_widget.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.orange_non_selected_button_background));
-                preorder_widget.setTextColor(Color.BLACK);
+                tomorrowsorder_widget.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.orange_non_selected_button_background));
+                tomorrowsorder_widget.setTextColor(Color.BLACK);
                 selected_OrderType =0;
 
                 preorderdate_layout.setVisibility(View.GONE);
                 showProgressBar(true);
                 showOrderInstructionText(false);
                 isSearchButtonClicked =false;
+                String Todaysdate = getDatewithNameoftheDay();
+                String PreviousDaydate = getDatewithNameofthePreviousDay();
+                getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
 
-                getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
 
             }
         });
-        preorder_widget.setOnClickListener(new View.OnClickListener() {
+        tomorrowsorder_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                preorderdate_layout.setVisibility(View.VISIBLE);
-                preorder_widget.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.orange_selected_button_background));
-                preorder_widget.setTextColor(Color.WHITE);
-                expressOrder_widget.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.orange_non_selected_button_background));
-                expressOrder_widget.setTextColor(Color.BLACK);
-                if(isRadioButtonSelected) {
-                    showProgressBar(true);
-                    showOrderInstructionText(false);
-                    isSearchButtonClicked =false;
-
-                    if (selected_OrderType == 1 || selected_OrderType == 0) {
-                        selected_OrderType = 1;
-                        String Todaysdate = getDatewithNameoftheDay();
-                        isSearchButtonClicked =false;
-                        String PreviousDaydate = getDatewithNameofthePreviousDay();
-
-                        getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
-                    }
-                    if (selected_OrderType == 2) {
+                preorderdate_layout.setVisibility(View.GONE);
+                tomorrowsorder_widget.setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.orange_selected_button_background));
+                tomorrowsorder_widget.setTextColor(Color.WHITE);
+                todaysOrder_widget.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.orange_non_selected_button_background));
+                todaysOrder_widget.setTextColor(Color.BLACK);
+                selected_OrderType =1;
                         showProgressBar(true);
                         isSearchButtonClicked =false;
                         String Todaysdate = getDatewithNameoftheDay();
 
                         String TomorrowsDate = getTomorrowsDate();
                         getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
-                    }
 
-                }
+
             }
         });
-
+/*
         radioBtn_Grp.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
@@ -350,6 +344,8 @@ public class Pos_ManageOrderFragment extends Fragment {
             }
         });
 
+
+ */
         search_barEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -372,17 +368,17 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                     for (int i = 0; i < ordersList.size(); i++) {
                         try {
-                            Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                            //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
                             mobileNo = mobileNo;
                             final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
                             final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
                             String mobilenumber = modal_manageOrders_forOrderDetailList.getUsermobile();
-                            Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                            Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobilenumber);
-                            Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobileNo);
+                            //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                            //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobilenumber);
+                            //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobileNo);
                             if (mobilenumber.contains("+91" + mobileNo)) {
 
-                                Log.d(Constants.TAG, "displayorderDetailsinListview orderid: " + modal_manageOrders_forOrderDetailList.getOrderid());
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderid: " + modal_manageOrders_forOrderDetailList.getOrderid());
                                 orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
                                 modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
                                 modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
@@ -463,19 +459,13 @@ public class Pos_ManageOrderFragment extends Fragment {
                     showOrderInstructionText(false);
                     isSearchButtonClicked =false;
 
-                    getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
-
-                }
-                if(selected_OrderType == 1 ) {
-                    showProgressBar(true);
-                    showOrderInstructionText(false);
-                    isSearchButtonClicked =false;
                     String PreviousDaydate = getDatewithNameofthePreviousDay();
 
                     String Todaysdate = getDatewithNameoftheDay();
                     getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+
                 }
-                if(selected_OrderType == 2 ) {
+                if(selected_OrderType == 1 ) {
                     showProgressBar(true);
                     showOrderInstructionText(false);
                     isSearchButtonClicked =false;
@@ -484,6 +474,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                     String TomorrowsDate = getTomorrowsDate();
                     getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
                 }
+
             }
         });
 
@@ -502,27 +493,24 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                 if(selected_OrderType == 0 ){
 
-                    getOrderDetailsUsingApi(TodaysDate,vendorKey,orderStatus);
+                    String PreviousDaydate = getDatewithNameofthePreviousDay();
+
+                    String Todaysdate = getDatewithNameoftheDay();
+                    getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
 
                 }
 
 
                 if(selected_OrderType == 1 ) {
-                     String PreviousDaydate = getDatewithNameofthePreviousDay();
-
-                    String Todaysdate = getDatewithNameoftheDay();
-                    getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
-                }
-
-
-
-                
-                if(selected_OrderType == 2 ) {
                     String Todaysdate = getDatewithNameoftheDay();
 
                     String TomorrowsDate = getTomorrowsDate();
                     getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
                 }
+
+
+
+
 
 
                saveCurrentStatusInSharedPref(orderStatus);
@@ -711,8 +699,8 @@ public class Pos_ManageOrderFragment extends Fragment {
             return;
         }
 
-
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
+        isnewOrdersSyncButtonClicked=true;
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
 
         ordersList.clear();
         sorted_OrdersList.clear();
@@ -726,11 +714,11 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforSlotDate_Vendorkey + "?slotdate="+SlotDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_AppOrders + "?slotdate="+SlotDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         jsonString=response.toString();
                         convertingJsonStringintoArray(selectedStatus,jsonString);
                           // adapter = new Adapter_AutoCompleteManageOrdersItem(mContext, jsonString);
@@ -745,12 +733,13 @@ public class Pos_ManageOrderFragment extends Fragment {
             public void onErrorResponse(@NonNull VolleyError error) {
                 showOrderInstructionText(true);
                 isnewOrdersSyncButtonClicked=false;
+                displayorderDetailsinListview(orderStatus,ordersList, selected_OrderType);
 
                 Toast.makeText(mContext,"There is no Orders Yet ",Toast.LENGTH_LONG).show();
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getCause());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getCause());
 
                 error.printStackTrace();
             }
@@ -791,7 +780,7 @@ public class Pos_ManageOrderFragment extends Fragment {
        }
 
 
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
 
         ordersList.clear();
         sorted_OrdersList.clear();
@@ -809,7 +798,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         jsonString=response.toString();
                         convertingJsonStringintoArray(selectedStatus,jsonString);
 
@@ -824,9 +813,9 @@ public class Pos_ManageOrderFragment extends Fragment {
                 showOrderInstructionText(true);
                 isnewOrdersSyncButtonClicked=false;
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -861,12 +850,12 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
     private void initiateSocketConnection() {
-        Log.i("SocketConnection","t   ");
+        //Log.i("SocketConnection","t   ");
         runOnUiThread(() -> {
 
             OkHttpClient client = new OkHttpClient();
             okhttp3.Request request = new okhttp3.Request.Builder().url(SERVER_PATH).addHeader("VendorKey",vendorKey).build();
-            Log.i("SocketConnection","  "+request.toString());
+            //Log.i("SocketConnection","  "+request.toString());
            webSocket = client.newWebSocket(request, new SocketListener());
 
         });
@@ -924,33 +913,33 @@ public class Pos_ManageOrderFragment extends Fragment {
         @Override
         public void onMessage(WebSocket webSocket, String text) {
             super.onMessage(webSocket, text);
-            Log.i("result","t   "+text);
+            //Log.i("result","t   "+text);
             Boolean statusChangedLocally = false;
             // websocket_OrdersList.clear();
             //orderinstruction.setVisibility(View.INVISIBLE);
 
-            Log.i("result","t   "+text);
+            //Log.i("result","t   "+text);
             JSONArray array = null;
             try {
                 array = new JSONArray(text);
-                Log.i(" array.length()", String.valueOf(array.length()));
+                //Log.i(" array.length()", String.valueOf(array.length()));
 
                 for(int i=0; i < array.length(); i++)
                 {
                     JSONObject json = array.getJSONObject(i);
                     String orderidfromsocketarray =String.valueOf(json.get("orderid"));
                     String orderstatusfromsocketarray =String.valueOf(json.get("orderstatus"));
-                    Log.i("orderid from socketresponse", orderidfromsocketarray);
-                    Log.i("status from socketresponse", orderstatusfromsocketarray);
+                    //Log.i("orderid from socketresponse", orderidfromsocketarray);
+                    //Log.i("status from socketresponse", orderstatusfromsocketarray);
                     for(int j=0;j<ordersList.size();j++)
                     {
                         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(j);
                         String orderidfromlocal =modal_manageOrders_pojo_class.getOrderid();
-                        Log.i("orderid from local array", orderidfromlocal);
+                        //Log.i("orderid from local array", orderidfromlocal);
 
                         if(orderidfromlocal.equals(orderidfromsocketarray)){
                             statusChangedLocally =true;
-                            Log.i(" in if", String.valueOf(statusChangedLocally));
+                            //Log.i(" in if", String.valueOf(statusChangedLocally));
 
                             modal_manageOrders_pojo_class.setOrderstatus(orderstatusfromsocketarray);
                             ordersList.set(j,modal_manageOrders_pojo_class);
@@ -960,7 +949,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                     }
                     if(!statusChangedLocally){
-                        Log.i(" in if !! ", String.valueOf(statusChangedLocally));
+                        //Log.i(" in if !! ", String.valueOf(statusChangedLocally));
 
                         //getorderDetailsDataFromDynamoDB(orderidfromsocketarray,orderstatusfromsocketarray);
                     }
@@ -972,7 +961,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             } catch (Exception ex) {
                 StringWriter stringWriter = new StringWriter();
                 ex.printStackTrace(new PrintWriter(stringWriter));
-                Log.e("exception ::: ", stringWriter.toString());
+                //Log.e("exception ::: ", stringWriter.toString());
             }
 
 
@@ -1023,13 +1012,13 @@ public class Pos_ManageOrderFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             //receive your data here
-            Log.v(Constants.TAG, "BroadCastSucess");
+            //Log.v(Constants.TAG, "BroadCastSucess");
             sorted_OrdersList.clear();
             ordersList.clear();
              jsonString = intent.getStringExtra("response");
             convertingJsonStringintoArray(orderStatus,jsonString);
             
-            Log.v(Constants.TAG, "BroadCastSucess"+jsonString);
+            //Log.v(Constants.TAG, "BroadCastSucess"+jsonString);
         }
     };
 
@@ -1062,11 +1051,11 @@ public class Pos_ManageOrderFragment extends Fragment {
             //converting jsonSTRING into array
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray JArray  = jsonObject.getJSONArray("content");
-            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
             int i1=0;
             String ordertype="#";
             int arrayLength = JArray.length();
-            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
             for(;i1<(arrayLength);i1++) {
@@ -1074,235 +1063,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                 try {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
-
-
-                    if(json.has("orderid")){
-                        manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderid ="";
-                    }
-
-
-                    if(json.has("orderplacedtime")){
-                        manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderplacedtime ="";
-                    }
-
-
-
-
-                    if(json.has("payableamount")){
-                        manageOrdersPojoClass.payableamount = String.valueOf(json.get("payableamount"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.payableamount ="";
-                    }
-
-
-                    if(json.has("paymentmode")){
-                        manageOrdersPojoClass.paymentmode = String.valueOf(json.get("paymentmode"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.paymentmode ="";
-                    }
-
-
-
-
-                    if(json.has("tokenno")){
-                        manageOrdersPojoClass.tokenno = String.valueOf(json.get("tokenno"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.tokenno ="";
-                    }
-
-
-
-
-
-                    try {
-                        if (json.has("itemdesp")) {
-                            JSONArray itemdesp = json.getJSONArray("itemdesp");
-
-                            manageOrdersPojoClass.itemdesp = itemdesp;
-
-                        } else {
-                            Log.i(Constants.TAG, "Can't Get itemDesp");
-                        }
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    if(json.has("orderStatus")){
-                        manageOrdersPojoClass.orderstatus = String.valueOf(json.get("orderStatus"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderstatus ="";
-                    }
-
-
-                    if(json.has("usermobile")){
-                        manageOrdersPojoClass.usermobile =  String.valueOf(json.get("usermobile"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.usermobile ="";
-                    }
-
-
-                    if(json.has("vendorkey")){
-                        manageOrdersPojoClass.vendorkey =  String.valueOf(json.get("vendorkey"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.vendorkey ="vendor_1";
-                    }
-
-
-                    if(json.has("orderdetailskey")){
-                        manageOrdersPojoClass.orderdetailskey =  String.valueOf(json.get("orderdetailskey"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderdetailskey ="";
-                    }
-
-
-                    if(json.has("orderdeliveredtime")){
-                        manageOrdersPojoClass.orderdeliveredtime =  String.valueOf(json.get("orderdeliveredtime"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderdeliveredtime ="";
-                    }
-                    if(json.has("useraddresskey")){
-                        manageOrdersPojoClass.useraddresskey =  String.valueOf(json.get("useraddresskey"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.useraddresskey ="";
-                    }
-
-
-                    if(json.has("useraddresslat")){
-                        manageOrdersPojoClass.useraddresslat =  String.valueOf(json.get("useraddresslat"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.useraddresslat ="";
-                    }
-
-
-                    if(json.has("useraddresslong")){
-                        manageOrdersPojoClass.useraddresslon =  String.valueOf(json.get("useraddresslong"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.useraddresslon ="";
-                    }
-
-
-                    if(json.has("orderreadytime")){
-                        manageOrdersPojoClass.orderreadytime = String.valueOf(json.get("orderreadytime"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderreadytime ="";
-                    }
-
-
-                    if(json.has("orderpickeduptime")){
-                        manageOrdersPojoClass.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderpickeduptime ="";
-                    }
-
-
-                    if(json.has("orderconfirmedtime")){
-                        manageOrdersPojoClass.orderconfirmedtime =  String.valueOf(json.get("orderconfirmedtime"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderconfirmedtime ="";
-                    }
-
-
-                    if(json.has("coupondiscount")){
-                        manageOrdersPojoClass.coupondiscamount = String.valueOf(json.get("coupondiscount"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.coupondiscamount ="";
-                    }
-
-
-                    if(json.has("deliverytype")){
-                        manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.deliverytype ="";
-                    }
-
-
-
-                    if(json.has("slottimerange")){
-                        manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.slottimerange ="";
-                    }
-
-
-
-                    if(json.has("slotdate")){
-                        manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.slotdate ="";
-                    }
-
-
-                    if(json.has("slotname")){
-                        manageOrdersPojoClass.slotname = String.valueOf(json.get("slotname"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.slotname ="";
-                    }
-
-                    if(json.has("slottimerange")){
-                        manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.slottimerange ="";
-                    }
-
-                    if(json.has("notes")){
-                        manageOrdersPojoClass.notes = String.valueOf(json.get("notes"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.notes ="";
-                    }
-
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
 
                     if(json.has("ordertype")){
                         manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
@@ -1312,36 +1073,229 @@ public class Pos_ManageOrderFragment extends Fragment {
                         ordertype="#";
                         manageOrdersPojoClass.orderType ="";
                     }
+                    if(ordertype.equals(Constants.APPORDER)) {
 
 
+                        if (json.has("orderid")) {
+                            manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
 
-                    if(json.has("keyfromtrackingDetails")){
-                        manageOrdersPojoClass.keyfromtrackingDetails = String.valueOf(json.get("keyfromtrackingDetails"));
+                        } else {
+                            manageOrdersPojoClass.orderid = "";
+                        }
 
-                    }
-                    else{
-                        manageOrdersPojoClass.keyfromtrackingDetails ="";
-                    }
 
-                    try {
-                        if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
-                            if (json.has("useraddress")) {
+                        if (json.has("orderplacedtime")) {
+                            manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
 
-                                String addresss = String.valueOf(json.get("useraddress"));
-                                if (!addresss.equals(null) && (!addresss.equals("null"))) {
-                                    manageOrdersPojoClass.useraddress = String.valueOf(json.get("useraddress"));
+                        } else {
+                            manageOrdersPojoClass.orderplacedtime = "";
+                        }
 
-                                } else {
-                                    manageOrdersPojoClass.useraddress = "";
 
-                                }
+                        if (json.has("payableamount")) {
+                            manageOrdersPojoClass.payableamount = String.valueOf(json.get("payableamount"));
+
+                        } else {
+                            manageOrdersPojoClass.payableamount = "";
+                        }
+
+
+                        if (json.has("paymentmode")) {
+                            manageOrdersPojoClass.paymentmode = String.valueOf(json.get("paymentmode"));
+
+                        } else {
+                            manageOrdersPojoClass.paymentmode = "";
+                        }
+
+
+                        if (json.has("tokenno")) {
+                            manageOrdersPojoClass.tokenno = String.valueOf(json.get("tokenno"));
+
+                        } else {
+                            manageOrdersPojoClass.tokenno = "";
+                        }
+
+
+                        try {
+                            if (json.has("itemdesp")) {
+                                JSONArray itemdesp = json.getJSONArray("itemdesp");
+
+                                manageOrdersPojoClass.itemdesp = itemdesp;
+
                             } else {
-                                manageOrdersPojoClass.useraddress = "";
+                                //Log.i(Constants.TAG, "Can't Get itemDesp");
                             }
 
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    }catch (Exception E){
-                            manageOrdersPojoClass.useraddress ="-";
+
+                        if (json.has("orderStatus")) {
+                            manageOrdersPojoClass.orderstatus = String.valueOf(json.get("orderStatus"));
+
+                        } else {
+                            manageOrdersPojoClass.orderstatus = "";
+                        }
+
+
+                        if (json.has("usermobile")) {
+                            manageOrdersPojoClass.usermobile = String.valueOf(json.get("usermobile"));
+
+                        } else {
+                            manageOrdersPojoClass.usermobile = "";
+                        }
+
+
+                        if (json.has("vendorkey")) {
+                            manageOrdersPojoClass.vendorkey = String.valueOf(json.get("vendorkey"));
+
+                        } else {
+                            manageOrdersPojoClass.vendorkey = "vendor_1";
+                        }
+
+
+                        if (json.has("orderdetailskey")) {
+                            manageOrdersPojoClass.orderdetailskey = String.valueOf(json.get("orderdetailskey"));
+
+                        } else {
+                            manageOrdersPojoClass.orderdetailskey = "";
+                        }
+
+
+                        if (json.has("orderdeliveredtime")) {
+                            manageOrdersPojoClass.orderdeliveredtime = String.valueOf(json.get("orderdeliveredtime"));
+
+                        } else {
+                            manageOrdersPojoClass.orderdeliveredtime = "";
+                        }
+                        if (json.has("useraddresskey")) {
+                            manageOrdersPojoClass.useraddresskey = String.valueOf(json.get("useraddresskey"));
+
+                        } else {
+                            manageOrdersPojoClass.useraddresskey = "";
+                        }
+
+
+                        if (json.has("useraddresslat")) {
+                            manageOrdersPojoClass.useraddresslat = String.valueOf(json.get("useraddresslat"));
+
+                        } else {
+                            manageOrdersPojoClass.useraddresslat = "";
+                        }
+
+
+                        if (json.has("useraddresslong")) {
+                            manageOrdersPojoClass.useraddresslon = String.valueOf(json.get("useraddresslong"));
+
+                        } else {
+                            manageOrdersPojoClass.useraddresslon = "";
+                        }
+
+
+                        if (json.has("orderreadytime")) {
+                            manageOrdersPojoClass.orderreadytime = String.valueOf(json.get("orderreadytime"));
+
+                        } else {
+                            manageOrdersPojoClass.orderreadytime = "";
+                        }
+
+
+                        if (json.has("orderpickeduptime")) {
+                            manageOrdersPojoClass.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
+
+                        } else {
+                            manageOrdersPojoClass.orderpickeduptime = "";
+                        }
+
+
+                        if (json.has("orderconfirmedtime")) {
+                            manageOrdersPojoClass.orderconfirmedtime = String.valueOf(json.get("orderconfirmedtime"));
+
+                        } else {
+                            manageOrdersPojoClass.orderconfirmedtime = "";
+                        }
+
+
+                        if (json.has("coupondiscount")) {
+                            manageOrdersPojoClass.coupondiscamount = String.valueOf(json.get("coupondiscount"));
+
+                        } else {
+                            manageOrdersPojoClass.coupondiscamount = "";
+                        }
+
+
+                        if (json.has("deliverytype")) {
+                            manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
+
+                        } else {
+                            manageOrdersPojoClass.deliverytype = "";
+                        }
+
+
+                        if (json.has("slottimerange")) {
+                            manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+
+                        } else {
+                            manageOrdersPojoClass.slottimerange = "";
+                        }
+
+
+                        if (json.has("slotdate")) {
+                            manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
+
+                        } else {
+                            manageOrdersPojoClass.slotdate = "";
+                        }
+
+
+                        if (json.has("slotname")) {
+                            manageOrdersPojoClass.slotname = String.valueOf(json.get("slotname"));
+
+                        } else {
+                            manageOrdersPojoClass.slotname = "";
+                        }
+
+                        if (json.has("slottimerange")) {
+                            manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+
+                        } else {
+                            manageOrdersPojoClass.slottimerange = "";
+                        }
+
+                        if (json.has("notes")) {
+                            manageOrdersPojoClass.notes = String.valueOf(json.get("notes"));
+
+                        } else {
+                            manageOrdersPojoClass.notes = "";
+                        }
+
+
+                        if (json.has("keyfromtrackingDetails")) {
+                            manageOrdersPojoClass.keyfromtrackingDetails = String.valueOf(json.get("keyfromtrackingDetails"));
+
+                        } else {
+                            manageOrdersPojoClass.keyfromtrackingDetails = "";
+                        }
+
+                        try {
+                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                                if (json.has("useraddress")) {
+
+                                    String addresss = String.valueOf(json.get("useraddress"));
+                                    if (!addresss.equals(null) && (!addresss.equals("null"))) {
+                                        manageOrdersPojoClass.useraddress = String.valueOf(json.get("useraddress"));
+
+                                    } else {
+                                        manageOrdersPojoClass.useraddress = "";
+
+                                    }
+                                } else {
+                                    manageOrdersPojoClass.useraddress = "";
+                                }
+
+                            }
+                        } catch (Exception E) {
+                            manageOrdersPojoClass.useraddress = "-";
                             E.printStackTrace();
                         }
                         try {
@@ -1350,58 +1304,55 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                                 if (json.has("deliverydistance")) {
 
-                                String deliverydistance =  String.valueOf(json.get("deliverydistance"));
-                                if(!deliverydistance.equals(null)&&(!deliverydistance.equals("null"))){
-                                    manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                    String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                    if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                        manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
 
-                                }
-                                else {
-                                    manageOrdersPojoClass.deliverydistance ="0";
+                                    } else {
+                                        manageOrdersPojoClass.deliverydistance = "0";
 
+                                    }
+                                } else {
+                                    manageOrdersPojoClass.deliverydistance = "0";
                                 }
-                            } else {
-                                manageOrdersPojoClass.deliverydistance = "0";
+
+
+                            }
+                        } catch (Exception E) {
+                            manageOrdersPojoClass.deliverydistance = "0";
+                            E.printStackTrace();
+                        }
+
+
+                        if (!String.valueOf(json.get("orderStatus")).equals("NEW")) {
+
+                            if (json.has("deliveryusername")) {
+                                manageOrdersPojoClass.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
+
+                            }
+                            if (json.has("deliveryuserkey")) {
+                                manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));
+                                ;
+
+                            }
+                            if (json.has("deliveryusermobileno")) {
+                                manageOrdersPojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
+
                             }
 
 
                         }
-                    }catch (Exception E){
-                        manageOrdersPojoClass.deliverydistance ="0";
-                        E.printStackTrace();
+                        ordersList.add(manageOrdersPojoClass);
+
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
                     }
-
-
-
-
-
-                    if(!String.valueOf(json.get("orderStatus")).equals("NEW")){
-
-                        if(json.has("deliveryusername")){
-                            manageOrdersPojoClass.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
-
-                        }
-                        if(json.has("deliveryuserkey")){
-                            manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));;
-
-                        }
-                        if(json.has("deliveryusermobileno")){
-                            manageOrdersPojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
-
-                        }
-
-
-                    }
-                    ordersList.add(manageOrdersPojoClass);
-
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                     isnewOrdersSyncButtonClicked=false;
 
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
 
 
@@ -1410,7 +1361,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
             }
 
-                Log.d(Constants.TAG, "convertingJsonStringintoArray orderlist: " + ordersList);
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray orderlist: " + ordersList);
 
                 //saveorderDetailsInLocal(ordersList);
                 displayorderDetailsinListview(orderStatus,ordersList, selected_OrderType);
@@ -1518,17 +1469,20 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
     private void displayorderDetailsinListview(String orderStatus, List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner) {
-        Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.size());
+        //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.size());
+        int newCount=0,confirmedCount=0,readyForPickupCount=0,transitCount=0,deliveredCount=0;
+
+
         sorted_OrdersList.clear();
         String TodaysDate = getDate();
         String TomorrowsDate = getTomorrowsDate();
-        Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
+        //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
 
-        Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
+        //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
 
-        if (slottypefromSpinner==2){
+        if (slottypefromSpinner==0){
             for (int i = 0; i < ordersList.size(); i++) {
-                Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
 
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
@@ -1537,14 +1491,14 @@ public class Pos_ManageOrderFragment extends Fragment {
                 String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
 
 
-                Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
 
-                Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
 
-                Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
 
-                if ((orderStatus.equals(orderstatusfromOrderList))&&(slotDate.equals(TomorrowsDate))&&(slotname.equals(Constants.PREORDER_SLOTNAME))) {
+                if ((orderStatus.equals(orderstatusfromOrderList))&&(slotDate.equals(TodaysDate))) {
                     modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
                     modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
                     modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
@@ -1590,7 +1544,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
     else if(slottypefromSpinner==1){
             for (int i = 0; i < ordersList.size(); i++) {
-                Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
 
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
@@ -1599,15 +1553,15 @@ public class Pos_ManageOrderFragment extends Fragment {
                 String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
 
 
-                Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
 
-                Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
 
-                Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
 
-                if ((orderStatus.equals(orderstatusfromOrderList))&&(slotDate.equals(TodaysDate))&&(slotname.equals(Constants.PREORDER_SLOTNAME))) {
-                    modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                if ((orderStatus.equals(orderstatusfromOrderList))&&(slotDate.equals(TomorrowsDate))){
+                modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
                     modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
                     modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
                     modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
@@ -1650,15 +1604,15 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
     else{
             for (int i = 0; i < ordersList.size(); i++) {
-                Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
 
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
                 String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
 
                 String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
-                Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
 
                 if ((orderStatus.equals(orderstatusfromOrderList))) {
                     modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
@@ -1705,6 +1659,99 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
 
 
+        for (int i = 0; i < ordersList.size(); i++) {
+            //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+
+            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+            String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
+            if(orderstatusfromOrderList.equals(Constants.NEW_ORDER_STATUS)){
+                newCount++;
+
+                Log.i("Tag","Count New : "+newCount);
+
+            }
+            else if(orderstatusfromOrderList.equals(Constants.CONFIRMED_ORDER_STATUS)){
+                confirmedCount++;
+
+
+                Log.i("Tag","Count confirmed : "+confirmedCount);
+
+            }
+            else if(orderstatusfromOrderList.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
+                readyForPickupCount++;
+
+
+                Log.i("Tag","Count ready : "+readyForPickupCount);
+
+            }
+            else if(orderstatusfromOrderList.equals(Constants.PICKEDUP_ORDER_STATUS)){
+                transitCount++;
+
+
+
+
+                Log.i("Tag","Count transit : "+transitCount);
+
+            }
+            else if(orderstatusfromOrderList.equals(Constants.DELIVERED_ORDER_STATUS)){
+                deliveredCount++;
+
+
+
+
+                Log.i("Tag","Count delivered : "+deliveredCount);
+
+            }
+            else{
+                Log.i("Tag","Count Status not matched ");
+
+            }
+        }
+
+
+        if(newCount>0) {
+            new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, newCount));
+        }
+        else{
+            new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
+
+        }
+
+
+        if(confirmedCount>0) {
+            confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, confirmedCount));
+        }
+        else{
+            confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
+
+        }
+
+
+        if(readyForPickupCount>0) {
+            ready_Order_widget.setText(String.format("%s ( %d )", Constants.READY_FOR_PICKUP_ORDER_STATUS, readyForPickupCount));
+        }
+        else{
+            ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
+
+        }
+
+
+        if(transitCount>0) {
+            transist_Order_widget.setText(String.format("%s ( %d )", Constants.PICKEDUP_ORDER_STATUS, transitCount));
+        }
+        else{
+            transist_Order_widget.setText(String.format("%s", Constants.PICKEDUP_ORDER_STATUS));
+
+        }
+
+        if(deliveredCount>0) {
+            delivered_Order_widget.setText(String.format("%s ( %d )", Constants.DELIVERED_ORDER_STATUS, deliveredCount));
+        }
+        else{
+            delivered_Order_widget.setText(String.format("%s", Constants.DELIVERED_ORDER_STATUS));
+
+        }
+
         if(sorted_OrdersList.size()>0){
             if (orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
                 Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
@@ -1718,7 +1765,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             if (orderStatus.equals(Constants.CONFIRMED_ORDER_STATUS)) {
                 Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
                     public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                        return object2.getOrderconfirmedtime().compareTo(object1.getOrderconfirmedtime());
+                        return object2.getOrderplacedtime().compareTo(object1.getOrderplacedtime());
                     }
                 });
             }
@@ -1778,12 +1825,12 @@ public class Pos_ManageOrderFragment extends Fragment {
 
              */
 
-             showProgressBar(false);
+
             isnewOrdersSyncButtonClicked=false;
 
             manageOrdersListViewAdapter = new Adapter_Pos_ManageOrders_ListView(mContext, sorted_OrdersList,Pos_ManageOrderFragment.this, orderStatus);
             manageOrders_ListView.setAdapter(manageOrdersListViewAdapter);
-
+            showProgressBar(false);
 
 
         }

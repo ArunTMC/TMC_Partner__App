@@ -52,7 +52,7 @@ public Filter getFilter() {
 
     public void setHandler(Handler handler) { this.handler = handler; }
     private void sendHandlerMessage(String bundlestr) {
-        Log.i(Constants.TAG,"createBillDetails in AutoComplete");
+        //Log.i(Constants.TAG,"createBillDetails in AutoComplete");
 
         Message msg =  new Message();
         Bundle bundle = new Bundle();
@@ -85,7 +85,7 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
     menuItemName_widget.setText(menuuItem.getItemname());
     CardView menuItem_CardLayout = convertView.findViewById(R.id.addItem_to_Cart_Layout);
 
-    Log.d(TAG, "Auto 2  menu in  Menulist"+menuListFull.size());
+    //Log.d(TAG, "Auto 2  menu in  Menulist"+menuListFull.size());
 
 
 
@@ -98,9 +98,9 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
-            Log.i(TAG," Auto menuListFull on click"+menuListFull.size());
-            Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + Objects.requireNonNull(menuuItem).getItemname());
-            Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + menuuItem.getTmcprice());
+            //Log.i(TAG," Auto menuListFull on click"+menuListFull.size());
+            //Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + Objects.requireNonNull(menuuItem).getItemname());
+            //Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + menuuItem.getTmcprice());
 
             Modal_NewOrderItems modal_newOrderItems = new Modal_NewOrderItems();
             if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcprice")){
@@ -114,8 +114,8 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                 modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
                 modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
 
-                Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
-                Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
+                //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
+                //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
 
 
 
@@ -248,8 +248,8 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
          //   int last_index =  (NewOrders_MenuItem_Fragment.cart_Item_List.size()-1);
           //  NewOrders_MenuItem_Fragment.cart_Item_List.set(last_index,modal_newOrderItems);
         //    NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
-            Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 2 " + menuuItem.getTmcpriceperkg());
-            Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 2 " +  menuuItem.getPricePerItem());
+            //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 2 " + menuuItem.getTmcpriceperkg());
+            //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 2 " +  menuuItem.getPricePerItem());
 
 
             sendHandlerMessage("dismissdropdown");
@@ -264,7 +264,7 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
 
     private void addItemIntheCart(Modal_NewOrderItems newItem_newOrdersPojoClass, String itemWeight,String itemUniquecode) {
-        //     Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
+        //     //Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
         boolean IsItemAlreadyAddedinCart ;
         IsItemAlreadyAddedinCart = checkforBarcodeInCart(itemUniquecode);
@@ -319,10 +319,10 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
             //converting jsonSTRING into array
             JSONObject jsonObject = new JSONObject(menulist);
             JSONArray JArray  = jsonObject.getJSONArray("content");
-            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
             int i1=0;
             int arrayLength = JArray.length();
-            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
             for(;i1<(arrayLength);i1++) {
@@ -350,25 +350,25 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                         Toast.makeText(context,"TMC tmcsubctgykey Json is Missing",Toast.LENGTH_LONG).show();
 
                     }
-                    Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                    //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                     menuListFull.add(newOrdersPojoClass);
 
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + menuListFull);
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + menuListFull);
 
 
 
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                    Log.d(Constants.TAG, "e: " + e.toString());
+                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                 }
 
 
             }
 
-            Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + menuListFull);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + menuListFull);
 
 
 

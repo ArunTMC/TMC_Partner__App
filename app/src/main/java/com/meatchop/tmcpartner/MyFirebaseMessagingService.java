@@ -22,6 +22,10 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launcher;
 import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launcher_transperent;
 import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launchersmall;
@@ -37,7 +41,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         //this is the general configuration for recieving the notification
         if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+            //Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
 
             //Setting the intent to open any activty from our appliction when user clicked the notification
             Intent intent = new Intent(this, MobileScreen_Dashboard.class);
@@ -45,12 +49,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 , intent,
                     PendingIntent.FLAG_ONE_SHOT);
             String channelId  = "Notification";
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-            //special notification connfiguration for the oreo device
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)  {
-                NotificationManager notificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
                 NotificationChannel channel = new NotificationChannel(channelId,
                         "Notification for device above Nought",
@@ -61,54 +66,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 channel.setShowBadge(true);
 
                 channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    channel.setAllowBubbles(true);
-                }
-                channel.setImportance( NotificationManager.IMPORTANCE_HIGH);
+
+                channel.setImportance(NotificationManager.IMPORTANCE_HIGH);
                 notificationManager.createNotificationChannel(channel);
 
 
-                Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-                NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
-
-                NotificationCompat.Builder notificationBuilder =
-                        new NotificationCompat.Builder(this, channelId)
-                                .setSmallIcon(R.drawable.tmctransparent)
-                                .setContentTitle(remoteMessage.getNotification().getTitle())
-                                .setContentText(remoteMessage.getNotification().getBody())
-                                .setSound(defaultSoundUri)
-                                .setColor(990000)
-                                .setPriority(Notification.PRIORITY_MAX)
-                                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
-                                        tmcicon_launcher))
-                                .setVibrate(new long[]{400, 400})
-                                .setStyle(bigText)
-                                .setDefaults(NotificationCompat.DEFAULT_ALL)
-                                .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
-                                .setAutoCancel(true)
-                                .setContentIntent(pendingIntent);
-
-
-
-
-                notificationBuilder.build().flags |= Notification.FLAG_AUTO_CANCEL;
-
-                notificationManager.notify(0, notificationBuilder.build());
-
             }
-            else{
-
-                NotificationManager notificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 
-                Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-                NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
-                NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
-                Drawable drawable= ContextCompat.getDrawable(this, tmcicon_launcher);
+            if(remoteMessage.getNotification().getImageUrl()!=null){
 
-                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
-                bigPictureStyle.bigPicture(bitmap);
+                String imageUrl = remoteMessage.getNotification().getImageUrl().toString();
+                Bitmap bitmap = getBitmapfromUrl(imageUrl);
                 NotificationCompat.Builder notificationBuilder =
                         new NotificationCompat.Builder(this, channelId)
                                 .setSmallIcon(R.drawable.tmctransparent)
@@ -116,18 +85,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                                 .setContentText(remoteMessage.getNotification().getBody())
                                 .setSound(defaultSoundUri)
                                 .setColor(990000)
-                                .setPriority(2)
                                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),
                                         tmcicon_launcher))
                                 .setVibrate(new long[]{400, 400})
-                                .setStyle(bigPictureStyle)
                                 .setPriority(Notification.PRIORITY_MAX)
                                 .setAutoCancel(true)
-
-                                .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
-                                .setContentIntent(pendingIntent);
-
+                                .setStyle(new NotificationCompat.BigPictureStyle()
+                                        .bigPicture(bitmap)
+                                        .bigLargeIcon(BitmapFactory.decodeResource(getResources(),
+                                                R.mipmap.tmcicon_launcher))
+                                )
+                               .setContentIntent(pendingIntent);
 
 
                 notificationBuilder.build().flags |= Notification.FLAG_AUTO_CANCEL;
@@ -136,9 +105,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 notificationManager.notify(0, notificationBuilder.build());
 
             }
+            else {
+
+                   NotificationCompat.Builder notificationBuilder =
+                        new NotificationCompat.Builder(this, channelId)
+                                .setSmallIcon(R.drawable.tmctransparent)
+                                .setContentTitle(remoteMessage.getNotification().getTitle())
+                                .setContentText(remoteMessage.getNotification().getBody())
+                                .setSound(defaultSoundUri)
+                                .setColor(990000)
+                                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
+                                        tmcicon_launcher))
+                                .setVibrate(new long[]{400, 400})
+                                .setPriority(Notification.PRIORITY_MAX)
+                                .setAutoCancel(true)
+
+                                .setContentIntent(pendingIntent);
 
 
+                notificationBuilder.build().flags |= Notification.FLAG_AUTO_CANCEL;
 
+
+                notificationManager.notify(0, notificationBuilder.build());
+
+
+            }
 
         }
 
@@ -151,13 +143,29 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(String token) {
-        Log.d(TAG, "Refreshed token: " + token);
+        //Log.d(TAG, "Refreshed token: " + token);
 
     }
 
 
 
 
+
+
+    public Bitmap getBitmapfromUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (Exception e) {
+            Log.e("awesome", "Error in getting notification image: " + e.getLocalizedMessage());
+            return null;
+        }
+    }
 
 
 

@@ -60,7 +60,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-        Log.d("debug","Screen inches : " + screenInches);
+        //Log.d("debug","Screen inches : " + screenInches);
         SharedPreferences sharedPreferences
                 = getSharedPreferences("CurrentSelectedStatus",
                 MODE_PRIVATE);
@@ -75,7 +75,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
         myEdit.apply();
 
         if(screenInches < 8 ){
-            Log.d("debug","Mobile device");
+            //Log.d("debug","Mobile device");
           // setContentView(R.layout.pos_login_activity);
 
            Intent i =new Intent(Pos_LoginScreen.this, Mobile_LoginScreen.class);
@@ -88,7 +88,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
             {
 
 
-                Log.d("debug","Pos device");
+                //Log.d("debug","Pos device");
 
                 setContentView(R.layout.pos_login_activity);
 
@@ -186,7 +186,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
         double x = Math.pow(dm.widthPixels/dm.xdpi,2);
         double y = Math.pow(dm.heightPixels/dm.ydpi,2);
         double screenInches = Math.sqrt(x+y);
-        Log.d("debug","Screen inches : " + screenInches);
+        //Log.d("debug","Screen inches : " + screenInches);
         if(screenInches < 8 ){
             Intent i =new Intent(Pos_LoginScreen.this, Mobile_LoginScreen.class);
             startActivity(i);
@@ -207,11 +207,11 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
                                           @Override
                                           public void onResult(UserStateDetails userStateDetails) {
-                                              Log.i("Tag", "Intialization Success");
+                                              //Log.i("Tag", "Intialization Success");
 
-                                              Log.i("INIT", "onResult: " + userStateDetails.getUserState());
+                                              //Log.i("INIT", "onResult: " + userStateDetails.getUserState());
                                               if (userStateDetails.getUserState() == UserState.SIGNED_IN) {
-                                                  Log.i("Tag", "Intialization Success 2");
+                                                  //Log.i("Tag", "Intialization Success 2");
 
                                                    loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
                                                     loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
@@ -220,9 +220,9 @@ public class Pos_LoginScreen extends AppCompatActivity {
                                                           MODE_PRIVATE);
 
                                                   vendorLoginStatusBoolean = sh.getBoolean("VendorLoginStatus", false);
-                                                  Log.i("Tag", " Successfully got the vendor login status");
+                                                  //Log.i("Tag", " Successfully got the vendor login status");
 
-                                                  Log.i("Tag", "VendorLoginStatus ee" + vendorLoginStatusBoolean);
+                                                  //Log.i("Tag", "VendorLoginStatus ee" + vendorLoginStatusBoolean);
 
                                                   runOnUiThread(new Runnable() {
 
@@ -231,13 +231,13 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
                                                   Intent i;
                                                   if (vendorLoginStatusBoolean) {
-                                                      Log.i("Tag", " Navigate to dashboard according to vendor login status");
+                                                      //Log.i("Tag", " Navigate to dashboard according to vendor login status");
 
                                                       loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                       loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                       i = new Intent(Pos_LoginScreen.this, Pos_Dashboard_Screen.class);
                                                   } else {
-                                                      Log.i("Tag", " Navigate to vendor selection screen according to vendor login status");
+                                                      //Log.i("Tag", " Navigate to vendor selection screen according to vendor login status");
 
                                                       loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                       loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
@@ -251,7 +251,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
                                                   });
                                               } else {
-                                                  Log.i("Tag", "First Signin bcz ur account is   " + userStateDetails.getUserState());
+                                                  //Log.i("Tag", "First Signin bcz ur account is   " + userStateDetails.getUserState());
                                                   loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                   loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                               }
@@ -260,10 +260,10 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
                                           @Override
                                           public void onError(Exception e) {
-                                              Log.i("Tag", "Intialization not Success");
+                                              //Log.i("Tag", "Intialization not Success");
                                               loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                               loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                                              Log.e("INIT", "Initialization error.", e.fillInStackTrace());
+                                              //Log.e("INIT", "Initialization error.", e.fillInStackTrace());
                                           }
                                       }
 
@@ -292,15 +292,15 @@ public class Pos_LoginScreen extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "Sign-up callback state: " + signUpResult.getConfirmationState());
+                        //Log.d(TAG, "Sign-up callback state: " + signUpResult.getConfirmationState());
                         if (!signUpResult.getConfirmationState()) {
 
                             final UserCodeDeliveryDetails details = signUpResult.getUserCodeDeliveryDetails();
-                            Log.d(TAG, "Sign-up callback state: " + details.getDestination());
+                            //Log.d(TAG, "Sign-up callback state: " + details.getDestination());
                         } else {
 
                             StartSignIN(mobileNo_String);
-                            Log.d(TAG, "Sign-up  " );
+                            //Log.d(TAG, "Sign-up  " );
                         }
                     }
                 });
@@ -320,7 +320,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
                         StartSignIN(mobileNo_String);
                     }
                 });
-                Log.e(TAG, "Sign-up error", e.fillInStackTrace());
+                //Log.e(TAG, "Sign-up error", e.fillInStackTrace());
             }
         });
 
@@ -339,19 +339,19 @@ public class Pos_LoginScreen extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "UserName"+mobileNo_String);
+                        //Log.d(TAG, "UserName"+mobileNo_String);
 
-                        Log.d(TAG, "Log-in callback state2 : " + signInResult.getSignInState());
+                        //Log.d(TAG, "Log-in callback state2 : " + signInResult.getSignInState());
                         switch (signInResult.getSignInState()) {
                             case DONE:
-                                Log.d(TAG,"Log-in done state.");
-                                Log.d(TAG,"Email: " + signInResult.getCodeDetails());
+                                //Log.d(TAG,"Log-in done state.");
+                                //Log.d(TAG,"Email: " + signInResult.getCodeDetails());
                                 break;
                             case SMS_MFA:
-                                Log.d(TAG,"Please confirm sign-in with SMS.");
+                                //Log.d(TAG,"Please confirm sign-in with SMS.");
                                 break;
                             case NEW_PASSWORD_REQUIRED:
-                                Log.d(TAG,"Please confirm sign-in with new password.");
+                                //Log.d(TAG,"Please confirm sign-in with new password.");
                                 break;
                             case CUSTOM_CHALLENGE:
                                 pos_otp_Ed_Layout.setVisibility(View.VISIBLE);
@@ -362,11 +362,11 @@ public class Pos_LoginScreen extends AppCompatActivity {
                                 enter_MobileNo_widget.setVisibility(View.GONE);
                                 enter_OtpInfo_widget.setVisibility(View.VISIBLE);
 
-                                Log.d(TAG," Custom challenge.");
+                                //Log.d(TAG," Custom challenge.");
                                 break;
                             default:
 
-                                Log.d(TAG,"Unsupported Log-in confirmation: " + signInResult.getSignInState());
+                                //Log.d(TAG,"Unsupported Log-in confirmation: " + signInResult.getSignInState());
                                 break;
                         }
                     }
@@ -375,7 +375,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
             @Override
             public void onError(final Exception e) {
-                Log.e(TAG, "sign-in error", e.fillInStackTrace());
+                //Log.e(TAG, "sign-in error", e.fillInStackTrace());
             }
         });
     }
@@ -388,7 +388,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
         private GenericTextWatcher(View view) {
             this.view = view;
-            Log.i("Tag","ONGeneric Text Watcher");
+            //Log.i("Tag","ONGeneric Text Watcher");
         }
 
         @SuppressLint("NonConstantResourceId")
@@ -396,7 +396,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
         public void afterTextChanged(Editable editable) {
             String text = editable.toString();
 
-            Log.i("Tag","ONAfterTextChanged");
+            //Log.i("Tag","ONAfterTextChanged");
             switch (view.getId()) {
 
                 case R.id.otp_first_et:
@@ -487,12 +487,12 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
         @Override
         public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-            Log.i("Tag","ONbeforeTextChanged");
+            //Log.i("Tag","ONbeforeTextChanged");
         }
 
         @Override
         public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-            Log.i("Tag","ONTextChanged");
+            //Log.i("Tag","ONTextChanged");
         }
     }
 
@@ -501,17 +501,17 @@ public class Pos_LoginScreen extends AppCompatActivity {
     private void verifyotp() {
         final Map<String, String> attributes = new HashMap<>();
         attributes.put("ANSWER", passCode);
-        Log.d(TAG, "Si "+passCode);
+        //Log.d(TAG, "Si "+passCode);
 
         AWSMobileClient.getInstance().confirmSignIn(attributes, new Callback<SignInResult>() {
             @Override
             public void onResult(SignInResult signInResult) {
-                Log.d(TAG, "UserName "+ userMobileString +"  password "+passCode);
+                //Log.d(TAG, "UserName "+ userMobileString +"  password "+passCode);
 
-                Log.d(TAG, "Log-in  state: " + signInResult.getSignInState());
+                //Log.d(TAG, "Log-in  state: " + signInResult.getSignInState());
                 switch (signInResult.getSignInState()) {
                     case DONE:
-                        Log.d(TAG, "Log-in done");
+                        //Log.d(TAG, "Log-in done");
                         saveUserDetails();
                         Intent i = new Intent(Pos_LoginScreen.this, Pos_Vendor_Selection_Screen.class);
                         startActivity(i);
@@ -519,18 +519,18 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
                         break;
                     case SMS_MFA:
-                        Log.d(TAG, "Please confirm sign-in with SMS.");
+                        //Log.d(TAG, "Please confirm sign-in with SMS.");
                         break;
                     case NEW_PASSWORD_REQUIRED:
-                        Log.d(TAG, "Please confirm sign-in with new password.");
+                        //Log.d(TAG, "Please confirm sign-in with new password.");
                         break;
                     case CUSTOM_CHALLENGE:
                         AlertDialogClass.showDialog(Pos_LoginScreen.this, R.string.Enter_Correct_OTP);
 
-                        Log.d(TAG," Custom challenge.");
+                        //Log.d(TAG," Custom challenge.");
                         break;
                     default:
-                        Log.d(TAG, "Unsupported Log-in confirmation: " + signInResult.getSignInState().toString());
+                        //Log.d(TAG, "Unsupported Log-in confirmation: " + signInResult.getSignInState().toString());
                         break;
                 }
             }
@@ -540,9 +540,9 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
 
 
-                Log.d(TAG, "UserNamexx"+ userMobileString +"  passwordvv"+passCode);
+                //Log.d(TAG, "UserNamexx"+ userMobileString +"  passwordvv"+passCode);
 
-                Log.e(TAG, "Log-in error", e);
+                //Log.e(TAG, "Log-in error", e);
             }
         });
     }

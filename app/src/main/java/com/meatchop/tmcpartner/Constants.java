@@ -56,6 +56,7 @@ public class Constants {
    public static final String api_GetTrackingOrderDetailsforSlotDate_Vendorkey_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsforslotdate";
     public static final String api_GetTrackingOrderDetailsforSlotDate_Vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsforslotdatenew";
     public static final String api_ToSendTextMsgtoUser ="https://alerts.sinfini.com/api/web2sms.php?workingkey=Ae428c4a11138a24e41b45a0fce3576fb&sender=TMCHOP";
+    public static final String api_GetTrackingOrderDetails_AppOrders ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsapporders";
 
 
      public static final String api_GetTrackingOrderDetailsforDate_Vendorkey_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdertailsfordate";

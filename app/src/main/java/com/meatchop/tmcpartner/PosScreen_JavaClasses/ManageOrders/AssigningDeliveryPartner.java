@@ -59,10 +59,10 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
                         try {
                             //converting jsonSTRING into array
                             JSONArray JArray  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1=0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for(;i1<(arrayLength);i1++) {
@@ -75,7 +75,7 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
                                     assignDeliveryPartner_pojoClass.deliveryPartnerMobileNo =String.valueOf(json.get("mobileno"));
                                     assignDeliveryPartner_pojoClass.deliveryPartnerName =String.valueOf(json.get("name"));
 
-                                   // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                                   // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                                     deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
 
                                     Adapter_AssignDeliveryPartner adapter_assignDeliveryPartner= new Adapter_AssignDeliveryPartner(AssigningDeliveryPartner.this,deliveryPartnerList,orderKey);
@@ -89,9 +89,9 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -113,9 +113,9 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
 
                 error.printStackTrace();
             }

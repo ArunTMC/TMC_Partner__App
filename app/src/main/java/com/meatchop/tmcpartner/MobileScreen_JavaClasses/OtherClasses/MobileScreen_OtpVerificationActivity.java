@@ -72,12 +72,12 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
 
                     @Override
                     public void onResult(UserStateDetails userStateDetails) {
-                        Log.i("INIT", "onResult: " + userStateDetails.getUserState());
+                        //Log.i("INIT", "onResult: " + userStateDetails.getUserState());
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        Log.e("INIT", "Initialization error.", e);
+                        //Log.e("INIT", "Initialization error.", e);
                     }
                 }
         );
@@ -174,7 +174,7 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
 
         private GenericTextWatcher(View view) {
             this.view = view;
-            Log.i("Tag", "ONGeneric Text Watcher");
+            //Log.i("Tag", "ONGeneric Text Watcher");
         }
 
         @SuppressLint("NonConstantResourceId")
@@ -182,7 +182,7 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
         public void afterTextChanged(Editable editable) {
             String text = editable.toString();
 
-            Log.i("Tag", "ONAfterTextChanged");
+            //Log.i("Tag", "ONAfterTextChanged");
             switch (view.getId()) {
 
                 case R.id.otp_first_et:
@@ -272,12 +272,12 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
 
         @Override
         public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-            Log.i("Tag", "ONbeforeTextChanged");
+            //Log.i("Tag", "ONbeforeTextChanged");
         }
 
         @Override
         public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-            Log.i("Tag", "ONTextChanged");
+            //Log.i("Tag", "ONTextChanged");
         }
     }
 
@@ -285,17 +285,17 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
     private void verifyotp() {
         final Map<String, String> attributes = new HashMap<>();
         attributes.put("ANSWER", passCode);
-        Log.d(TAG, "Si " + passCode);
+        //Log.d(TAG, "Si " + passCode);
 
         AWSMobileClient.getInstance().confirmSignIn(attributes, new Callback<SignInResult>() {
             @Override
             public void onResult(SignInResult signInResult) {
-                Log.d(TAG, "UserName " + userMobileString + "  password " + passCode);
+                //Log.d(TAG, "UserName " + userMobileString + "  password " + passCode);
 
-                Log.d(TAG, "Log-in  state: " + signInResult.getSignInState());
+                //Log.d(TAG, "Log-in  state: " + signInResult.getSignInState());
                 switch (signInResult.getSignInState()) {
                     case DONE:
-                        Log.d(TAG, "Log-in done");
+                        //Log.d(TAG, "Log-in done");
 
                         saveUserDetails();
                         Intent i = new Intent(MobileScreen_OtpVerificationActivity.this, Mobile_Vendor_Selection_Screen.class);
@@ -306,10 +306,10 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
 
                         break;
                     case SMS_MFA:
-                        Log.d(TAG, "Please confirm sign-in with SMS.");
+                        //Log.d(TAG, "Please confirm sign-in with SMS.");
                         break;
                     case NEW_PASSWORD_REQUIRED:
-                        Log.d(TAG, "Please confirm sign-in with new password.");
+                        //Log.d(TAG, "Please confirm sign-in with new password.");
                         break;
                     case CUSTOM_CHALLENGE:
                         loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
@@ -317,10 +317,10 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
 
                         AlertDialogClass.showDialog(MobileScreen_OtpVerificationActivity.this, R.string.Enter_Correct_OTP);
 
-                        Log.d(TAG, " Custom challenge.");
+                        //Log.d(TAG, " Custom challenge.");
                         break;
                     default:
-                        Log.d(TAG, "Unsupported Log-in confirmation: " + signInResult.getSignInState().toString());
+                        //Log.d(TAG, "Unsupported Log-in confirmation: " + signInResult.getSignInState().toString());
                         break;
                 }
             }
@@ -331,9 +331,9 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
                 loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
 
 
-                Log.d(TAG, "UserNamexx" + userMobileString + "  passwordvv" + passCode);
+                //Log.d(TAG, "UserNamexx" + userMobileString + "  passwordvv" + passCode);
 
-                Log.e(TAG, "Log-in error", e);
+                //Log.e(TAG, "Log-in error", e);
             }
         });
     }

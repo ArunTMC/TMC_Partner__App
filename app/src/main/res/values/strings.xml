@@ -38,6 +38,8 @@
     <string name="Settings_text">Settings </string>
 
     <string name="Cant_place_order">Cannot Place Order while Bill amount is 0</string>
+    <string name="TodaysOrderText">Todays Order </string>
+    <string name="TomorrowsOrderText">Tomorrows Order</string>
 
     <string name="Enter_the_mobile_no_text">Enter the Mobile Number</string>
     <string name="Name_Of_the_Vendor_text">TMC Hasthinapuram , Chromepet</string>
@@ -126,8 +128,11 @@
     <string name="Change_Menu_Item_Status">Change Menu Availability Status </string>
     <string name="Change_Menu_Item_Visibility_in_Tv">Change Menu Visibility In TV </string>
     <string name="Change_Menu_Item_Price">Change Menu Item Price</string>
-    <string name="Version_No">Version No : 1.3.7 </string>
+    <string name="Version_No">Version No : 1.4.1.2 </string>
     <string name="AppOrdersList">App Orders List </string>
+    <string name="PosOrdersList">Pos Orders List </string>
+    <string name="DeliveredOrdersTimewise_report">Delivered Orders Timewise Report </string>
+
 
     <string name="ItemStatus">Item Status </string>
     <string name="LogOut">Log out </string>

@@ -210,7 +210,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int writeExternalStoragePermission = ContextCompat.checkSelfPermission(Consolidated_Sales_Report.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
                 // If do not grant write external storage permission.
                 if(writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
                 {
@@ -339,7 +339,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
                             String CurrentDay =   getDayString(dayOfWeek);
-                            Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
+                            //Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
 
 
 
@@ -378,15 +378,15 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
                             String orderid = "",deliverytype="";
                             double discount_double=0,discountfromHashmap_double=0;
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for (int i1 =0 ; i1 < JArray.length(); i1++) {
@@ -394,7 +394,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                 try {
                                     JSONObject json = JArray.getJSONObject(i1);
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                 //   Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+                                 //   //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
                                     JSONArray itemdesp;
 
 
@@ -406,7 +406,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             itemdesp = json.getJSONArray("itemdesp");
                                             modal_orderDetails.itemdesp = itemdesp;
 
-                                            Log.d(Constants.TAG, "itemdesp has been succesfully  retrived" );
+                                            //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived" );
 
                                         }
                                         catch (Exception e ){
@@ -415,7 +415,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                     } else {
 
-                                        Log.d(Constants.TAG, "There is no itemdesp: ");
+                                        //Log.d(Constants.TAG, "There is no itemdesp: ");
 
 
                                     }
@@ -425,7 +425,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         try{
                                             modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                             orderid =  String.valueOf(json.get("orderid"));
-                                            Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
+                                            //Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
 
                                         }catch (Exception e){
                                             e.printStackTrace();
@@ -436,7 +436,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                     else
                                     {
                                         modal_orderDetails.orderid = "There is no orderid";
-                                        Log.d(Constants.TAG, "There is no orderid: " + String.valueOf(json.get("orderid")));
+                                        //Log.d(Constants.TAG, "There is no orderid: " + String.valueOf(json.get("orderid")));
 
 
                                     }
@@ -448,15 +448,15 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                             double newpayableamount = Double.parseDouble(String.valueOf(json.get("payableamount")));
 
-                                            Log.i(Constants.TAG,"Consolidated Report old oldpayableamount  "+String.valueOf(oldpayableamount));
+                                            //Log.i(Constants.TAG,"Consolidated Report old oldpayableamount  "+String.valueOf(oldpayableamount));
 
                                             oldpayableamount = newpayableamount+oldpayableamount;
-                                            Log.i(Constants.TAG,"Consolidated Report  new payableAmountorderid            "+orderid  );
+                                            //Log.i(Constants.TAG,"Consolidated Report  new payableAmountorderid            "+orderid  );
 
-                                            Log.i(Constants.TAG,"Consolidated Report  new payableamount   "+newpayableamount);
+                                            //Log.i(Constants.TAG,"Consolidated Report  new payableamount   "+newpayableamount);
 
-                                            Log.i(Constants.TAG,"Consolidated Report  old 2 oldpayableamount  "  +oldpayableamount);
-                                            Log.i(Constants.TAG,"Consolidated Report  old 2                                          "  );
+                                            //Log.i(Constants.TAG,"Consolidated Report  old 2 oldpayableamount  "  +oldpayableamount);
+                                            //Log.i(Constants.TAG,"Consolidated Report  old 2                                          "  );
 
                                         }catch(Exception e){
                                             e.printStackTrace();
@@ -469,7 +469,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         try{
                                             slotname =  String.valueOf(json.get("slotname")).toUpperCase();
                                             modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                            Log.d(Constants.TAG, "OrderType: " + slotname);
+                                            //Log.d(Constants.TAG, "OrderType: " + slotname);
 
                                         }catch(Exception e ){
                                             e.printStackTrace();
@@ -478,7 +478,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                     }
                                     else {
                                         modal_orderDetails.slotname = "There is no slotname";
-                                        Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
+                                        //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
 
                                     }
 
@@ -486,7 +486,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         try{
                                             ordertype =  String.valueOf(json.get("ordertype")).toUpperCase();
                                             modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                            Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
                                         }catch(Exception e ){
                                             e.printStackTrace();
@@ -496,7 +496,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                     else
                                     {
                                         modal_orderDetails.ordertype = "There is no OrderType";
-                                        Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+                                        //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
@@ -508,13 +508,13 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         }catch(Exception e ){
                                             e.printStackTrace();
                                         }
-                                        Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+                                        //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
                                     }
                                     else
                                     {
                                         modal_orderDetails.paymentmode = "There is no payment mode";
-                                        Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+                                        //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
@@ -530,11 +530,11 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
 
-                                                    Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
+                                                    //Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
 
                                                 }catch (Exception e){
                                                     e.printStackTrace();
-                                                    Log.d(Constants.TAG, "deliverytype:2 " + String.valueOf(json.get("orderid")));
+                                                    //Log.d(Constants.TAG, "deliverytype:2 " + String.valueOf(json.get("orderid")));
 
                                                 }
 
@@ -542,7 +542,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             else
                                             {
                                                 modal_orderDetails.deliverytype = "There is no deliverytype";
-                                                Log.d(Constants.TAG, " deliverytype3: " + String.valueOf(json.get("orderid")));
+                                                //Log.d(Constants.TAG, " deliverytype3: " + String.valueOf(json.get("orderid")));
 
 
                                             }
@@ -560,13 +560,13 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                                         if (CouponDiscout.equals("")) {
                                                             CouponDiscout = "0";
                                                         }
-                                                        Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                         if (!orderid.equals("")) {
                                                             if (!couponDiscountOrderidArray.contains(orderid)) {
                                                                 couponDiscountOrderidArray.add(orderid);
                                                                 couponDiscount_hashmap.put(orderid, CouponDiscout);
                                                             } else {
-                                                                Log.d(Constants.TAG, "This orderid already have an discount");
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
 
 
                                                             }
@@ -597,13 +597,13 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                                         if (pos_CouponDiscount.equals("")) {
                                                             pos_CouponDiscount = "0";
                                                         }
-                                                        Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                         if (!orderid.equals("")) {
                                                             if (!Pos_couponDiscountOrderidArray.contains(orderid)) {
                                                                 Pos_couponDiscountOrderidArray.add(orderid);
                                                                 Pos_couponDiscount_hashmap.put(orderid, pos_CouponDiscount);
                                                             } else {
-                                                                Log.d(Constants.TAG, "This orderid already have an discount");
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
 
 
                                                             }
@@ -637,9 +637,9 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                     e.printStackTrace();
                                     Adjusting_Widgets_Visibility(false);
 
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                                 }
 
@@ -770,9 +770,9 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 }
 
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -827,17 +827,17 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
                             String orderid = "";
                             double discount_double = 0, discountfromHashmap_double = 0;
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int arrayLength = JArray.length();
 
                             int i1 = 0;
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
                             if(arrayLength>0){
                                 for (; i1 < JArray.length(); i1++) {
@@ -845,7 +845,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                     try {
                                         JSONObject json = JArray.getJSONObject(i1);
                                         Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                      //  Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+                                      //  //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
                                         JSONArray itemdesp;
 
 
@@ -856,7 +856,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                                 itemdesp = json.getJSONArray("itemdesp");
                                                 modal_orderDetails.itemdesp = itemdesp;
 
-                                                Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
+                                                //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -864,7 +864,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                         } else {
 
-                                            Log.d(Constants.TAG, "There is no itemdesp: ");
+                                            //Log.d(Constants.TAG, "There is no itemdesp: ");
 
 
                                         }
@@ -873,7 +873,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             try {
                                                 modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                                 orderid = String.valueOf(json.get("orderid"));
-                                                Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
+                                                //Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -882,7 +882,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                         } else {
                                             modal_orderDetails.orderid = "There is no orderid";
-                                            Log.d(Constants.TAG, "There is no orderid: " + String.valueOf(json.get("orderid")));
+                                            //Log.d(Constants.TAG, "There is no orderid: " + String.valueOf(json.get("orderid")));
 
 
                                         }
@@ -890,20 +890,20 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                         if (json.has("payableamount")) {
                                             try {
-                                                Log.i(Constants.TAG, "Consolidated Report  new payableamount                       " );
+                                                //Log.i(Constants.TAG, "Consolidated Report  new payableamount                       " );
 
                                                 double newpayableamount = Double.parseDouble(String.valueOf(json.get("payableamount")));
 
-                                                Log.i(Constants.TAG, "Consolidated Report old oldpayableamount  " + String.valueOf(oldpayableamount));
+                                                //Log.i(Constants.TAG, "Consolidated Report old oldpayableamount  " + String.valueOf(oldpayableamount));
 
                                                 oldpayableamount = newpayableamount + oldpayableamount;
-                                                Log.i(Constants.TAG, "Consolidated Report  new payableAmountorderid            " + orderid);
+                                                //Log.i(Constants.TAG, "Consolidated Report  new payableAmountorderid            " + orderid);
 
-                                                Log.i(Constants.TAG, "Consolidated Report  new payableamount   " + newpayableamount);
-                                                Log.i(Constants.TAG, "Consolidated Report  new payableamount                       " );
+                                                //Log.i(Constants.TAG, "Consolidated Report  new payableamount   " + newpayableamount);
+                                                //Log.i(Constants.TAG, "Consolidated Report  new payableamount                       " );
 
-                                                Log.i(Constants.TAG, "Consolidated Report  old 2 oldpayableamount  " + oldpayableamount);
-                                                Log.i(Constants.TAG, "Consolidated Report  old 2                                          ");
+                                                //Log.i(Constants.TAG, "Consolidated Report  old 2 oldpayableamount  " + oldpayableamount);
+                                                //Log.i(Constants.TAG, "Consolidated Report  old 2                                          ");
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -915,7 +915,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             try {
                                                 slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                                 modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                Log.d(Constants.TAG, "OrderType: " + slotname);
+                                                //Log.d(Constants.TAG, "OrderType: " + slotname);
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -923,7 +923,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                         } else {
                                             modal_orderDetails.slotname = "There is no slotname";
-                                            Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
 
                                         }
 
@@ -932,7 +932,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             try {
                                                 ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                                 modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                                Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+                                                //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -940,7 +940,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                                         } else {
                                             modal_orderDetails.ordertype = "There is no OrderType";
-                                            Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                         }
@@ -951,11 +951,11 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
-                                            Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+                                            //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
                                         } else {
                                             modal_orderDetails.paymentmode = "There is no payment mode";
-                                            Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                         }
@@ -970,13 +970,13 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                                         if (CouponDiscout.equals("")) {
                                                             CouponDiscout = "0";
                                                         }
-                                                        Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                         if (!orderid.equals("")) {
                                                             if (!couponDiscountOrderidArray.contains(orderid)) {
                                                                 couponDiscountOrderidArray.add(orderid);
                                                                 couponDiscount_hashmap.put(orderid, CouponDiscout);
                                                             } else {
-                                                                Log.d(Constants.TAG, "This orderid already have an discount");
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
 
 
                                                             }
@@ -1024,9 +1024,9 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
 
 
-                                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                                     }
 
@@ -1184,9 +1184,9 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 getOrderForSelectedDate(DateString, vendorKey);
 
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -1257,6 +1257,8 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 totalAmountWithhGst = totalAmountWithhGst + totalAmountWithhGst_from_array;
                 double Gst_from_array = Double.parseDouble(modal_orderDetails_amountDetails.getGstamount());
                 GST = GST + Gst_from_array;
+                String ordertype = (modal_orderDetails_amountDetails.getOrdertype());
+
 
 
 
@@ -1267,7 +1269,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 try {
                     if ((ordertype.toUpperCase().equals(Constants.POSORDER)) || (ordertype.equals("posorder"))) {
                         posorder_Amount = Double.parseDouble(((Objects.requireNonNull(modal_orderDetails).getPosSales())));
-                        //Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
+                        ////Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
                         posorder_Amount = posorder_Amount-pos_discountAmount;
                     }
 
@@ -1287,7 +1289,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
             double totalAmt_with_CouponDiscount__Gstdouble = totalAmountWithhGst-discountAmount;
             totalAmt_without_GST.setText(String.valueOf(decimalFormat.format(totalAmountWithoutGst)));
 
-            Log.i(Constants.TAG, "Consolidated Report  new totalAmt_with_CouponDiscount__Gstdouble   " + String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__Gstdouble)));
+            //Log.i(Constants.TAG, "Consolidated Report  new totalAmt_with_CouponDiscount__Gstdouble   " + String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__Gstdouble)));
 
 
             totalCouponDiscount_Amt.setText(String.valueOf(decimalFormat.format(discountAmount)));
@@ -1331,10 +1333,10 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
 
             for(int i=0; i < jsonArray.length(); i++) {
-                Log.d(Constants.TAG, "this  jsonArray.length()" + jsonArray.length());
+                //Log.d(Constants.TAG, "this  jsonArray.length()" + jsonArray.length());
 
                 JSONObject json = jsonArray.getJSONObject(i);
-                Log.d(Constants.TAG, "this json" + json.toString());
+                //Log.d(Constants.TAG, "this json" + json.toString());
 
                 Modal_OrderDetails modal_orderDetails_ItemDesp = new Modal_OrderDetails();
 
@@ -1420,19 +1422,9 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-                    if((itemname.equals("Seer Fish (வஞ்சரம்) - Large  "))||menuitemidd.equals("2f0fbb4a-0bf8-4f32-ac67-a2cbcb2df8b0")){
-                        Log.i(Constants.TAG, "1item Name  "+ itemname);
-                        Log.i(Constants.TAG, "1item Quantity  "+quantityString);
-                        Log.i(Constants.TAG, "1item price  "+tmcprice);
-                        Log.i(Constants.TAG, "1item menuitemid  "+menuitemidd);
-                        Log.i(Constants.TAG, "1item orderid  "+orderid);
-                        Log.i(Constants.TAG, "1item ordertype  "+ordertype);
-                        Log.i(Constants.TAG, "1item                                       .  ");
 
-
-                    }
                     if (json.has("marinadeitemdesp")) {
-                        Log.i(Constants.TAG, "There is  Marinade ItemDesp  ");
+                        //Log.i(Constants.TAG, "There is  Marinade ItemDesp  ");
                         Modal_OrderDetails marinade_modal_orderDetails_ItemDesp = new Modal_OrderDetails();
 
                         double marinadesObjectquantity = 1, marinadesObjectgstAmount = 0, marinadesObjectpayableAmount = 0;
@@ -1481,16 +1473,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                         marinade_modal_orderDetails_ItemDesp.quantity = String.valueOf(json.get("quantity"));
                         marinade_modal_orderDetails_ItemDesp.itemname = marinadeitemName;
 
-                        if((marinadeitemName.equals("Seer Fish (வஞ்சரம்) - Large  "))||marinadeitemmenuItemId.equals("2f0fbb4a-0bf8-4f32-ac67-a2cbcb2df8b0")){
-                            Log.i(Constants.TAG, "1item marinade Name  "+ marinadeitemName);
-                            Log.i(Constants.TAG, "1item marinade Quantity  "+marinadesObjectquantity);
-                            Log.i(Constants.TAG, "1item marinade price  "+marinadesObjectpayableAmount);
-                            Log.i(Constants.TAG, "1item marinade menuitemid  "+marinadeitemmenuItemId);
-                            Log.i(Constants.TAG, "1item marinade orderid  "+orderid);
-                            Log.i(Constants.TAG, "1item marinade ordertype  "+ordertype);
-                            Log.i(Constants.TAG, "1item marinade                                  .  ");
 
-                        }
                         if (ordertypeArray.contains(ordertype)) {
                             boolean isAlreadyAvailabe = false;
 
@@ -1600,27 +1583,36 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
                     } else {
-                        Log.i(Constants.TAG, "There is no Marinade ItemDesp  ");
+                        //Log.i(Constants.TAG, "There is no Marinade ItemDesp  ");
+                        if(String.valueOf(ordertype).equals(Constants.APPORDER)) {
+                            if (itemname.contains("Chicken Curry Cut (Skinless)")) {
+                                Log.d(Constants.TAG, "Chicken Curry log orderid" + orderid.toString());
+                                Log.d(Constants.TAG, "Chicken Curry log quantityString" + quantityString.toString());
+                                Log.d(Constants.TAG, "Chicken Curry log tmcprice" +  String.valueOf(tmcprice));
 
+                                //  Log.d(Constants.TAG, "Chicken Curry log menuitemid" + String.valueOf(menuItemId));
+
+                            }
+                        }
                     }
 
 
                     try {
                         tmcprice = tmcprice + gstAmount;
                         tmcprice = tmcprice * quantity;
-                        Log.i(Constants.TAG, "Consolidated Report new itemDespAmountwithquantity  " + tmcprice);
+                        //Log.i(Constants.TAG, "Consolidated Report new itemDespAmountwithquantity  " + tmcprice);
 
                         //int inttmcPrice = (int) Math.ceil(tmcprice);
 
                         // String tmcprice_string = String.valueOf(decimalFormat.format((inttmcPrice)));
                         double tmcpricewithgst = tmcprice;
-                        Log.i(Constants.TAG, "Consolidated Report new itemDespAmountwithquantity_withGSt  " + tmcpricewithgst);
+                        //Log.i(Constants.TAG, "Consolidated Report new itemDespAmountwithquantity_withGSt  " + tmcpricewithgst);
 
-                        Log.i(Constants.TAG, "Consolidated Report  new item desporderid            " + orderid);
+                        //Log.i(Constants.TAG, "Consolidated Report  new item desporderid            " + orderid);
 
                         itemDespTotalAmount = itemDespTotalAmount + tmcpricewithgst;
-                        Log.i(Constants.TAG, "Consolidated Report  new itemDespAmount_totalAmount   " + tmcpricewithgst);
-                        Log.i(Constants.TAG, "Consolidated Report  new itemDespAmount " + itemDespTotalAmount);
+                        //Log.i(Constants.TAG, "Consolidated Report  new itemDespAmount_totalAmount   " + tmcpricewithgst);
+                        //Log.i(Constants.TAG, "Consolidated Report  new itemDespAmount " + itemDespTotalAmount);
 
 
                         String gstAmount_string = "";
@@ -1775,7 +1767,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
-                            Log.d(Constants.TAG, "this json pre 3 " +String.valueOf(oldOrder_WeightInGrams));
+                            //Log.d(Constants.TAG, "this json pre 3 " +String.valueOf(oldOrder_WeightInGrams));
 
 
                             modal_orderDetails_itemDespfrom_hashMap.setWeightingrams(String.valueOf((intOldOrder_WeightInGrams)));
@@ -1798,7 +1790,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                     }
 
                 } else {
-                    Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
+                    //Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
                     Adjusting_Widgets_Visibility(false);
 
                 }
@@ -1927,11 +1919,11 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
         calendar.add(Calendar.DATE, -1);
 
@@ -1948,7 +1940,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
         String  PreviousdayDate = df1.format(c1);
              String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
 
         return yesterdayAsString;
     }
@@ -1998,7 +1990,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) { return; }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
-        Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
+        //Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
         File fol = new File(extstoragedir, "testpdf");
         File folder = new File(fol, "pdf");
         if (!folder.exists()) {
@@ -2044,7 +2036,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         } catch (IOException e) {
             Adjusting_Widgets_Visibility(false);
 
-            Log.i("error", e.getLocalizedMessage());
+            //Log.i("error", e.getLocalizedMessage());
         } catch (Exception ex) {
             Adjusting_Widgets_Visibility(false);
 
@@ -2122,7 +2114,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                 Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
                 String itemName = itemRow.getItemname();
-                Log.i(Constants.TAG,"size"+(itemRow.getItemname()));
+                //Log.i(Constants.TAG,"size"+(itemRow.getItemname()));
                 itemnamecell = new PdfPCell(new Phrase((itemName)));
                 itemnamecell.setBorder(Rectangle.BOTTOM);
                 itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
@@ -2202,7 +2194,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
                     if ((ordertype.toUpperCase().equals(Constants.POSORDER)) || (ordertype.equals("posorder"))) {
                         posorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getPosSales())));
-                        //Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
+                        ////Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
                         paymentModeitemkeycell = new PdfPCell(new Phrase("POSORDER  : "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -2273,9 +2265,9 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
             for (int i=0; i<finalBillDetails.size(); i++) {
                 String key = finalBillDetails.get(i);
                 String value= FinalBill_hashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name "+key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name "+key);
 
-                Log.d("ExportReportActivity", "itemTotalRowsList value "+value);
+                //Log.d("ExportReportActivity", "itemTotalRowsList value "+value);
                 emptycell = new PdfPCell(new Phrase(""));
                 emptycell.setBorder(Rectangle.NO_BORDER);
                 emptycell.setHorizontalAlignment(Element.ALIGN_LEFT);

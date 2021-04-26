@@ -34,7 +34,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_AutoCompleteManageOrdersItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -70,27 +69,23 @@ import java.util.Objects;
 
 import okhttp3.WebSocket;
 
-import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlotDetails;
 import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlots;
 
-public class searchOrdersUsingMobileNumber extends AppCompatActivity {
+public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     TextView appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
     Button mobile_new_Order_widget, mobile_confirmed_Order_widget, mobile_ready_Order_widget, mobile_transist_Order_widget, mobile_delivered_Order_widget;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
     EditText mobile_search_barEditText;
-
     String mobile_jsonString,orderStatus,vendorKey,vendorname,TAG = "Tag";
     String DateString,PreviousDateString;
     ListView manageOrders_ListView;
-   public LinearLayout PrintReport_Layout;
+    public LinearLayout PrintReport_Layout;
     public LinearLayout generateReport_Layout;
     public LinearLayout dateSelectorLayout;
     public static LinearLayout loadingpanelmask;
     public static LinearLayout loadingPanel;
     public LinearLayout newOrdersSync_Layout;
     DatePickerDialog datepicker;
-
-    List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
     List<Modal_ManageOrders_Pojo_Class> ordersList;
     public static String completemenuItem;
     public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
@@ -114,49 +109,43 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     int portSettings=0,totalGstAmount=0;
     public static List<String> array_of_orderId;
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
-    Spinner SlotrangeSelector_spinner;
-    List<String> slottime = new ArrayList<>();
-    List<String> slotrangeChoosingSpinnerData;
-    String selectedTimeRange_spinner = "All";
+    Spinner deliverytimeSelector_spinner;
+
+    List<String> deliveredtimeChoosingSpinnerData;
+    String selecteddeliveredtime_spinner = "All";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_orders_using_mobile_number);
+        setContentView(R.layout.activity_delivered_orders_timewise_report);
         deliveryPartnerList = new ArrayList<>();
-
+        deliverytimeSelector_spinner = findViewById(R.id.deliverytimeSelector_spinner);
         try{
-           SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-           vendorKey = (shared.getString("VendorKey", "vendor_1"));
-           vendorname = (shared.getString("VendorName", ""));
+            SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+            vendorKey = (shared.getString("VendorKey", "vendor_1"));
+            vendorname = (shared.getString("VendorName", ""));
 
-           SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
-           DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
 
-           ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
 
-       }
-       catch (Exception e){
-           e.printStackTrace();
-       }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
-         DisplayMetrics dm = new DisplayMetrics();
+        DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
         double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
         screenInches = Math.sqrt(x + y);
-        SlotrangeSelector_spinner =  findViewById(R.id.SlotrangeSelector_spinner);
-        slotrangeChoosingSpinnerData = new ArrayList<>();
+        deliveredtimeChoosingSpinnerData = new ArrayList<>();
 
 
         //
         ordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
-        websocket_OrdersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         sorted_OrdersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         array_of_orderId = new ArrayList<>();
         appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
 
         slotType_Spinner = findViewById(R.id.slotType_Spinner);
-        applaunchimage = findViewById(R.id.applaunchimage);
         manageOrders_ListView = findViewById(R.id.manageOrders_ListView);
         mobile_orderinstruction = findViewById(R.id.orderinstruction);
         dateSelector_text = findViewById(R.id.dateSelector_text);
@@ -167,14 +156,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         mobile_search_button = findViewById(R.id.search_button);
         mobile_search_barEditText = findViewById(R.id.search_barEdit);
         mobile_search_close_btn = findViewById(R.id.search_close_btn);
-
-        //
-        mobile_new_Order_widget = findViewById(R.id.new_Order_widget);
-        mobile_confirmed_Order_widget = findViewById(R.id.confirmed_Order_widget);
-        mobile_ready_Order_widget = findViewById(R.id.ready_Order_widget);
-        mobile_transist_Order_widget = findViewById(R.id.transist_Order_widget);
-        mobile_delivered_Order_widget = findViewById(R.id.delivered_Order_widget);
-
         newOrdersSync_Layout = findViewById(R.id.newOrdersSync_Layout);
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
@@ -199,7 +180,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             ordersList.clear();
             sorted_OrdersList.clear();
             array_of_orderId.clear();
-            selectedTimeRange_spinner = "All";
+            selecteddeliveredtime_spinner = "All";
             dateSelector_text.setText(Todaysdate);
             getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
 
@@ -221,11 +202,12 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        SlotrangeSelector_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+        deliverytimeSelector_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                 selectedTimeRange_spinner = SlotrangeSelector_spinner.getSelectedItem().toString();
-                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner);
+                selecteddeliveredtime_spinner = deliverytimeSelector_spinner.getSelectedItem().toString();
+                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selecteddeliveredtime_spinner);
 
             }
 
@@ -234,7 +216,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
             }
         });
-
 
 
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
@@ -262,7 +243,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 mobile_search_barEditText.setText("");
                 isSearchButtonClicked = false;
 
-                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner);
+                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selecteddeliveredtime_spinner);
             }
         });
         mobile_search_button.setOnClickListener(new View.OnClickListener() {
@@ -288,7 +269,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         loadingpanelmask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(searchOrdersUsingMobileNumber.this, "Loading.... Please Wait", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DeliveredOrdersTimewiseReport.this, "Loading.... Please Wait", Toast.LENGTH_SHORT).show();
             }
         });
         generateReport_Layout.setVisibility(View.GONE);
@@ -370,7 +351,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
                                 modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                                 modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
-                                 modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
 
                                 modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
 
@@ -395,13 +376,13 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                             mobile_orderinstruction.setVisibility(View.GONE);
                             if(screenInches>8){
 
-                                adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderstatus);
+                                adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(DeliveredOrdersTimewiseReport.this, sorted_OrdersList,  orderstatus);
                                 manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
                             }else {
-                                adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderstatus);
+                                adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(DeliveredOrdersTimewiseReport.this, sorted_OrdersList,  orderstatus);
                                 manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
                             }
-                            } else {
+                        } else {
                             manageOrders_ListView.setVisibility(View.GONE);
                             mobile_orderinstruction.setVisibility(View.VISIBLE);
                             mobile_orderinstruction.setText("No orders found for this Mobile number");
@@ -428,9 +409,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-
-
-
     }
 
     private void setDataForSpinner() {
@@ -444,7 +422,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     JSONArray content = (JSONArray) response.get("content");
                     JSONArray jArray = (JSONArray) content;
                     if (jArray != null) {
-                        slotrangeChoosingSpinnerData.add("All");
+                        deliveredtimeChoosingSpinnerData.add("All");
 
                         for (int i = 0; i < jArray.length(); i++) {
                             try {
@@ -456,7 +434,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                     if (slotName.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
                                         String deliverytime = String.valueOf(json.get("deliverytime"));
 
-                                        slotrangeChoosingSpinnerData.add(deliverytime);
+                                        deliveredtimeChoosingSpinnerData.add(deliverytime);
 
 
                                     } else {
@@ -464,7 +442,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                         String slotStartTime = String.valueOf(json.get("slotstarttime"));
                                         String timeRange = slotStartTime + " - " + slotEndTime;
                                         if(!timeRange.equals(" - ")) {
-                                            slotrangeChoosingSpinnerData.add(timeRange);
+                                            deliveredtimeChoosingSpinnerData.add(timeRange);
                                         }
                                     }
                                 }
@@ -472,10 +450,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
-                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(searchOrdersUsingMobileNumber.this,android.R.layout.simple_spinner_item, slotrangeChoosingSpinnerData);
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(DeliveredOrdersTimewiseReport.this,android.R.layout.simple_spinner_item, deliveredtimeChoosingSpinnerData);
                         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        SlotrangeSelector_spinner.setAdapter(arrayAdapter);
-                        selectedTimeRange_spinner = "All";
+                        deliverytimeSelector_spinner.setAdapter(arrayAdapter);
+                        selecteddeliveredtime_spinner = "All";
 
 
                     }
@@ -514,7 +492,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         jsonObjectRequest.setRetryPolicy(policy);
 
         // Make the request
-        Volley.newRequestQueue(searchOrdersUsingMobileNumber.this).add(jsonObjectRequest);
+        Volley.newRequestQueue(DeliveredOrdersTimewiseReport.this).add(jsonObjectRequest);
 
 
 
@@ -525,7 +503,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
             try {
                 String ordertype = "#", orderid = "";
-              //  sorted_OrdersList.clear();
+                //  sorted_OrdersList.clear();
 
                 //converting jsonSTRING into array
                 JSONObject jsonObject = new JSONObject(deliveryPersonList);
@@ -697,7 +675,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         int month = cldr.get(Calendar.MONTH);
         int year = cldr.get(Calendar.YEAR);
         // date picker dialog
-        datepicker = new DatePickerDialog(searchOrdersUsingMobileNumber.this,
+        datepicker = new DatePickerDialog(DeliveredOrdersTimewiseReport.this,
                 new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -707,7 +685,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                             sorted_OrdersList.clear();
                             array_of_orderId.clear();
 
-                             String month_in_String = getMonthString(monthOfYear);
+                            String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
 
@@ -724,7 +702,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
-                           String CurrentDay =   getDayString(dayOfWeek);
+                            String CurrentDay =   getDayString(dayOfWeek);
                             //Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
 
                             String CurrentDateString =datestring+monthstring+String.valueOf(year);
@@ -744,7 +722,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 }, year, month, day);
         datepicker.show();
 
-}
+    }
 
     private void getOrderDetailsUsingOrderSlotDate(String previousDaydate,String SlotDate, String vendorKey, String selectedStatus) {
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
@@ -756,7 +734,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
         SharedPreferences sharedPreferences
-                = searchOrdersUsingMobileNumber.this.getSharedPreferences("OrderDetailsFromSharedPreferences",
+                = DeliveredOrdersTimewiseReport.this.getSharedPreferences("OrderDetailsFromSharedPreferences",
                 MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
 
@@ -766,15 +744,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                      try {
-                          //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
-                          mobile_jsonString = response.toString();
+                        try {
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                            mobile_jsonString = response.toString();
 
-                          convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
-                      }
-                      catch (Exception e){
-                          e.printStackTrace();
-                      }
+                            convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
 
 
 
@@ -784,7 +762,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
                 try {
-                    Toast.makeText(searchOrdersUsingMobileNumber.this, "There is no Order  on " + SlotDate, Toast.LENGTH_LONG).show();
+                    Toast.makeText(DeliveredOrdersTimewiseReport.this, "There is no Order  on " + SlotDate, Toast.LENGTH_LONG).show();
                     ordersList.clear();
                     array_of_orderId.clear();
                     loadingpanelmask.setVisibility(View.GONE);
@@ -796,7 +774,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 //                adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
                     Adjusting_Widgets_Visibility(false);
-                   // appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                    // appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
                     //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
                     //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
@@ -850,7 +828,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Make the request
-        Volley.newRequestQueue(searchOrdersUsingMobileNumber.this).add(jsonObjectRequest);
+        Volley.newRequestQueue(DeliveredOrdersTimewiseReport.this).add(jsonObjectRequest);
 
 
 
@@ -858,444 +836,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     }
 
 
-
-
-
-
-
-
-    private void getOrderDetailsUsingOrderPlacedDate(String date, String vendorKey, String selectedStatus) {
-        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
-
-        ordersList.clear();
-        sorted_OrdersList.clear();
-        array_of_orderId.clear();
-
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate="+date+"&vendorkey="+vendorKey,null,
-                new com.android.volley.Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(@NonNull JSONObject response) {
-                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
-                        mobile_jsonString =response.toString();
-                        try {
-                            String ordertype="#";
-                            array_of_orderId.clear();
-
-                            ordersList.clear();
-                            sorted_OrdersList.clear();
-                            //converting jsonSTRING into array
-                            JSONObject jsonObject = new JSONObject(mobile_jsonString);
-                            JSONArray JArray  = jsonObject.getJSONArray("content");
-                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                            int i1=0;
-                            int arrayLength = JArray.length();
-                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
-
-
-                            for(;i1<(arrayLength);i1++) {
-
-                                try {
-                                    JSONObject json = JArray.getJSONObject(i1);
-                                    Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
-                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
-
-
-                                    if(json.has("orderid")){
-                                        manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderid ="";
-                                    }
-
-
-                                    if(json.has("notes")){
-                                        manageOrdersPojoClass.notes = String.valueOf(json.get("notes"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.notes ="";
-                                    }
-
-
-                                    if(json.has("orderplacedtime")){
-                                        manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderplacedtime ="";
-                                    }
-
-
-
-
-                                    if(json.has("payableamount")){
-                                        manageOrdersPojoClass.payableamount = String.valueOf(json.get("payableamount"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.payableamount ="";
-                                    }
-
-
-                                    if(json.has("paymentmode")){
-                                        manageOrdersPojoClass.paymentmode = String.valueOf(json.get("paymentmode"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.paymentmode ="";
-                                    }
-
-
-
-
-                                    if(json.has("tokenno")){
-                                        manageOrdersPojoClass.tokenno = String.valueOf(json.get("tokenno"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.tokenno ="";
-                                    }
-
-
-
-
-
-                                    try {
-                                        if (json.has("itemdesp")) {
-                                            JSONArray itemdesp = json.getJSONArray("itemdesp");
-
-                                            manageOrdersPojoClass.itemdesp = itemdesp;
-
-                                        } else {
-                                            //Log.i(Constants.TAG, "Can't Get itemDesp");
-                                        }
-
-                                    }
-                                    catch (Exception e){
-                                        e.printStackTrace();
-                                    }
-
-                                    if(json.has("orderStatus")){
-                                        manageOrdersPojoClass.orderstatus = String.valueOf(json.get("orderStatus"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderstatus ="";
-                                    }
-
-
-                                    if(json.has("usermobile")){
-                                        manageOrdersPojoClass.usermobile =  String.valueOf(json.get("usermobile"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.usermobile ="";
-                                    }
-
-
-                                    if(json.has("vendorkey")){
-                                        manageOrdersPojoClass.vendorkey =  String.valueOf(json.get("vendorkey"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.vendorkey ="vendor_1";
-                                    }
-
-
-                                    if(json.has("orderdetailskey")){
-                                        manageOrdersPojoClass.orderdetailskey =  String.valueOf(json.get("orderdetailskey"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderdetailskey ="";
-                                    }
-
-
-                                    if(json.has("orderdeliveredtime")){
-                                        manageOrdersPojoClass.orderdeliveredtime =  String.valueOf(json.get("orderdeliveredtime"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderdeliveredtime ="";
-                                    }
-                                    if(json.has("useraddresskey")){
-                                        manageOrdersPojoClass.useraddresskey =  String.valueOf(json.get("useraddresskey"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.useraddresskey ="";
-                                    }
-
-
-                                    if(json.has("orderreadytime")){
-                                        manageOrdersPojoClass.orderreadytime = String.valueOf(json.get("orderreadytime"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderreadytime ="";
-                                    }
-
-
-                                    if(json.has("orderpickeduptime")){
-                                        manageOrdersPojoClass.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderpickeduptime ="";
-                                    }
-
-
-                                    if(json.has("orderconfirmedtime")){
-                                        manageOrdersPojoClass.orderconfirmedtime =  String.valueOf(json.get("orderconfirmedtime"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.orderconfirmedtime ="";
-                                    }
-
-
-                                    if(json.has("coupondiscount")){
-                                        manageOrdersPojoClass.coupondiscamount = String.valueOf(json.get("coupondiscount"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.coupondiscamount ="";
-                                    }
-
-
-                                    if(json.has("deliverytype")){
-                                        manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.deliverytype ="";
-                                    }
-
-
-
-                                    if(json.has("slottimerange")){
-                                        manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.slottimerange ="";
-                                    }
-
-
-
-                                    if(json.has("slotdate")){
-                                        manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.slotdate ="";
-                                    }
-
-
-                                    if(json.has("slotname")){
-                                        manageOrdersPojoClass.slotname = String.valueOf(json.get("slotname"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.slotname ="";
-                                    }
-                                    if(json.has("slottimerange")){
-                                        manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.slottimerange ="";
-                                    }
-
-
-                                    if(json.has("ordertype")){
-                                        manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
-                                        ordertype = String.valueOf(json.get("ordertype"));
-                                    }
-                                    else{
-                                        ordertype="#";
-                                        manageOrdersPojoClass.orderType ="";
-                                    }
-
-                                    if(json.has("useraddresslat")){
-                                        manageOrdersPojoClass.useraddresslat =  String.valueOf(json.get("useraddresslat"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.useraddresslat ="";
-                                    }
-
-
-                                    if(json.has("useraddresslong")){
-                                        manageOrdersPojoClass.useraddresslon =  String.valueOf(json.get("useraddresslong"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.useraddresslon ="";
-                                    }
-
-                                    if(json.has("keyfromtrackingDetails")){
-                                        manageOrdersPojoClass.keyfromtrackingDetails = String.valueOf(json.get("keyfromtrackingDetails"));
-
-                                    }
-                                    else{
-                                        manageOrdersPojoClass.keyfromtrackingDetails ="";
-                                    }
-
-                                    try {
-                                        if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
-                                            if (json.has("useraddress")) {
-
-                                                String addresss =  String.valueOf(json.get("useraddress"));
-                                                if(!addresss.equals(null)&&(!addresss.equals("null"))){
-                                                    manageOrdersPojoClass.useraddress = String.valueOf(json.get("useraddress"));
-
-                                                }
-                                                else {
-                                                    manageOrdersPojoClass.useraddress ="";
-
-                                                }
-                                            } else {
-                                                manageOrdersPojoClass.useraddress = "";
-                                            }
-
-                                        }
-                                    }catch (Exception E){
-                                        manageOrdersPojoClass.useraddress ="-";
-                                        E.printStackTrace();
-                                    }
-
-
-
-
-
-                                    if(!String.valueOf(json.get("orderStatus")).equals("NEW")){
-
-                                        if(json.has("deliveryusername")){
-                                            manageOrdersPojoClass.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
-
-                                        }
-                                        if(json.has("deliveryuserkey")){
-                                            manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));;
-
-                                        }
-                                        if(json.has("deliveryusermobileno")){
-                                            manageOrdersPojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
-
-                                        }
-
-
-                                    }
-
-                                    if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
-
-                                        ordersList.add(manageOrdersPojoClass);
-                                    }
-                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
-
-                                }
-
-
-                            }
-
-                            //Log.d(Constants.TAG, "convertingJsonStringintoArray orderlist: " + ordersList);
-
-                            Adjusting_Widgets_Visibility(true);
-                            String Todaysdate = getDatewithNameoftheDay();
-                            PreviousDateString = getDatewithNameofthePreviousDay();
-
-                            isSearchButtonClicked =false;
-                            orderStatus = "TODAYS"+Constants.PREORDER_SLOTNAME;
-
-                            getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
-
-                            //  saveorderDetailsInLocal(ordersList);
-                        //    displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner);
-
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Adjusting_Widgets_Visibility(true);
-                            String Todaysdate = getDatewithNameoftheDay();
-                            ordersList.clear();
-                            sorted_OrdersList.clear();
-                            array_of_orderId.clear();
-
-                            PreviousDateString = getDatewithNameofthePreviousDay();
-
-                            isSearchButtonClicked =false;
-                            orderStatus = "TODAYS"+Constants.PREORDER_SLOTNAME;
-                            getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
-
-                        }
-
-                        //  adapter = new Adapter_AutoCompleteManageOrdersItem(searchOrdersUsingMobileNumber.this, mobile_jsonString);
-
-
-                        //    mobile_search_barEditText.setAdapter(adapter);
-                       /* Adjusting_Widgets_Visibility(true);
-                        String Todaysdate = getDatewithNameoftheDay();
-                        isSearchButtonClicked =false;
-                        orderStatus = "TODAYS"+Constants.PREORDER_SLOTNAME;
-                        getOrderDetailsUsingOrderSlotDate(Todaysdate, vendorKey, orderStatus);
-
-                        */
-                    }
-
-                },new com.android.volley.Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(@NonNull VolleyError error) {
-                Toast.makeText(searchOrdersUsingMobileNumber.this,"There is no Orders Yet on "+date,Toast.LENGTH_LONG).show();
-                Adjusting_Widgets_Visibility(true);
-                String Todaysdate = getDatewithNameoftheDay();
-                PreviousDateString = getDatewithNameofthePreviousDay();
-
-                isSearchButtonClicked =false;
-                orderStatus = "TODAYS"+Constants.PREORDER_SLOTNAME;
-                getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
-
-                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
-
-                error.printStackTrace();
-            }
-        })
-        {
-            @Override
-            public Map<String, String> getParams() throws AuthFailureError {
-                final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
-                params.put("orderplacedtime", "11 Jan 2021");
-
-                return params;
-            }
-
-
-
-            @NonNull
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                final Map<String, String> header = new HashMap<>();
-                header.put("Content-Type", "application/json");
-
-                return header;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(50 * 20000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-        // Make the request
-        Volley.newRequestQueue(searchOrdersUsingMobileNumber.this).add(jsonObjectRequest);
-
-    }
 
 
 
@@ -1320,14 +860,28 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+                    if (json.has("ordertype")) {
+                        manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
+                        ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
+                    } else {
+                        ordertype = "#";
+                        manageOrdersPojoClass.orderType = "";
+                    }
 
 
-                    if(json.has("orderid")){
+                    if (json.has("orderStatus")) {
+                        manageOrdersPojoClass.orderstatus = String.valueOf(json.get("orderStatus"));
+                        orderStatus = String.valueOf(json.get("orderStatus")).toUpperCase();
+                    } else {
+                        manageOrdersPojoClass.orderstatus = "";
+                    }
+                        if((ordertype.equals(Constants.APPORDER))&&(orderStatus.equals(Constants.DELIVERED_ORDER_STATUS))){
+
+                    if (json.has("orderid")) {
                         manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
                         orderid = String.valueOf(json.get("orderid"));
-                    }
-                    else{
-                        manageOrdersPojoClass.orderid ="";
+                    } else {
+                        manageOrdersPojoClass.orderid = "";
                     }
 
                     if (!array_of_orderId.contains(orderid)) {
@@ -1335,57 +889,44 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
 
 
-                        if(json.has("notes")){
-                    manageOrdersPojoClass.notes = String.valueOf(json.get("notes"));
+                    if (json.has("notes")) {
+                        manageOrdersPojoClass.notes = String.valueOf(json.get("notes"));
 
-                }
-                else{
-                    manageOrdersPojoClass.notes ="";
-                }
-
+                    } else {
+                        manageOrdersPojoClass.notes = "";
+                    }
 
 
-                    if(json.has("orderplacedtime")){
+                    if (json.has("orderplacedtime")) {
                         manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
 
+                    } else {
+                        manageOrdersPojoClass.orderplacedtime = "";
                     }
-                    else{
-                        manageOrdersPojoClass.orderplacedtime ="";
-                    }
 
 
-
-
-                    if(json.has("payableamount")){
+                    if (json.has("payableamount")) {
                         manageOrdersPojoClass.payableamount = String.valueOf(json.get("payableamount"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.payableamount ="";
+                    } else {
+                        manageOrdersPojoClass.payableamount = "";
                     }
 
 
-                    if(json.has("paymentmode")){
+                    if (json.has("paymentmode")) {
                         manageOrdersPojoClass.paymentmode = String.valueOf(json.get("paymentmode"));
 
+                    } else {
+                        manageOrdersPojoClass.paymentmode = "";
                     }
-                    else{
-                        manageOrdersPojoClass.paymentmode ="";
-                    }
 
 
-
-
-                    if(json.has("tokenno")){
+                    if (json.has("tokenno")) {
                         manageOrdersPojoClass.tokenno = String.valueOf(json.get("tokenno"));
 
+                    } else {
+                        manageOrdersPojoClass.tokenno = "";
                     }
-                    else{
-                        manageOrdersPojoClass.tokenno ="";
-                    }
-
-
-
 
 
                     try {
@@ -1398,195 +939,157 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                             //Log.i(Constants.TAG, "Can't Get itemDesp");
                         }
 
-                    }
-                    catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
-                    if(json.has("orderStatus")){
-                        manageOrdersPojoClass.orderstatus = String.valueOf(json.get("orderStatus"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.orderstatus ="";
-                    }
+                    if (json.has("usermobile")) {
+                        manageOrdersPojoClass.usermobile = String.valueOf(json.get("usermobile"));
 
-
-                    if(json.has("usermobile")){
-                        manageOrdersPojoClass.usermobile =  String.valueOf(json.get("usermobile"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.usermobile ="";
+                    } else {
+                        manageOrdersPojoClass.usermobile = "";
                     }
 
 
-                    if(json.has("vendorkey")){
-                        manageOrdersPojoClass.vendorkey =  String.valueOf(json.get("vendorkey"));
+                    if (json.has("vendorkey")) {
+                        manageOrdersPojoClass.vendorkey = String.valueOf(json.get("vendorkey"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.vendorkey ="vendor_1";
-                    }
-
-
-                    if(json.has("orderdetailskey")){
-                        manageOrdersPojoClass.orderdetailskey =  String.valueOf(json.get("orderdetailskey"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderdetailskey ="";
+                    } else {
+                        manageOrdersPojoClass.vendorkey = "vendor_1";
                     }
 
 
-                    if(json.has("orderdeliveredtime")){
-                        manageOrdersPojoClass.orderdeliveredtime =  String.valueOf(json.get("orderdeliveredtime"));
+                    if (json.has("orderdetailskey")) {
+                        manageOrdersPojoClass.orderdetailskey = String.valueOf(json.get("orderdetailskey"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.orderdeliveredtime ="";
-                    }
-                    if(json.has("useraddresskey")){
-                        manageOrdersPojoClass.useraddresskey =  String.valueOf(json.get("useraddresskey"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.useraddresskey ="";
+                    } else {
+                        manageOrdersPojoClass.orderdetailskey = "";
                     }
 
 
-                    if(json.has("orderreadytime")){
+                    if (json.has("orderdeliveredtime")) {
+                        manageOrdersPojoClass.orderdeliveredtime = String.valueOf(json.get("orderdeliveredtime"));
+
+                    } else {
+                        manageOrdersPojoClass.orderdeliveredtime = "";
+                    }
+                    if (json.has("useraddresskey")) {
+                        manageOrdersPojoClass.useraddresskey = String.valueOf(json.get("useraddresskey"));
+
+                    } else {
+                        manageOrdersPojoClass.useraddresskey = "";
+                    }
+
+
+                    if (json.has("orderreadytime")) {
                         manageOrdersPojoClass.orderreadytime = String.valueOf(json.get("orderreadytime"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.orderreadytime ="";
+                    } else {
+                        manageOrdersPojoClass.orderreadytime = "";
                     }
 
 
-                    if(json.has("orderpickeduptime")){
+                    if (json.has("orderpickeduptime")) {
                         manageOrdersPojoClass.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.orderpickeduptime ="";
-                    }
-
-
-                    if(json.has("orderconfirmedtime")){
-                        manageOrdersPojoClass.orderconfirmedtime =  String.valueOf(json.get("orderconfirmedtime"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.orderconfirmedtime ="";
+                    } else {
+                        manageOrdersPojoClass.orderpickeduptime = "";
                     }
 
 
-                    if(json.has("coupondiscount")){
+                    if (json.has("orderconfirmedtime")) {
+                        manageOrdersPojoClass.orderconfirmedtime = String.valueOf(json.get("orderconfirmedtime"));
+
+                    } else {
+                        manageOrdersPojoClass.orderconfirmedtime = "";
+                    }
+
+
+                    if (json.has("coupondiscount")) {
                         manageOrdersPojoClass.coupondiscamount = String.valueOf(json.get("coupondiscount"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.coupondiscamount ="";
+                    } else {
+                        manageOrdersPojoClass.coupondiscamount = "";
                     }
 
 
-                    if(json.has("deliverytype")){
+                    if (json.has("deliverytype")) {
                         manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
 
+                    } else {
+                        manageOrdersPojoClass.deliverytype = "";
                     }
-                    else{
-                        manageOrdersPojoClass.deliverytype ="";
-                    }
 
 
-
-                    if(json.has("slottimerange")){
+                    if (json.has("slottimerange")) {
                         manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
 
+                    } else {
+                        manageOrdersPojoClass.slottimerange = "";
                     }
-                    else{
-                        manageOrdersPojoClass.slottimerange ="";
-                    }
 
 
-
-                    if(json.has("slotdate")){
+                    if (json.has("slotdate")) {
                         manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.slotdate ="";
+                    } else {
+                        manageOrdersPojoClass.slotdate = "";
                     }
 
 
-                    if(json.has("slotname")){
+                    if (json.has("slotname")) {
                         manageOrdersPojoClass.slotname = String.valueOf(json.get("slotname"));
 
+                    } else {
+                        manageOrdersPojoClass.slotname = "";
                     }
-                    else{
-                        manageOrdersPojoClass.slotname ="";
-                    }
-                    if(json.has("slottimerange")){
+                    if (json.has("slottimerange")) {
                         manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
 
+                    } else {
+                        manageOrdersPojoClass.slottimerange = "";
                     }
-                    else{
-                        manageOrdersPojoClass.slottimerange ="";
-                    }
-                    if(json.has("deliverytype")){
+                    if (json.has("deliverytype")) {
                         manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.deliverytype ="";
-                    }
-
-                    if(json.has("ordertype")){
-                        manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
-                        ordertype = String.valueOf(json.get("ordertype"));
-                    }
-                    else{
-                        ordertype="#";
-                        manageOrdersPojoClass.orderType ="";
-                    }
-
-                    if(json.has("useraddresslat")){
-                        manageOrdersPojoClass.useraddresslat =  String.valueOf(json.get("useraddresslat"));
-
-                    }
-                    else{
-                        manageOrdersPojoClass.useraddresslat ="";
+                    } else {
+                        manageOrdersPojoClass.deliverytype = "";
                     }
 
 
-                    if(json.has("useraddresslong")){
-                        manageOrdersPojoClass.useraddresslon =  String.valueOf(json.get("useraddresslong"));
+                    if (json.has("useraddresslat")) {
+                        manageOrdersPojoClass.useraddresslat = String.valueOf(json.get("useraddresslat"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.useraddresslon ="";
+                    } else {
+                        manageOrdersPojoClass.useraddresslat = "";
                     }
 
-                    if(json.has("keyfromtrackingDetails")){
+
+                    if (json.has("useraddresslong")) {
+                        manageOrdersPojoClass.useraddresslon = String.valueOf(json.get("useraddresslong"));
+
+                    } else {
+                        manageOrdersPojoClass.useraddresslon = "";
+                    }
+
+                    if (json.has("keyfromtrackingDetails")) {
                         manageOrdersPojoClass.keyfromtrackingDetails = String.valueOf(json.get("keyfromtrackingDetails"));
 
-                    }
-                    else{
-                        manageOrdersPojoClass.keyfromtrackingDetails ="";
+                    } else {
+                        manageOrdersPojoClass.keyfromtrackingDetails = "";
                     }
 
                     try {
                         if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
                             if (json.has("useraddress")) {
 
-                                String addresss =  String.valueOf(json.get("useraddress"));
-                                if(!addresss.equals(null)&&(!addresss.equals("null"))){
+                                String addresss = String.valueOf(json.get("useraddress"));
+                                if (!addresss.equals(null) && (!addresss.equals("null"))) {
                                     manageOrdersPojoClass.useraddress = String.valueOf(json.get("useraddress"));
 
-                                }
-                                else {
-                                    manageOrdersPojoClass.useraddress ="";
+                                } else {
+                                    manageOrdersPojoClass.useraddress = "";
 
                                 }
                             } else {
@@ -1594,26 +1097,24 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                             }
 
                         }
-                    }catch (Exception E){
-                        manageOrdersPojoClass.useraddress ="-";
+                    } catch (Exception E) {
+                        manageOrdersPojoClass.useraddress = "-";
                         E.printStackTrace();
                     }
 
 
+                    if (!String.valueOf(json.get("orderStatus")).equals("NEW")) {
 
-
-
-                    if(!String.valueOf(json.get("orderStatus")).equals("NEW")){
-
-                        if(json.has("deliveryusername")){
+                        if (json.has("deliveryusername")) {
                             manageOrdersPojoClass.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
 
                         }
-                        if(json.has("deliveryuserkey")){
-                            manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));;
+                        if (json.has("deliveryuserkey")) {
+                            manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));
+                            ;
 
                         }
-                        if(json.has("deliveryusermobileno")){
+                        if (json.has("deliveryusermobileno")) {
                             manageOrdersPojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
 
                         }
@@ -1627,7 +1128,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         ordersList.add(manageOrdersPojoClass);
                     }
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
-
+                }
                 } catch (JSONException e) {
                     e.printStackTrace();
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
@@ -1656,8 +1157,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
          */
 
-            displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner,selectedTimeRange_spinner);
-         //   appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+            displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner,selecteddeliveredtime_spinner);
+            //   appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1665,13 +1166,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         }
     }
 
-
-
-
-
-
-
-    private void displayorderDetailsinListview(String orderStatus, @NotNull List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner,String selectedTimeRange_spinner) {
+    private void displayorderDetailsinListview(String orderStatus, @NotNull List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner, String selectedTimeRange_spinner) {
         Adjusting_Widgets_Visibility(true);
 
 
@@ -1684,13 +1179,13 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
 
         for (int i = 0; i < ordersList.size(); i++) {
-          try {
-              //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+            try {
+                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
 
-              final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
-              final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-              String slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange().toUpperCase();
-              String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
+                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+                String slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange().toUpperCase();
+                String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
 
 
                 if(selectedTimeRange_spinner.equals(slottimerange)||selectedTimeRange_spinner.equals("All")) {
@@ -1740,34 +1235,34 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
                 }
 
-          }
-          catch (Exception e){
-              e.printStackTrace();
-          }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
 
         }
 
         try {
             if (sorted_OrdersList.size() > 0) {
-                   Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                        public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                           String tokenNo_1 = object1.getTokenno();
-                            String tokenNo_2 = object2.getTokenno();
+                Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                    public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                        String tokenNo_1 = object1.getTokenno();
+                        String tokenNo_2 = object2.getTokenno();
 
-                            if((tokenNo_1.equals(""))||(tokenNo_1.equals("null"))||(tokenNo_1.equals(null))){
-                                tokenNo_1=String.valueOf(0);
-                            }
-                            if((tokenNo_2.equals(""))||(tokenNo_2.equals("null"))||(tokenNo_2.equals(null))){
-                                tokenNo_2=String.valueOf(0);
-                            }
-
-                            Long i2 = Long.valueOf(tokenNo_2);
-                            Long i1 = Long.valueOf(tokenNo_1);
-
-                            return i2.compareTo(i1);
+                        if((tokenNo_1.equals(""))||(tokenNo_1.equals("null"))||(tokenNo_1.equals(null))){
+                            tokenNo_1=String.valueOf(0);
                         }
-                    });
+                        if((tokenNo_2.equals(""))||(tokenNo_2.equals("null"))||(tokenNo_2.equals(null))){
+                            tokenNo_2=String.valueOf(0);
+                        }
+
+                        Long i2 = Long.valueOf(tokenNo_2);
+                        Long i1 = Long.valueOf(tokenNo_1);
+
+                        return i2.compareTo(i1);
+                    }
+                });
 
 
 
@@ -1778,10 +1273,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                 if(screenInches>8){
 
-                    adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
+                    adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(DeliveredOrdersTimewiseReport.this, sorted_OrdersList,  orderStatus);
                     manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
                 }else {
-                    adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
+                    adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(DeliveredOrdersTimewiseReport.this, sorted_OrdersList,  orderStatus);
                     manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
                 }
 
@@ -1799,10 +1294,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             if (sorted_OrdersList.size() > 0) {
                 if(screenInches>8){
 
-                    adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
+                    adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(DeliveredOrdersTimewiseReport.this, sorted_OrdersList, orderStatus);
                     manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
                 }else {
-                    adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
+                    adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(DeliveredOrdersTimewiseReport.this, sorted_OrdersList, orderStatus);
                     manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
                 }
 
@@ -1909,14 +1404,14 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-       SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
         String PreviousdayDay = previousday.format(c1);
 
 
 
         SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
         String  PreviousdayDate = df1.format(c1);
-             String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
 
         return yesterdayAsString;
@@ -2109,6 +1604,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         }
         return "";
     }
+
 
 
 

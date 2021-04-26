@@ -53,14 +53,14 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
             jsonObject.put("deliveryusermobileno", "Not Assigned");
             jsonObject.put("deliveryusername", "Not Assigned");
 
-            Log.i("tag","listenertoken"+ "");
+            //Log.i("tag","listenertoken"+ "");
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
@@ -69,22 +69,22 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
             public void onResponse(@NonNull JSONObject response) {
                 try {
                     String msg = String.valueOf(response.get("message"));
-                    Log.d(Constants.TAG, "Response: " + msg);
+                    //Log.d(Constants.TAG, "Response: " + msg);
                     if(msg.equals("success")){
-                        Log.d(Constants.TAG, "Success: " );
+                        //Log.d(Constants.TAG, "Success: " );
 
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -115,10 +115,10 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
                         try {
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for (; i1 < (arrayLength); i1++) {
@@ -131,7 +131,7 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
                                     assignDeliveryPartner_pojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("mobileno"));
                                     assignDeliveryPartner_pojoClass.deliveryPartnerName = String.valueOf(json.get("name"));
 
-                                    // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                                    // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                                     deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
 
                                   //  Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey,IntentFrom, deliverypartnerName);
@@ -141,9 +141,9 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -161,9 +161,9 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
 
                 error.printStackTrace();
             }

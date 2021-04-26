@@ -95,7 +95,7 @@ final AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass =deliveryP
                 assignPartner_widget.setText("Assign");
             }
         }
-        Log.i(Constants.TAG,"deliveryPartnerKey"+deliveryPartnerKey);
+      //  Log.i(Constants.TAG,"deliveryPartnerKey"+deliveryPartnerKey);
 assignPartner_widget.setOnClickListener(new View.OnClickListener() {
 @Override
 public void onClick(View view) {
@@ -169,14 +169,14 @@ public void onClick(View view) {
         jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
         jsonObject.put("deliveryusername", deliveryPartnerName);
 
-        Log.i("tag","listenertoken"+ "");
+      //  Log.i("tag","listenertoken"+ "");
 
         } catch (JSONException e) {
         e.printStackTrace();
         Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+     //   Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
@@ -185,7 +185,7 @@ public void onClick(View view) {
 public void onResponse(@NonNull JSONObject response) {
         try {
         String msg = String.valueOf(response.get("message"));
-        Log.d(Constants.TAG, "Response: " + msg);
+       // Log.d(Constants.TAG, "Response: " + msg);
         if(msg.equals("success")){
 
             /*Intent intent = new Intent(mContext, MobileScreen_Dashboard.class);
@@ -328,7 +328,7 @@ public void onResponse(@NonNull JSONObject response) {
         } catch (JSONException e) {
         e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Response: " + response);
+     //   Log.d(Constants.TAG, "Response: " + response);
         }
         }, new Response.ErrorListener() {
 @Override

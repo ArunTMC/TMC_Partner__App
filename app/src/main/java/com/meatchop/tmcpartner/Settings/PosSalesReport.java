@@ -218,7 +218,7 @@ public class PosSalesReport extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int writeExternalStoragePermission = ContextCompat.checkSelfPermission(PosSalesReport.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
+                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
                 // If do not grant write external storage permission.
                 if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
                     // Request user to grant write external storage permission.
@@ -311,7 +311,7 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
-            Log.i("tag", "The Meat Chop");
+            //Log.i("tag", "The Meat Chop");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
@@ -347,7 +347,7 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Current Date : " + DateString + "\n");
-            Log.i("tag", "Printer log" + CurrentDate);
+            //Log.i("tag", "Printer log" + CurrentDate);
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
@@ -358,7 +358,7 @@ public class PosSalesReport extends AppCompatActivity {
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                 PrinterFunctions.PrintText(portName, portSettings, 1, 0, 1, 0, 1, 0, 30, 0, "" + "\n" + subCtgyname + "\n" + "\n");
-                Log.i("tag", "Printer log subCtgyname " + subCtgyname);
+                //Log.i("tag", "Printer log subCtgyname " + subCtgyname);
 
 
                 for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
@@ -491,7 +491,7 @@ public class PosSalesReport extends AppCompatActivity {
                         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 50, itemPrice + "\n");
-                        Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
+                        //Log.i("tag", "Printer log itemName_weight itemPrice  " + itemName_weight + "" + itemPrice + "");
 
                     }
                 }
@@ -518,7 +518,7 @@ public class PosSalesReport extends AppCompatActivity {
                 Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
                 Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
 
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
@@ -578,7 +578,7 @@ public class PosSalesReport extends AppCompatActivity {
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
-                Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+                //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
 
             }
 
@@ -626,7 +626,7 @@ public class PosSalesReport extends AppCompatActivity {
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, value + "\n");
-                Log.i("tag", "Printer log key key" + value);
+                //Log.i("tag", "Printer log key key" + value);
 
 
             }
@@ -658,14 +658,14 @@ public class PosSalesReport extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONArray result  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "Response: " + result);
+                            //Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
-                            Log.d("Constants.TAG", "Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -674,9 +674,9 @@ public class PosSalesReport extends AppCompatActivity {
                                     JSONObject json = result.getJSONObject(i1);
 
                                     String subCtgyKey  = String.valueOf(json.get("key"));
-                                    Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
+                                    //Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
                                     String subCtgyName = String.valueOf(json.get("subctgyname"));
-                                    Log.d(Constants.TAG, "subCtgyName: " + subCtgyName);
+                                    //Log.d(Constants.TAG, "subCtgyName: " + subCtgyName);
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
                                     modal_orderDetails.tmcsubctgykey = subCtgyKey;
                                     modal_orderDetails.tmcsubctgyname = subCtgyName;
@@ -684,14 +684,14 @@ public class PosSalesReport extends AppCompatActivity {
                                     SubCtgyKey_hashmap.put(subCtgyKey,modal_orderDetails);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
                                 Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
                                 String subCtgyKey  = String.valueOf("Miscellaneous");
-                                Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
+                                //Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
                                 String subCtgyName = String.valueOf("Miscellaneous Item");
 
                                 modal_orderDetails.tmcsubctgykey = subCtgyKey;
@@ -710,9 +710,9 @@ public class PosSalesReport extends AppCompatActivity {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -839,17 +839,17 @@ public class PosSalesReport extends AppCompatActivity {
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
                             String paymentMode="",ordertype = "",orderid ="";
                             ;
 
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for (; i1 < (arrayLength); i1++) {
@@ -857,7 +857,7 @@ public class PosSalesReport extends AppCompatActivity {
                                 try {
                                     JSONObject json = JArray.getJSONObject(i1);
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-//                                    Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+//                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
                                     JSONArray itemdesp;
 
 
@@ -867,7 +867,7 @@ public class PosSalesReport extends AppCompatActivity {
                                             itemdesp = json.getJSONArray("itemdesp");
                                             modal_orderDetails.itemdesp = itemdesp;
 
-                                            Log.d(Constants.TAG, "itemdesp has been succesfully  retrived" );
+                                            //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived" );
 
                                         }
                                         catch (Exception e ){
@@ -878,7 +878,7 @@ public class PosSalesReport extends AppCompatActivity {
                                     else
                                     {
 
-                                        Log.d(Constants.TAG, "There is no itemdesp: " );
+                                        //Log.d(Constants.TAG, "There is no itemdesp: " );
 
 
                                     }
@@ -887,7 +887,7 @@ public class PosSalesReport extends AppCompatActivity {
                                         try{
                                             modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                             orderid = String.valueOf(json.get("orderid"));
-                                            Log.d(Constants.TAG, "orderid"  + String.valueOf(json.get("orderid")));
+                                            //Log.d(Constants.TAG, "orderid"  + String.valueOf(json.get("orderid")));
 
                                         }
                                         catch (Exception e ){
@@ -912,7 +912,7 @@ public class PosSalesReport extends AppCompatActivity {
                                         try{
                                             modal_orderDetails.ordertype = String.valueOf(json.get("ordertype"));
                                             ordertype  = String.valueOf(json.get("ordertype")).toUpperCase();
-                                            Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+                                            //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
                                         }
                                         catch (Exception e ){
@@ -923,7 +923,7 @@ public class PosSalesReport extends AppCompatActivity {
                                     else
                                     {
                                         modal_orderDetails.ordertype = "There is no OrderType";
-                                        Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+                                        //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
@@ -933,7 +933,7 @@ public class PosSalesReport extends AppCompatActivity {
                                             paymentMode = (String.valueOf(json.get("paymentmode")).toUpperCase());
 
                                             modal_orderDetails.paymentmode = (String.valueOf(json.get("paymentmode")).toUpperCase());
-                                            Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+                                            //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
                                         }
                                         catch (Exception e ){
@@ -946,7 +946,7 @@ public class PosSalesReport extends AppCompatActivity {
                                     {
 
                                         modal_orderDetails.paymentmode = "There is no payment mode";
-                                        Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+                                        //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
@@ -996,7 +996,7 @@ public class PosSalesReport extends AppCompatActivity {
 
                                                             }
                                                             else{
-                                                                Log.d(Constants.TAG, "mode already availabe" );
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
                                                         } else {
@@ -1025,12 +1025,12 @@ public class PosSalesReport extends AppCompatActivity {
 
 
 
-                                                                Log.d(Constants.TAG, "mode already availabe" );
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
 
 
                                                             }
                                                             else{
-                                                                Log.d(Constants.TAG, "mode already availabe" );
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
                                                         }
@@ -1041,7 +1041,7 @@ public class PosSalesReport extends AppCompatActivity {
                                                     }
 
 
-                                                    Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
@@ -1058,7 +1058,7 @@ public class PosSalesReport extends AppCompatActivity {
                                             }
 
 
-                                            Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
+                                            //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
                                             getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode);
@@ -1069,7 +1069,7 @@ public class PosSalesReport extends AppCompatActivity {
                                         }
                                     }
                                     else{
-                                        Log.d(Constants.TAG, "This order is not an Posorder e: " );
+                                        //Log.d(Constants.TAG, "This order is not an Posorder e: " );
 
                                     }
 
@@ -1080,9 +1080,9 @@ public class PosSalesReport extends AppCompatActivity {
                                     e.printStackTrace();
                                     Adjusting_Widgets_Visibility(false);
 
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                                 }
 
@@ -1156,9 +1156,9 @@ public class PosSalesReport extends AppCompatActivity {
 
                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
 
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -1191,7 +1191,7 @@ public class PosSalesReport extends AppCompatActivity {
     private void sort_the_array_CtgyWise() {
         for(int i =0 ; i<tmcSubCtgykey.size();i++){
             String key =tmcSubCtgykey.get(i);
-            Log.d(Constants.TAG, "before for " +key);
+            //Log.d(Constants.TAG, "before for " +key);
             getDatafromHashmap(key);
             }
 
@@ -1237,7 +1237,7 @@ public class PosSalesReport extends AppCompatActivity {
                   SubCtgyName = Objects.requireNonNull(subCtgyName_object).getTmcsubctgyname();
               } catch (Exception e) {
                   SubCtgyName = "";
-                  Log.d(Constants.TAG, "before for " + e.getMessage());
+                  //Log.d(Constants.TAG, "before for " + e.getMessage());
 
               }
 
@@ -1283,7 +1283,11 @@ public class PosSalesReport extends AppCompatActivity {
                           } catch (Exception e) {
                               weightinGrams = 0;
                           }
+                          String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
 
+                          if(itemname.equals("Fresh Goat Meat - Curry Cut")){
+                              Log.i("TAG", "Key : "+ String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
+                          }
                           double kilogram = weightinGrams * 0.001;
                           String KilogramString = String.valueOf(decimalFormat.format(kilogram) + "Kg");
 
@@ -1375,7 +1379,7 @@ public class PosSalesReport extends AppCompatActivity {
                 String menuid = Order_Item_List.get(j);
                 Modal_OrderDetails orderDetailsFromHashmap = OrderItem_hashmap.get(menuid);
                 String keyFromHashMap = Objects.requireNonNull(orderDetailsFromHashmap).getTmcsubctgykey();
-                Log.d(Constants.TAG, "beforeequals " + orderDetailsFromHashmap.getTmcsubctgykey());
+                //Log.d(Constants.TAG, "beforeequals " + orderDetailsFromHashmap.getTmcsubctgykey());
                 Modal_OrderDetails sortedOrderDetails = new Modal_OrderDetails();
 
                 sortedOrderDetails.itemname = orderDetailsFromHashmap.getItemname();
@@ -1389,9 +1393,9 @@ public class PosSalesReport extends AppCompatActivity {
                 sortedOrderDetails.paymentmode = orderDetailsFromHashmap.getPaymentmode();
 
                 if (key.equals(keyFromHashMap)) {
-                    Log.d(Constants.TAG, "inequals " + orderDetailsFromHashmap.getTmcsubctgykey());
+                    //Log.d(Constants.TAG, "inequals " + orderDetailsFromHashmap.getTmcsubctgykey());
                     addDatatoArray(key, sortedOrderDetails);
-                    Log.d(Constants.TAG, "SubCtgyKey_List" + SubCtgyKey_List.size());
+                    //Log.d(Constants.TAG, "SubCtgyKey_List" + SubCtgyKey_List.size());
 
 
                 }
@@ -1407,7 +1411,7 @@ public class PosSalesReport extends AppCompatActivity {
             SubCtgyKey_List.add(sortedOrderDetails);
 
             tmcSubCtgywise_sorted_hashmap.put(key, SubCtgyKey_List);
-            Log.d(Constants.TAG, "tmcSubCtgywise_sorted_hashmap" + tmcSubCtgywise_sorted_hashmap.size());
+            //Log.d(Constants.TAG, "tmcSubCtgywise_sorted_hashmap" + tmcSubCtgywise_sorted_hashmap.size());
         }
         catch(Exception e){
             e.printStackTrace();
@@ -1463,12 +1467,12 @@ public class PosSalesReport extends AppCompatActivity {
                }
                if ((paymentmode.toUpperCase().equals("CARD"))) {
                    cardPayment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
-                   Log.d(Constants.TAG, "This orders payment mode tmcprice: " +cardPayment_Amount);
+                   //Log.d(Constants.TAG, "This orders payment mode tmcprice: " +cardPayment_Amount);
 
                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                    cardDiscount_Amount = Double.parseDouble(discount_String);
                    cardPayment_Amount = cardPayment_Amount-cardDiscount_Amount;
-                   Log.d(Constants.TAG, "This orders payment mode tmcprice 1 : " +cardPayment_Amount);
+                   //Log.d(Constants.TAG, "This orders payment mode tmcprice 1 : " +cardPayment_Amount);
 
                }
                if ((paymentmode.toUpperCase().equals("UPI"))) {
@@ -1479,6 +1483,7 @@ public class PosSalesReport extends AppCompatActivity {
                }
 
            }
+           Log.d(Constants.TAG, "This orders payment mode tmcprice: " +totalAmount);
 
            try {
                discountAmount = cardDiscount_Amount+cashDiscount_Amount+upiDiscount_Amount;
@@ -1615,10 +1620,10 @@ public class PosSalesReport extends AppCompatActivity {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
 
             for(int i=0; i < jsonArray.length(); i++) {
-                Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
+                //Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
 
                 JSONObject json = jsonArray.getJSONObject(i);
-                Log.d(Constants.TAG, "this json" +json.toString());
+                //Log.d(Constants.TAG, "this json" +json.toString());
 
                 Modal_OrderDetails modal_orderDetails_ItemDesp = new Modal_OrderDetails();
 
@@ -1798,7 +1803,7 @@ public class PosSalesReport extends AppCompatActivity {
                                 }
                                 if(paymentMode.equals(Constants.CARD)||paymentMode.equals(Constants.Card)){
                                     double card_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCardSales());
-                                    Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+                                    //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
 
                                     double  card_amount = tmcprice+card_amount_fromhashmap;
                                     double newTotalcardAmount = card_amount+gstAmount;
@@ -1830,7 +1835,7 @@ public class PosSalesReport extends AppCompatActivity {
                                     double  card_amount = tmcprice;
                                     double Gst_card_amount = gstAmount;
                                     double newTotalcardAmount = card_amount+Gst_card_amount;
-                                    Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+                                    //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
 
                                     modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
 
@@ -1864,7 +1869,7 @@ public class PosSalesReport extends AppCompatActivity {
                             }
                             if(paymentMode.equals(Constants.CARD)||paymentMode.equals(Constants.Card)){
                                 double newTotalcardAmount = tmcprice + gstAmount;
-                                Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+                                //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
 
                                 modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
 
@@ -1959,7 +1964,7 @@ public class PosSalesReport extends AppCompatActivity {
                                      int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
 
                                      intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
-                                     Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
+                                     //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
 
 
                                      modal_orderDetails_itemDespfrom_hashMap.setWeightingrams(String.valueOf((intOldOrder_WeightInGrams)));
@@ -1986,7 +1991,7 @@ public class PosSalesReport extends AppCompatActivity {
                     //  add_amount_ForBillDetails(OrderdItems_desp);
                 }
                 else{
-                    Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
+                    //Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
                     Adjusting_Widgets_Visibility(false);
 
                 }
@@ -2139,7 +2144,7 @@ public class PosSalesReport extends AppCompatActivity {
         }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
-        Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
+        //Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
         File fol = new File(extstoragedir, "testpdf");
         File folder = new File(fol, "pdf");
         if (!folder.exists()) {
@@ -2185,7 +2190,7 @@ public class PosSalesReport extends AppCompatActivity {
         } catch (IOException e) {
             Adjusting_Widgets_Visibility(false);
 
-            Log.i("error", e.getLocalizedMessage());
+            //Log.i("error", e.getLocalizedMessage());
         } catch (Exception ex) {
             Adjusting_Widgets_Visibility(false);
 
@@ -2265,7 +2270,7 @@ public class PosSalesReport extends AppCompatActivity {
 
                 Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
                 String itemName = itemRow.getItemname();
-                Log.i(Constants.TAG, "size" + (itemRow.getItemname()));
+                //Log.i(Constants.TAG, "size" + (itemRow.getItemname()));
 
 
           */
@@ -2412,7 +2417,7 @@ public class PosSalesReport extends AppCompatActivity {
                 Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
                 Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
 
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
@@ -2530,9 +2535,9 @@ public class PosSalesReport extends AppCompatActivity {
             for (int i = 0; i < finalBillDetails.size(); i++) {
                 String key = finalBillDetails.get(i);
                 String value = FinalBill_hashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
-                Log.d("ExportReportActivity", "itemTotalRowsList value " + value);
+                //Log.d("ExportReportActivity", "itemTotalRowsList value " + value);
 
 
 
@@ -2600,7 +2605,7 @@ public class PosSalesReport extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for ");
+                    //Log.d(Constants.TAG, "before for ");
 
 
                 } catch (Exception e) {
@@ -2621,7 +2626,7 @@ public class PosSalesReport extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2644,7 +2649,7 @@ public class PosSalesReport extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {

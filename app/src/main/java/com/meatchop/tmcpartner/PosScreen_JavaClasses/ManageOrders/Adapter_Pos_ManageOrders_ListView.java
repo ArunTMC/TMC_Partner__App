@@ -58,7 +58,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     double new_to_pay_Amount,old_to_pay_Amount=0;
 
     List<Modal_ManageOrders_Pojo_Class> ordersList;
-    String changestatusto,orderStatus,OrderKey,orderStatusfromArray,tokenNO;
+    String deliverytype="",changestatusto,orderStatus,OrderKey,orderStatusfromArray,tokenNO;
     String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay;
     public Pos_ManageOrderFragment pos_manageOrderFragment;
     public Adapter_Pos_ManageOrders_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_ManageOrderFragment pos_manageOrderFragment, String orderStatus) {
@@ -108,8 +108,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         final TextView orderPlacedtime_text_widget = listViewItem.findViewById(R.id.orderPlacedtime_text_widget);
         final TextView orderstatus_text_widget = listViewItem.findViewById(R.id.orderstatus_text_widget);
 
-        final Button generateTokenNo_text_widget = listViewItem.findViewById(R.id.generateTokenNo);
-        final Button readyorder_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo);
+        //final Button generateTokenNo_text_widget = listViewItem.findViewById(R.id.generateTokenNo);
+      //  final Button readyorder_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo);
 
 
         final TextView slotName_text_widget = listViewItem.findViewById(R.id.slotName_text_widget);
@@ -145,7 +145,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
-        Log.i("Tag","Order Pos:   "+ Pos_ManageOrderFragment.sorted_OrdersList.get(pos));
+        //Log.i("Tag","Order Pos:   "+ Pos_ManageOrderFragment.sorted_OrdersList.get(pos));
 
 
         if(orderStatus.equals(Constants.NEW_ORDER_STATUS)){
@@ -210,39 +210,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         tokenNo_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getTokenno()));
         String orderid  = (String.format(" %s", modal_manageOrders_pojo_class.getOrderid()));
         orderid_text_widget.setText(String.format("#"+orderid));
-        Log.i("tag","orderid"+ orderid);
+        //Log.i("tag","orderid"+ orderid);
         ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType().toUpperCase()));
         orderPlacedtime_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderplacedtime()));
         slotName_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getSlotname()));
         String orderType = String.format(" %s", modal_manageOrders_pojo_class.getOrderType().toUpperCase());
-
-
-            if (orderType.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
-                ready_for_pickup_button_widget.setVisibility(View.GONE);
-                if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-
-                    ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
-                }
-                else{
-                    ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
-                    ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
-                }
-                slotName_text_widget.setVisibility(View.GONE);
-                deliverytype_text_widget.setVisibility(View.VISIBLE);
-                try {
-                    deliverytype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverytype()));
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-            else{
-                ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
-                ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
-                slotName_text_widget.setVisibility(View.VISIBLE);
-                deliverytype_text_widget.setVisibility(View.GONE);
-            }
-
 
 
 
@@ -293,42 +265,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         }
 
-        if(orderStatusfromArray.equals(Constants.CONFIRMED_ORDER_STATUS)){
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
-                pending_order_print_button_widget.setVisibility(View.VISIBLE);
-                generateTokenNo_text_widget.setVisibility(View.GONE);
-            }
-            else{
-                pending_order_print_button_widget.setVisibility(View.GONE);
-                generateTokenNo_text_widget.setVisibility(View.VISIBLE);
-
-            }
-        }
-
-
-        if(orderStatusfromArray.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
-            if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
-                other_print_button_widget.setVisibility(View.VISIBLE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
-            }
-            else{
-                other_print_button_widget.setVisibility(View.GONE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
-            }
-        }
 
 
 
 
-        if((modal_manageOrders_pojo_class.getOrderstatus().toUpperCase().equals(Constants.PICKEDUP_ORDER_STATUS))||(modal_manageOrders_pojo_class.getOrderstatus().toUpperCase().equals(Constants.DELIVERED_ORDER_STATUS))){
-                pending_order_print_button_widget.setVisibility(View.GONE);
-                  readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
-                other_print_button_widget.setVisibility(View.VISIBLE);
-                generateTokenNo_text_widget.setVisibility(View.GONE);
-
-            }
 
 
         if((!modal_manageOrders_pojo_class.getOrderstatus().equals(Constants.NEW_ORDER_STATUS))&&(!modal_manageOrders_pojo_class.orderType.toUpperCase().equals(Constants.POSORDER))) {
@@ -360,8 +300,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             deliveryPartner_mobileNo_widget.setText("Not Assigned");
             deliveryPartner_name_widget.setText("Not Assigned");
             changeDeliveryPartner.setText("Assign Delivery Person");
-            generateTokenNo_text_widget.setVisibility(View.GONE);
-            readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
+    //        generateTokenNo_text_widget.setVisibility(View.GONE);
+      //      readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
         }
 
         try {
@@ -376,14 +316,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 slotDate_linearLayout.setVisibility(View.GONE);
                 other_print_button_widget.setVisibility(View.VISIBLE);
                     changeDeliveryPartner.setVisibility(View.GONE);
-                generateTokenNo_text_widget.setVisibility(View.GONE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
+          //      generateTokenNo_text_widget.setVisibility(View.GONE);
+            //    readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
             } else {
                 tokenNo_label_widget.setVisibility(View.VISIBLE);
                 tokenNo_text_widget.setVisibility(View.VISIBLE);
                 slotDate_linearLayout.setVisibility(View.VISIBLE);
-                generateTokenNo_text_widget.setVisibility(View.GONE);
-                readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
+              //  generateTokenNo_text_widget.setVisibility(View.GONE);
+                //readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
                     changeDeliveryPartner.setVisibility(View.VISIBLE);
                     other_print_button_widget.setVisibility(View.VISIBLE);
 
@@ -394,9 +334,55 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             e.printStackTrace();
         }
 
+
+
+        try {
+            deliverytype = ( modal_manageOrders_pojo_class.getDeliverytype()).toUpperCase();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
+            //Log.i("tag",deliverytype+"     "+Constants.STOREPICKUP_DELIVERYTYPE);
+            ready_for_pickup_button_widget.setVisibility(View.GONE);
+            if(orderStatusfromArray.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+
+                ready_for_pickup_delivered_button_widget.setVisibility(View.VISIBLE);
+            }
+            else{
+                ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+                ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            }
+            slotName_text_widget.setVisibility(View.GONE);
+            deliverytype_text_widget.setVisibility(View.VISIBLE);
+            try {
+                deliverytype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverytype()));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        else{
+            ready_for_pickup_button_widget.setVisibility(View.VISIBLE);
+            ready_for_pickup_delivered_button_widget.setVisibility(View.GONE);
+            slotName_text_widget.setVisibility(View.VISIBLE);
+            deliverytype_text_widget.setVisibility(View.GONE);
+        }
+
+
+
+
+
+
+
+
+
+
+
         try {
             JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();
-            Log.i("tag","array.length()"+ array.length());
+            //Log.i("tag","array.length()"+ array.length());
                     String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
             String itemDesp="";
@@ -425,7 +411,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 } else {
 
-                    Log.i("tag", "array.lengrh(i" + json.length());
+                    //Log.i("tag", "array.lengrh(i" + json.length());
 
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
@@ -437,7 +423,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         itemDesp = String.format("%s * %s", itemName, quantity);
 
                     }
-                    Log.i("tag", "array.lengrh(i" + json.length());
+                    //Log.i("tag", "array.lengrh(i" + json.length());
 
 
                 }
@@ -457,12 +443,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 changestatusto =Constants.DELIVERED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                //Log.i("Tag","0"+OrderKey);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
-                Log.i("Tag",""+changestatusto+OrderKey);
+                //Log.i("Tag",""+changestatusto+OrderKey);
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
@@ -497,39 +483,6 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                     mContext.startActivity(intent);
 
-            }
-        });
-
-        readyorder_generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
-                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
-                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
-                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
-                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
-                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
-                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
-                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
-                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
-                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
-                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
-                selectedOrder.useraddress=modal_manageOrders_pojo_class.getUseraddress();
-                selectedOrder.orderType=modal_manageOrders_pojo_class.getOrderType();
-                selectedOrder.slotname=modal_manageOrders_pojo_class.getSlotname();
-                selectedOrder.slotdate=modal_manageOrders_pojo_class.getSlotdate();
-                selectedOrder.slottimerange=modal_manageOrders_pojo_class.getSlottimerange();
-                selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
-                selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
-                selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
-                selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
-
-                selectedBillDetails.add(selectedOrder);
-                generatingTokenNo(vendorkey,orderDetailsKey, selectedBillDetails);
-
-                Log.i("tag","orderkey1"+ OrderKey);
             }
         });
 
@@ -588,12 +541,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 changestatusto =Constants.CANCELLED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                //Log.i("Tag","0"+OrderKey);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
-                Log.i("Tag",""+changestatusto+OrderKey);
+                //Log.i("Tag",""+changestatusto+OrderKey);
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
@@ -603,7 +556,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         });
 
 
-
+/*
         generateTokenNo_text_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -633,7 +586,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedBillDetails.add(selectedOrder);
                 generatingTokenNo(vendorkey,orderDetailsKey, selectedBillDetails);
 
-                Log.i("tag","orderkey1"+ OrderKey);
+                //Log.i("tag","orderkey1"+ OrderKey);
 
 
             }
@@ -643,8 +596,43 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
 
+        readyorder_generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
+                Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
+                selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
+                selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
+                selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
+                selectedOrder.payableamount=modal_manageOrders_pojo_class.getPayableamount();
+                selectedOrder.itemdesp=modal_manageOrders_pojo_class.getItemdesp();
+                selectedOrder.orderid=modal_manageOrders_pojo_class.getOrderid();
+                selectedOrder.paymentmode=modal_manageOrders_pojo_class.getPaymentmode();
+                selectedOrder.coupondiscamount=modal_manageOrders_pojo_class.getCoupondiscamount();
+                selectedOrder.useraddress=modal_manageOrders_pojo_class.getUseraddress();
+                selectedOrder.orderType=modal_manageOrders_pojo_class.getOrderType();
+                selectedOrder.slotname=modal_manageOrders_pojo_class.getSlotname();
+                selectedOrder.slotdate=modal_manageOrders_pojo_class.getSlotdate();
+                selectedOrder.slottimerange=modal_manageOrders_pojo_class.getSlottimerange();
+                selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
+                selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
+                selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
+                selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
+
+                selectedBillDetails.add(selectedOrder);
+                generatingTokenNo(vendorkey,orderDetailsKey, selectedBillDetails);
+
+                //Log.i("tag","orderkey1"+ OrderKey);
+            }
+        });
 
 
+
+
+ */
         ready_for_pickup_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -652,7 +640,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 Currenttime = getDate_and_time();
 
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                Log.i("Tag","0"+OrderKey);
+                //Log.i("Tag","0"+OrderKey);
 
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.VISIBLE);
@@ -675,6 +663,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             public void onClick(View v) {
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
                 selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
                 selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
@@ -695,30 +686,42 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
+                try {
+                    String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                    if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                        try {
+                            Thread t = new Thread() {
+                                public void run() {
+                                    printRecipt(selectedBillDetails);
+                                }
+                            };
+                            t.start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
 
+                            new_to_pay_Amount = 0;
+                            old_taxes_and_charges_Amount = 0;
+                            old_total_Amount = 0;
 
-            try {
-                Thread t = new Thread() {
-                    public void run() {
-                        printRecipt(selectedBillDetails);
+                        }
+                    } else {
+                        generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+
                     }
-                };
-                t.start();
-            }
-            catch(Exception e ){
-                e.printStackTrace();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
-                new_to_pay_Amount=0;
-                old_taxes_and_charges_Amount=0;
-                old_total_Amount=0;
-
-            }
             }
 
         });
         other_print_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
@@ -741,22 +744,31 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
-
                 try {
-                    Thread t = new Thread() {
-                        public void run() {
-                            printRecipt(selectedBillDetails);
+                    String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                    if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                        try {
+                            Thread t = new Thread() {
+                                public void run() {
+                                    printRecipt(selectedBillDetails);
+                                }
+                            };
+                            t.start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                            new_to_pay_Amount = 0;
+                            old_taxes_and_charges_Amount = 0;
+                            old_total_Amount = 0;
+
                         }
-                    };
-                    t.start();
+                    } else {
+                        generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+
+                    }
                 }
-                catch(Exception e ){
+                catch (Exception e){
                     e.printStackTrace();
-
-                    new_to_pay_Amount=0;
-                    old_taxes_and_charges_Amount=0;
-                    old_total_Amount=0;
-
                 }
             }
         });
@@ -766,6 +778,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             public void onClick(View v) {
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+
+
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
                 selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
                 selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
@@ -790,20 +807,30 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 OrderdItems_desp.clear();
 
                 try {
-                    Thread t = new Thread() {
-                        public void run() {
-                            printRecipt(selectedBillDetails);
+                    String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                    if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                        try {
+                            Thread t = new Thread() {
+                                public void run() {
+                                    printRecipt(selectedBillDetails);
+                                }
+                            };
+                            t.start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                            new_to_pay_Amount = 0;
+                            old_taxes_and_charges_Amount = 0;
+                            old_total_Amount = 0;
+
                         }
-                    };
-                    t.start();
+                    } else {
+                        generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+
+                    }
                 }
-                catch(Exception e ){
+                catch (Exception e){
                     e.printStackTrace();
-
-                    new_to_pay_Amount=0;
-                    old_taxes_and_charges_Amount=0;
-                    old_total_Amount=0;
-
                 }
 
             }
@@ -829,11 +856,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             public void onResponse(@NonNull JSONObject response) {
 
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
                 try {
                     String tokenNo = response.getString("tokenNumber");
                     OrderdItems_desp.clear();
-                    UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
+
                     try {
                         for (int i = 0; i < selectedOrderr.size(); i++) {
 
@@ -867,7 +894,13 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     catch(Exception e){
                         e.printStackTrace();
                     }
+                        try{
+                            UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
 
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
 
                 } catch (JSONException e) {
                     new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Found_Instruction,
@@ -886,14 +919,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                     e.printStackTrace();
                 }
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 pos_manageOrderFragment.showProgressBar(false);
 
                 new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Error_Instruction,
@@ -937,7 +970,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
             jsonObject.put("key", orderDetailsKey);
             jsonObject.put("tokenno", tokenNo);
-            Log.i("tag","listenertoken"+ "");
+            //Log.i("tag","listenertoken"+ "");
 
 
 
@@ -948,10 +981,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -985,14 +1018,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     }
                 }
 
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 pos_manageOrderFragment.showProgressBar(false);
 
                 new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Updated_Instruction,
@@ -1038,14 +1071,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.api_ToSendTextMsgtoUser + "&to=" +usermobileNo+"&message="+message, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.e(" response",response);
+                        //Log.e(" response",response);
                         pos_manageOrderFragment.showProgressBar(false);
 
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.e(" response",error.toString());
+                        //Log.e(" response",error.toString());
                         pos_manageOrderFragment.showProgressBar(false);
 
                     }
@@ -1067,7 +1100,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(@NonNull JSONObject response) {
-                            Log.d(Constants.TAG, "Response: " + response);
+                            //Log.d(Constants.TAG, "Response: " + response);
 
                         }
 
@@ -1075,9 +1108,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 @Override
                 public void onErrorResponse(@NonNull VolleyError error) {
 
-                    Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                    Log.d(Constants.TAG, "Error: " + error.getMessage());
-                    Log.d(Constants.TAG, "Error: " + error.toString());
+                    //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                    //Log.d(Constants.TAG, "Error: " + error.toString());
 
                     error.printStackTrace();
                 }
@@ -1113,7 +1146,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             double quantity = Double.parseDouble(setOrderAmountDetails.getQuantity());
             //find total amount with out GST
             double new_total_amountfromArray = Double.parseDouble(setOrderAmountDetails.getItemFinalPrice());
-            Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+            //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
             new_total_amount = new_total_amountfromArray;
             double newtotalamount_withoutGST = new_total_amount*quantity;
             old_total_Amount = old_total_Amount + newtotalamount_withoutGST;
@@ -1539,11 +1572,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             itemwithoutGst = modal_newOrderItems.getTotalAmountWithoutGst();
             String netweight = modal_newOrderItems.getNetweight();
             String grossweight ="";
-            Log.i("tag","grossweight Log    "+                grossweight);
+            //Log.i("tag","grossweight Log    "+                grossweight);
 
             try {
                  grossweight = modal_newOrderItems.getGrossweight();
-                Log.i("tag","grossweight Log   1 "+                grossweight);
+                //Log.i("tag","grossweight Log   1 "+                grossweight);
 
 
                     if ((grossweight.equals(""))||(grossweight.equals(null))||(grossweight.equals(" - "))) {
@@ -1553,7 +1586,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         catch (Exception e){
                             e.printStackTrace();
                         }
-                        Log.i("tag","grossweight Log   2 "+                grossweight);
+                        //Log.i("tag","grossweight Log   2 "+                grossweight);
 
 
 
@@ -1565,7 +1598,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 try {
                     if (grossweight.equals("")) {
                         grossweight = modal_newOrderItems.getGrossweightingrams();
-                        Log.i("tag","grossweight Log   3 "+                grossweight);
+                        //Log.i("tag","grossweight Log   3 "+                grossweight);
 
 
                     }
@@ -2224,7 +2257,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
@@ -2236,7 +2269,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
@@ -2248,21 +2281,32 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 jsonObject.put("orderdeliverytime", "");
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
-                Log.i("tag","listenertoken"+ "");
+                //Log.i("tag","listenertoken"+ "");
             }
 
 
-
+            if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                jsonObject.put("key", OrderKey);
+                jsonObject.put("orderstatus", changestatusto);
+                jsonObject.put("orderconfirmedtime", "");
+                jsonObject.put("ordercancelledtime", "");
+                jsonObject.put("orderreadytime", "");
+                jsonObject.put("orderpickeduptime", "");
+                jsonObject.put("orderdeliverytime", currenttime);
+                jsonObject.put("deliveryuserlat", "");
+                jsonObject.put("deliveryuserlong", "");
+                //Log.i("tag","listenertoken"+ "");
+            }
 
 
 
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -2270,8 +2314,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             public void onResponse(@NonNull JSONObject response) {
                 for(int i=0;i<pos_manageOrderFragment.ordersList.size();i++){
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.ordersList.get(i);
-                    String OrderId = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    if(OrderKey.equals(OrderId)){
+                    String Orderkey_trackingDetails = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    if(OrderKey.equals(Orderkey_trackingDetails)){
                         modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
                         if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)){
                             modal_manageOrders_pojo_class.setOrderconfirmedtime(currenttime);
@@ -2291,16 +2335,16 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                        */
                     }
                 }
-                Log.d(Constants.TAG, "Responsewwwww: " + response);
+                //Log.d(Constants.TAG, "Responsewwwww: " + response);
                 pos_manageOrderFragment.showProgressBar(false);
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 pos_manageOrderFragment.showProgressBar(false);
                 error.printStackTrace();
             }

@@ -82,7 +82,7 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                 String deliveryPartnerMobileNo = assignDeliveryPartner_pojoClass.getDeliveryPartnerMobileNo();
                 String deliveryPartnerName = assignDeliveryPartner_pojoClass.getDeliveryPartnerName();
 
-                Log.i(Constants.TAG,"deliveryPartnerKey"+deliveryPartnerKey);
+                //Log.i(Constants.TAG,"deliveryPartnerKey"+deliveryPartnerKey);
 
 
                 assignPartner_widget.setOnClickListener(new View.OnClickListener() {
@@ -96,14 +96,14 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                                 jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
                                 jsonObject.put("deliveryusername", deliveryPartnerName);
 
-                                Log.i("tag","listenertoken"+ "");
+                                //Log.i("tag","listenertoken"+ "");
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        Log.d(Constants.TAG, "JSONOBJECT: " + e);
+                        //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
                     }
-                         Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+                         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
 
                     JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
@@ -112,7 +112,7 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                         public void onResponse(@NonNull JSONObject response) {
                             try {
                                 String msg = String.valueOf(response.get("message"));
-                                Log.d(Constants.TAG, "Response: " + msg);
+                                //Log.d(Constants.TAG, "Response: " + msg);
                                 if(msg.equals("success")){
                                  /*   Intent intent =new Intent(mContext, Pos_Dashboard_Screen.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -154,14 +154,14 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            Log.d(Constants.TAG, "Response: " + response);
+                            //Log.d(Constants.TAG, "Response: " + response);
                         }
                     }, new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(@NonNull VolleyError error) {
-                            Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                            Log.d(Constants.TAG, "Error: " + error.getMessage());
-                            Log.d(Constants.TAG, "Error: " + error.toString());
+                            //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                            //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                            //Log.d(Constants.TAG, "Error: " + error.toString());
 
                             error.printStackTrace();
                         }

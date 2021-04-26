@@ -123,17 +123,17 @@ public class TrackingOrderDetails_ServiceClass extends Service {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         SendarraytoManageOrdersFragment(response);
 
           /*
           try {
                             JSONArray JArray  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "Response: " + JArray);
+                            //Log.d(Constants.TAG, "Response: " + JArray);
 
                             int i1=0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -145,15 +145,15 @@ public class TrackingOrderDetails_ServiceClass extends Service {
                                     manageOrdersPojoClasss.orderid =String.valueOf(json.get("orderid"));
                                     manageOrdersPojoClasss.orderstatus =String.valueOf(json.get("orderstatus"));
                                     manageOrdersPojoClasss.keyfromtrackingOrderTable =String.valueOf(json.get("keyfromtrackingDetails"));
-                                    Log.d(Constants.TAG, "String.valueOf(json.get(\"orderid\"): " + String.valueOf(json.get("orderid")));
+                                    //Log.d(Constants.TAG, "String.valueOf(json.get(\"orderid\"): " + String.valueOf(json.get("orderid")));
 
                                     orderTrackingList.add(manageOrdersPojoClasss);
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
                                 }
@@ -174,9 +174,9 @@ public class TrackingOrderDetails_ServiceClass extends Service {
                 },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -225,14 +225,14 @@ public class TrackingOrderDetails_ServiceClass extends Service {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
                         ArrayList<String> listdata = new ArrayList<String>();
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONArray JArray  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "Response: " + JArray);
+                            //Log.d(Constants.TAG, "Response: " + JArray);
                             int i1=0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -252,14 +252,14 @@ public class TrackingOrderDetails_ServiceClass extends Service {
                                     manageOrdersPojoClass.vendorkey = String.valueOf(json.get("vendorkey"));
                                     manageOrdersPojoClass.coupondiscamount = String.valueOf(json.get("coupondiscamount"));
                                     manageOrdersPojoClass.itemdesp = String.valueOf(json.get("itemdesp"));
-                                    Log.d(Constants.TAG, "String.valueOf(json.get(\"orderid\")2: " + String.valueOf(json.get("orderid")));
+                                    //Log.d(Constants.TAG, "String.valueOf(json.get(\"orderid\")2: " + String.valueOf(json.get("orderid")));
 
                                     orderDetailsList.add(manageOrdersPojoClass);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -277,9 +277,9 @@ public class TrackingOrderDetails_ServiceClass extends Service {
                 },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -308,12 +308,12 @@ public class TrackingOrderDetails_ServiceClass extends Service {
        for (int i = 0; i < orderTrackingList.size(); i++) {
            final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = orderTrackingList.get(i);
            String orderid_from_websocket_ordersList =modal_manageOrders_pojo_class.getOrderid();
-           Log.d(Constants.TAG, "orderid_from_websocket_ordersList " + orderid_from_websocket_ordersList);
+           //Log.d(Constants.TAG, "orderid_from_websocket_ordersList " + orderid_from_websocket_ordersList);
 
            for(int j =0;j<orderDetailsList.size();j++){
                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList =orderDetailsList.get(j);
                String orderid_from_ordersList =modal_manageOrders_forOrderDetailList.getOrderid();
-               Log.d(Constants.TAG, "orderid_from_ordersList " + orderid_from_ordersList);
+               //Log.d(Constants.TAG, "orderid_from_ordersList " + orderid_from_ordersList);
 
                if(orderid_from_websocket_ordersList.equals(orderid_from_ordersList))
                {
@@ -338,7 +338,7 @@ public class TrackingOrderDetails_ServiceClass extends Service {
 
                }
                else{
-                   Log.i(Constants.TAG,orderid_from_ordersList+" this order is not repeated ");
+                   //Log.i(Constants.TAG,orderid_from_ordersList+" this order is not repeated ");
                }
 
            }
@@ -358,7 +358,7 @@ public class TrackingOrderDetails_ServiceClass extends Service {
       /*  //Bundle bundle=new Bundle();
       //  bundle.putSerializable("test", (Serializable) finalOrderList);
         //intent.putExtras(bundle);
-        Log.i(Constants.TAG,"SendarraytoManageOrdersFragment ");
+        //Log.i(Constants.TAG,"SendarraytoManageOrdersFragment ");
       //  intent.putExtra("finalOrderList", (Serializable) finalOrderList);
             intent.putExtra("finalOrderList",finalOrderList);
        // intent.putParcelableArrayListExtra("finalOrderList", (ArrayList<? extends Parcelable>) finalOrderList);

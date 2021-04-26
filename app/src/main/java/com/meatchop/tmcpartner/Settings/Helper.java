@@ -17,15 +17,15 @@ public class Helper {
         for (int size=0; size < myListAdapter.getCount(); size++) {
             View listItem=myListAdapter.getView(size, null, myListView);
             listItem.measure(0, 0);
-         //   Log.i("height of listItem :", String.valueOf(totalHeight));
+         //   //Log.i("height of listItem :", String.valueOf(totalHeight));
             if(screenInches<8) {
                 if (totalHeight < 500) {
                     totalHeight += listItem.getMeasuredHeight() + 130;
-          //          Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
+          //          //Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
                 }
                 else {
                     totalHeight += listItem.getMeasuredHeight() ;
-              //      Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
+              //      //Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
                 }
             }
             if (screenInches>8){

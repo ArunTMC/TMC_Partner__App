@@ -45,7 +45,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
     public Adapter_CartItem_Recyclerview(Context context, HashMap<String, Modal_NewOrderItems> itemInCart, String menuItems, NewOrders_MenuItem_Fragment newOrders_menuItem_fragment) {
 
-        Log.e(TAG, "Auto call adapter itemInCart itemInCart" + itemInCart.size());
+        //Log.e(TAG, "Auto call adapter itemInCart itemInCart" + itemInCart.size());
         this.newOrders_menuItem_fragment = newOrders_menuItem_fragment;
         this.context = context;
 
@@ -67,7 +67,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
     }
 
     private void sendHandlerMessage(String bundlestr) {
-        Log.e(Constants.TAG, "createBillDetails in cartaItem 1");
+        //Log.e(Constants.TAG, "createBillDetails in cartaItem 1");
 
         Message msg = new Message();
         Bundle bundle = new Bundle();
@@ -80,9 +80,9 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
     public void onBindViewHolder(ViewHolder holder, final int position) {
 
 
-        Log.e(TAG, "onBindViewHolder: called.");
-        Log.e("TAG", "adapter       " + newOrders_menuItem_fragment.cart_Item_List.size());
-        Log.e("TAG", "adapter       ");
+        //Log.e(TAG, "onBindViewHolder: called.");
+        //Log.e("TAG", "adapter       " + newOrders_menuItem_fragment.cart_Item_List.size());
+        //Log.e("TAG", "adapter       ");
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
@@ -99,17 +99,17 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
         }
         int length = holder.autoComplete_widget.getText().length();
         holder.autoComplete_widget.setSelection(length);
-        Log.e("TAG", "position" + position);
+        //Log.e("TAG", "position" + position);
                     Modal_NewOrderItems recylerviewPojoClass = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(NewOrders_MenuItem_Fragment.cart_Item_List.get(position));
 
 
-                    Log.i("TAG", "HASHMAP" + recylerviewPojoClass.getItemuniquecode());
+                    //Log.i("TAG", "HASHMAP" + recylerviewPojoClass.getItemuniquecode());
 
                     if (recylerviewPojoClass.getItemuniquecode().equals("empty")) {
-                        Log.e("TAG", "adapter 1" + recylerviewPojoClass.getItemname());
-                        Log.e("TAG", "adapter 1 " + recylerviewPojoClass.getGrossweight());
-                        Log.e("TAG", "adapter 1" + recylerviewPojoClass.getPricePerItem());
-                        Log.e("TAG", "adapter 1" + recylerviewPojoClass.getTmcpriceperkg());
+                        //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getItemname());
+                        //Log.e("TAG", "adapter 1 " + recylerviewPojoClass.getGrossweight());
+                        //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getPricePerItem());
+                        //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getTmcpriceperkg());
 
                         holder.itemPrice_Widget.setText("");
                         holder.itemWeight_widget.setText("");
@@ -164,7 +164,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                }
                            }
                            catch (Exception e){
-                               Log.e("TAG", "Cant set itemweight/portionsize in recycler adapter");
+                               //Log.e("TAG", "Cant set itemweight/portionsize in recycler adapter");
 
                            }
 
@@ -181,8 +181,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             holder.itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
                             newOrders_menuItem_fragment.add_amount_ForBillDetails();
                         }
-                        Log.e(TAG, "Got barcode isBarcodeEn position " + position);
-                        Log.e(TAG, "Got barcode newOrders_menuItem_fragment.cart_Item_List.size() " + newOrders_menuItem_fragment.cart_Item_List.size());
+                        //Log.e(TAG, "Got barcode isBarcodeEn position " + position);
+                        //Log.e(TAG, "Got barcode newOrders_menuItem_fragment.cart_Item_List.size() " + newOrders_menuItem_fragment.cart_Item_List.size());
 
 
                     }
@@ -212,17 +212,17 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     holder.removeItem_fromCart_widget.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Log.e(TAG, "Item" + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
+                            //Log.e(TAG, "Item" + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
                             String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
 
                             if(barcode.equals(""))
                             {
                                 barcode="empty";
                             }
-                            Log.i("TAG", "KEY: " + barcode);
+                            //Log.i("TAG", "KEY: " + barcode);
                             if ((NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1) == 0) {
 
-                                Log.i("TAG", "KEY: " + barcode);
+                                //Log.i("TAG", "KEY: " + barcode);
 
                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove(barcode);
                                 NewOrders_MenuItem_Fragment.cart_Item_List.remove(barcode);
@@ -235,10 +235,10 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                                 newOrders_menuItem_fragment.CallAdapter();
 
-                                Log.e(TAG, "Item_not_deleted  " + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
+                                //Log.e(TAG, "Item_not_deleted  " + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
 
                             } else {
-                                Log.i("TAG", "KEY: " + barcode);
+                                //Log.i("TAG", "KEY: " + barcode);
 
 
                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove(barcode);
@@ -248,7 +248,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newOrders_menuItem_fragment.CallAdapter();
 
                               //  NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
-                                Log.e(TAG, "Item_deleted  " + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
+                                //Log.e(TAG, "Item_deleted  " + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
 
 
                             }
@@ -257,7 +257,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         }
                     });
 
-                    Log.e(TAG, "Auto menu in cart adapter 1 : " + Menulist);
+                    //Log.e(TAG, "Auto menu in cart adapter 1 : " + Menulist);
 
 
                     holder.tmcUnitprice_weightAdd_layout.setOnClickListener(new View.OnClickListener() {
@@ -432,7 +432,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     }
 
               */
-                Log.e(TAG, "Got barcode isBarcodeEntered in on textchangeddddd"+s1);
+                //Log.e(TAG, "Got barcode isBarcodeEntered in on textchangeddddd"+s1);
 
 
                 if (s1.length() > 4) {
@@ -441,7 +441,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         if (isTMCproduct) {
                             if (barcode_widget.getText().toString().length() == 14) {
 
-                                Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                                //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
 
                                 String Barcode = barcode_widget.getText().toString();
                                 getMenuItemUsingBarCode(Barcode);
@@ -450,7 +450,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                        /* else if(isIndiaGateBasmatiRiceproduct){
                             if (barcode_widget.getText().toString().length() == 12) {
 
-                                Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                                //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
 
                                 String Barcode = barcode_widget.getText().toString();
 
@@ -463,7 +463,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         else {
                             //if (barcode_widget.getText().toString().length() == 13) {
 
-                                Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                                //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
 
                                 String Barcode = barcode_widget.getText().toString();
 
@@ -481,15 +481,15 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
         public void getMenuItemUsingBarCode(String barcode) {
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
-            Log.e(TAG, "barcode  1    " + barcode);
+            //Log.e(TAG, "barcode  1    " + barcode);
 
             if(!isTMCproduct){
 
-                Log.e(TAG, " barcode  1   " + barcode);
+                //Log.e(TAG, " barcode  1   " + barcode);
 
                 for (int i = 0; i < NewOrders_MenuItem_Fragment.completemenuItem.size(); i++) {
                     String itemWeight;
-                    Log.e(TAG, " barcode  1  for" + barcode);
+                    //Log.e(TAG, " barcode  1  for" + barcode);
 
                     Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.completemenuItem.get(i);
 
@@ -530,27 +530,27 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.totalGstAmount = "";
 
                             if (modal_newOrderItems.getGrossweight().equals("") && modal_newOrderItems.getNetweight().equals("")) {
-                                Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
+                                //Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getPortionsize());
 
                                 itemWeight = String.valueOf(modal_newOrderItems.getPortionsize());
                             } else if (modal_newOrderItems.getNetweight().equals("")) {
 
-                                Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
+                                //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
 
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
 
 
                             } else if (modal_newOrderItems.getGrossweight().equals("")) {
-                                Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
+                                //Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getNetweight());
 
                                 itemWeight = String.valueOf(modal_newOrderItems.getNetweight());
 
 
                             } else {
-                                Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
+                                //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
 
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
@@ -570,15 +570,15 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                 }}
             else{
-                Log.e(TAG, " barcode  2" + barcode);
+                //Log.e(TAG, " barcode  2" + barcode);
 
             if (barcode.length() == 14) {
-                Log.e(TAG, " barcode  3" + barcode);
+                //Log.e(TAG, " barcode  3" + barcode);
                 try{
                 String itemuniquecode = barcode.substring(0, 9);
                 String itemWeight = barcode.substring(9, 14);
-                Log.e(TAG, "1 barcode uniquecode" + itemuniquecode);
-                Log.e(TAG, "1 barcode itemweight" + itemWeight);
+                //Log.e(TAG, "1 barcode uniquecode" + itemuniquecode);
+                //Log.e(TAG, "1 barcode itemweight" + itemWeight);
 
                 for (int i = 0; i < NewOrders_MenuItem_Fragment.completemenuItem.size(); i++) {
 
@@ -623,23 +623,23 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             int weight = Integer.parseInt(itemWeight);
                             if (weight < 1000) {
                                 item_total = (priceperKg * weight);
-                                Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
+                                //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
 
-                                Log.e("TAG", "adapter 9 item_total weight" + weight);
+                                //Log.e("TAG", "adapter 9 item_total weight" + weight);
 
-                                Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
+                                //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
 
                                 item_total = item_total / 1000;
-                                Log.e("TAG", "adapter 9 item_total " + item_total);
+                                //Log.e("TAG", "adapter 9 item_total " + item_total);
 
-                                Log.e("TAg", "weight2" + weight);
+                                //Log.e("TAg", "weight2" + weight);
                                 item_total = Double.parseDouble(decimalFormat.format(item_total));
 
 
                                 newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(item_total));
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(item_total));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
-                                Log.e("TAg", "weight item_total" + item_total);
+                                //Log.e("TAg", "weight item_total" + item_total);
 
                                 itemPrice_Widget.setText(String.valueOf(item_total));
 
@@ -652,7 +652,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(priceperKg));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
 
-                                Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                                //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
 
                                 NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
@@ -662,18 +662,18 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             if (weight > 1000) {
                                  priceperKg = Integer.parseInt(modal_newOrderItems.getTmcpriceperkg());
 
-                                Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                                //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
-                                Log.e("TAg", "weight3" + weight);
+                                //Log.e("TAg", "weight3" + weight);
 
                                 int itemquantity = weight - 1000;
-                                Log.e("TAg", "weight itemquantity" + itemquantity);
+                                //Log.e("TAg", "weight itemquantity" + itemquantity);
 
                                 item_total = (priceperKg * itemquantity) / 1000;
                                 item_total = Double.parseDouble(decimalFormat.format(item_total));
 
 
-                                Log.e("TAg", "weight item_total" + item_total);
+                                //Log.e("TAg", "weight item_total" + item_total);
 
                                 double total = priceperKg + item_total;
                                 total = Double.parseDouble(decimalFormat.format((total)));
@@ -682,7 +682,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(total));
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(total));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
-                                Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                                //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
                                 itemPrice_Widget.setText(String.valueOf(total));
                                 NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
@@ -699,27 +699,27 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.setItemFinalPrice(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getTmcprice())));
 
                             if (modal_newOrderItems.getGrossweight().equals("") && modal_newOrderItems.getNetweight().equals("")) {
-                                Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
+                                //Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getPortionsize());
 
                                 itemWeight = String.valueOf(modal_newOrderItems.getPortionsize());
                             } else if (modal_newOrderItems.getNetweight().equals("")) {
 
-                                Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
+                                //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
 
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
 
 
                             } else if (modal_newOrderItems.getGrossweight().equals("")) {
-                                Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
+                                //Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getNetweight());
 
                                 itemWeight = String.valueOf(modal_newOrderItems.getNetweight());
 
 
                             } else {
-                                Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
+                                //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
 
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
@@ -807,8 +807,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     String data = bundle.getString("dropdown");
 
                     if (String.valueOf(data).equalsIgnoreCase("dismissdropdown")) {
-                        Log.e(TAG, "dismissDropdown");
-                        Log.e(Constants.TAG, "createBillDetails in CartItem 0 ");
+                        //Log.e(TAG, "dismissDropdown");
+                        //Log.e(Constants.TAG, "createBillDetails in CartItem 0 ");
 
                         sendHandlerMessage("addBillDetails");
 
@@ -948,9 +948,9 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             isTMCproduct=false;
                         }
                     }
-                    Log.e(TAG, "Got barcode isBarcodeEntered in on textchanged"+s1);
+                    //Log.e(TAG, "Got barcode isBarcodeEntered in on textchanged"+s1);
 
-                    Log.e(TAG, "Got barcode isBarcodeEntered after text changed"+isdataFetched);
+                    //Log.e(TAG, "Got barcode isBarcodeEntered after text changed"+isdataFetched);
 
                         if (s1.length() > 3) {
                             if(!isdataFetched) {
@@ -958,8 +958,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 if (isTMCproduct) {
                                 if (barcode_widget.getText().toString().length() == 14) {
 
-                                    Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
-                                    Log.e(TAG, "Got barcode isBarcodeEntered in condition check 13/14" + isdataFetched);
+                                    //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                                    //Log.e(TAG, "Got barcode isBarcodeEntered in condition check 13/14" + isdataFetched);
 
                                     String Barcode = barcode_widget.getText().toString();
 
@@ -969,8 +969,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             } else {
                                 if (barcode_widget.getText().toString().length() == 13) {
 
-                                    Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
-                                    Log.e(TAG, "Got barcode isBarcodeEntered in condition check 13/14" + isdataFetched);
+                                    //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                                    //Log.e(TAG, "Got barcode isBarcodeEntered in condition check 13/14" + isdataFetched);
 
                                     String Barcode = barcode_widget.getText().toString();
 
@@ -1019,13 +1019,13 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     }
                 }
                 else{
-                    Log.i(TAG,"Barcode is empty");
+                    //Log.i(TAG,"Barcode is empty");
 
                 }
 
             }
             else {
-                Log.i(TAG,"Barcode cannot be Null");
+                //Log.i(TAG,"Barcode cannot be Null");
             }
 
         }
@@ -1039,16 +1039,16 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 /*
 
-            Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
+            //Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
             int last_ItemInCart = NewOrders_MenuItem_Fragment.cart_Item_List.size() - 1;
-            Log.e(TAG, "barcode uniquecode last_ItemInCart" + last_ItemInCart);
-            Log.e(TAG, "barcode uniquecode itemWeight" + itemWeight);
-            Log.e(TAG, "barcode uniquecode getItemFinalPrice" + newItem_newOrdersPojoClass.getPricePerItem());
-            Log.e(TAG, "barcode uniquecode getItemFinalWeight" + newItem_newOrdersPojoClass.getItemFinalWeight());
+            //Log.e(TAG, "barcode uniquecode last_ItemInCart" + last_ItemInCart);
+            //Log.e(TAG, "barcode uniquecode itemWeight" + itemWeight);
+            //Log.e(TAG, "barcode uniquecode getItemFinalPrice" + newItem_newOrdersPojoClass.getPricePerItem());
+            //Log.e(TAG, "barcode uniquecode getItemFinalWeight" + newItem_newOrdersPojoClass.getItemFinalWeight());
 
             Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cart_Item_List.get(last_ItemInCart);
             if (String.valueOf(modal_newOrderItems.getItemname()).equals("")) {
-                Log.e(TAG, "barcode in if  " + modal_newOrderItems.getItemname());
+                //Log.e(TAG, "barcode in if  " + modal_newOrderItems.getItemname());
 
                 modal_newOrderItems.setItemname(newItem_newOrdersPojoClass.getItemname());
                 modal_newOrderItems.setTmcpriceperkg(newItem_newOrdersPojoClass.getTmcpriceperkg());
@@ -1068,20 +1068,20 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(newItem_newOrdersPojoClass.getItemPrice_quantityBased());
 
 
-                Log.e(TAG, "barcode in if before cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+                //Log.e(TAG, "barcode in if before cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
 
                 // NewOrders_MenuItem_Fragment.cart_Item_List.add(last_ItemInCart,modal_newOrderItems);
-                Log.e(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+                //Log.e(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
                 //    newOrders_menuItem_fragment.add_amount_ForBillDetails();
                 // cart_Item_List.add(last_ItemInCart,modal_newOrderItems);
-                Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
-                Log.e(TAG, "Got barcode addItemIntheCart" +
+                //Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+                //Log.e(TAG, "Got barcode addItemIntheCart" +
                         "" +
                         ""+isdataFetched);
                 NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
-                Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
-                Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+                //Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
+                //Log.i(TAG, "barcode in if after cart_Item_List.size()" + NewOrders_MenuItem_Fragment.cart_Item_List.size());
 
 
 
@@ -1103,10 +1103,10 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
         if(recylerviewPojoClass.getTmcpriceperkg().equals("")&&recylerviewPojoClass.getTmcprice().equals("")){
-            Log.e("TAG", "adapter 1" + recylerviewPojoClass.getItemname());
-            Log.e("TAG", "adapter 1 " + recylerviewPojoClass.getGrossweight());
-            Log.e("TAG", "adapter 1" + recylerviewPojoClass.getPricePerItem());
-            Log.e("TAG", "adapter 1" + recylerviewPojoClass.getTmcpriceperkg());
+            //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getItemname());
+            //Log.e("TAG", "adapter 1 " + recylerviewPojoClass.getGrossweight());
+            //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getPricePerItem());
+            //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getTmcpriceperkg());
 
             holder.itemPrice_Widget.setText(recylerviewPojoClass.getSubTotal_perItem());
             holder.itemWeight_widget.setText(recylerviewPojoClass.getGrossweight());
@@ -1115,7 +1115,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
             holder.autoComplete_widget.setText(recylerviewPojoClass.getItemname());
             isdataFetched = false;
-            Log.e(TAG, "Got barcode isBarcodeEntered on empty data 2 "+isdataFetched);
+            //Log.e(TAG, "Got barcode isBarcodeEntered on empty data 2 "+isdataFetched);
 
         }
         else {

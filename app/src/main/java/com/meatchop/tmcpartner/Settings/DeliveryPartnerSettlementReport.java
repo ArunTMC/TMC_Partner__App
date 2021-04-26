@@ -322,7 +322,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                 /*int writeExternalStoragePermission = ContextCompat.checkSelfPermission(DeliveryPartnerSettlementReport.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
+                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
                 // If do not grant write external storage permission.
                 if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
                     // Request user to grant write external storage permission.
@@ -415,7 +415,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             int dayOfWeek = myCalendar.get(Calendar.DAY_OF_WEEK);
 
                             String CurrentDay =   getDayString(dayOfWeek);
-                            Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
+                            //Log.d(Constants.TAG, "dayOfWeek Response: " + dayOfWeek);
 
                             String CurrentDateString =datestring+monthstring+String.valueOf(year);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
@@ -462,17 +462,17 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
 
-                        Log.d(Constants.TAG, "Response: " + response);
+                        //Log.d(Constants.TAG, "Response: " + response);
                             try {
                                 String paymentMode = "", ordertype = "", orderid = "", slotname = "",orderstatus ="";
 
                                 //converting jsonSTRING into array
                                 JSONArray JArray = response.getJSONArray("content");
                                 assignedOrdersString = response.toString();
-                                Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                                 int i1 = 0;
                                 int arrayLength = JArray.length();
-                                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
                                 if(arrayLength>0){
 
@@ -481,14 +481,14 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                         try {
                                             JSONObject json = JArray.getJSONObject(i1);
                                             Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                          //  Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderstatus")));
+                                          //  //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderstatus")));
                                             JSONArray itemdesp;
 
                                             if (json.has("ordertype")) {
                                                 try {
                                                     modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                                     ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                                    Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+                                                    //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -496,7 +496,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                                             } else {
                                                 modal_orderDetails.ordertype = "There is no OrderType";
-                                                Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+                                                //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                             }
@@ -505,7 +505,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 try {
                                                     modal_orderDetails.orderstatus = String.valueOf(json.get("orderstatus")).toUpperCase();
                                                     orderstatus = String.valueOf(json.get("orderstatus")).toUpperCase();
-                                                    Log.d(Constants.TAG, "orderstatus: " + String.valueOf(json.get("orderstatus")));
+                                                    //Log.d(Constants.TAG, "orderstatus: " + String.valueOf(json.get("orderstatus")));
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -513,7 +513,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                                             } else {
                                                 modal_orderDetails.orderstatus = "There is no orderstatus";
-                                                Log.d(Constants.TAG, "There is no orderstatus: " + String.valueOf(json.get("orderstatus")));
+                                                //Log.d(Constants.TAG, "There is no orderstatus: " + String.valueOf(json.get("orderstatus")));
 
 
                                             }
@@ -522,7 +522,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 try {
                                                     modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                                     slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                    Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
+                                                    //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -530,7 +530,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                                             } else {
                                                 modal_orderDetails.slotname = "There is no slotname";
-                                                Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("slotname")));
+                                                //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("slotname")));
 
 
                                             }
@@ -540,7 +540,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 try {
                                                     paymentMode = String.valueOf(json.get("paymentmode"));
                                                     modal_orderDetails.paymentmode = String.valueOf(json.get("paymentmode"));
-                                                    Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+                                                    //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -549,7 +549,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                                             } else {
                                                 modal_orderDetails.paymentmode = "There is no payment mode";
-                                                Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+                                                //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                             }
@@ -562,7 +562,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                     itemdesp = json.getJSONArray("itemdesp");
                                                     modal_orderDetails.itemdesp = itemdesp;
 
-                                                    Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
+                                                    //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -570,7 +570,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                                             } else {
 
-                                                Log.d(Constants.TAG, "There is no itemdesp: ");
+                                                //Log.d(Constants.TAG, "There is no itemdesp: ");
 
 
                                             }
@@ -581,21 +581,21 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                     orderid = String.valueOf(json.get("orderid"));
                                                     modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                                     if(OrderIdCount.contains(orderid)){
-                                                        Log.d(Constants.TAG, "orderid is already added");
+                                                        //Log.d(Constants.TAG, "orderid is already added");
 
                                                     }
                                                     else{
                                                         OrderIdCount.add(orderid);
                                                     }
 
-                                                    Log.d(Constants.TAG, "orderid has been succesfully  retrived");
+                                                    //Log.d(Constants.TAG, "orderid has been succesfully  retrived");
 
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
                                             } else {
 
-                                                Log.d(Constants.TAG, "There is no orderid: ");
+                                                //Log.d(Constants.TAG, "There is no orderid: ");
 
 
                                             }
@@ -627,23 +627,23 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                                         Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                         String discountAmount = modal_orderDetails1.getDiscountAmount();
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount" + discountAmount);
+                                                                            //Log.i("TAG", "discountAmount" + discountAmount);
                                                                         }
                                                                         double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                         double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
                                                                         discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                                            //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
                                                                         }
                                                                         modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                                                            //Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
                                                                         }
                                                                     } else {
                                                                         Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                                            //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
                                                                         }
                                                                         modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
                                                                         preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
@@ -651,7 +651,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                                                                 } else {
-                                                                    Log.d(Constants.TAG, "orderid already availabe");
+                                                                    //Log.d(Constants.TAG, "orderid already availabe");
 
                                                                 }
                                                             } else {
@@ -660,11 +660,11 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                                 CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
 
                                                                 if (paymentMode.equals("PAYTM")) {
-                                                                    Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
+                                                                    //Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
                                                                 }
 
                                                                 if (paymentMode.equals("PAYTM")) {
-                                                                    Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
+                                                                    //Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
                                                                 }
                                                                 if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                     preorderpaymentMode_DiscountOrderid.add(orderid);
@@ -673,7 +673,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                                         Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                         String discountAmount = modal_orderDetails1.getDiscountAmount();
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                                                            //Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
                                                                         }
 
                                                                         double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
@@ -681,24 +681,24 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                                         discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                         modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                                            //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
                                                                         }
 
                                                                     } else {
                                                                         Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                         modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
                                                                         if (paymentMode.equals("PAYTM")) {
-                                                                            Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                                            //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
                                                                         }
                                                                         preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                     }
 
 
-                                                                    Log.d(Constants.TAG, "mode already availabe");
+                                                                    //Log.d(Constants.TAG, "mode already availabe");
 
 
                                                                 } else {
-                                                                    Log.d(Constants.TAG, "orderid already availabe");
+                                                                    //Log.d(Constants.TAG, "orderid already availabe");
 
                                                                 }
                                                             }
@@ -709,7 +709,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                         }
 
 
-                                                        Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                     } catch (Exception e) {
                                                         e.printStackTrace();
                                                     }
@@ -768,7 +768,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                                                                 } else {
-                                                                    Log.d(Constants.TAG, "mode already availabe");
+                                                                    //Log.d(Constants.TAG, "mode already availabe");
 
                                                                 }
                                                             } else {
@@ -795,11 +795,11 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                                     }
 
 
-                                                                    Log.d(Constants.TAG, "mode already availabe");
+                                                                    //Log.d(Constants.TAG, "mode already availabe");
 
 
                                                                 } else {
-                                                                    Log.d(Constants.TAG, "mode already availabe");
+                                                                    //Log.d(Constants.TAG, "mode already availabe");
 
                                                                 }
                                                             }
@@ -810,7 +810,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                         }
 
 
-                                                        Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                     } catch (Exception e) {
                                                         e.printStackTrace();
                                                     }
@@ -863,9 +863,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                                             addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap,OrderIdCount);
-                                            Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                            Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                            Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
                                         }
                                         if (arrayLength - 1 == i1) {
@@ -1023,9 +1023,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                             addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap, OrderIdCount);
 
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                             error.printStackTrace();
                         }
@@ -1073,10 +1073,10 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             result  = response.getJSONArray("content");
 
                             JSONArray JArray  = response.getJSONArray("content");
-                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1=0;
                             int arrayLength = JArray.length();
-                            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for(;i1<(arrayLength);i1++) {
@@ -1089,7 +1089,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                     modal_deliveryPartner.deliveryPartnerMobileNo =String.valueOf(json.get("mobileno"));
                                     modal_deliveryPartner.deliveryPartnerName =String.valueOf(json.get("name"));
 
-                                    // Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                                    // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                                     deliveryPartner_arrayList.add(modal_deliveryPartner);
 
 
@@ -1104,9 +1104,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                     e.printStackTrace();
                                     Adjusting_Widgets_Visibility(false);
 
-                                    Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    Log.d(Constants.TAG, "e: " + e.toString());
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -1133,9 +1133,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             public void onErrorResponse(@NonNull VolleyError error) {
                 Adjusting_Widgets_Visibility(false);
 
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
                 deliveryPartner_arrayList.clear();
                 error.printStackTrace();
             }
@@ -1175,10 +1175,10 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
 
             for(int i=0; i < jsonArray.length(); i++) {
-                Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
+                //Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
 
                 JSONObject json = jsonArray.getJSONObject(i);
-                Log.d(Constants.TAG, "this json" +json.toString());
+                //Log.d(Constants.TAG, "this json" +json.toString());
 
                 Modal_OrderDetails modal_orderDetails_ItemDesp = new Modal_OrderDetails();
 
@@ -1661,7 +1661,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             if(isAlreadyAvailable) {
 
                                 Modal_OrderDetails modal_orderDetails_itemDespfrom_hashMap = OrderItem_hashmap.get(marinadeitemmenuItemId);
-                                Log.i("tag", "TMCPRICEFROMHashmap" + modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
+                                //Log.i("tag", "TMCPRICEFROMHashmap" + modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
                                 double tmcprice_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
                                 int quantity_from_HashMap = Integer.parseInt(modal_orderDetails_itemDespfrom_hashMap.getQuantity());
                                 double gstAmount_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getGstamount());
@@ -2150,7 +2150,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
-                            Log.d(Constants.TAG, "this json pre 3 " +String.valueOf(oldOrder_WeightInGrams));
+                            //Log.d(Constants.TAG, "this json pre 3 " +String.valueOf(oldOrder_WeightInGrams));
 
 
                           */
@@ -2227,7 +2227,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                 }
                 else{
-                    Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
+                    //Log.d(Constants.TAG, "this order have no menuitemId " + String.valueOf(json.get("itemname")));
                     Adjusting_Widgets_Visibility(false);
 
                 }
@@ -2272,7 +2272,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2295,7 +2295,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2323,7 +2323,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2346,7 +2346,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2374,7 +2374,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2397,7 +2397,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2425,7 +2425,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2448,7 +2448,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                     GST = GST + GST_array;
 
-                    Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
 
 
                 } catch (Exception e) {
@@ -2755,7 +2755,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) { return; }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
-        Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
+        //Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
         File fol = new File(extstoragedir, "testpdf");
         File folder = new File(fol, "pdf");
         if (!folder.exists()) {
@@ -2801,7 +2801,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         } catch (IOException e) {
             Adjusting_Widgets_Visibility(false);
 
-            Log.i("error", e.getLocalizedMessage());
+            //Log.i("error", e.getLocalizedMessage());
         } catch (Exception ex) {
             Adjusting_Widgets_Visibility(false);
 
@@ -2911,7 +2911,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                 Modal_OrderDetails itemRow = OrderItem_hashmap.get(key);
                 String itemName = itemRow.getItemname()+" - "+itemRow.getNetweight();
-                Log.i(Constants.TAG,"size"+(itemRow.getItemname()));
+                //Log.i(Constants.TAG,"size"+(itemRow.getItemname()));
                 itemnamecell = new PdfPCell(new Phrase((itemName)));
                 itemnamecell.setBorder(Rectangle.BOTTOM);
                 itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
@@ -2986,7 +2986,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             for (int i = 0; i < paymentModeArray.size(); i++) {
                 String key = paymentModeArray.get(i);
                 Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
@@ -3133,7 +3133,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             for (int i = 0; i < preorder_paymentModeArray.size(); i++) {
                 String key = preorder_paymentModeArray.get(i);
                 Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
 
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
@@ -3273,9 +3273,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             for (int i=0; i<finalBillDetails.size(); i++) {
                 String key = finalBillDetails.get(i);
                 String value= FinalBill_hashmap.get(key);
-                Log.d("ExportReportActivity", "itemTotalRowsList name "+key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name "+key);
 
-                Log.d("ExportReportActivity", "itemTotalRowsList value "+value);
+                //Log.d("ExportReportActivity", "itemTotalRowsList value "+value);
                 emptycell = new PdfPCell(new Phrase(""));
                 emptycell.setBorder(Rectangle.NO_BORDER);
                 emptycell.setHorizontalAlignment(Element.ALIGN_LEFT);

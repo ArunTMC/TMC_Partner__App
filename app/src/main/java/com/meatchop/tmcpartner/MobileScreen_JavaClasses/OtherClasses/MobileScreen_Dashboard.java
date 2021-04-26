@@ -183,7 +183,13 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
 
+    }
 
     public void goToNotificationSettings() {
 
@@ -301,7 +307,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     private String getMenuItemusingStoreId(String vendorKey) {
         Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems+"?storeid="+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -630,7 +636,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     private void getMarinadeMenuItemusingStoreId(String vendorKey) {
         Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMarinadeMenuItems,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMarinadeMenuItems+"?storeid="+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {

@@ -349,7 +349,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     private void ChangeMenuItemPriceInDB(String menuitemKey, String appPrice, String posPrice, String appliedDiscountPercentage) {
         Adjusting_Widgets_Visibility(true);
 
-        Log.d(TAG, " uploaduserDatatoDB.");
+        //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("key", menuitemKey);
@@ -361,13 +361,13 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateMenuItemDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
                 ChangeMenuItemPriceInSharedPreferenes(menuitemKey, appPrice, posPrice, appliedDiscountPercentage);
 
 
@@ -378,9 +378,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 Adjusting_Widgets_Visibility(false);
                 Toast.makeText(ChangeMenuItem_Price_Settings.this, "Price was Not Updated. Check Your Network Connection,T", Toast.LENGTH_LONG).show();
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -409,7 +409,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     private void ChangeMarinadeMenuItemPriceInDB(String menuitemKey, String appPrice, String posPrice, String appliedDiscountPercentage) {
         Adjusting_Widgets_Visibility(true);
 
-        Log.d(TAG, " uploaduserDatatoDB.");
+        //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("key", menuitemKey);
@@ -421,13 +421,13 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateMarinadeMenuItemPriceDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                Log.d(Constants.TAG, "Response: " + response);
+                //Log.d(Constants.TAG, "Response: " + response);
                 ChangeMarinadeMenuItemPriceInSharedPreferenes(menuitemKey, appPrice, posPrice, appliedDiscountPercentage);
 
 
@@ -438,9 +438,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 Adjusting_Widgets_Visibility(false);
                 Toast.makeText(ChangeMenuItem_Price_Settings.this, "Price was Not Updated. Check Your Network Connection,T", Toast.LENGTH_LONG).show();
 
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -700,7 +700,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     selling_price_text_widget.setText(String.valueOf(finalsellingprice));
 
 
-                    Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
+                    //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
                     Adjusting_Widgets_Visibility(false);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -830,7 +830,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
 
-                    Log.d(Constants.TAG, "displaying_MarinadeemenuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
+                    //Log.d(Constants.TAG, "displaying_MarinadeemenuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
                     Adjusting_Widgets_Visibility(false);
                 } catch (Exception e) {
                     e.printStackTrace();

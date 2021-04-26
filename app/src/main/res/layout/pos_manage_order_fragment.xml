@@ -156,7 +156,7 @@
                         android:layout_marginTop="10dp"
                         android:orientation="horizontal">
                         <Button
-                            android:id="@+id/expressOrder_widget"
+                            android:id="@+id/todaysOrder_widget"
                             android:layout_width="wrap_content"
                             android:layout_height="35dp"
                             android:layout_marginStart="20dp"
@@ -167,14 +167,14 @@
                             android:gravity="center"
                             android:layout_marginBottom="5dp"
 
-                            android:text="@string/ExpressDelivery_Text"
+                            android:text="@string/TodaysOrderText"
                             android:textColor="@color/TMC_White"
                             android:textSize="20sp" />
 
 
 
                         <Button
-                            android:id="@+id/preorder_widget"
+                            android:id="@+id/tomorrowsorder_widget"
                             android:layout_width="wrap_content"
                             android:layout_height="35dp"
                             android:layout_marginStart="20dp"
@@ -184,7 +184,7 @@
                             android:background="@drawable/orange_non_selected_button_background"
                             android:gravity="center"
                             android:layout_marginBottom="5dp"
-                            android:text="@string/Preorder_Text"
+                            android:text="@string/TomorrowsOrderText"
                             android:textColor="@color/TMC_Primary_Text_Color"
                             android:textSize="20sp" />
 

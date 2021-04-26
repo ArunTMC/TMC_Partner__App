@@ -79,7 +79,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
         subCtgyItem_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
+                //Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
 
                 String SubCtgyKey=getVendorData(i,"key");
                 getMenuItemsbasedOnSubCtgy(SubCtgyKey);
@@ -130,7 +130,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
             public void onResponse(@NonNull JSONObject response) {
 
                 try {
-                    Log.d(Constants.TAG, "response from subCtgy: " + response.get("content"));
+                    //Log.d(Constants.TAG, "response from subCtgy: " + response.get("content"));
                     result  = response.getJSONArray("content");
 
                     JSONArray content = (JSONArray) response.get("content");
@@ -144,7 +144,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
                                 String key = String.valueOf(json.get("key"));
                                 String subctgyname = String.valueOf(json.get("subctgyname"));
                                 String displayNo = String.valueOf(json.get("displayno"));
-                                Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
+                                //Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
                                 if (!subCtgyName_arrayList.contains(subctgyname)) {
                                     subCtgyName_arrayList.add(subctgyname);
 
@@ -176,9 +176,9 @@ public class MenuItem_List_Settings extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -234,7 +234,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
                 selected_CtgyItems.showinmenuboard = String.valueOf(modal_menuItemSettings.getShowinmenuboard());
                 selected_CtgyItems.displayno = String.valueOf(modal_menuItemSettings.getDisplayno());
                 displaying_menuItems.add(selected_CtgyItems);
-                Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
+                //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
                 Adjusting_Widgets_Visibility(false);
 
                 try{

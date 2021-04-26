@@ -117,7 +117,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, api_Update_DeliverySlots,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -128,7 +128,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
                     String message =  response.getString("message");
                     if(message.equals("success")) {
-                        Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
+                        //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
                         showProgressBar(false);
                     }
 
@@ -144,9 +144,9 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 showProgressBar(false);
                 Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change express delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
 
@@ -348,9 +348,9 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 TomorrowsPreOrdersSlotList.clear();
                 TodaysPreOrdersSlotList.clear();
                 error.printStackTrace();
@@ -410,7 +410,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, api_Update_DeliverySlotDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -421,7 +421,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
                     String message =  response.getString("message");
                     if(message.equals("success")) {
-                        Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
+                        //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
                         showProgressBar(false);
 
                     }
@@ -439,9 +439,9 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 showProgressBar(false);
                 Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change express delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
 
@@ -533,9 +533,9 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "Error: " + error.getMessage());
-                Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
                 checkforDeliverySlots();
 
                 error.printStackTrace();
