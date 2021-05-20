@@ -43,7 +43,6 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
@@ -68,6 +67,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -79,7 +80,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     String vendorKey;
     String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf, finalPaytmAmount_pdf;
     String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf;
-    Adapater_Pos_Sales_Report adapter = new Adapater_Pos_Sales_Report();
+    Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
     TextView Phonepe, Razorpay, Paytm, cashOnDelivery;
     TextView appOrdersCount_textwidget, preorder_cashOnDelivery, preorder_Phonepe, preorder_Razorpay, preorder_paytmSales;
 
@@ -995,7 +996,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         //    addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
         CouponDiscount=0;
         Adjusting_Widgets_Visibility(true);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforSlotDate_Vendorkey_forReport + "?slotdate="+currentDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforSlotDate_Vendorkey + "?slotdate="+currentDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1439,7 +1440,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private void getOrderForSelectedDate(String dateString, String vendorKey) {
 
         Adjusting_Widgets_Visibility(true);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1795,18 +1796,22 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
 
                     Adjusting_Widgets_Visibility(false);
-                    //addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-             //       adapater_app_sales_report = new Adapter_App_sales_Report(App_Sales_Report_Subctgywise.this, Order_Item_List, OrderItem_hashmap);
-             //       posSalesReport_Listview.setAdapter(adapater_app_sales_report);
+                    addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
 
+                    //addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                    //adapater_app_sales_report = new Adapter_App_sales_Report(App_Sales_Report_Subctgywise.this, Order_Item_List, OrderItem_hashmap);
+                    //   posSalesReport_Listview.setAdapter(adapater_app_sales_report);
+
+                    prepareContent();
+                    setAdapter();
                     Helper.getListViewSize(posSalesReport_Listview, screenInches);
                     scrollView.fullScroll(View.FOCUS_UP);
 
-                    addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
 
 
 
                 }
+
                 else{
                     Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                     Adjusting_Widgets_Visibility(false);
@@ -1816,14 +1821,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     FinalBill_hashmap.clear();
                     paymentModeHashmap.clear();
                     paymentModeArray.clear();
-                    SubCtgywiseTotalArray.clear();
-                    SubCtgywiseTotalHashmap.clear();
                     preorder_paymentModeArray.clear();
-                    tmcSubCtgykey.clear();
                     preorder_paymentModeHashmap.clear();
                     paymentMode_DiscountHashmap.clear();
                     paymentMode_DiscountOrderid.clear();
+                    SubCtgywiseTotalArray.clear();
+                    SubCtgywiseTotalHashmap.clear();
                     CouponDiscount=0;
+                    tmcSubCtgykey.clear();
+
+
+
                     dataList.clear();
                     Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
@@ -1832,8 +1840,6 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                 }
-
-
 
                 //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
                 //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
@@ -1910,11 +1916,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 }
 
                 try {
-                    Collections.sort(Order_Item_List, new Comparator<String>() {
-                        public int compare(final String object1, final String object2) {
-                            return object1.compareTo(object2);
-                        }
-                    });
+                    Order_Item_List = getSortedIdFromHashMap(Order_Item_List,OrderItem_hashmap);
                 }
                 catch(Exception e){
                     e.printStackTrace();
@@ -1922,11 +1924,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
-
                 for (int j = 0; j < Order_Item_List.size(); j++) {
                     menuid = Order_Item_List.get(j);
                   //  Log.d(Constants.TAG, "SubCtgykey menuid " + menuid);
                   //  Log.d(Constants.TAG, "SubCtgykey w " + SubCtgykey);
+                    Log.d(Constants.TAG, "menuitemid:hash4 :"+"#"+String.valueOf(menuid)+"#");
 
                     Modal_OrderDetails itemDetailsfromHashmap = OrderItem_hashmap.get(menuid);
                    // Log.d(Constants.TAG, "SubCtgykey itemDetailsfromHashmap " + itemDetailsfromHashmap.getItemname());
@@ -2030,7 +2032,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
     private void setAdapter() {
         try {
-            adapter = new Adapater_Pos_Sales_Report(App_Sales_Report_Subctgywise.this, dataList);
+            adapter = new Adapter_Pos_Sales_Report(App_Sales_Report_Subctgywise.this, dataList);
             posSalesReport_Listview.setAdapter(adapter);
 
         }
@@ -2423,6 +2425,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                 if(json.has("menuitemid")) {
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
+                    String menuid= String.valueOf(json.get("menuitemid")+"#");
+                    if(menuid.contains("5932fd977777")){
+                        Log.d(Constants.TAG, "menuitemid: "+"#"+String.valueOf(json.get("menuitemid"))+"#");
+
+                    }
 
                     try {
                         if (json.has("grossweight")) {
@@ -2615,6 +2622,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                     modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
+                    Log.d(Constants.TAG, "menuitemid   itemname: "+"#"+String.valueOf(json.get("itemname")+"#"));
+
                     modal_orderDetails_ItemDesp.ordertype = modal_orderDetailsfromResponse.getOrdertype();
                     modal_orderDetails_ItemDesp.paymentmode = modal_orderDetailsfromResponse.getPaymentmode();
 
@@ -2636,32 +2645,35 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                         JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
                         String marinadeitemmenuItemId = String.valueOf(marinadesObject.get("menuitemid"));
+                        Log.d(Constants.TAG, "menuitemid   marinade: "+"#"+String.valueOf(marinadesObject.get("menuitemid")+"#"));
+
                         String marinadeitemName = String.valueOf(marinadesObject.get("itemname"));
+                        Log.d(Constants.TAG, "menuitemid   marinadeitemName: "+"#"+String.valueOf(marinadesObject.get("itemname")+"#"));
 
 
-                        String subCtgyKey = "";
+                        String marinadesssubCtgyKey = "";
                         try {
                             if (marinadesObject.has("tmcsubctgykey")) {
-                                subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
-                                if (subCtgyKey.equals("") || subCtgyKey.equals("0")) {
-                                    marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
-                                    subCtgyKey = String.valueOf("Miscellaneous");
+                                marinadesssubCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                                if (marinadesssubCtgyKey.equals("") || marinadesssubCtgyKey.equals("0")) {
+                                    marinade_modal_orderDetails_ItemDesp.tmcsubctgykey =String.valueOf("Miscellaneous");
+                                    marinadesssubCtgyKey = String.valueOf("Miscellaneous");
                                 } else {
                                     marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
-                                    subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                                    marinadesssubCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
 
                                 }
 
                             } else {
                                 marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
-                                subCtgyKey = String.valueOf("Miscellaneous");
+                                marinadesssubCtgyKey = String.valueOf("Miscellaneous");
                             }
                         }
                         catch(Exception e){
                             e.printStackTrace();
 
                             marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
-                            subCtgyKey = String.valueOf("Miscellaneous");
+                            marinadesssubCtgyKey = String.valueOf("Miscellaneous");
 
 
                         }
@@ -2893,6 +2905,70 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         marinade_modal_orderDetails_ItemDesp.itemname = marinadeitemName+" - Marinade ";
 
 
+                        try {
+                            if(SubCtgywiseTotalArray.contains(marinadesssubCtgyKey)) {
+                                boolean isAlreadyAvailabe = false;
+
+                                try {
+                                    isAlreadyAvailabe = checkIfSubCtgywiseTotalisAlreadyAvailableInArray(marinadesssubCtgyKey);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+                                }
+                                if (isAlreadyAvailabe) {
+                                    String  SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(marinadesssubCtgyKey);
+                                    double SubCtgywisetotalDouble = Double.parseDouble(SubCtgywisetotalString);
+                                    SubCtgywisetotalDouble = SubCtgywisetotalDouble+marinadesObjectpayableAmount;
+                                    SubCtgywisetotalString = String.valueOf(SubCtgywisetotalDouble);
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                        SubCtgywiseTotalHashmap.replace(marinadesssubCtgyKey,SubCtgywisetotalString);
+                                    }
+                                    else{
+                                        SubCtgywiseTotalHashmap.remove(marinadesssubCtgyKey);
+                                        SubCtgywiseTotalHashmap.put(marinadesssubCtgyKey,SubCtgywisetotalString);
+                                    }
+                                }
+                                else{
+                                    SubCtgywiseTotalHashmap.put(marinadesssubCtgyKey,String.valueOf(marinadesObjectpayableAmount));
+
+                                }
+                            }
+                            else{
+                                SubCtgywiseTotalArray.add(marinadesssubCtgyKey);
+                                boolean isAlreadyAvailabe = false;
+
+                                try {
+                                    isAlreadyAvailabe = checkIfSubCtgywiseTotalisAlreadyAvailableInArray(marinadesssubCtgyKey);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+                                }
+                                if (isAlreadyAvailabe) {
+                                    String  SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(marinadesssubCtgyKey);
+                                    double SubCtgywisetotalDouble = Double.parseDouble(SubCtgywisetotalString);
+                                    SubCtgywisetotalDouble = SubCtgywisetotalDouble+marinadesObjectpayableAmount;
+                                    SubCtgywisetotalString = String.valueOf(SubCtgywisetotalDouble);
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                        SubCtgywiseTotalHashmap.replace(marinadesssubCtgyKey,SubCtgywisetotalString);
+                                    }
+                                    else{
+                                        SubCtgywiseTotalHashmap.remove(marinadesssubCtgyKey);
+                                        SubCtgywiseTotalHashmap.put(marinadesssubCtgyKey,SubCtgywisetotalString);
+                                    }
+                                }
+                                else{
+                                    SubCtgywiseTotalHashmap.put(marinadesssubCtgyKey,String.valueOf(marinadesObjectpayableAmount));
+
+                                }
+                            }
+
+
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
 
                         if(slotname.equals(Constants.PREORDER_SLOTNAME)){
                             if(paymentMode.equals(Constants.PAYTM)){
@@ -3802,9 +3878,16 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             modal_orderDetails_itemDespfrom_hashMap.setQuantity(String.valueOf((quantity)));
                             modal_orderDetails_itemDespfrom_hashMap.setTmcprice(String.valueOf((tmcprice)));
                             modal_orderDetails_itemDespfrom_hashMap.setGstamount(String.valueOf((gstAmount)));
+                            if(menuitemid.contains("5932fd977777")){
+                                Log.d(Constants.TAG, "menuitemid:hash:"+"#"+String.valueOf(menuitemid)+"#");
 
+                            }
 
                         } else {
+                            if(menuitemid.contains("5932fd977777")){
+                                Log.d(Constants.TAG, "menuitemid:hash:"+"#"+String.valueOf(menuitemid)+"#");
+
+                            }
                             //  calculateSubCtgywiseTotal(modal_orderDetails_ItemDesp);
                             OrderItem_hashmap.put(menuitemid, modal_orderDetails_ItemDesp);
 
@@ -3848,7 +3931,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                                 modal_orderDetails_itemDespfrom_hashMap.setWeightingrams(String.valueOf((intOldOrder_WeightInGrams)));
+                                if(menuitemid.contains("5932fd977777")){
+                                    Log.d(Constants.TAG, "menuitemid:hash2:"+"#"+String.valueOf(menuitemid)+"#");
 
+                                }
                                 modal_orderDetails_itemDespfrom_hashMap.setQuantity(String.valueOf((quantity)));
                                 modal_orderDetails_itemDespfrom_hashMap.setTmcprice(String.valueOf((tmcprice)));
                                 modal_orderDetails_itemDespfrom_hashMap.setGstamount(String.valueOf((gstAmount)));
@@ -3856,7 +3942,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                             } else {
                                 //calculateSubCtgywiseTotal(modal_orderDetails_ItemDesp);
+                                if(menuitemid.contains("5932fd977777")){
+                                    Log.d(Constants.TAG, "menuitemid:hash3 :"+"#"+String.valueOf(menuitemid)+"#");
 
+                                }
                                 OrderItem_hashmap.put(menuitemid, modal_orderDetails_ItemDesp);
                             }
                         }catch (Exception e ){
@@ -3866,6 +3955,22 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
+
+                    try{
+                        if(OrderItem_hashmap.size()>1){
+                            try{
+                                OrderItem_hashmap = sortByComparator(OrderItem_hashmap);
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
 
 
                     //  add_amount_ForBillDetails(OrderdItems_desp);
@@ -3882,6 +3987,42 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+
+    public static HashMap<String,Modal_OrderDetails> sortByComparator(
+            HashMap<String,Modal_OrderDetails> unsortMap) {
+
+        List<Map.Entry<String,Modal_OrderDetails>> list = new LinkedList<Map.Entry<String,Modal_OrderDetails>>(
+                unsortMap.entrySet());
+
+        Collections.sort(list, new Comparator<Map.Entry<String,Modal_OrderDetails>> () {
+            public int compare(Map.Entry<String,Modal_OrderDetails> o1, Map.Entry<String,Modal_OrderDetails> o2) {
+                return o1.getValue().getItemname().compareTo(o2.getValue().getItemname());
+            }
+        });
+
+        HashMap<String,Modal_OrderDetails> sortedMap = new LinkedHashMap<String,Modal_OrderDetails>();
+        for (Map.Entry<String,Modal_OrderDetails> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+
+
+
+
+
+
+    private List<String> getSortedIdFromHashMap(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
+        order_item_list.clear();
+        order_item_list.addAll(orderItem_hashmap.keySet());
+        return order_item_list;
+    }
+
 
 
     void Adjusting_Widgets_Visibility(boolean show) {
@@ -4182,7 +4323,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private void addItemRows(Document layoutDocument) {
         try {
 
-            String rsunit = "Rs.";
+            String rsunit = "Rs.",tmcprice;
             PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
 
@@ -4304,8 +4445,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
                             itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-                            String totalval = rsunit + String.format(itemRow.getTmcprice());
-                            itempricecell = new PdfPCell(new Phrase(totalval));
+
+                            double totalval = Double.parseDouble( itemRow.getTmcprice());
+                            tmcprice =  decimalFormat.format(totalval);
+                            tmcprice = rsunit + tmcprice;
+                            itempricecell = new PdfPCell(new Phrase(tmcprice));
                             itempricecell.setBorder(Rectangle.BOTTOM);
                             itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
                             itempricecell.setMinimumHeight(30);

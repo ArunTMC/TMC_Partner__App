@@ -65,7 +65,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     List<Modal_MenuItem> MarinadeMenuList=new ArrayList<>();
 
     boolean isMenuListSavedLocally = false;
-    String MenuItemKey,vendorKey;
+    String MenuItemKey,vendorKey,tmcSubctgykey,tmcSubctgyname,tmcctgyname;
 
     public static String completemenuItem="";
     @Override
@@ -86,6 +86,13 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             @Override
             public void run() {
                 try {
+                    tmcSubctgykey = getIntent().getStringExtra("tmcSubctgykey");
+                    tmcSubctgyname = getIntent().getStringExtra("tmcSubctgyname");
+                    tmcctgyname = getIntent().getStringExtra("tmcctgyname");
+                    Log.d(TAG, "tmcSubctgykey "+tmcSubctgykey);
+                    Log.d(TAG, "tmcSubctgyname "+tmcSubctgyname);
+                    Log.d(TAG, "tmcctgyname "+tmcctgyname);
+
                     SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
                     vendorKey = (shared.getString("VendorKey", "vendor_1"));
                     completemenuItem = getMenuItemusingStoreId(vendorKey);

@@ -100,13 +100,14 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
     public View getView(final int pos, View view, ViewGroup v) {
         @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.mobile_manage_orders_listview_item1, (ViewGroup) view, false);
 
-        final TextView orderid_text_widget = listViewItem.findViewById(R.id.orderid_text_widget);
 
         final CardView cardLayout =listViewItem.findViewById(R.id.cardLayout);
 
      //   final Button changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
 
         //
+        final TextView orderid_text_widget = listViewItem.findViewById(R.id.orderid_text_widget);
+
         final TextView moblieNo_text_widget = listViewItem.findViewById(R.id.moblieNo_text_widget);
         final TextView tokenNo_text_widget = listViewItem.findViewById(R.id.tokenNo_text_widget);
         final TextView orderDetails_text_widget = listViewItem.findViewById(R.id.orderDetails_text_widget);
@@ -118,6 +119,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         final Button ready_for_pickup_delivered_button_widget = listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
         final TextView deliveryType_text_widget = listViewItem.findViewById(R.id.deliveryType_text_widget);
 
+        final TextView slotdate_label_widget = listViewItem.findViewById(R.id.slotdate_label_widget);
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
         final LinearLayout deliveryTypeLayout =listViewItem.findViewById(R.id.deliveryTypeLayout);
@@ -306,7 +308,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
         try {
-            slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getSlotdate()));
+            slotdate_label_widget.setText(String.format(" %s", "Delivery Distance"));
+            slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverydistance()+"Kms "));
         }
         catch (Exception e){
             e.printStackTrace();

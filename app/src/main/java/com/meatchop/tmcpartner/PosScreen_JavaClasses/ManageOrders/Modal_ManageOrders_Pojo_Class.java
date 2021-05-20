@@ -1,17 +1,92 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.json.JSONArray;
 
 public class Modal_ManageOrders_Pojo_Class implements Parcelable {
-public String deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
+public String typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
 public String grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
 public   String subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp;
     public int intTokenNo;
+public boolean isdelayed;
+      String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders;
+
+    public String getIsFromCancelledOrders() {
+        return isFromCancelledOrders;
+    }
+
+    public void setIsFromCancelledOrders(String isFromCancelledOrders) {
+        this.isFromCancelledOrders = isFromCancelledOrders;
+    }
+
+    public String getIsFromEditOrders() {
+        return isFromEditOrders;
+    }
+
+    public void setIsFromEditOrders(String isFromEditOrders) {
+        this.isFromEditOrders = isFromEditOrders;
+    }
+
+    public String getIsFromGenerateCustomermobile_billvaluereport() {
+        return isFromGenerateCustomermobile_billvaluereport;
+    }
+
+    public void setIsFromGenerateCustomermobile_billvaluereport(String isFromGenerateCustomermobile_billvaluereport) {
+        this.isFromGenerateCustomermobile_billvaluereport = isFromGenerateCustomermobile_billvaluereport;
+    }
+
+    public String getDelayedtime() {
+        return delayedtime;
+    }
+
+    public String getTypebasedonDeliveredTime() {
+        return typebasedonDeliveredTime;
+    }
+
+    public void setTypebasedonDeliveredTime(String typebasedonDeliveredTime) {
+        this.typebasedonDeliveredTime = typebasedonDeliveredTime;
+    }
+
+    public void setDelayedtime(String delayedtime) {
+        this.delayedtime = delayedtime;
+    }
+
+    public boolean isIsdelayed() {
+        return isdelayed;
+    }
+
+    public void setIsdelayed(boolean isdelayed) {
+        this.isdelayed = isdelayed;
+    }
+
+    public String getSlottime_in_long() {
+        return slottime_in_long;
+    }
+
+    public void setSlottime_in_long(String slottime_in_long) {
+        this.slottime_in_long = slottime_in_long;
+    }
+
+    public String getOrderplacedtime_in_long() {
+        return orderplacedtime_in_long;
+    }
+
+    public void setOrderplacedtime_in_long(String orderplacedtime_in_long) {
+        this.orderplacedtime_in_long = orderplacedtime_in_long;
+    }
+
+    public String getOrderdeliveredtime_in_long() {
+        return orderdeliveredtime_in_long;
+    }
+
+    public void setOrderdeliveredtime_in_long(String orderdeliveredtime_in_long) {
+        this.orderdeliveredtime_in_long = orderdeliveredtime_in_long;
+    }
 
     public String getGrossweightingrams() {
         return grossweightingrams;
@@ -271,7 +346,10 @@ public JSONArray itemdesp;
         useraddresslon = in.readString();
         intTokenNo = in.readInt();
         deliverydistance = in.readString();
-
+        orderdetailskey = in.readString();
+        isFromGenerateCustomermobile_billvaluereport = in.readString();
+        isFromEditOrders = in.readString();
+        isFromCancelledOrders= in.readString();
     }
 
     public static final Creator<Modal_ManageOrders_Pojo_Class> CREATOR = new Creator<Modal_ManageOrders_Pojo_Class>() {
@@ -550,5 +628,9 @@ public JSONArray itemdesp;
         parcel.writeString(useraddresslon);
         parcel.writeInt(intTokenNo);
         parcel.writeString(deliverydistance);
+        parcel.writeString(orderdetailskey);
+        parcel.writeString(isFromGenerateCustomermobile_billvaluereport);
+        parcel.writeString(isFromEditOrders);
+        parcel.writeString(isFromCancelledOrders);
     }
 }

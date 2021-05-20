@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:orientation="vertical">
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:id="@+id/posOrders_radiogrp"
+        android:visibility="visible"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/cash"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_height="wrap_content"
+            android:theme="@style/RadioButtonStyle"
+
+            android:text="Cash" />
+
+        <RadioButton
+            android:id="@+id/card"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
+
+
+            android:layout_height="wrap_content"
+            android:text="Card" />
+
+        <RadioButton
+            android:id="@+id/upi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
+
+            android:text="Upi" />
+    </RadioGroup>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:id="@+id/appOrders_radiogrp"
+        android:visibility="gone"
+
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/cash_on_Delivery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
+
+            android:text="Cash On Delivery" />
+
+        <RadioButton
+            android:id="@+id/phonepe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
+
+            android:text="Phonepe" />
+
+        <RadioButton
+            android:id="@+id/razorpay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
+
+            android:text="Razorpay" />
+
+        <RadioButton
+            android:id="@+id/paytm"
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
+
+            android:layout_height="wrap_content"
+            android:text="Paytm" />
+    </RadioGroup>
+<Button
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/ChangePaymentMode"
+    android:text="@string/ChangePaymentMode"
+    android:textColor="@color/TMC_White"
+    android:layout_marginTop="180dp"
+    android:background="@drawable/orange_selected_button_background"/>
+
+</RelativeLayout>

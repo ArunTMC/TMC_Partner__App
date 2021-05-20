@@ -19,12 +19,16 @@
     <string name="Yes_Text">Yes </string>
     <string name="No_Text">No </string>
     <string name="Empty_Text"> </string>
+    <string name="RePrint_Instruction">Do you want to another Copy ? </string>
 
     <string name="Exit_Instruction">Are you sure do you want to Exit now ? </string>
     <string name="ResetToken_Instruction">Click Yes to Reset the Token No for your Store </string>
     <string name="Token_No_Error_Instruction">Cant Generate Token No </string>
+    <string name="OrderCancellingInstruction">Are You Sure ! You Want to Cancel this Order  </string>
     <string name="Token_No_Not_Found_Instruction">Cant Find Token No </string>
     <string name="Token_No_Not_Updated_Instruction">Cant Update Token No </string>
+    <string name="TurnOnMenuInstruction">   Turn ON this Menu  </string>
+    <string name="TurnOffMenuInstruction">  Turn OFF this Menu  </string>
 
     <string name="Enter_Correct_Password">Enter Correct Password </string>
     <string name="Enter_Correct_OTP">Enter Correct Otp </string>
@@ -62,7 +66,7 @@
     <string name="Print_text">Print </string>
     <string name="Confirm_Order_text">Confirm Order </string>
     <string name="cancel_Order_text">Cancel Order </string>
-    <string name="cancelled_Order_text">Cancelled Order </string>
+    <string name="cancelled_Order_text">Cancelled Orders List </string>
 
     //DetailedOrderReport
     <string name="Order_Details">Order Details</string>
@@ -81,6 +85,8 @@
     //ASSIGNING DELIVERY PARTNER
     <string name="NameOfDeliveryPartner">Name of the Delivery Person : </string>
     <string name="AssignPartner">Assign Delivery Person</string>
+    <string name="DeliveryPartnersMobileNo">Delivery Person Mobile No : </string>
+
     <string name="DeliveryPartnersName">Delivery Person Name : </string>
     <string name="ChangeDeliveryPartner">Change Delivery Person   </string>
 
@@ -128,10 +134,17 @@
     <string name="Change_Menu_Item_Status">Change Menu Availability Status </string>
     <string name="Change_Menu_Item_Visibility_in_Tv">Change Menu Visibility In TV </string>
     <string name="Change_Menu_Item_Price">Change Menu Item Price</string>
-    <string name="Version_No">Version No : 1.4.1.2 </string>
+    <string name="Version_No">Version No : 1.4.8 </string>
     <string name="AppOrdersList">App Orders List </string>
     <string name="PosOrdersList">Pos Orders List </string>
+    <string name="CancelledOrdersList">Cancelled Orders List </string>
+
+    <string name="EditPaymentModeoftheOrder">Edit  Orders Datewise </string>
     <string name="DeliveredOrdersTimewise_report">Delivered Orders Timewise Report </string>
+    <string name="ChangePaymentMode">Change Payment Mode </string>
+    <string name="CancelOrder">Cancel Order </string>
+    <string name="GenerateOrderDetailsDump">Generate OrderDetails Dump  </string>
+    <string name="GenereateCustomerMobilenOReort">Generate Customer MobileNumber wise  Report  </string>
 
 
     <string name="ItemStatus">Item Status </string>

@@ -38,7 +38,7 @@ public class Constants {
 
 
 
-
+    public static final String ADMIN_ROLENAME ="ADMIN";
     public static final String STOREMANAGER_ROLENAME ="STOREMANAGER";
     public static final String ASSISTANTSTOREMANAGER_ROLENAME ="ASSISTANTSTOREMANAGER";
 
@@ -57,13 +57,14 @@ public class Constants {
     public static final String api_GetTrackingOrderDetailsforSlotDate_Vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsforslotdatenew";
     public static final String api_ToSendTextMsgtoUser ="https://alerts.sinfini.com/api/web2sms.php?workingkey=Ae428c4a11138a24e41b45a0fce3576fb&sender=TMCHOP";
     public static final String api_GetTrackingOrderDetails_AppOrders ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsapporders";
+    public static final String api_GetTrackingOrderDetails_AppOrders_and_PosOrders ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsappandposorders";
 
 
      public static final String api_GetTrackingOrderDetailsforDate_Vendorkey_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdertailsfordate";
     public static final String api_GetTrackingOrderDetailsforDate_Vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdertailsfordatenew";
+    public static final String api_GetTrackingOrderDetails_cancelledOrders="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailscancelledorders";
 
     public static final String api_GetDeliverySlots = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/slotsforstoreid";
-
 
 
     public static final String api_addOrderDetailsInOrderDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/placeorder?modulename=PlaceOrder";
@@ -79,6 +80,7 @@ public class Constants {
     public static final String api_Update_DeliverySlots ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/deliveryslots?modulename=DeliverySlot";
 
     public static final String api_Update_DeliverySlotDetails_inmobileappData ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/deliveryuser?modulename=DeviceAppData";
+    public static final String api_updatePaymentMode_OrderDetailsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/orderdetails?modulename=PlaceOrder";
 
     public static final String api_updateMarinadeMenuItemDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/marinademenu?modulename=Menu";
     public static final String api_updateTrackingOrderTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/trackingorderdetails?modulename=TrackOrder";

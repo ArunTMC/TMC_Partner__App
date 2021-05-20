@@ -4,8 +4,16 @@ import org.json.JSONArray;
 
 public class Modal_OrderDetails {
     JSONArray itemdesp;
-    String deliverytype,grossweight,orderstatus,slotname,posSales,appSales,UpiSales,phonepeSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,weightingrams,finalAmount,usermobile,barcode,ordertype,paymentmode,coupondiscount,gstamount,itemname,menuitemid,netweight,portionsize,quantity,tmcprice;
+    String deliverydistance,deliverytype,grossweight,orderstatus,slotname,posSales,appSales,UpiSales,phonepeSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,weightingrams,finalAmount,usermobile,barcode,ordertype,paymentmode,coupondiscount,gstamount,itemname,menuitemid,netweight,portionsize,quantity,tmcprice;
     String totalAmount_Price,discountAmount,subtotalAmount_discount_price,total_gstAmount,totalAmount_discount_price_gst;
+
+    public String getDeliverydistance() {
+        return deliverydistance;
+    }
+
+    public void setDeliverydistance(String deliverydistance) {
+        this.deliverydistance = deliverydistance;
+    }
 
     public String getDeliverytype() {
         return deliverytype;

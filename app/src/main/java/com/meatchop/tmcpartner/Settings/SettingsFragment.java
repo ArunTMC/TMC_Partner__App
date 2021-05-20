@@ -8,17 +8,13 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -38,9 +34,6 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.Mobile_Vendor_Selection_Screen;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.TrackingOrderDetails_ServiceClass;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
@@ -66,11 +59,11 @@ Button on,off;
 Context mContext;
 @SuppressLint("UseSwitchCompatOrMaterialCode")
 Switch autoRefreshingSwitch;
-LinearLayout delivered_orders_list,changeMenuItemStatus,logout,consolidatedSalesReport,PosSalesReport,AppSalesReport,changeMenuItemVisibilityinTv
-    ,changeMenuItemPrice,changeDeliverySlotdetails,deliveryPartnerSettlementReport,searchOrdersUsingMobileNumbers,posOrdersList;
+LinearLayout editPaymentModeOftheOrder,delivered_orders_timewiseReport,changeMenuItemStatus,logout,consolidatedSalesReport,PosSalesReport,AppSalesReport,changeMenuItemVisibilityinTv
+    ,managemenuLayout,changeMenuItemPrice,changeDeliverySlotdetails,deliveryPartnerSettlementReport,searchOrdersUsingMobileNumbers,posOrdersList,generateCustomerMobileno_BillvalueReport;
 String UserRole, MenuItems,UserPhoneNumber,vendorkey,vendorName;
 TextView userMobileNo,resetTokenNO_text,storeName,App_Sales_Report_text,Pos_Sales_Report_text;
-LinearLayout resetTokenNoLayoutj,salesLinearLayout;
+LinearLayout resetTokenNoLayoutj,salesLinearLayout,orderDetailsDump_report,cancelledOrdersLayout;
 Button resetTokenNoButton;
 ScrollView settings_scrollview;
 BottomNavigationView bottomNavigationView;
@@ -129,7 +122,7 @@ double screenInches;
         settings_scrollview = view.findViewById(R.id.settings_scrollview);
         autoRefreshingSwitch = view.findViewById(R.id.autoRefreshingSwitch);
         changeMenuItemStatus = view.findViewById(R.id.changeMenuItemStatus);
-        delivered_orders_list = view.findViewById(R.id.delivered_orders_list);
+        delivered_orders_timewiseReport = view.findViewById(R.id.delivered_orders_timewiseReport);
         consolidatedSalesReport = view.findViewById(R.id.consolidatedSalesReport);
         PosSalesReport = view.findViewById(R.id.PosSalesReport);
         AppSalesReport = view.findViewById(R.id.AppSalesReport);
@@ -142,6 +135,11 @@ double screenInches;
         storeName = view.findViewById(R.id.storeName);
         salesLinearLayout = view.findViewById(R.id.salesLinearLayout);
         posOrdersList = view.findViewById(R.id.pos_orders_list);
+        editPaymentModeOftheOrder = view.findViewById(R.id.editPaymentModeOftheOrder);
+        generateCustomerMobileno_BillvalueReport = view.findViewById(R.id.generateCustomerMobileno_BillvalueReport);
+        orderDetailsDump_report  = view.findViewById(R.id.orderDetailsDump_report);
+        cancelledOrdersLayout = view.findViewById(R.id.cancelledOrdersLayout);
+        managemenuLayout = view.findViewById(R.id.managemenuLayout);
       //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -154,37 +152,82 @@ double screenInches;
         UserRole = shared.getString("userrole","");
         userMobileNo.setText(UserPhoneNumber);
         storeName.setText(vendorName);
-
+        DisplayMetrics dm = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
+        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
+        screenInches = Math.sqrt(x+y);
         getTokenNo(vendorkey);
       //  initializeCache();
         if(UserRole.equals(Constants.STOREMANAGER_ROLENAME)){
-            changeDeliverySlotdetails.setVisibility(VISIBLE);
-            changeMenuItemStatus.setVisibility(VISIBLE);
-            changeMenuItemVisibilityinTv.setVisibility(VISIBLE);
-            changeMenuItemPrice.setVisibility(VISIBLE);
+            managemenuLayout.setVisibility(VISIBLE);
+
             searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
             salesLinearLayout.setVisibility(VISIBLE);
 
 
-        }
+            if(screenInches<8){
+                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
+                editPaymentModeOftheOrder.setVisibility(VISIBLE);
+                orderDetailsDump_report.setVisibility(GONE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+                cancelledOrdersLayout.setVisibility(VISIBLE);
+            }
+            else{
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                editPaymentModeOftheOrder.setVisibility(View.GONE);
+                orderDetailsDump_report.setVisibility(GONE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+                cancelledOrdersLayout.setVisibility(GONE);
 
+            }
+        }
+        else if(UserRole.equals(Constants.ADMIN_ROLENAME)){
+            managemenuLayout.setVisibility(VISIBLE);
+
+            searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
+            salesLinearLayout.setVisibility(VISIBLE);
+
+
+            if(screenInches<8){
+                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
+                editPaymentModeOftheOrder.setVisibility(VISIBLE);
+                orderDetailsDump_report.setVisibility(VISIBLE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(VISIBLE);
+                cancelledOrdersLayout.setVisibility(VISIBLE);
+            }
+            else{
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                editPaymentModeOftheOrder.setVisibility(View.GONE);
+                orderDetailsDump_report.setVisibility(GONE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+                cancelledOrdersLayout.setVisibility(GONE);
+
+            }
+        }
         else if(UserRole.equals(Constants.ASSISTANTSTOREMANAGER_ROLENAME)){
-            changeDeliverySlotdetails.setVisibility(GONE);
-            changeMenuItemStatus.setVisibility(GONE);
-            changeMenuItemVisibilityinTv.setVisibility(GONE);
-            changeMenuItemPrice.setVisibility(GONE);
+            managemenuLayout.setVisibility(GONE);
             searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
             salesLinearLayout.setVisibility(GONE);
+            editPaymentModeOftheOrder.setVisibility(GONE);
+            delivered_orders_timewiseReport.setVisibility(View.GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            cancelledOrdersLayout.setVisibility(GONE);
 
-
+            orderDetailsDump_report.setVisibility(GONE);
         }
+
         else{
-            changeDeliverySlotdetails.setVisibility(GONE);
-            changeMenuItemStatus.setVisibility(GONE);
-            changeMenuItemVisibilityinTv.setVisibility(GONE);
-            changeMenuItemPrice.setVisibility(GONE);
+            managemenuLayout.setVisibility(GONE);
+
             searchOrdersUsingMobileNumbers.setVisibility(GONE);
             salesLinearLayout.setVisibility(GONE);
+            editPaymentModeOftheOrder.setVisibility(GONE);
+            delivered_orders_timewiseReport.setVisibility(View.GONE);
+            orderDetailsDump_report.setVisibility(GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            cancelledOrdersLayout.setVisibility(GONE);
+
             Toast.makeText(mContext,"You Don't have any User Role Ask Admin to assign the Role",Toast.LENGTH_LONG).show();
 
 
@@ -192,11 +235,7 @@ double screenInches;
 
 
 
-        DisplayMetrics dm = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+
         if(screenInches<8){
             bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
             settings_scrollview.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
@@ -223,7 +262,48 @@ double screenInches;
         }
 
 
+        cancelledOrdersLayout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, CancelledOrders.class);
+                startActivity(intent);
 
+            }
+        });
+
+
+
+
+        orderDetailsDump_report.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(mContext, GenerateOrderDetailsDump.class);
+                startActivity(intent);
+
+            }
+        });
+
+
+        generateCustomerMobileno_BillvalueReport.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(mContext, GenerateCustomerMobileNo_BillValueReport.class);
+                startActivity(intent);
+
+            }
+        });
+        editPaymentModeOftheOrder.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                Intent intent = new Intent(mContext, Edit_Or_CancelTheOrders.class);
+                startActivity(intent);
+
+            }
+        });
 
         autoRefreshingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -243,7 +323,7 @@ double screenInches;
             }
         });
 
-        delivered_orders_list.setOnClickListener(new OnClickListener() {
+        delivered_orders_timewiseReport.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -569,7 +649,7 @@ double screenInches;
 
 
 
-        Intent i = new Intent(mContext, Consolidated_Sales_Report.class);
+        Intent i = new Intent(mContext, ConsolidatedReportSubCtgywise.class);
         i.putExtra("VendorName",VendorName);
         mContext.startActivity(i);
 

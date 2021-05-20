@@ -27,20 +27,30 @@
             android:text="TextView" />
 
 
-
-
-        <Switch
-            android:id="@+id/menuItemAvailabiltySwitch"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:fontFamily="@font/open_sans_semibold"
-            android:textSize="16sp"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_weight=".4">
 
-            app:thumbTint="@drawable/switch_thumb_selector"
-            app:trackTint="@drawable/switch_track_selector"
-            tools:ignore="UseSwitchCompatOrMaterialXml" />
+            <Switch
+                android:id="@+id/menuItemAvailabiltySwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/open_sans_semibold"
+                android:textSize="16sp"
+
+                app:thumbTint="@drawable/switch_thumb_selector"
+                app:trackTint="@drawable/switch_track_selector"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/overlapLayout"
+                android:orientation="horizontal"></LinearLayout>
+        </RelativeLayout>
 
     </LinearLayout>
 

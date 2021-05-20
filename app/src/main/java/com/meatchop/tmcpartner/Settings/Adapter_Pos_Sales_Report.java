@@ -16,19 +16,19 @@ import com.meatchop.tmcpartner.R;
 
 import java.util.List;
 
-public class Adapater_Pos_Sales_Report extends BaseAdapter {
+public class Adapter_Pos_Sales_Report extends BaseAdapter {
     private static final int VIEW_TYPE_NONE = 0;
     private static final int VIEW_TYPE_SECTION = 1;
     private static final int VIEW_TYPE_ITEM = 2;
     private LayoutInflater layoutInflater;
     private List<ListData> dataList;
     int header_count=2;
-    public Adapater_Pos_Sales_Report(Context context, List<ListData> dataList) {
+    public Adapter_Pos_Sales_Report(Context context, List<ListData> dataList) {
         this.dataList = dataList;
         this.layoutInflater = LayoutInflater.from(context);
     }
 
-    public Adapater_Pos_Sales_Report() {
+    public Adapter_Pos_Sales_Report() {
 
     }
 
@@ -156,7 +156,7 @@ public class Adapater_Pos_Sales_Report extends BaseAdapter {
         List<String> ordersList;
         HashMap<String, Modal_OrderDetails> OrderItem_hashmap;
     HashMap<String, HashMap<String, Modal_OrderDetails>>tmcSubCtgywise_sorted_hashmap;
-public Adapater_Pos_Sales_Report(Context context, List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap, List<String> tmcSubCtgykey, List<Modal_OrderDetails> subCtgyKey_List) {
+public Adapter_Pos_Sales_Report(Context context, List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap, List<String> tmcSubCtgykey, List<Modal_OrderDetails> subCtgyKey_List) {
         super(context, R.layout.pos_sales_report_listitem);
 
         this.mContext = context;

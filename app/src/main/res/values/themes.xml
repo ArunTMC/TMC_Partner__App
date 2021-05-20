@@ -7,5 +7,9 @@
         <item name="colorAccent">@color/TMC_Orange_border</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q"> false </item>
     </style>
-
+    <style name="RadioButtonStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorControlNormal">@color/TMC_Primary_Text_Color</item>
+        <item name="colorAccent">@color/TMC_Orange</item>
+        <item name="android:textColorSecondary">@color/TMC_Primary_Text_Color</item>
+    </style>
 </resources>

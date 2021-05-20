@@ -43,7 +43,6 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
@@ -67,6 +66,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,7 +79,7 @@ public class PosSalesReport extends AppCompatActivity {
     String vendorKey;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
-    Adapater_Pos_Sales_Report adapter = new Adapater_Pos_Sales_Report();
+    Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
     public static List<Modal_OrderDetails> SubCtgyKey_List;
     public static HashMap<String, Modal_OrderDetails> SubCtgyKey_hashmap = new HashMap();
 
@@ -828,14 +829,15 @@ public class PosSalesReport extends AppCompatActivity {
         paymentModeArray.clear();
         paymentModeHashmap.clear();
         tmcSubCtgywise_sorted_hashmap.clear();
-        tmcSubCtgykey.clear();
+
         paymentMode_DiscountHashmap.clear();
         paymentMode_DiscountOrderid.clear();
         SubCtgywiseTotalArray.clear();
+        tmcSubCtgykey.clear();
         SubCtgywiseTotalHashmap.clear();
         Adjusting_Widgets_Visibility(true);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1100,7 +1102,7 @@ public class PosSalesReport extends AppCompatActivity {
 
                                 Adjusting_Widgets_Visibility(false);
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-                                // Adapater_Pos_Sales_Report adapater_pos_sales_report = new Adapater_Pos_Sales_Report(PosSalesReport.this, Order_Item_List, OrderItem_hashmap, tmcSubCtgykey,SubCtgyKey_List);
+                                // Adapter_Pos_Sales_Report adapater_pos_sales_report = new Adapter_Pos_Sales_Report(PosSalesReport.this, Order_Item_List, OrderItem_hashmap, tmcSubCtgykey,SubCtgyKey_List);
                                 // posSalesReport_Listview.setAdapter(adapater_pos_sales_report);
                                 //sort_the_array_CtgyWise();
 
@@ -1244,11 +1246,7 @@ public class PosSalesReport extends AppCompatActivity {
 
 
               try {
-                  Collections.sort(Order_Item_List, new Comparator<String>() {
-                      public int compare(final String object1, final String object2) {
-                          return object1.compareTo(object2);
-                      }
-                  });
+                  Order_Item_List = getSortedIdFromHashMap(Order_Item_List,OrderItem_hashmap);
               }
               catch(Exception e){
                   e.printStackTrace();
@@ -1352,7 +1350,7 @@ public class PosSalesReport extends AppCompatActivity {
 
     private void setAdapter() {
             try {
-                adapter = new Adapater_Pos_Sales_Report(PosSalesReport.this, dataList);
+                adapter = new Adapter_Pos_Sales_Report(PosSalesReport.this, dataList);
                 posSalesReport_Listview.setAdapter(adapter);
 
             }
@@ -1985,6 +1983,21 @@ public class PosSalesReport extends AppCompatActivity {
                         }
 
 
+                    try{
+                        if(OrderItem_hashmap.size()>1){
+                            try{
+                                OrderItem_hashmap = sortByComparator(OrderItem_hashmap);
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
 
 
 
@@ -2022,6 +2035,38 @@ public class PosSalesReport extends AppCompatActivity {
 
 
 
+    }
+
+
+
+    public static HashMap<String,Modal_OrderDetails> sortByComparator(
+            HashMap<String,Modal_OrderDetails> unsortMap) {
+
+        List<Map.Entry<String,Modal_OrderDetails>> list = new LinkedList<Map.Entry<String,Modal_OrderDetails>>(
+                unsortMap.entrySet());
+
+        Collections.sort(list, new Comparator<Map.Entry<String,Modal_OrderDetails>> () {
+            public int compare(Map.Entry<String,Modal_OrderDetails> o1, Map.Entry<String,Modal_OrderDetails> o2) {
+                return o1.getValue().getItemname().compareTo(o2.getValue().getItemname());
+            }
+        });
+
+        HashMap<String,Modal_OrderDetails> sortedMap = new LinkedHashMap<String,Modal_OrderDetails>();
+        for (Map.Entry<String,Modal_OrderDetails> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+
+
+
+
+
+
+    private List<String> getSortedIdFromHashMap(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
+        order_item_list.clear();
+        order_item_list.addAll(orderItem_hashmap.keySet());
+        return order_item_list;
     }
 
     private boolean checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
@@ -2231,9 +2276,10 @@ public class PosSalesReport extends AppCompatActivity {
 
     private void addItemRows(Document layoutDocument) {
         try {
-            String rsunit = "Rs.";
+            String rsunit = "Rs.",tmcprice;
             PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
+            DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
             PdfPCell itemcell = new PdfPCell(new Phrase("Item"));
             itemcell.setBorder(Rectangle.NO_BORDER);
@@ -2324,7 +2370,6 @@ public class PosSalesReport extends AppCompatActivity {
 
                                     double weightinGrams =Double.parseDouble(Quantity);
                                     double kilogram = weightinGrams * 0.001;
-                                    DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                     Quantity  = String.valueOf(decimalFormat.format(kilogram) + "Kg");
 
 
@@ -2341,8 +2386,11 @@ public class PosSalesReport extends AppCompatActivity {
                                 itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
                                 itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-                                String totalval = rsunit + String.format(itemRow.getTmcprice());
-                                itempricecell = new PdfPCell(new Phrase(totalval));
+
+                                double totalval = Double.parseDouble( itemRow.getTmcprice());
+                                tmcprice =  decimalFormat.format(totalval);
+                                tmcprice = rsunit + tmcprice;
+                                itempricecell = new PdfPCell(new Phrase(tmcprice));
                                 itempricecell.setBorder(Rectangle.BOTTOM);
                                 itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
                                 itempricecell.setMinimumHeight(30);
@@ -2418,7 +2466,6 @@ public class PosSalesReport extends AppCompatActivity {
                 Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
 
                 //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-                DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
 

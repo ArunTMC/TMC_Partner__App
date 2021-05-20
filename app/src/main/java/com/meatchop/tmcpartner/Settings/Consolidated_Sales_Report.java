@@ -155,7 +155,6 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 MODE_PRIVATE);
 
         vendorKey  = sharedPreferences.getString("VendorKey","");
-
         DateString = getDate_and_time();
         PreviousDateString = getDatewithNameofthePreviousDay();
 
@@ -174,7 +173,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
 
-            getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+            getOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
 
         }
         catch (Exception e){
@@ -351,7 +350,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             isgetPreOrderForSelectedDateCalled = false;
                             isgetOrderForSelectedDateCalled = false;
                             //getOrderForSelectedDate(DateString, vendorKey);
-                            getPreOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+                            getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
                         }
                         catch (Exception e ){
@@ -365,7 +364,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
 
-    private void getOrderForSelectedDate(String dateString, String vendorKey) {
+    private void getOrderForSelectedDate(String previousDateString, String dateString, String vendorKey) {
 
         if(isgetOrderForSelectedDateCalled){
             return;
@@ -374,7 +373,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         isgetOrderForSelectedDateCalled = true;
         Adjusting_Widgets_Visibility(true);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_AppOrders_and_PosOrders + "?slotdate="+dateString+"&vendorkey="+vendorKey+"&previousdaydate="+previousDateString,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -548,9 +547,43 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             }
 
 
+                                            if (slotname.equals(Constants.PREORDER_SLOTNAME)) {
 
 
-                                            if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
+                                                if (json.has("coupondiscount")) {
+                                                    try {
+                                                        modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                                                        CouponDiscout = String.valueOf(json.get("coupondiscount"));
+                                                        if (CouponDiscout.equals("")) {
+                                                            CouponDiscout = "0";
+                                                        }
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        if (!orderid.equals("")) {
+                                                            if (!couponDiscountOrderidArray.contains(orderid)) {
+                                                                couponDiscountOrderidArray.add(orderid);
+                                                                couponDiscount_hashmap.put(orderid, CouponDiscout);
+                                                            } else {
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                } else {
+
+                                                    modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+
+                                                }
+
+
+                                                getItemDetailsFromItemDespArray(modal_orderDetails, ordertype, orderid);
+
+                                            }
+
+                                           else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -823,7 +856,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         itemDespTotalAmount =0;
 
         Adjusting_Widgets_Visibility(true);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforSlotDate_Vendorkey_forReport + "?slotdate="+currentDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforSlotDate_Vendorkey + "?slotdate="+currentDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -914,7 +947,15 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         if (json.has("slotname")) {
                                             try {
                                                 slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
+                                                try{
+                                                    if(slotname.equals("")||slotname.equals(null)){
+                                                        slotname=Constants.PREORDER_SLOTNAME;
+                                                    }
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                                modal_orderDetails.slotname = String.valueOf(slotname).toUpperCase();
                                                 //Log.d(Constants.TAG, "OrderType: " + slotname);
 
                                             } catch (Exception e) {
@@ -1035,7 +1076,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                         if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
                                             isgetOrderForSelectedDateCalled = false;
 
-                                            getOrderForSelectedDate(DateString, vendorKey);
+                                            getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
                                         } else {
                                             Toast.makeText(Consolidated_Sales_Report.this, "There is no Pre Order On this Date ", Toast.LENGTH_LONG).show();
                                             Adjusting_Widgets_Visibility(false);
@@ -1056,7 +1097,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                                             isgetOrderForSelectedDateCalled = false;
 
-                                            getOrderForSelectedDate(DateString, vendorKey);
+                                            getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
                                         }
                                     }
@@ -1085,7 +1126,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                                 isgetOrderForSelectedDateCalled = false;
 
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-                                getOrderForSelectedDate(DateString, vendorKey);
+                                getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
 
                             }
@@ -1110,7 +1151,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                             isgetOrderForSelectedDateCalled = false;
 
                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-                            getOrderForSelectedDate(DateString, vendorKey);
+                            getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
                             e.printStackTrace();
                         }
@@ -1181,7 +1222,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
                 isgetOrderForSelectedDateCalled = false;
 
                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-                getOrderForSelectedDate(DateString, vendorKey);
+                getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
 
                 //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());

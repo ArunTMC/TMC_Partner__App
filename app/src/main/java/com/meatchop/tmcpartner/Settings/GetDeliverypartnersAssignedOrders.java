@@ -286,6 +286,30 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
                         manageOrdersPojoClass.useraddress = "-";
                         E.printStackTrace();
                     }
+                    try {
+                        if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+
+
+                            if (json.has("deliverydistance")) {
+
+                                String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                    manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
+
+                                } else {
+                                    manageOrdersPojoClass.deliverydistance = "0";
+
+                                }
+                            } else {
+                                manageOrdersPojoClass.deliverydistance = "0";
+                            }
+
+
+                        }
+                    } catch (Exception E) {
+                        manageOrdersPojoClass.deliverydistance = "0";
+                        E.printStackTrace();
+                    }
 
 
                     if (!String.valueOf(json.get("orderstatus")).equals("NEW")) {

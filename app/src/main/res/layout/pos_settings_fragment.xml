@@ -93,6 +93,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
+        android:id="@+id/managemenuLayout"
         android:orientation="vertical">
 
         <TextView
@@ -193,8 +194,14 @@
 
                 />
         </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
 
-
+            android:background="@mipmap/thick_border_line_seperator"
+            />
 
 
     </LinearLayout>
@@ -207,14 +214,7 @@
                 android:id="@+id/manageordersLinearLayout"
 
                 android:orientation="vertical">
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
 
-                    android:background="@mipmap/thick_border_line_seperator"
-                    />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -272,25 +272,68 @@
                 </LinearLayout>
 
 
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
-                    android:id="@+id/delivered_orders_list"
-                    android:visibility="gone"
+                    android:id="@+id/editPaymentModeOftheOrder"
+                    android:visibility="visible"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:text="@string/DeliveredOrdersTimewise_report"
+                        android:text="@string/EditPaymentModeoftheOrder"
                         android:textSize="16sp"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:fontFamily="@font/open_sans_semibold"
 
                         />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/cancelledOrdersLayout"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/cancelled_Order_text"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/orderDetailsDump_report"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/GenerateOrderDetailsDump"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
             </LinearLayout>
 
 
@@ -413,6 +456,47 @@
 
                         />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/delivered_orders_timewiseReport"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/DeliveredOrdersTimewise_report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/generateCustomerMobileno_BillvalueReport"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/GenereateCustomerMobilenOReort"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
 
 
             </LinearLayout>

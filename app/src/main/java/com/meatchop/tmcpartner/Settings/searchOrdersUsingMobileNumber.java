@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -34,7 +35,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_AutoCompleteManageOrdersItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -70,7 +70,6 @@ import java.util.Objects;
 
 import okhttp3.WebSocket;
 
-import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlotDetails;
 import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlots;
 
 public class searchOrdersUsingMobileNumber extends AppCompatActivity {
@@ -88,6 +87,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     public static LinearLayout loadingpanelmask;
     public static LinearLayout loadingPanel;
     public LinearLayout newOrdersSync_Layout;
+    public LinearLayout filterLayout;
+    public LinearLayout addFilters_Layout;
     DatePickerDialog datepicker;
 
     List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
@@ -95,8 +96,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     public static String completemenuItem;
     public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
     String Currenttime,FormattedTime,CurrentDate,formattedDate,CurrentDay,TodaysDate,DeliveryPersonList;
-    Spinner slotType_Spinner;
     int slottypefromSpinner=0;
+    Spinner deliverDistance_Spinner;
+    int deliveryDistancefromSpinner=0;
     static Adapter_Mobile_SearchOrders_usingMobileNumber_ListView adapter_mobileSearchOrders_usingMobileNumber_listView;
     static Adapter_Pos_SearchOrders_usingMobileNumber adapter_PosSearchOrders_usingMobileNumber_listView;
     Workbook wb;
@@ -118,6 +120,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     List<String> slottime = new ArrayList<>();
     List<String> slotrangeChoosingSpinnerData;
     String selectedTimeRange_spinner = "All";
+    int spinner_check = 0;
+
+    List<String> deliverydistanceChoosingSpinnerData;
+    String selected_DeliveryDistanceRange_spinner = "All";
+    int deliverydistancespinner_check = 0;
+
+    Button AddFilters_button,clearFilters_button;
+    boolean isFilterChanged = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,6 +158,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         SlotrangeSelector_spinner =  findViewById(R.id.SlotrangeSelector_spinner);
         slotrangeChoosingSpinnerData = new ArrayList<>();
 
+        deliverDistance_Spinner =  findViewById(R.id.deliveerydistanse_Spinner);
+        deliverydistanceChoosingSpinnerData = new ArrayList<>();
 
         //
         ordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
@@ -155,13 +168,16 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         array_of_orderId = new ArrayList<>();
         appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
 
-        slotType_Spinner = findViewById(R.id.slotType_Spinner);
         applaunchimage = findViewById(R.id.applaunchimage);
         manageOrders_ListView = findViewById(R.id.manageOrders_ListView);
         mobile_orderinstruction = findViewById(R.id.orderinstruction);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         generateReport_Layout = findViewById(R.id.generateReport_Layout);
+        addFilters_Layout = findViewById(R.id.addFilters_Layout);
+
+        filterLayout = findViewById(R.id.filterLayout);
+
         //
         mobile_nameofFacility_Textview = findViewById(R.id.nameofFacility_Textview);
         mobile_search_button = findViewById(R.id.search_button);
@@ -174,14 +190,13 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         mobile_ready_Order_widget = findViewById(R.id.ready_Order_widget);
         mobile_transist_Order_widget = findViewById(R.id.transist_Order_widget);
         mobile_delivered_Order_widget = findViewById(R.id.delivered_Order_widget);
-
+        AddFilters_button = findViewById(R.id.AddFilters_button);
         newOrdersSync_Layout = findViewById(R.id.newOrdersSync_Layout);
-
+        clearFilters_button = findViewById(R.id.clearFilters_button);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         Adjusting_Widgets_Visibility(true);
 
-        setDataForSpinner();
         mobile_nameofFacility_Textview.setText(vendorname);
 
 
@@ -200,7 +215,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             sorted_OrdersList.clear();
             array_of_orderId.clear();
             selectedTimeRange_spinner = "All";
+            selected_DeliveryDistanceRange_spinner = "All";
+
             dateSelector_text.setText(Todaysdate);
+
             getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
 
 
@@ -220,13 +238,17 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+        setDataForFilterSpinners();
 
         SlotrangeSelector_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                 selectedTimeRange_spinner = SlotrangeSelector_spinner.getSelectedItem().toString();
-                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner);
-
+                if(spinner_check>1) {
+                    selectedTimeRange_spinner = SlotrangeSelector_spinner.getSelectedItem().toString();
+                //    displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner);
+                    isFilterChanged = true;
+                }
+                spinner_check=2;
             }
 
             @Override
@@ -236,6 +258,72 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         });
 
 
+        deliverDistance_Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+
+                if(deliverydistancespinner_check>1) {
+                    selected_DeliveryDistanceRange_spinner = deliverDistance_Spinner.getSelectedItem().toString();
+              //      displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selected_DeliveryDistanceRange_spinner);
+                    isFilterChanged = true;
+                }
+                deliverydistancespinner_check=2;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        AddFilters_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    filterLayout.setVisibility(View.GONE);
+                        if(!isFilterChanged){
+                            Toast.makeText(searchOrdersUsingMobileNumber.this,"Filter is not changed",Toast.LENGTH_LONG).show();
+                        }
+
+
+                   displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner);
+            }
+        });
+
+
+        clearFilters_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selected_DeliveryDistanceRange_spinner = "All";
+                deliverydistanceChoosingSpinnerData.add("All");
+                deliverDistance_Spinner.setSelection(0);
+                slotrangeChoosingSpinnerData.add("All");
+                selectedTimeRange_spinner= "All";
+                SlotrangeSelector_spinner.setSelection(0);
+                filterLayout.setVisibility(View.GONE);
+
+                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner);
+
+            }
+        });
+
+        addFilters_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isFilterChanged = false;
+                if(filterLayout.getVisibility()==View.GONE){
+                    filterLayout.setVisibility(View.VISIBLE);
+
+                }
+                else{
+                    filterLayout.setVisibility(View.GONE);
+                    if(!isFilterChanged){
+                        Toast.makeText(searchOrdersUsingMobileNumber.this,"Filter is not changed",Toast.LENGTH_LONG).show();
+                    }
+
+                }
+
+            }
+        });
 
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,7 +350,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 mobile_search_barEditText.setText("");
                 isSearchButtonClicked = false;
 
-                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner);
+                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner, selected_DeliveryDistanceRange_spinner);
             }
         });
         mobile_search_button.setOnClickListener(new View.OnClickListener() {
@@ -371,6 +459,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                                 modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                                  modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
 
                                 modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
 
@@ -433,7 +522,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
     }
 
-    private void setDataForSpinner() {
+    private void setDataForFilterSpinners() {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, api_GetDeliverySlots+"?storeid="+vendorKey,
                 null, new Response.Listener<JSONObject>() {
             @Override
@@ -445,7 +534,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     JSONArray jArray = (JSONArray) content;
                     if (jArray != null) {
                         slotrangeChoosingSpinnerData.add("All");
-
+                        slotrangeChoosingSpinnerData.add(Constants.EXPRESS_DELIVERY_SLOTNAME);
                         for (int i = 0; i < jArray.length(); i++) {
                             try {
                                 JSONObject json = content.getJSONObject(i);
@@ -516,6 +605,23 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         // Make the request
         Volley.newRequestQueue(searchOrdersUsingMobileNumber.this).add(jsonObjectRequest);
 
+
+
+
+
+
+
+
+        //seting data for DeliveryDistansce Spinner
+        deliverydistanceChoosingSpinnerData.add("All");
+        deliverydistanceChoosingSpinnerData.add(" Less than 3 Kms");
+        deliverydistanceChoosingSpinnerData.add(" 3 to 5 Kms ");
+        deliverydistanceChoosingSpinnerData.add(" 5 to 10 Kms ");
+        deliverydistanceChoosingSpinnerData.add("More than 10 Kms");
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(searchOrdersUsingMobileNumber.this,android.R.layout.simple_spinner_item, deliverydistanceChoosingSpinnerData);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        deliverDistance_Spinner.setAdapter(arrayAdapter);
+        selected_DeliveryDistanceRange_spinner = "All";
 
 
 
@@ -1320,8 +1426,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
-
-
+                    if(json.has("ordertype")){
+                        manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
+                        ordertype = String.valueOf(json.get("ordertype"));
+                    }
+                    else{
+                        ordertype="#";
+                        manageOrdersPojoClass.orderType ="";
+                    }
+                    if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
                     if(json.has("orderid")){
                         manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
                         orderid = String.valueOf(json.get("orderid"));
@@ -1542,14 +1655,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         manageOrdersPojoClass.deliverytype ="";
                     }
 
-                    if(json.has("ordertype")){
-                        manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
-                        ordertype = String.valueOf(json.get("ordertype"));
-                    }
-                    else{
-                        ordertype="#";
-                        manageOrdersPojoClass.orderType ="";
-                    }
+
 
                     if(json.has("useraddresslat")){
                         manageOrdersPojoClass.useraddresslat =  String.valueOf(json.get("useraddresslat"));
@@ -1600,6 +1706,30 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
 
 
+                    try {
+                        if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+
+
+                            if (json.has("deliverydistance")) {
+
+                                String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                    manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
+
+                                } else {
+                                    manageOrdersPojoClass.deliverydistance = "0";
+
+                                }
+                            } else {
+                                manageOrdersPojoClass.deliverydistance = "0";
+                            }
+
+
+                        }
+                    } catch (Exception E) {
+                        manageOrdersPojoClass.deliverydistance = "0";
+                        E.printStackTrace();
+                    }
 
 
 
@@ -1622,7 +1752,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
 
 
-                    if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+
 
                         ordersList.add(manageOrdersPojoClass);
                     }
@@ -1656,7 +1786,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
          */
 
-            displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner,selectedTimeRange_spinner);
+            displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner,selectedTimeRange_spinner, selected_DeliveryDistanceRange_spinner);
          //   appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
         } catch (JSONException e) {
@@ -1671,17 +1801,39 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-    private void displayorderDetailsinListview(String orderStatus, @NotNull List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner,String selectedTimeRange_spinner) {
+    private void displayorderDetailsinListview(String orderStatus, @NotNull List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner, String selectedTimeRange_spinner, String selected_DeliveryDistanceRange_spinner) {
         Adjusting_Widgets_Visibility(true);
 
 
-        //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.size());
         sorted_OrdersList.clear();
-        String TodaysDate = getDatewithNameoftheDay();
-        String TomorrowsDate = getTomorrowsDate();
-        //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
 
-        //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
+        double selectedDeliveryDistance,deliverydistancefromarray,minimumdeliverydistance;
+        if(selected_DeliveryDistanceRange_spinner.equals("All")){
+            selectedDeliveryDistance = 0;
+            minimumdeliverydistance = 0;
+        }
+        else if(selected_DeliveryDistanceRange_spinner.equals(" Less than 3 Kms")){
+            selectedDeliveryDistance = 2.9;
+            minimumdeliverydistance = 0;
+        }
+        else if(selected_DeliveryDistanceRange_spinner.equals(" 3 to 5 Kms ")){
+            selectedDeliveryDistance = 4.9;
+            minimumdeliverydistance = 3;
+        }
+        else if(selected_DeliveryDistanceRange_spinner.equals(" 5 to 10 Kms ")){
+            selectedDeliveryDistance = 9.9;
+            minimumdeliverydistance = 5;
+        }
+        else if(selected_DeliveryDistanceRange_spinner.equals("More than 10 Kms")){
+            selectedDeliveryDistance = 10;
+            minimumdeliverydistance = 10;
+        }
+        else{
+            selectedDeliveryDistance = 0;
+            minimumdeliverydistance = 0;
+            Toast.makeText(searchOrdersUsingMobileNumber.this, "Delivery Distance Filter is not applied", Toast.LENGTH_LONG).show();
+
+        }
 
         for (int i = 0; i < ordersList.size(); i++) {
           try {
@@ -1691,7 +1843,70 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
               final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
               String slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange().toUpperCase();
               String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+             Log.i(" slotname n   " ,slotname);
+               Log.i(" slottimerange n " , slottimerange);
 
+              if(selectedTimeRange_spinner.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)&&slottimerange.equals("90 MINS")) {
+                  modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                  modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                  modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                  modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                  modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                  modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                  modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                  modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                  modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                  modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                  modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                  modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                  modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                  modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                  modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                  modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                  modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                  modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                  modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                  modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                  modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                  modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+
+                  modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                  modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                  modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                  modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                  modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                  deliverydistancefromarray = Double.parseDouble( modal_manageOrders_forOrderDetailList.getDeliverydistance());
+
+                  modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                  modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                  modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                  modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+                  try {
+                      modal_manageOrders_forOrderDetailList1.intTokenNo = Integer.parseInt(modal_manageOrders_forOrderDetailList.getTokenno());
+                  } catch (Exception e) {
+                      modal_manageOrders_forOrderDetailList1.intTokenNo = 0;
+
+                  }
+
+                  if (selected_DeliveryDistanceRange_spinner.equals("All")) {
+
+                      sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                  }
+                  else{
+                      if(selectedDeliveryDistance==10){
+                          if(selectedDeliveryDistance<deliverydistancefromarray){
+                              sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                          }
+                      }
+                      else{
+                          if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance < deliverydistancefromarray)){
+                              sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                          }
+                      }
+                  }
+              }
 
                 if(selectedTimeRange_spinner.equals(slottimerange)||selectedTimeRange_spinner.equals("All")) {
                     modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
@@ -1721,6 +1936,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
                     modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
                     modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                    modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                    deliverydistancefromarray = Double.parseDouble( modal_manageOrders_forOrderDetailList.getDeliverydistance());
 
 
                     modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
@@ -1734,9 +1951,24 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                     }
 
-                    if ((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210")) && (!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+                    if (selected_DeliveryDistanceRange_spinner.equals("All")) {
 
                         sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                    }
+                    else{
+                        if(selectedDeliveryDistance==10){
+                            if(selectedDeliveryDistance<deliverydistancefromarray){
+                                sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                            }
+                        }
+                        else{
+                                if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance < deliverydistancefromarray)){
+                                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                                }
+
+                        }
                     }
                 }
 
@@ -1774,43 +2006,26 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 appOrdersCount_textwidget.setText(String.valueOf(sorted_OrdersList.size()));
 
 
+                setAdapter(sorted_OrdersList);
 
 
-                if(screenInches>8){
-
-                    adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
-                    manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
-                }else {
-                    adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
-                    manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
-                }
 
 
+            }
+            else{
                 loadingpanelmask.setVisibility(View.GONE);
                 loadingPanel.setVisibility(View.GONE);
-                manageOrders_ListView.setVisibility(View.VISIBLE);
-                mobile_orderinstruction.setVisibility(View.GONE);
-
+                manageOrders_ListView.setVisibility(View.GONE);
+                mobile_orderinstruction.setText("There is No data for this Slot");
+                mobile_orderinstruction.setVisibility(View.VISIBLE);
+                appOrdersCount_textwidget.setText(String.valueOf(sorted_OrdersList.size()));
 
             }
         }
         catch (Exception e){
             e.printStackTrace();
             if (sorted_OrdersList.size() > 0) {
-                if(screenInches>8){
-
-                    adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
-                    manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
-                }else {
-                    adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
-                    manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
-                }
-
-                loadingpanelmask.setVisibility(View.GONE);
-                loadingPanel.setVisibility(View.GONE);
-                manageOrders_ListView.setVisibility(View.VISIBLE);
-                mobile_orderinstruction.setVisibility(View.GONE);
-
+                setAdapter(sorted_OrdersList);
 
             } else {
                 loadingpanelmask.setVisibility(View.GONE);
@@ -1827,7 +2042,23 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 //callAdapter();
     }
 
+    private void setAdapter(List<Modal_ManageOrders_Pojo_Class> sorted_ordersList) {
 
+        if(screenInches>8){
+
+            adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_ordersList, searchOrdersUsingMobileNumber.this, orderStatus);
+            manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
+        }else {
+            adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_ordersList, searchOrdersUsingMobileNumber.this, orderStatus);
+            manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
+        }
+
+
+        loadingpanelmask.setVisibility(View.GONE);
+        loadingPanel.setVisibility(View.GONE);
+        manageOrders_ListView.setVisibility(View.VISIBLE);
+        mobile_orderinstruction.setVisibility(View.GONE);
+    }
 
 
     private String getTomorrowsDate() {
@@ -1879,8 +2110,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
         String  PreviousdayDate = df1.format(c1);
         PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
-        System.out.println("todays Date  " + CurrentDate);
-        System.out.println("PreviousdayDate Date  " + PreviousdayDate);
+        //System.out.println("todays Date  " + CurrentDate);
+       // System.out.println("PreviousdayDate Date  " + PreviousdayDate);
 
 
         return PreviousdayDate;
@@ -2024,8 +2255,19 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onBackPressed() {
+        if(filterLayout.getVisibility()==View.VISIBLE){
+            filterLayout.setVisibility(View.GONE);
+            if(!isFilterChanged){
+                Toast.makeText(searchOrdersUsingMobileNumber.this,"Filter is not changed",Toast.LENGTH_LONG).show();
+            }
 
-
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
 
     private void hideKeyboard(EditText editText) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);

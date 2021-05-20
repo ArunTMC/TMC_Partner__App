@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,7 +28,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -125,7 +123,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                     loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
             //       String UserRole = checkAdminUserorNot(mobile_userPhoneNumber);
 
-                    VerifyPasswordandGetVendorKey(newtoken);
+                    VerifyVendorPassword(newtoken);
                 }
                 else {
                     loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
@@ -253,7 +251,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         return data;
     }
 
-    private void VerifyPasswordandGetVendorKey(String newtoken) {
+    private void VerifyVendorPassword(String newtoken) {
         // String params = "?name="+VendorName+"&vendor_password="+password;
         //final String APIwithParameters = VerifyPasswordApi+params;
 

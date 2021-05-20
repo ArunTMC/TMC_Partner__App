@@ -82,7 +82,9 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             final TextView slottime_text_widget = listViewItem.findViewById(R.id.slottime_text_widget);
             final TextView slotdate_text_widget = listViewItem.findViewById(R.id.slotdate_text_widget);
             final TextView orderstatus_text_widget = listViewItem.findViewById(R.id.orderstatus_text_widget);
+            final TextView deliveryType_text_widget = listViewItem.findViewById(R.id.deliveryType_text_widget);
 
+            final TextView deliveryType_label_widget = listViewItem.findViewById(R.id.deliveryType_label_widget);
 
             final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
 
@@ -151,7 +153,14 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             });
 
 
+            try {
+                deliveryType_label_widget.setText(String.format(" %s", "Distance in Km"));
+                deliveryType_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliverydistance()+" Km"));
 
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
 
             try {

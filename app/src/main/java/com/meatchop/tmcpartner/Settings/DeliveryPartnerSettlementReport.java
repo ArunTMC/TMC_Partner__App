@@ -472,7 +472,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                 //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                                 int i1 = 0;
                                 int arrayLength = JArray.length();
-                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
                                 if(arrayLength>0){
 
@@ -581,11 +581,13 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                     orderid = String.valueOf(json.get("orderid"));
                                                     modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                                     if(OrderIdCount.contains(orderid)){
-                                                        //Log.d(Constants.TAG, "orderid is already added");
+                                                        Log.d(Constants.TAG, "orderid is already added");
 
                                                     }
                                                     else{
                                                         OrderIdCount.add(orderid);
+                                                        Log.d(Constants.TAG, "orderid has been succesfully  retrived  "+OrderIdCount.size());
+
                                                     }
 
                                                     //Log.d(Constants.TAG, "orderid has been succesfully  retrived");
@@ -595,7 +597,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 }
                                             } else {
 
-                                                //Log.d(Constants.TAG, "There is no orderid: ");
+                                                Log.d(Constants.TAG, "There is no orderid: ");
 
 
                                             }
@@ -827,6 +829,20 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 }
                                             }
 
+
+                                            if (json.has("deliverydistance")) {
+
+                                                String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                                if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                                    modal_orderDetails.deliverydistance = String.valueOf(json.get("deliverydistance"));
+
+                                                } else {
+                                                    modal_orderDetails.deliverydistance = "0";
+
+                                                }
+                                            } else {
+                                                modal_orderDetails.deliverydistance = "0";
+                                            }
 
 
 

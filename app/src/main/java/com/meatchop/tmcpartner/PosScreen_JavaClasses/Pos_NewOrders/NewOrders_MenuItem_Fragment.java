@@ -40,6 +40,7 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.AppSales_Report;
+import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.pos.printer.PrinterFunctions;
 
 import org.json.JSONArray;
@@ -143,11 +144,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         //Log.d(TAG, "starting: ");
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    }
 
 
 
@@ -204,7 +200,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 double discountAmountdouble = Double.parseDouble(discountAmount);
                                 double toPayAmt = Double.parseDouble(finaltoPayAmount);
                                 toPayAmt = toPayAmt - discountAmountdouble;
-                                int toPayAmountInt = (int) Math.ceil((toPayAmt));
+                                int toPayAmountInt = (int) Math.round((toPayAmt));
 
 
                                 total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
@@ -273,10 +269,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             via_card.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
+                                    dialog.dismiss();
 
                                     PlaceOrdersinDatabaseaAndPrintRecipt("CARD",sTime,Currenttime,cart_Item_List);
 
-                                    dialog.cancel();
 
 
                                 }
@@ -286,10 +282,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             via_cash.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
+                                    dialog.dismiss();
 
                                     PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
 
-                                    dialog.cancel();
 
 
                                 }
@@ -299,10 +295,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             via_upi.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
+                                    dialog.dismiss();
 
                                     PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
 
-                                    dialog.cancel();
 
 
 
@@ -387,7 +383,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     }
 
     private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt) {
-
+        try {
             Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
             double oldSavedAmount = 0;
             String CouponDiscount = "0";
@@ -886,15 +882,59 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             //Log.i("tag", "printer Log    " + PrinterFunctions.OpenPort(portName, portSettings));
 
             //Log.i("tag", "printer Log    " + PrinterFunctions.CheckStatus(portName, portSettings, 2));
-           /* if (!isPrintedSecondTime) {
+            if (!isPrintedSecondTime) {
                 showProgressBar(false);
                 //isPrintedSecondTime = true;
                 //showProgressBar(true);
 
 
+                //       openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode);
 
+                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
+                        R.string.Yes_Text, R.string.No_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                                isPrintedSecondTime = true;
 
-                openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode);
+                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount);
+
+                            }
+
+                            @Override
+                            public void onNo() {
+
+                                cart_Item_List.clear();
+                                cart_Item_hashmap.clear();
+                                cart_item_list.clear();
+                                cartItem_hashmap.clear();
+                                ispaymentMode_Clicked = false;
+                                isOrderDetailsMethodCalled = false;
+
+                                isPaymentDetailsMethodCalled = false;
+                                isOrderTrackingDetailsMethodCalled = false;
+                                new_to_pay_Amount = 0;
+                                old_taxes_and_charges_Amount = 0;
+                                old_total_Amount = 0;
+                                createEmptyRowInListView("empty");
+                                CallAdapter();
+                                discountAmount = "0";
+
+                                discount_Edit_widget.setText("0");
+                                finaltoPayAmount = "0";
+                                discount_rs_text_widget.setText(discountAmount);
+
+                                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                                mobileNo_Edit_widget.setText("");
+                                isPrintedSecondTime = false;
+                                showProgressBar(false);
+
+                            }
+                        });
+
 
             } else {
                 cart_Item_List.clear();
@@ -928,7 +968,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             }
 
 
-            */
+
+        /*
             cart_Item_List.clear();
             cart_Item_hashmap.clear();
             cart_item_list.clear();
@@ -960,7 +1001,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
 
+         */
 
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(mContext,String.valueOf(e),Toast.LENGTH_LONG).show();
+        }
 
 
     }
@@ -1002,6 +1049,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                     }
                 }
             });
+
+
         }
 
 
@@ -1129,7 +1178,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             try {
                                 String tmcpriceperkg = String.valueOf(json.get("tmcpriceperkg"));
                                 double doubleAmount = Double.parseDouble(tmcpriceperkg);
-                                int intAmount = (int) Math.ceil(doubleAmount);
+                                int intAmount = (int) Math.round(doubleAmount);
 
                                 //Log.i("Tag", "doubleAmount" + String.valueOf(intAmount));
                                 newOrdersPojoClass.tmcpriceperkg = String.valueOf(json.get("tmcpriceperkg"));
@@ -1176,7 +1225,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             try {
                                 String tmcprice = String.valueOf(json.get("tmcprice"));
                                 double doubleAmount = Double.parseDouble(tmcprice);
-                                int intAmount = (int) Math.ceil(doubleAmount);
+                                int intAmount = (int) Math.round(doubleAmount);
 
                                 //Log.i("Tag", "doubleAmount" + String.valueOf(intAmount));
                                 newOrdersPojoClass.tmcprice = String.valueOf(json.get("tmcprice"));
@@ -1429,10 +1478,12 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
         try{
+
             total_item_Rs_text_widget.setText(decimalFormat.format(old_total_Amount));
             taxes_and_Charges_rs_text_widget.setText(decimalFormat.format(old_taxes_and_charges_Amount));
-             new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
-                finaltoPayAmount = String.valueOf(new_totalAmount_withGst)+".00";
+
+             new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+            finaltoPayAmount = String.valueOf(new_totalAmount_withGst)+".00";
             total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
 
         }catch (Exception e){
@@ -1565,7 +1616,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 String grossweight = modal_newOrderItems.getGrossweight();
                 String subCtgyKey = modal_newOrderItems.getTmcsubctgykey();
 
-                PlaceOrder_in_OrderItemDetails(itemName, weight, quantity, price, "", GstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName);
+                PlaceOrder_in_OrderItemDetails(subCtgyKey,itemName,grossweight, weight,netweight, quantity, price, "", GstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName);
 
 
                 JSONObject itemdespObject = new JSONObject();
@@ -1718,8 +1769,8 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
     }
 
-    private void PlaceOrder_in_OrderItemDetails(String itemnamee, String itemweightt,
-                                                String quantityy, String itemamountt,
+    private void PlaceOrder_in_OrderItemDetails(String subCtgyKey, String itemnamee, String Grossweight, String itemweightt,
+                                                String Netweight, String quantityy, String itemamountt,
                                                 String discountamountt,
                                                 String gstamountt, String vendorkeyy, String currenttime,
                                                 long sTime, String vendorkey, String vendorName){
@@ -1732,8 +1783,29 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             try {
                 jsonObject.put("orderid", orderid);
                 jsonObject.put("itemname", itemnamee);
+
+                jsonObject.put("tmcsubctgykey", subCtgyKey);
+
                 jsonObject.put("quantity", quantityy);
-                jsonObject.put("netWeight", itemweightt);
+                try {
+                    if (itemweightt.equals("") || itemweightt == (null)) {
+                        jsonObject.put("grossweight", Grossweight);
+                        jsonObject.put("netweight", Grossweight);
+
+                        jsonObject.put("grossweightingrams", Grossweight);
+
+                    } else {
+                        jsonObject.put("grossweight", itemweightt);
+                        jsonObject.put("netweight", itemweightt);
+                        jsonObject.put("grossweightingrams", itemweightt);
+
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
                 jsonObject.put("discountamount", discountamountt);
                 jsonObject.put("gstamount", gstamountt);
                 jsonObject.put("vendorid", vendorkeyy);

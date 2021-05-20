@@ -17,8 +17,15 @@
         android:roundIcon="@mipmap/tmcicon_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.DeliveredOrdersTimewiseReport"></activity>
+        <activity android:name=".Settings.ConsolidatedReportSubCtgywise"></activity>
+        <activity android:name=".Settings.CancelledOrders" />
+        <activity android:name=".Settings.GenerateCustomerMobileNo_BillValueReport" />
+        <activity android:name=".Settings.GenerateOrderDetailsDump" />
+        <activity android:name=".Settings.Edit_Or_CancelOrder_OrderDetails_Screen" />
+        <activity android:name=".Settings.Edit_Or_CancelTheOrders" />
+        <activity android:name=".Settings.DeliveredOrdersTimewiseReport" />
         <activity android:name=".Settings.Pos_Orders_List" />
         <activity android:name=".Settings.App_Sales_Report_Subctgywise" />
         <activity android:name=".Settings.GetDeliverypartnersAssignedOrders" />
@@ -39,6 +46,16 @@
         <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_OtpVerificationActivity" />
         <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard" />
         <activity android:name=".PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

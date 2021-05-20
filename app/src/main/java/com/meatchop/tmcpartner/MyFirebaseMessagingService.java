@@ -25,6 +25,7 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScree
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 
 import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launcher;
 import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launcher_transperent;
@@ -35,18 +36,44 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 
     String TAG = "Tag";
+    String tmcctgyname ;
+    String tmcSubctgyname ;
+    String tmcSubctgykey ;
 
     //this method is Called when a notification is received.
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         //this is the general configuration for recieving the notification
         if (remoteMessage.getNotification() != null) {
-            //Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+            Log.d(TAG, "Message Notification Body: " + remoteMessage.getData());
 
+            try {
+                Map<String, String> map = remoteMessage.getData();
+
+                 tmcSubctgykey = map.get("tmcsubctgykey");
+                Log.d(TAG, "Message Notification Body:+tmcSubctgykey " + tmcSubctgykey);
+
+                tmcSubctgyname = map.get("tmcsubctgyname");
+                Log.d(TAG, "Message Notification Body:+tmcSubctgyname " + tmcSubctgyname);
+
+                tmcctgyname = map.get("tmcctgyname");
+                Log.d(TAG, "Message Notification Body:+tmcctgyname " + tmcctgyname);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Exception: " + e.getMessage());
+            }
             //Setting the intent to open any activty from our appliction when user clicked the notification
             Intent intent = new Intent(this, MobileScreen_Dashboard.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 , intent,
+
+
+            intent.putExtra("tmcSubctgykey",tmcSubctgykey);
+            intent.putExtra("tmcSubctgyname",tmcSubctgyname);
+            intent.putExtra("tmcctgyname",tmcctgyname);
+
+
+
+                    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 , intent,
                     PendingIntent.FLAG_ONE_SHOT);
             String channelId  = "Notification";
             NotificationManager notificationManager =
