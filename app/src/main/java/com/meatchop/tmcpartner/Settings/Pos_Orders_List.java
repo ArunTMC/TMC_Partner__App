@@ -709,14 +709,14 @@ public class Pos_Orders_List extends AppCompatActivity {
 
                     if(json.has("ordertype")){
                         manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
-                        ordertype = String.valueOf(json.get("ordertype"));
+                        ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                     }
                     else{
                         ordertype="#";
                         manageOrdersPojoClass.orderType ="";
                     }
 
-                    if(ordertype.equals(Constants.POSORDER)){
+                    if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
 
 
                         if(json.has("orderid")){
@@ -966,7 +966,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                     }
 
                     try {
-                        if (ordertype.toUpperCase().equals(Constants.POSORDER)) {
+                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
                             if (json.has("useraddress")) {
 
                                 String addresss =  String.valueOf(json.get("useraddress"));
@@ -992,7 +992,7 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
 
-                    if (ordertype.toUpperCase().equals(Constants.POSORDER)) {
+                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
 
                         ordersList.add(manageOrdersPojoClass);
                     }

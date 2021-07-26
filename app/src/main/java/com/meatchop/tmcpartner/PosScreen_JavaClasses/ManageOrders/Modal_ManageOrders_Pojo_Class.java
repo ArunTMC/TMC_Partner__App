@@ -1,20 +1,67 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 
 
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.json.JSONArray;
 
-public class Modal_ManageOrders_Pojo_Class implements Parcelable {
-public String typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
-public String grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
+public class  Modal_ManageOrders_Pojo_Class implements Parcelable {
+public String deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
+public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
 public   String subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp;
     public int intTokenNo;
 public boolean isdelayed;
-      String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders;
+      String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
+
+    public String getTotaltmcsubctgyquantity() {
+        return totaltmcsubctgyquantity;
+    }
+
+    public void setTotaltmcsubctgyquantity(String totaltmcsubctgyquantity) {
+        this.totaltmcsubctgyquantity = totaltmcsubctgyquantity;
+    }
+
+    public String getOrderconfirmedtime_in_long() {
+        return orderconfirmedtime_in_long;
+    }
+
+    public void setOrderconfirmedtime_in_long(String orderconfirmedtime_in_long) {
+        this.orderconfirmedtime_in_long = orderconfirmedtime_in_long;
+    }
+
+    public String getOrderreadytime_in_long() {
+        return orderreadytime_in_long;
+    }
+
+    public void setOrderreadytime_in_long(String orderreadytime_in_long) {
+        this.orderreadytime_in_long = orderreadytime_in_long;
+    }
+
+    public String getOrderpickeduptime_in_long() {
+        return orderpickeduptime_in_long;
+    }
+
+    public void setOrderpickeduptime_in_long(String orderpickeduptime_in_long) {
+        this.orderpickeduptime_in_long = orderpickeduptime_in_long;
+    }
+
+    public String getTmcSubCtgyName() {
+        return tmcSubCtgyName;
+    }
+
+    public void setTmcSubCtgyName(String tmcSubCtgyName) {
+        this.tmcSubCtgyName = tmcSubCtgyName;
+    }
+
+    public String getIsOrdersChecked() {
+        return isOrdersChecked;
+    }
+
+    public void setIsOrdersChecked(String isOrdersChecked) {
+        this.isOrdersChecked = isOrdersChecked;
+    }
 
     public String getIsFromCancelledOrders() {
         return isFromCancelledOrders;
@@ -304,6 +351,14 @@ public boolean isdelayed;
         this.slotdate = slotdate;
     }
 
+    public String getDeliveryamount() {
+        return deliveryamount;
+    }
+
+    public void setDeliveryamount(String deliveryamount) {
+        this.deliveryamount = deliveryamount;
+    }
+
     protected Modal_ManageOrders_Pojo_Class(Parcel in) {
         orderid = in.readString();
         orderplacedtime = in.readString();
@@ -334,6 +389,7 @@ public boolean isdelayed;
         deliverytype = in.readString();
         slottimerange = in.readString();
         useraddress = in.readString();
+        useraddresskey = in.readString();
 
         orderconfirmedtime = in.readString();
         orderplacedtime = in.readString();
@@ -350,6 +406,7 @@ public boolean isdelayed;
         isFromGenerateCustomermobile_billvaluereport = in.readString();
         isFromEditOrders = in.readString();
         isFromCancelledOrders= in.readString();
+        deliveryamount = in.readString();
     }
 
     public static final Creator<Modal_ManageOrders_Pojo_Class> CREATOR = new Creator<Modal_ManageOrders_Pojo_Class>() {
@@ -616,7 +673,7 @@ public boolean isdelayed;
         parcel.writeString(deliverytype);
         parcel.writeString(slottimerange);
         parcel.writeString(useraddress);
-
+        parcel.writeString(useraddresskey);
         parcel.writeString(orderconfirmedtime);
         parcel.writeString(orderplacedtime);
         parcel.writeString(orderreadytime);
@@ -632,5 +689,6 @@ public boolean isdelayed;
         parcel.writeString(isFromGenerateCustomermobile_billvaluereport);
         parcel.writeString(isFromEditOrders);
         parcel.writeString(isFromCancelledOrders);
+        parcel.writeString(deliveryamount);
     }
 }

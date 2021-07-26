@@ -1,13 +1,37 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders;
 
 public class Modal_NewOrderItems extends Throwable {
-   public String savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
+   public String istmcpriceperkgitemedited,dunzoAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
-            selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage,tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
+            selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
     private String editTextValue;
+
+    public String getDunzoAmount() {
+        return dunzoAmount;
+    }
+
+    public void setDunzoAmount(String dunzoAmount) {
+        this.dunzoAmount = dunzoAmount;
+    }
+
+    public String getSwiggyAmount() {
+        return swiggyAmount;
+    }
+
+    public void setSwiggyAmount(String swiggyAmount) {
+        this.swiggyAmount = swiggyAmount;
+    }
 
     public String getSavedAmount() {
         return savedAmount;
+    }
+
+    public String getIstmcpriceperkgitemedited() {
+        return istmcpriceperkgitemedited;
+    }
+
+    public void setIstmcpriceperkgitemedited(String istmcpriceperkgitemedited) {
+        this.istmcpriceperkgitemedited = istmcpriceperkgitemedited;
     }
 
     public void setSavedAmount(String savedAmount) {

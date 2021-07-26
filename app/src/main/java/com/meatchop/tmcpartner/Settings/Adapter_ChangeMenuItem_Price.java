@@ -10,27 +10,32 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.meatchop.tmcpartner.R;
 
+import org.apache.poi.xwpf.usermodel.TOC;
+
 import java.util.List;
 
 public class Adapter_ChangeMenuItem_Price extends ArrayAdapter<Modal_MenuItem_Settings> {
     Context mContext;
-    String menuitemKey;
+    String menuitemKey,IntentFrom,tmcsubctgykey,itemName;
     List<Modal_MenuItem_Settings> menuList;
     MenuItem_List_Settings MenuItem_List_Settings;
-    public Adapter_ChangeMenuItem_Price(Context mContext, List<Modal_MenuItem_Settings> menuList, MenuItem_List_Settings MenuItem_List_Settings) {
+    MenuAvailabilityStatusTransaction menuAvailabilityStatusTransaction;
+    public Adapter_ChangeMenuItem_Price(Context mContext, List<Modal_MenuItem_Settings> menuList, MenuItem_List_Settings MenuItem_List_Settings,String IntentFrom) {
         super(mContext, R.layout.settings_toggle_switch_child, menuList);
         this.MenuItem_List_Settings = MenuItem_List_Settings;
         this.mContext=mContext;
         this.menuList = menuList;
-
+        this.IntentFrom=IntentFrom;
 
 
     }
+
 
     @Override
     public int getCount() {
@@ -62,10 +67,52 @@ public class Adapter_ChangeMenuItem_Price extends ArrayAdapter<Modal_MenuItem_Se
         MenuitemNameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                menuitemKey=String.valueOf(modal_manageOrders_pojo_class.getKey());
-                Intent i = new Intent(mContext,ChangeMenuItem_Price_Settings.class);
-                i.putExtra("menuItemKey",menuitemKey);
-                mContext.startActivity(i);
+                try {
+                    menuitemKey = String.valueOf(modal_manageOrders_pojo_class.getKey());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    menuitemKey ="";
+                    Toast.makeText(mContext, "menu key is empty", Toast.LENGTH_SHORT).show();
+                }
+
+
+                try {
+                    tmcsubctgykey = String.valueOf(modal_manageOrders_pojo_class.getTmcsubctgykey());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    tmcsubctgykey ="";
+                    Toast.makeText(mContext, "subctgy key is empty", Toast.LENGTH_SHORT).show();
+                }
+
+                try {
+                    itemName = String.valueOf(modal_manageOrders_pojo_class.getItemname());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    itemName ="";
+                    Toast.makeText(mContext, "itemName is empty", Toast.LENGTH_SHORT).show();
+                }
+
+
+
+
+                if(IntentFrom.equals("ChangeMenuItemPrice")) {
+                    Intent i = new Intent(mContext,ChangeMenuItem_Price_Settings.class);
+
+                    i.putExtra("menuItemKey",menuitemKey);
+                    mContext.startActivity(i);
+
+                }
+                if(IntentFrom.equals("MenuAvailabilityTransactionDetails")) {
+                    Intent i = new Intent(mContext,MenuAvailabilityStatusTransaction.class);
+                    i.putExtra("subctgykey",tmcsubctgykey);
+                    i.putExtra("itemName",itemName);
+                    i.putExtra("menuItemKey",menuitemKey);
+                    mContext.startActivity(i);
+                }
+
             }
         });
 

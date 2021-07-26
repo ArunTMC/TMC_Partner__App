@@ -17,6 +17,7 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
@@ -71,12 +72,12 @@ import java.util.Objects;
 public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     Spinner deliveryPartnerSelectionSpinner;
     private ArrayList<Modal_DeliveryPartner> deliveryPartner_arrayList;
-    LinearLayout PrintReport_Layout,viewOrdersList_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
+    LinearLayout orderDetailsLayout,PrintReport_Layout,viewOrdersList_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel,getOrdersList_Layout;
     DatePickerDialog datepicker;
-    TextView totalOrdersCount,preorder_cashOnDelivery,preorder_Phonepe,preorder_Razorpay,preorder_paytmSales;
+    TextView totaldeliveredOrdersCount,totalOrdersCount,preorder_cashOnDelivery,preorder_Phonepe,preorder_Razorpay,preorder_paytmSales;
     TextView Phonepe,totalSales_headingText,Razorpay,Paytm, cashOnDelivery,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
 
-    TextView deliverypartnerName_textwidget,cashSales, cardSales;
+    TextView deliveryChargeAmount_textwidget,deliverypartnerName_textwidget,cashSales, cardSales,ordersInstruction;
     String vendorKey,CurrentDay_date,assignedOrdersString="";
     double screenInches;
     String CurrentDate;
@@ -85,6 +86,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
     public static List<String> OrderIdCount;
+    public static List<String> delivered_OrderIdCount;
 
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
@@ -102,6 +104,15 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     public static HashMap<String, Modal_OrderDetails>  preorderpaymentMode_DiscountHashmap  = new HashMap();;
 
 
+    public static List<String> preorderpaymentMode_DeliveryChargeOrderid;
+    public static HashMap<String, Modal_OrderDetails> preorderpaymentMode_DeliveryChargeHashmap = new HashMap();
+    
+
+
+
+    public static List<String> paymentMode_DeliveryChargeOrderid;
+    public static HashMap<String, Modal_OrderDetails> paymentMode_DeliveryChargeHashmap = new HashMap();
+    
     public static List<String> finalBillDetails;
     public static HashMap<String, String> FinalBill_hashmap = new HashMap();
 
@@ -110,7 +121,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     public static HashMap<String, Modal_OrderDetails>  paymentMode_DiscountHashmap  = new HashMap();;
 
 
-    double CouponDiscount=0,Gst_from_array =0 ,CouponDiscount_preorder = 0;
+    double CouponDiscount=0,Gst_from_array =0 ,CouponDiscount_preorder = 0,deliveryCharges=0,deliveryCharges_preorder=0,totalDeliveryCharges=0,totalCouponDiscount=0;
 
     private JSONArray result = new JSONArray();
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -119,8 +130,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     String finalCashAmount_pdf,finalRazorpayAmount_pdf,finalPhonepeAmount_pdf,finalPaytmAmount_pdf;
     String finalpreorderCashAmount_pdf,finalpreorderRazorpayAmount_pdf,finalpreorderPhonepeAmount_pdf,finalpreorderPaytmAmount_pdf;
 
-
-
+    boolean isSpinnerClicked = false;
+    public String DeliveryPersonList;
+    public static JSONArray result_JArray =new JSONArray();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,25 +159,28 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         upiSales  = findViewById(R.id.upiSales);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
         totalOrdersCount = findViewById(R.id.totalOrdersCount);
+        totaldeliveredOrdersCount = findViewById(R.id.totaldeliveredOrdersCount);
         cashOnDelivery = findViewById(R.id.cashOnDelivery);
         Razorpay = findViewById(R.id.Razorpay);
         Paytm  = findViewById(R.id.paytmSales);
         Phonepe  = findViewById(R.id.Phonepe);
-
-
+        getOrdersList_Layout=findViewById(R.id.getOrdersList_Layout);
+        ordersInstruction = findViewById(R.id.ordersInstruction);
+        orderDetailsLayout = findViewById(R.id.orderDetailsLayout);
         totalAmt_without_GST = findViewById(R.id.totalAmt_without_GST);
         totalCouponDiscount_Amt = findViewById(R.id.totalCouponDiscount_Amt);
         totalAmt_with_CouponDiscount = findViewById(R.id.totalAmt_with_CouponDiscount);
         totalGST_Amt = findViewById(R.id.totalGST_Amt);
         final_sales = findViewById(R.id.final_sales);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        deliveryChargeAmount_textwidget = findViewById(R.id.deliveryChargeAmount_textwidget);
 
 
         preorder_cashOnDelivery = findViewById(R.id.preorder_cashOnDelivery);
         preorder_Phonepe  = findViewById(R.id.preorder_Phonepe);
         preorder_Razorpay = findViewById(R.id.preorder_Razorpay);
         preorder_paytmSales = findViewById(R.id.preorder_paytmSales);
-
+        delivered_OrderIdCount = new ArrayList<>();
         OrderIdCount = new ArrayList<>();
         assignedOrdersList = new ArrayList<>();
         Order_Item_List = new ArrayList<>();
@@ -174,6 +189,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         preorder_paymentModeArray = new ArrayList<>();
         preorderpaymentMode_DiscountOrderid = new ArrayList<>();
         paymentMode_DiscountOrderid = new ArrayList<>();
+        preorderpaymentMode_DeliveryChargeOrderid = new ArrayList<>();
+        paymentMode_DeliveryChargeOrderid = new ArrayList<>();
+
         OrderIdCount.clear();
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
@@ -188,6 +206,11 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         preorderpaymentMode_DiscountOrderid.clear();
         preorderpaymentMode_DiscountHashmap.clear();
 
+        paymentMode_DeliveryChargeHashmap.clear();
+        paymentMode_DeliveryChargeOrderid.clear();
+
+        preorderpaymentMode_DeliveryChargeOrderid.clear();
+        preorderpaymentMode_DeliveryChargeHashmap.clear();
 
         SharedPreferences sh
                 = getSharedPreferences("VendorLoginData",
@@ -196,7 +219,16 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
         vendorKey = sh.getString("VendorKey","vendor_1");
 
+        getVendorwiseDeliveryPartner();
+        try {
+            SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
+            DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
 
+          //  ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         CurrentDay_date =getDay_Date_and_time();
         CurrentDate = getDay_Date_and_time();
         dateSelector_text.setText(CurrentDate);
@@ -210,20 +242,13 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
         dateSelector_text.setText(CurrentDate);
 
-
-
-
-        deliveryPartnerSelectionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        orderDetailsLayout .setVisibility( View.GONE);
+        ordersInstruction.setVisibility(View.VISIBLE);
+        getOrdersList_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+            public void onClick(View view) {
 
-
-
-                deliveryPartnerStatus=getVendorData(position,"status");
-                deliveryPartnerKey=getVendorData(position,"key");
-                deliveryPartnerMobileNo=getVendorData(position,"mobileno");
-                deliveryPartnerName=getVendorData(position,"name");
-                deliverypartnerName_textwidget.setText(deliveryPartnerName);
+                delivered_OrderIdCount.clear();
                 OrderIdCount.clear();
                 Order_Item_List.clear();
                 OrderItem_hashmap.clear();
@@ -237,11 +262,62 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 preorder_paymentModeArray.clear();
                 preorderpaymentMode_DiscountOrderid.clear();
                 preorderpaymentMode_DiscountHashmap.clear();
+                paymentMode_DeliveryChargeHashmap.clear();
+                paymentMode_DeliveryChargeOrderid.clear();
+
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                preorderpaymentMode_DeliveryChargeHashmap.clear();
+                deliveryCharges=0;
+                deliveryCharges_preorder=0;
                 CouponDiscount = 0;
-                CouponDiscount_preorder =0;
+                CouponDiscount_preorder = 0;
                 getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
 
                 addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
+                orderDetailsLayout .setVisibility( View.VISIBLE);
+                ordersInstruction.setVisibility(View.GONE);
+
+            }
+        });
+
+        deliveryPartnerSelectionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+
+
+                    deliveryPartnerStatus = getVendorData(position, "status");
+                    deliveryPartnerKey = getVendorData(position, "key");
+                    deliveryPartnerMobileNo = getVendorData(position, "mobileno");
+                    deliveryPartnerName = getVendorData(position, "name");
+                    deliverypartnerName_textwidget.setText(deliveryPartnerName);
+                    OrderIdCount.clear();
+                    delivered_OrderIdCount.clear();
+                    Order_Item_List.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    paymentModeHashmap.clear();
+                    paymentModeArray.clear();
+                    paymentMode_DiscountHashmap.clear();
+                    paymentMode_DiscountOrderid.clear();
+                    preorder_paymentModeHashmap.clear();
+                    preorder_paymentModeArray.clear();
+                    preorderpaymentMode_DiscountOrderid.clear();
+                    preorderpaymentMode_DiscountHashmap.clear();
+                    paymentMode_DeliveryChargeHashmap.clear();
+                    paymentMode_DeliveryChargeOrderid.clear();
+    
+                    preorderpaymentMode_DeliveryChargeOrderid.clear();
+                    preorderpaymentMode_DeliveryChargeHashmap.clear();
+                    deliveryCharges=0;
+                    deliveryCharges_preorder=0;
+                        
+                    
+                    CouponDiscount = 0;
+                    CouponDiscount_preorder = 0;
+                     //      getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
+
+                  //       addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
 
 
             }
@@ -278,7 +354,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(screenInches>8){
-                   // printReport();
+                    // printReport();
                 }
                 else{
                     Toast.makeText(DeliveryPartnerSettlementReport.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
@@ -353,7 +429,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     }
 
 
-
+/*
     @Override
     protected void onResume() {
         super.onResume();
@@ -379,6 +455,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
     }
+
+ */
 
 
 
@@ -421,7 +499,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
 
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
-                            getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
+                         //   getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
                         }
                         catch (Exception e ){
                             e.printStackTrace();
@@ -432,6 +510,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     }
 
     private void getOrderForSelectedDateandSelectedDeliveryPartner(String dateString, String vendorKey, String deliveryPartnerKey, String deliveryPartnerMobileNo) {
+        isSpinnerClicked = false;
         OrderIdCount.clear();
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
@@ -439,6 +518,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         FinalBill_hashmap.clear();
         paymentModeHashmap.clear();
         paymentModeArray.clear();
+        delivered_OrderIdCount.clear();
         paymentMode_DiscountHashmap.clear();
         paymentMode_DiscountOrderid.clear();
         preorder_paymentModeHashmap.clear();
@@ -447,8 +527,15 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         preorderpaymentMode_DiscountHashmap.clear();
         CouponDiscount=0;
         CouponDiscount_preorder =0;
+        paymentMode_DeliveryChargeHashmap.clear();
+        paymentMode_DeliveryChargeOrderid.clear();
 
-           addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
+        preorderpaymentMode_DeliveryChargeOrderid.clear();
+        preorderpaymentMode_DeliveryChargeHashmap.clear();
+        deliveryCharges=0;
+        deliveryCharges_preorder=0;
+        delivered_OrderIdCount.clear();
+        addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
         Adjusting_Widgets_Visibility(true);
 
         String deliveryUserMobileNumberEncoded  = deliveryPartnerMobileNo;
@@ -463,515 +550,49 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     public void onResponse(@NonNull JSONObject response) {
 
                         //Log.d(Constants.TAG, "Response: " + response);
-                            try {
-                                String paymentMode = "", ordertype = "", orderid = "", slotname = "",orderstatus ="";
-
-                                //converting jsonSTRING into array
-                                JSONArray JArray = response.getJSONArray("content");
-                                assignedOrdersString = response.toString();
-                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                                int i1 = 0;
-                                int arrayLength = JArray.length();
-                                Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
-
-                                if(arrayLength>0){
-
-                                    for (; i1 < (arrayLength); i1++) {
-
-                                        try {
-                                            JSONObject json = JArray.getJSONObject(i1);
-                                            Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                          //  //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderstatus")));
-                                            JSONArray itemdesp;
-
-                                            if (json.has("ordertype")) {
-                                                try {
-                                                    modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                                    ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
-                                                    //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-
-                                            } else {
-                                                modal_orderDetails.ordertype = "There is no OrderType";
-                                                //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
-
-
-                                            }
-
-                                            if (json.has("orderstatus")) {
-                                                try {
-                                                    modal_orderDetails.orderstatus = String.valueOf(json.get("orderstatus")).toUpperCase();
-                                                    orderstatus = String.valueOf(json.get("orderstatus")).toUpperCase();
-                                                    //Log.d(Constants.TAG, "orderstatus: " + String.valueOf(json.get("orderstatus")));
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-
-                                            } else {
-                                                modal_orderDetails.orderstatus = "There is no orderstatus";
-                                                //Log.d(Constants.TAG, "There is no orderstatus: " + String.valueOf(json.get("orderstatus")));
-
-
-                                            }
-
-                                            if (json.has("slotname")) {
-                                                try {
-                                                    modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                    slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                    //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-
-                                            } else {
-                                                modal_orderDetails.slotname = "There is no slotname";
-                                                //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("slotname")));
-
-
-                                            }
-
-                                            if (json.has("paymentmode")) {
-
-                                                try {
-                                                    paymentMode = String.valueOf(json.get("paymentmode"));
-                                                    modal_orderDetails.paymentmode = String.valueOf(json.get("paymentmode"));
-                                                    //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-
-
-                                            } else {
-                                                modal_orderDetails.paymentmode = "There is no payment mode";
-                                                //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
-
-
-                                            }
-
-
-                                            if (json.has("itemdesp")) {
-
-                                                try {
-
-                                                    itemdesp = json.getJSONArray("itemdesp");
-                                                    modal_orderDetails.itemdesp = itemdesp;
-
-                                                    //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-
-                                            } else {
-
-                                                //Log.d(Constants.TAG, "There is no itemdesp: ");
-
-
-                                            }
-                                            if (json.has("orderid")) {
-                                                try {
-
-
-                                                    orderid = String.valueOf(json.get("orderid"));
-                                                    modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
-                                                    if(OrderIdCount.contains(orderid)){
-                                                        Log.d(Constants.TAG, "orderid is already added");
-
-                                                    }
-                                                    else{
-                                                        OrderIdCount.add(orderid);
-                                                        Log.d(Constants.TAG, "orderid has been succesfully  retrived  "+OrderIdCount.size());
-
-                                                    }
-
-                                                    //Log.d(Constants.TAG, "orderid has been succesfully  retrived");
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-                                            } else {
-
-                                                Log.d(Constants.TAG, "There is no orderid: ");
-
-
-                                            }
-
-                                            if(slotname.equals(Constants.PREORDER_SLOTNAME)) {
-                                                if (json.has("coupondiscount")) {
-
-                                                    modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
-                                                    try {
-                                                        String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
-                                                        try {
-                                                            if (couponDiscount_string.equals("")) {
-                                                                couponDiscount_string = "0";
-
-                                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-                                                                CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
-
-                                                                if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
-                                                                    preorderpaymentMode_DiscountOrderid.add(orderid);
-                                                                    boolean isAlreadyAvailable = false;
-                                                                    try {
-                                                                        isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-
-                                                                    } catch (Exception e) {
-                                                                        e.printStackTrace();
-                                                                        ;
-                                                                    }
-                                                                    if (isAlreadyAvailable) {
-                                                                        Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
-                                                                        String discountAmount = modal_orderDetails1.getDiscountAmount();
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount" + discountAmount);
-                                                                        }
-                                                                        double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
-                                                                        double discountAmount_double = Double.parseDouble(couponDiscount_string);
-
-                                                                        discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
-                                                                        }
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
-                                                                        }
-                                                                    } else {
-                                                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
-                                                                        }
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
-                                                                        preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
-                                                                    }
-
-
-                                                                } else {
-                                                                    //Log.d(Constants.TAG, "orderid already availabe");
-
-                                                                }
-                                                            } else {
-
-                                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-                                                                CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
-
-                                                                if (paymentMode.equals("PAYTM")) {
-                                                                    //Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
-                                                                }
-
-                                                                if (paymentMode.equals("PAYTM")) {
-                                                                    //Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
-                                                                }
-                                                                if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
-                                                                    preorderpaymentMode_DiscountOrderid.add(orderid);
-                                                                    boolean isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                    if (isAlreadyAvailable) {
-                                                                        Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
-                                                                        String discountAmount = modal_orderDetails1.getDiscountAmount();
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
-                                                                        }
-
-                                                                        double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
-                                                                        double discountAmount_double = Double.parseDouble(couponDiscount_string);
-                                                                        discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
-                                                                        }
-
-                                                                    } else {
-                                                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
-                                                                        if (paymentMode.equals("PAYTM")) {
-                                                                            //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
-                                                                        }
-                                                                        preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
-                                                                    }
-
-
-                                                                    //Log.d(Constants.TAG, "mode already availabe");
-
-
-                                                                } else {
-                                                                    //Log.d(Constants.TAG, "orderid already availabe");
-
-                                                                }
-                                                            }
-                                                        } catch (Exception e) {
-                                                            e.printStackTrace();
-
-
-                                                        }
-
-
-                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
-                                                    } catch (Exception e) {
-                                                        e.printStackTrace();
-                                                    }
-
-                                                } else {
-                                                    String couponDiscount_string = String.valueOf("0");
-                                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-
-                                                    CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
-
-
-                                                    modal_orderDetails.coupondiscount = "There is no coupondiscount";
-
-                                                }
-
-                                            }
-
-
-                                            if(((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))))
-                                            {
-                                                if (json.has("coupondiscount")) {
-
-                                                    modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
-                                                    try {
-                                                        String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
-                                                        try {
-                                                            if (couponDiscount_string.equals("")) {
-                                                                couponDiscount_string = "0";
-
-                                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-                                                                CouponDiscount = CouponDiscount + CouponDiscount_double;
-
-                                                                if (!paymentMode_DiscountOrderid.contains(orderid)) {
-                                                                    paymentMode_DiscountOrderid.add(orderid);
-                                                                    boolean isAlreadyAvailable = false;
-                                                                    try {
-                                                                        isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-
-                                                                    } catch (Exception e) {
-                                                                        e.printStackTrace();
-
-                                                                    }
-                                                                    if (isAlreadyAvailable) {
-                                                                        Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
-                                                                        String discountAmount = modal_orderDetails1.getDiscountAmount();
-                                                                        double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
-                                                                        double discountAmount_double = Double.parseDouble(couponDiscount_string);
-
-                                                                        discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
-                                                                    } else {
-                                                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
-                                                                        paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
-                                                                    }
-
-
-                                                                } else {
-                                                                    //Log.d(Constants.TAG, "mode already availabe");
-
-                                                                }
-                                                            } else {
-
-                                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-                                                                CouponDiscount = CouponDiscount + CouponDiscount_double;
-
-
-                                                                if (!paymentMode_DiscountOrderid.contains(orderid)) {
-                                                                    paymentMode_DiscountOrderid.add(orderid);
-                                                                    boolean isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                    if (isAlreadyAvailable) {
-                                                                        Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
-                                                                        String discountAmount = modal_orderDetails1.getDiscountAmount();
-                                                                        double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
-                                                                        double discountAmount_double = Double.parseDouble(couponDiscount_string);
-
-                                                                        discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
-                                                                    } else {
-                                                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
-                                                                        modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
-                                                                        paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
-                                                                    }
-
-
-                                                                    //Log.d(Constants.TAG, "mode already availabe");
-
-
-                                                                } else {
-                                                                    //Log.d(Constants.TAG, "mode already availabe");
-
-                                                                }
-                                                            }
-                                                        } catch (Exception e) {
-                                                            e.printStackTrace();
-
-
-                                                        }
-
-
-                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
-                                                    } catch (Exception e) {
-                                                        e.printStackTrace();
-                                                    }
-
-                                                } else {
-                                                    String couponDiscount_string = String.valueOf("0");
-                                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-
-                                                    CouponDiscount = CouponDiscount + CouponDiscount_double;
-
-
-                                                    modal_orderDetails.coupondiscount = "There is no coupondiscount";
-
-                                                }
-                                            }
-
-
-                                            if (json.has("deliverydistance")) {
-
-                                                String deliverydistance = String.valueOf(json.get("deliverydistance"));
-                                                if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
-                                                    modal_orderDetails.deliverydistance = String.valueOf(json.get("deliverydistance"));
-
-                                                } else {
-                                                    modal_orderDetails.deliverydistance = "0";
-
-                                                }
-                                            } else {
-                                                modal_orderDetails.deliverydistance = "0";
-                                            }
-
-
-
-
-
-
-
-                                            if(orderstatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
-
-                                                getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
-                                            }
-
-
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                            Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
-                                            Adjusting_Widgets_Visibility(false);
-                                            OrderIdCount.clear();
-                                            Order_Item_List.clear();
-                                            OrderItem_hashmap.clear();
-                                            finalBillDetails.clear();
-                                            FinalBill_hashmap.clear();
-                                            paymentModeHashmap.clear();
-                                            paymentModeArray.clear();
-                                            paymentMode_DiscountHashmap.clear();
-                                            paymentMode_DiscountOrderid.clear();
-                                            preorder_paymentModeHashmap.clear();
-                                            preorder_paymentModeArray.clear();
-                                            preorderpaymentMode_DiscountOrderid.clear();
-                                            preorderpaymentMode_DiscountHashmap.clear();
-
-                                            CouponDiscount = 0;
-                                            CouponDiscount_preorder =0;
-
-
-                                            addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap,OrderIdCount);
-                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
-
-                                        }
-                                        if (arrayLength - 1 == i1) {
-                                            if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
-                                                //        getOrderForSelectedDate(DateString, vendorKey);
-                                               addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
-                                                Adjusting_Widgets_Visibility(false);
-
-                                            } else {
-                                                Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
-                                                Adjusting_Widgets_Visibility(false);
-                                                OrderIdCount.clear();
-                                                Order_Item_List.clear();
-                                                OrderItem_hashmap.clear();
-                                                finalBillDetails.clear();
-                                                FinalBill_hashmap.clear();
-                                                paymentModeHashmap.clear();
-                                                paymentModeArray.clear();
-                                                paymentMode_DiscountHashmap.clear();
-                                                paymentMode_DiscountOrderid.clear();
-                                                preorder_paymentModeHashmap.clear();
-                                                preorder_paymentModeArray.clear();
-                                                preorderpaymentMode_DiscountOrderid.clear();
-                                                preorderpaymentMode_DiscountHashmap.clear();
-
-                                                CouponDiscount = 0;
-                                                CouponDiscount_preorder =0;
-
-
-                                                addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
-
-                                                //          getOrderForSelectedDate(DateString, vendorKey);
-
-                                            }
-                                        }
-                                    }
-                                }else{
-
-                                    Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
-                                    Adjusting_Widgets_Visibility(false);
-                                    OrderIdCount.clear();
-                                    Order_Item_List.clear();
-                                    OrderItem_hashmap.clear();
-                                    finalBillDetails.clear();
-                                    FinalBill_hashmap.clear();
-                                    paymentModeHashmap.clear();
-                                    paymentModeArray.clear();
-                                    paymentMode_DiscountHashmap.clear();
-                                    paymentMode_DiscountOrderid.clear();
-                                    preorder_paymentModeHashmap.clear();
-                                    preorder_paymentModeArray.clear();
-                                    preorderpaymentMode_DiscountOrderid.clear();
-                                    preorderpaymentMode_DiscountHashmap.clear();
-                                    CouponDiscount = 0;
-                                    CouponDiscount_preorder =0;
-
-
-                                    addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
-
-                                    //    getOrderForSelectedDate(DateString, vendorKey);
-                                }
-
-
-
-                            } catch (JSONException e) {
-                                Adjusting_Widgets_Visibility(false);
-                                Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
-                                Adjusting_Widgets_Visibility(false);
-                                OrderIdCount.clear();
-                                Order_Item_List.clear();
-                                OrderItem_hashmap.clear();
-                                finalBillDetails.clear();
-                                FinalBill_hashmap.clear();
-                                paymentModeHashmap.clear();
-                                paymentModeArray.clear();
-                                paymentMode_DiscountHashmap.clear();
-                                paymentMode_DiscountOrderid.clear();
-                                preorder_paymentModeHashmap.clear();
-                                preorder_paymentModeArray.clear();
-                                preorderpaymentMode_DiscountOrderid.clear();
-                                preorderpaymentMode_DiscountHashmap.clear();
-                                CouponDiscount=0;
-                                CouponDiscount_preorder =0;
-
-
-                                addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap, OrderIdCount);
-                                //getOrderForSelectedDate(DateString, vendorKey);
-
-                                e.printStackTrace();
-                            }
+                        try {
+
+                            //converting jsonSTRING into arrayco
+                            result_JArray = response.getJSONArray("content");
+                            assignedOrdersString = response.toString();
+
+                            ConvertjsonToArray(result_JArray);
+
+
+
+                        } catch (JSONException e) {
+                            Adjusting_Widgets_Visibility(false);
+                            Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
+                            Adjusting_Widgets_Visibility(false);
+                            OrderIdCount.clear();
+                            Order_Item_List.clear();
+                            OrderItem_hashmap.clear();
+                            finalBillDetails.clear();
+                            FinalBill_hashmap.clear();
+                            paymentModeHashmap.clear();
+                            paymentModeArray.clear();
+                            paymentMode_DiscountHashmap.clear();
+                            paymentMode_DiscountOrderid.clear();
+                            preorder_paymentModeHashmap.clear();
+                            preorder_paymentModeArray.clear();
+                            preorderpaymentMode_DiscountOrderid.clear();
+                            preorderpaymentMode_DiscountHashmap.clear();
+                            CouponDiscount=0;
+                            CouponDiscount_preorder =0;
+                            delivered_OrderIdCount.clear();
+                            paymentMode_DeliveryChargeHashmap.clear();
+                            paymentMode_DeliveryChargeOrderid.clear();
+
+                            preorderpaymentMode_DeliveryChargeOrderid.clear();
+                            preorderpaymentMode_DeliveryChargeHashmap.clear();
+                            deliveryCharges=0;
+                            deliveryCharges_preorder=0;
+
+                            addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap, OrderIdCount);
+                            //getOrderForSelectedDate(DateString, vendorKey);
+
+                            e.printStackTrace();
+                        }
 
 
                        /* if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
@@ -1013,67 +634,915 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                         }
                             */
-                        }
+                    }
 
-                    }, new com.android.volley.Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(@NonNull VolleyError error) {
-                            Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
-                            Adjusting_Widgets_Visibility(false);
-                            Adjusting_Widgets_Visibility(false);
-                            OrderIdCount.clear();
-                            Order_Item_List.clear();
-                            OrderItem_hashmap.clear();
-                            finalBillDetails.clear();
-                            FinalBill_hashmap.clear();
-                            paymentModeHashmap.clear();
-                            paymentModeArray.clear();
-                            paymentMode_DiscountHashmap.clear();
-                            paymentMode_DiscountOrderid.clear();
-                            preorder_paymentModeHashmap.clear();
-                            preorder_paymentModeArray.clear();
-                            preorderpaymentMode_DiscountOrderid.clear();
-                            preorderpaymentMode_DiscountHashmap.clear();
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+                Adjusting_Widgets_Visibility(false);
+                OrderIdCount.clear();
+                Order_Item_List.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                paymentModeHashmap.clear();
+                paymentModeArray.clear();
+                paymentMode_DiscountHashmap.clear();
+                paymentMode_DiscountOrderid.clear();
+                preorder_paymentModeHashmap.clear();
+                preorder_paymentModeArray.clear();
+                preorderpaymentMode_DiscountOrderid.clear();
+                preorderpaymentMode_DiscountHashmap.clear();
+                delivered_OrderIdCount.clear();
+                paymentMode_DeliveryChargeHashmap.clear();
+                paymentMode_DeliveryChargeOrderid.clear();
 
-                            //getOrderForSelectedDate(DateString, vendorKey);
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                preorderpaymentMode_DeliveryChargeHashmap.clear();
+                deliveryCharges=0;
+                deliveryCharges_preorder=0;
+                //getOrderForSelectedDate(DateString, vendorKey);
 
-                            addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap, OrderIdCount);
+                addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap, OrderIdCount);
 
-                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
-                            error.printStackTrace();
-                        }
-                    }) {
-                        @Override
-                        public Map<String, String> getParams() throws AuthFailureError {
-                            final Map<String, String> params = new HashMap<>();
-                            params.put("vendorkey", "vendor_1");
-                            params.put("orderplacedtime", "11 Jan 2021");
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
 
-                            return params;
-                        }
+                return params;
+            }
 
 
-                        @NonNull
-                        @Override
-                        public Map<String, String> getHeaders() throws AuthFailureError {
-                            final Map<String, String> header = new HashMap<>();
-                            header.put("Content-Type", "application/json");
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
 
-                            return header;
-                        }
-                    };
+                return header;
+            }
+        };
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(50 * 10000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                    // Make the request
+        // Make the request
         Volley.newRequestQueue(DeliveryPartnerSettlementReport.this).add(jsonObjectRequest);
 
 
 
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+        if(result_JArray.length()>0) {
+            Adjusting_Widgets_Visibility(true);
+            delivered_OrderIdCount.clear();
+            OrderIdCount.clear();
+            Order_Item_List.clear();
+            OrderItem_hashmap.clear();
+            finalBillDetails.clear();
+            FinalBill_hashmap.clear();
+            paymentModeHashmap.clear();
+            paymentModeArray.clear();
+            paymentMode_DiscountHashmap.clear();
+            paymentMode_DiscountOrderid.clear();
+            preorder_paymentModeHashmap.clear();
+            preorder_paymentModeArray.clear();
+            preorderpaymentMode_DiscountOrderid.clear();
+            preorderpaymentMode_DiscountHashmap.clear();
+            CouponDiscount=0;
+            CouponDiscount_preorder =0;
+            paymentMode_DeliveryChargeHashmap.clear();
+            paymentMode_DeliveryChargeOrderid.clear();
+
+            preorderpaymentMode_DeliveryChargeOrderid.clear();
+            preorderpaymentMode_DeliveryChargeHashmap.clear();
+            deliveryCharges=0;
+            deliveryCharges_preorder=0;
+            ConvertjsonToArray(result_JArray);
+        }
+    }
+
+    public void ConvertjsonToArray(JSONArray JArray) {
+        String paymentMode = "", ordertype = "", orderid = "", slotname = "",orderstatus ="";
+
+        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+        int i1 = 0;
+        int arrayLength = JArray.length();
+        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+        if(arrayLength>0){
+
+            for (; i1 < (arrayLength); i1++) {
+
+                try {
+                    JSONObject json = JArray.getJSONObject(i1);
+                    Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                    //  //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderstatus")));
+                    JSONArray itemdesp;
+
+                    if (json.has("ordertype")) {
+                        try {
+                            modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
+                            ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
+                            //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        modal_orderDetails.ordertype = "There is no OrderType";
+                        //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
+
+
+                    }
+
+                    if (json.has("orderstatus")) {
+                        try {
+                            modal_orderDetails.orderstatus = String.valueOf(json.get("orderstatus")).toUpperCase();
+                            orderstatus = String.valueOf(json.get("orderstatus")).toUpperCase();
+                            //Log.d(Constants.TAG, "orderstatus: " + String.valueOf(json.get("orderstatus")));
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        modal_orderDetails.orderstatus = "There is no orderstatus";
+                        //Log.d(Constants.TAG, "There is no orderstatus: " + String.valueOf(json.get("orderstatus")));
+
+
+                    }
+
+                    if (json.has("slotname")) {
+                        try {
+                            modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
+                            slotname = String.valueOf(json.get("slotname")).toUpperCase();
+                            //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        modal_orderDetails.slotname = "There is no slotname";
+                        //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("slotname")));
+
+
+                    }
+
+                    if (json.has("paymentmode")) {
+
+                        try {
+                            paymentMode = String.valueOf(json.get("paymentmode"));
+                            modal_orderDetails.paymentmode = String.valueOf(json.get("paymentmode"));
+                            //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } else {
+                        modal_orderDetails.paymentmode = "There is no payment mode";
+                        //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
+
+
+                    }
+
+
+                    if (json.has("itemdesp")) {
+
+                        try {
+
+                            itemdesp = json.getJSONArray("itemdesp");
+                            modal_orderDetails.itemdesp = itemdesp;
+
+                            //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived");
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+
+                        //Log.d(Constants.TAG, "There is no itemdesp: ");
+
+
+                    }
+                    if (json.has("orderid")) {
+                        try {
+
+
+                            orderid = String.valueOf(json.get("orderid"));
+                            modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
+                            if (OrderIdCount.contains(orderid)) {
+                                //Log.d(Constants.TAG, "orderid is already added");
+                                Log.d(Constants.TAG, "orderid is already added");
+
+                            } else {
+                                OrderIdCount.add(orderid);
+                                Log.d(Constants.TAG, "orderid has been succesfully  retrived  " + OrderIdCount.size());
+
+                            }
+
+                            //Log.d(Constants.TAG, "orderid has been succesfully  retrived");
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+
+                        //Log.d(Constants.TAG, "There is no orderid: ");
+                        Log.d(Constants.TAG, "There is no orderid: ");
+
+
+                    }
+
+
+
+
+
+                    if(orderstatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
+
+                        if (slotname.equals(Constants.PREORDER_SLOTNAME)) {
+
+
+                        if (json.has("deliveryamount")) {
+
+                            modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+                            try {
+                                String deliveryCharges_preorder_string = String.valueOf(json.get("deliveryamount"));
+                                try {
+                                    if (deliveryCharges_preorder_string.equals("")) {
+                                        deliveryCharges_preorder_string = "0";
+
+                                        double deliveryCharges_preorder_double = Double.parseDouble(deliveryCharges_preorder_string);
+                                        deliveryCharges_preorder = deliveryCharges_preorder + deliveryCharges_preorder_double;
+
+                                        if (!preorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                            preorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = false;
+                                            try {
+                                                isAlreadyAvailable = checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                ;
+                                            }
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                double DeliveryCharge_double = Double.parseDouble(deliveryCharges_preorder_string);
+
+                                                DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_preorder_string));
+                                                preorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+                                        }
+                                    } else {
+
+                                        double deliveryCharges_preorder_double = Double.parseDouble(deliveryCharges_preorder_string);
+                                        deliveryCharges_preorder = deliveryCharges_preorder + deliveryCharges_preorder_double;
+
+
+                                        if (!preorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                            preorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                double DeliveryCharge_double = Double.parseDouble(deliveryCharges_preorder_string);
+
+                                                DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_preorder_string));
+                                                preorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+
+                                }
+
+
+                                //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        } else {
+                            String deliveryCharges_preorder_string = String.valueOf("0");
+                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_preorder_string);
+
+                            deliveryCharges_preorder = deliveryCharges_preorder + DeliveryCharge_double;
+
+
+                            modal_orderDetails.deliveryamount = "There is no deliveryCharges_preorder";
+
+                        }
+
+
+                        if (json.has("coupondiscount")) {
+
+                            modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                            try {
+                                String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
+                                try {
+                                    if (couponDiscount_string.equals("")) {
+                                        couponDiscount_string = "0";
+
+                                        double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                        CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
+
+                                        if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                            preorderpaymentMode_DiscountOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = false;
+                                            try {
+                                                isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                ;
+                                            }
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount" + discountAmount);
+                                                }
+                                                double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                }
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                                }
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                }
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                                preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "orderid already availabe");
+
+                                        }
+                                    } else {
+
+                                        double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                        CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
+
+                                        if (paymentMode.equals("PAYTM")) {
+                                            //Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
+                                        }
+
+                                        if (paymentMode.equals("PAYTM")) {
+                                            //Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
+                                        }
+                                        if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                            preorderpaymentMode_DiscountOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                                }
+
+                                                double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                double discountAmount_double = Double.parseDouble(couponDiscount_string);
+                                                discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                }
+
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                }
+                                                preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "orderid already availabe");
+
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+
+                                }
+
+
+                                //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        } else {
+                            String couponDiscount_string = String.valueOf("0");
+                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+
+                            CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
+
+
+                            modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+                        }
+
+                    }
+
+
+                    if (((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))))
+                    {
+
+                        if (json.has("deliveryamount")) {
+
+                            modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+                            try {
+                                String deliveryCharges_string = String.valueOf(json.get("deliveryamount"));
+                                try {
+                                    if (deliveryCharges_string.equals("")) {
+                                        deliveryCharges_string = "0";
+
+                                        double deliveryCharges_double = Double.parseDouble(deliveryCharges_string);
+                                        deliveryCharges = deliveryCharges + deliveryCharges_double;
+
+                                        if (!paymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                            paymentMode_DeliveryChargeOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = false;
+                                            try {
+                                                isAlreadyAvailable = checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                ;
+                                            }
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = paymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                double DeliveryCharge_double = Double.parseDouble(deliveryCharges_string);
+
+                                                DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_string));
+                                                paymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+                                        }
+                                    } else {
+
+                                        double deliveryCharges_double = Double.parseDouble(deliveryCharges_string);
+                                        deliveryCharges = deliveryCharges + deliveryCharges_double;
+
+
+                                        if (!paymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                            paymentMode_DeliveryChargeOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = paymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                double DeliveryCharge_double = Double.parseDouble(deliveryCharges_string);
+
+                                                DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_string));
+                                                paymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+
+                                }
+
+
+                                //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        } else {
+                            String deliveryCharges_string = String.valueOf("0");
+                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_string);
+
+                            deliveryCharges = deliveryCharges + DeliveryCharge_double;
+
+
+                            modal_orderDetails.deliveryamount = "There is no deliveryCharges";
+
+                        }
+
+
+
+
+                        if (json.has("coupondiscount")) {
+
+                            modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                            try {
+                                String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
+                                try {
+                                    if (couponDiscount_string.equals("")) {
+                                        couponDiscount_string = "0";
+
+                                        double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                        CouponDiscount= CouponDiscount + CouponDiscount_double;
+
+                                        if (!paymentMode_DiscountOrderid.contains(orderid)) {
+                                            paymentMode_DiscountOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = false;
+                                            try {
+                                                isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                ;
+                                            }
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
+                                                String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount" + discountAmount);
+                                                }
+                                                double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                }
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                                }
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                }
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                                paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "orderid already availabe");
+
+                                        }
+                                    } else {
+
+                                        double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                        CouponDiscount = CouponDiscount + CouponDiscount_double;
+
+                                        if (paymentMode.equals("PAYTM")) {
+                                            //Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
+                                        }
+
+                                        if (paymentMode.equals("PAYTM")) {
+                                            //Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
+                                        }
+                                        if (!paymentMode_DiscountOrderid.contains(orderid)) {
+                                            paymentMode_DiscountOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
+                                                String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                                }
+
+                                                double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                double discountAmount_double = Double.parseDouble(couponDiscount_string);
+                                                discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                }
+
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                                if (paymentMode.equals("PAYTM")) {
+                                                    //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                }
+                                                paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "orderid already availabe");
+
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+
+                                }
+
+
+                                //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        } else {
+                            String couponDiscount_string = String.valueOf("0");
+                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+
+                            CouponDiscount= CouponDiscount + CouponDiscount_double;
+
+
+                            modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+                        }
+
+                }
+
+
+
+
+                    if (json.has("deliverydistance")) {
+
+                        String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                        if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                            modal_orderDetails.deliverydistance = String.valueOf(json.get("deliverydistance"));
+
+                        } else {
+                            modal_orderDetails.deliverydistance = "0";
+
+                        }
+                    } else {
+                        modal_orderDetails.deliverydistance = "0";
+                    }
+
+
+
+
+
+
+
+                        if(!delivered_OrderIdCount.contains(orderid)){
+                            delivered_OrderIdCount.add(orderid);
+
+                        }
+                        else{
+                            Log.d(Constants.TAG, "orderid is already added");
+
+                        }
+                        getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
+                    Adjusting_Widgets_Visibility(false);
+                    OrderIdCount.clear();
+                    Order_Item_List.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    paymentModeHashmap.clear();
+                    paymentModeArray.clear();
+                    paymentMode_DiscountHashmap.clear();
+                    paymentMode_DiscountOrderid.clear();
+                    preorder_paymentModeHashmap.clear();
+                    preorder_paymentModeArray.clear();
+                    preorderpaymentMode_DiscountOrderid.clear();
+                    preorderpaymentMode_DiscountHashmap.clear();
+                    delivered_OrderIdCount.clear();
+                    CouponDiscount = 0;
+                    CouponDiscount_preorder =0;
+
+                    paymentMode_DeliveryChargeHashmap.clear();
+                    paymentMode_DeliveryChargeOrderid.clear();
+
+
+                    deliveryCharges=0;
+                    addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap,OrderIdCount);
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+
+                }
+                if (arrayLength - 1 == i1) {
+                    if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+                        //        getOrderForSelectedDate(DateString, vendorKey);
+                        addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
+                        Adjusting_Widgets_Visibility(false);
+
+                    } else {
+                        Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
+                        Adjusting_Widgets_Visibility(false);
+                        OrderIdCount.clear();
+                        Order_Item_List.clear();
+                        OrderItem_hashmap.clear();
+                        finalBillDetails.clear();
+                        FinalBill_hashmap.clear();
+                        paymentModeHashmap.clear();
+                        paymentModeArray.clear();
+                        paymentMode_DiscountHashmap.clear();
+                        paymentMode_DiscountOrderid.clear();
+                        preorder_paymentModeHashmap.clear();
+                        preorder_paymentModeArray.clear();
+                        preorderpaymentMode_DiscountOrderid.clear();
+                        preorderpaymentMode_DiscountHashmap.clear();
+                        delivered_OrderIdCount.clear();
+                        CouponDiscount = 0;
+                        CouponDiscount_preorder =0;
+                        paymentMode_DeliveryChargeHashmap.clear();
+                        paymentMode_DeliveryChargeOrderid.clear();
+
+
+                        deliveryCharges=0;
+
+                        addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
+
+                        //          getOrderForSelectedDate(DateString, vendorKey);
+
+                    }
+                }
+            }
+        }else{
+
+            Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
+            Adjusting_Widgets_Visibility(false);
+            OrderIdCount.clear();
+            Order_Item_List.clear();
+            OrderItem_hashmap.clear();
+            finalBillDetails.clear();
+            FinalBill_hashmap.clear();
+            paymentModeHashmap.clear();
+            paymentModeArray.clear();
+            paymentMode_DiscountHashmap.clear();
+            paymentMode_DiscountOrderid.clear();
+            preorder_paymentModeHashmap.clear();
+            preorder_paymentModeArray.clear();
+            preorderpaymentMode_DiscountOrderid.clear();
+            preorderpaymentMode_DiscountHashmap.clear();
+            CouponDiscount = 0;
+            CouponDiscount_preorder =0;
+            paymentMode_DeliveryChargeHashmap.clear();
+            paymentMode_DeliveryChargeOrderid.clear();
+
+
+            deliveryCharges=0;
+            addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
+
+            //    getOrderForSelectedDate(DateString, vendorKey);
+        }
+
+    }
+
+
+    private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
+        if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
+            try {
+                String ordertype = "#", orderid = "";
+                //  sorted_OrdersList.clear();
+
+                //converting jsonSTRING into array
+                JSONObject jsonObject = new JSONObject(deliveryPersonList);
+                JSONArray JArray = jsonObject.getJSONArray("content");
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                int i1 = 0;
+                int arrayLength = JArray.length();
+                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                for (; i1 < (arrayLength); i1++) {
+
+                    try {
+                        JSONObject json = JArray.getJSONObject(i1);
+                        Modal_DeliveryPartner modal_deliveryPartner = new Modal_DeliveryPartner();
+                        modal_deliveryPartner.deliveryPartnerStatus =String.valueOf(json.get("status"));
+                        modal_deliveryPartner.deliveryPartnerKey =String.valueOf(json.get("key"));
+                        modal_deliveryPartner.deliveryPartnerMobileNo =String.valueOf(json.get("mobileno"));
+                        modal_deliveryPartner.deliveryPartnerName =String.valueOf(json.get("name"));
+
+                        // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        deliveryPartner_arrayList.add(modal_deliveryPartner);
+
+
+
+                        Adapter_DeliveryPartnerList_Spinner adapter_deliveryPartnerList_spinner= new Adapter_DeliveryPartnerList_Spinner(DeliveryPartnerSettlementReport.this,deliveryPartner_arrayList,DeliveryPartnerSettlementReport.this);
+
+                        deliveryPartnerSelectionSpinner.setAdapter(adapter_deliveryPartnerList_spinner);
+
+                        Adjusting_Widgets_Visibility(false);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                }
+
+                try{
+                    Collections.sort(deliveryPartner_arrayList, new Comparator<Modal_DeliveryPartner>() {
+                        public int compare(Modal_DeliveryPartner result1, Modal_DeliveryPartner result2) {
+                            return result1.getDeliveryPartnerName().compareTo(result2.getDeliveryPartnerName());
+                        }
+                    });
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     private void getVendorwiseDeliveryPartner() {
         Adjusting_Widgets_Visibility(true);
 
@@ -2260,13 +2729,20 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     private void addFinalPaymentAmountDetails(List<String> paymentModeArray, HashMap<String, Modal_OrderDetails> paymentModeHashmap, List<String> OrderIdCount) {
         FinalBill_hashmap.clear();
         finalBillDetails.clear();
+        if(paymentModeArray.size()<=0){
+            delivered_OrderIdCount.clear();
+            OrderIdCount.clear();
+        }
         totalOrdersCount.setText(String.valueOf(OrderIdCount.size()));
+        totaldeliveredOrdersCount.setText(String.valueOf(delivered_OrderIdCount.size()));
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
         double phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
-                RazorpayDiscount_amount=0,totalAmount=0,GST=0,totalAmountWithOutGst=0,totalAmount_with_Coupondiscount_double=0;
+                RazorpayDiscount_amount=0,totalAmount=0,GST=0,totalAmountWithOutGst=0,totalAmount_with_Coupondiscount_deliveryCharges_double=0;
         double preorderphonepe_amount = 0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
                 preorderRazorpayDiscount_amount=0,preordertotalAmount=0;
 
+        double razorpayDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
+                cash_on_del_preorderDeliveryCharge=0,paytmpreorderDeliveryCharge=0,phonepepreorderDeliveryCharge=0;
 
 
 
@@ -2274,6 +2750,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         for(String PaymentModefromArray : paymentModeArray) {
             Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(PaymentModefromArray);
             Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(PaymentModefromArray);
+            Modal_OrderDetails Payment_Modewise_DeliveryCharge = paymentMode_DeliveryChargeHashmap.get(PaymentModefromArray);
 
             if (PaymentModefromArray.equals(Constants.RAZORPAY)) {
 
@@ -2289,6 +2766,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    razorpayDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2313,6 +2792,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
 
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    paytmDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -2340,6 +2821,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     GST = GST + GST_array;
 
                     //Log.d(Constants.TAG, "before for " );
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    cash_on_del_DeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2363,7 +2847,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     GST = GST + GST_array;
 
                     //Log.d(Constants.TAG, "before for " );
-
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phonepeDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -2376,6 +2861,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         for(String preorderPaymentModefromArray : preorder_paymentModeArray) {
             Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(preorderPaymentModefromArray);
             Modal_OrderDetails Payment_Modewise_discount = preorderpaymentMode_DiscountHashmap.get(preorderPaymentModefromArray);
+            Modal_OrderDetails Payment_Modewise_DeliveryCharge = preorderpaymentMode_DeliveryChargeHashmap.get(preorderPaymentModefromArray);
 
             if (preorderPaymentModefromArray.equals(Constants.RAZORPAY)) {
 
@@ -2391,7 +2877,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
-
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    razorpaypreorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -2414,6 +2901,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    paytmpreorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2442,7 +2931,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     GST = GST + GST_array;
 
                     //Log.d(Constants.TAG, "before for " );
-
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    cash_on_del_preorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -2465,7 +2955,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     GST = GST + GST_array;
 
                     //Log.d(Constants.TAG, "before for " );
-
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phonepepreorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -2476,9 +2967,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
 
-
         try{
-            cash_amount = cash_amount-cash_Discount_amount;
+            cash_amount = cash_amount-cash_Discount_amount+cash_on_del_DeliveryCharge_amount;
             finalCashAmount_pdf=String.valueOf(cash_amount);
         }
         catch (Exception e){
@@ -2487,7 +2977,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         try{
-            Razorpay_amount = Razorpay_amount-RazorpayDiscount_amount;
+            Razorpay_amount = Razorpay_amount-RazorpayDiscount_amount+razorpayDeliveryCharge_amount;
             finalRazorpayAmount_pdf=String.valueOf(Razorpay_amount);
 
         }
@@ -2497,7 +2987,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         try{
-            Paytm_amount = Paytm_amount-PaytmDiscount_amount;
+            Paytm_amount = Paytm_amount-PaytmDiscount_amount+paytmDeliveryCharge_amount;
             finalPaytmAmount_pdf=String.valueOf(Paytm_amount);
 
         }
@@ -2506,7 +2996,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         }
 
         try{
-            phonepe_amount = phonepe_amount-phonepe_Discount_amount;
+            phonepe_amount = phonepe_amount-phonepe_Discount_amount+phonepeDeliveryCharge_amount;
             finalPhonepeAmount_pdf=String.valueOf(phonepe_amount);
 
         }
@@ -2525,7 +3015,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         try{
-            preordercash_amount = preordercash_amount-preordercash_Discount_amount;
+            preordercash_amount = preordercash_amount-preordercash_Discount_amount+cash_on_del_preorderDeliveryCharge;
             finalpreorderCashAmount_pdf=String.valueOf(preordercash_amount);
         }
         catch (Exception e){
@@ -2534,7 +3024,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         try{
-            preorderRazorpay_amount = preorderRazorpay_amount-preorderRazorpayDiscount_amount;
+            preorderRazorpay_amount = preorderRazorpay_amount-preorderRazorpayDiscount_amount+razorpaypreorderDeliveryCharge;
             finalpreorderRazorpayAmount_pdf=String.valueOf(preorderRazorpay_amount);
 
         }
@@ -2544,7 +3034,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         try{
-            preorderPaytm_amount = preorderPaytm_amount-preorderPaytmDiscount_amount;
+            preorderPaytm_amount = preorderPaytm_amount-preorderPaytmDiscount_amount+paytmpreorderDeliveryCharge;
             finalpreorderPaytmAmount_pdf=String.valueOf(preorderPaytm_amount);
 
         }
@@ -2553,7 +3043,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         }
 
         try{
-            preorderphonepe_amount = preorderphonepe_amount-preorderphonepe_Discount_amount;
+            preorderphonepe_amount = preorderphonepe_amount-preorderphonepe_Discount_amount+phonepepreorderDeliveryCharge;
             finalpreorderPhonepeAmount_pdf=String.valueOf(preorderphonepe_amount);
 
         }
@@ -2562,11 +3052,10 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         }
 
 
-
-
-        CouponDiscount = CouponDiscount+CouponDiscount_preorder;
-        totalAmount_with_Coupondiscount_double = totalAmountWithOutGst-CouponDiscount;
-        totalAmount = totalAmount_with_Coupondiscount_double+GST;
+        totalDeliveryCharges =deliveryCharges+deliveryCharges_preorder;
+        totalCouponDiscount = CouponDiscount+CouponDiscount_preorder;
+        totalAmount_with_Coupondiscount_deliveryCharges_double = (totalAmountWithOutGst-CouponDiscount)+totalDeliveryCharges;
+        totalAmount = totalAmount_with_Coupondiscount_deliveryCharges_double+GST;
 
 
 
@@ -2579,8 +3068,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
             */
             final_sales.setText(String.valueOf(decimalFormat.format(totalAmount)));
-            totalCouponDiscount_Amt.setText(String.valueOf(decimalFormat.format(CouponDiscount)));
-
+            totalCouponDiscount_Amt.setText(String.valueOf(decimalFormat.format(totalCouponDiscount)));
+            deliveryChargeAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalDeliveryCharges)));
             cashOnDelivery.setText(String.valueOf(decimalFormat.format(cash_amount)));
             Razorpay.setText(String.valueOf(decimalFormat.format(Razorpay_amount)));
             Paytm.setText(String.valueOf(decimalFormat.format(Paytm_amount)));
@@ -2596,6 +3085,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
             totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmount)));
+            finalBillDetails.add("Amount Received as Delivery Charge: ");
+            FinalBill_hashmap.put("Amount Received as Delivery Charge: ", "Rs. "+String.valueOf(decimalFormat.format(totalDeliveryCharges)));
 
             finalBillDetails.add("Total Amount Received : ");
             FinalBill_hashmap.put("Total Amount Received : ", "Rs. "+String.valueOf(decimalFormat.format(totalAmount)));
@@ -2717,6 +3208,16 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
     private boolean checkIfPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
         return paymentModeHashmap.containsKey(menuitemid);
+    }
+
+    private boolean checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(String menuitemid) {
+        return paymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
+    }
+
+
+
+    private boolean checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(String menuitemid) {
+        return preorderpaymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
     }
 
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="WhiteText" >
+        <item name="android:textColor">@color/TMC_White</item>
+    </style>
+
+    <style name="BlackText" >
+        <item name="android:textColor">@color/TMC_Primary_Text_Color</item>
+
+    </style>
+</resources>

@@ -47,6 +47,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,29 +57,46 @@ import java.util.Map;
 public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     static TextView tokenNotext_widget,mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
             ,deliveryPartner_name_widget,deliveryPartner_mobileNo_widget,delivery_type_widget,slotTime_Range_textwidget;
-    TextView deliveryPersonMobileNotext_widget,deliveryPersonNametext_widget,distancebetweencustomer_vendortext_widget,discounttext_widget,addresstype_textwidget,AddressLine2_textwidget,landmark_textwidget,AddressLine1_textwidget,total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
+    public static  TextView deliveryCharges_text_widget,deliveryPersonMobileNotext_widget,deliveryPersonNametext_widget,distancebetweencustomer_vendortext_widget,discounttext_widget,addresstype_textwidget,AddressLine2_textwidget,landmark_textwidget,AddressLine1_textwidget,total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
     Adapter_Mobile_orderDetails_itemDesp_listview1 adapter_forOrderDetails_listview;
     List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
     ListView itemDesp_listview;
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
-    String coupondiscountAmount,orderid,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,paymentmode,paymentModeString,tokenNo,
-            deliverydistance,orderdetailsKey,orderTrackingDetailskey,deliverypartnerName="",deliveryPartnerNumber="",ordertype,CurrentTime;
+   public String coupondiscountAmount;
+    public String orderid;
+    public String vendorLongitude;
+    public String vendorLatitude;
+    public String customerlatitude;
+    public String customerLongitutde;
+    public String paymentmode;
+    public String paymentModeString;
+    public String tokenNo;
+    public String deliverydistance;
+    public String orderdetailsKey;
+    public String orderTrackingDetailskey;
+    public static String deliverypartnerName="";
+    public String deliveryPartnerNumber="";
+    public String ordertype;
+    public String CurrentTime;
+    public String DeliveryPersonList;
+    public String  deliveryCharges;
     double screenInches;
     LinearLayout showlocation,deliverypersonName_Layout,deliverypersonMobileNO_Layout,tokenNo_Layout,distanceInKm_layout,confirmedTimeLayout,
             readyTimeLayout,pickedTimeLayout,slotdateLayout,slotTimeLayout,AddressLayout;
     public static BottomSheetDialog bottomSheetDialog;
-    static LinearLayout loadingPanel;
-    static LinearLayout loadingpanelmask;
-    Button changePaymentMode_button,cancelOrder_button;
+    public static LinearLayout loadingPanel;
+    public static LinearLayout loadingpanelmask;
+    Button changePaymentMode_button,cancelOrder_button,changeDeliveryPartner;
     private  String isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders;
-
+    List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
+    public static Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit__or__cancel_order__order_details__screen_activity);
-
+        changeDeliveryPartner = findViewById(R.id.changeDeliveryPartner);
         orderIdtext_widget = findViewById(R.id.orderIdtext_widget);
         orderStatustext_widget = findViewById(R.id.orderStatustext_widget);
         itemDesp_listview = findViewById(R.id.itemDesp_listview);
@@ -121,7 +140,12 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         slotTimeLayout = findViewById(R.id.slotTimeLayout);
         AddressLayout = findViewById(R.id.AddressLayout);
         cancelOrder_button = findViewById(R.id.cancelOrder_button);
+        deliveryCharges_text_widget = findViewById(R.id.deliveryCharges_text_widget);
+
         changePaymentMode_button = findViewById(R.id.changePaymentMode_button);
+        deliveryPartnerList = new ArrayList<>();
+
+
         try {
             SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
@@ -131,7 +155,15 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        try {
+            SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
+            DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
 
+            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         OrderdItems_desp = new ArrayList<>();
 
 
@@ -142,7 +174,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         screenInches = Math.sqrt(x + y);
 
         Bundle bundle = getIntent().getExtras();
-        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = bundle.getParcelable("data");
+         modal_manageOrders_pojo_class = bundle.getParcelable("data");
         /*try{
             if(modal_manageOrders_pojo_class.get()!=null){
                 AddressLine1_textwidget.setText(String.valueOf(modal_manageOrders_pojo_class.getUseraddress()));
@@ -256,8 +288,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         if(isFromEditOrders.equals("FALSE")){
             changePaymentMode_button.setVisibility(View.GONE);
             cancelOrder_button.setVisibility(View.GONE);
+            changeDeliveryPartner.setVisibility(View.GONE);
         }
         else{
+            changeDeliveryPartner.setVisibility(View.VISIBLE);
+
             changePaymentMode_button.setVisibility(View.VISIBLE);
             cancelOrder_button.setVisibility(View.VISIBLE);
         }
@@ -361,6 +396,19 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 orderpickeduptime_textwidget.setText("");
 
             }
+
+            if(modal_manageOrders_pojo_class.getDeliveryamount()!=null){
+                deliveryCharges = String.valueOf(modal_manageOrders_pojo_class.getDeliveryamount());
+                deliveryCharges_text_widget.setText(deliveryCharges+".00");
+
+            }
+            else {
+                deliveryCharges = "0.00";
+                deliveryCharges_text_widget.setText(deliveryCharges);
+
+            }
+
+
             if(modal_manageOrders_pojo_class.getCoupondiscamount()!=null){
                 coupondiscountAmount = String.valueOf(modal_manageOrders_pojo_class.getCoupondiscamount());
                 discounttext_widget.setText(coupondiscountAmount);
@@ -376,7 +424,33 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 orderDeliveredtime_textwidget.setText("");
             }
 
-        try{
+
+
+
+            changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(!deliverypartnerName.equals("null")) {
+
+                        String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                        showBottomSheetDialog_deliveryPartnerList(Orderkey,deliverypartnerName);
+
+                    }
+                    else{
+
+                        String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                        showBottomSheetDialog_deliveryPartnerList(Orderkey,"null");
+
+                    }
+                }
+            });
+
+
+
+
+
+
+            try{
 
 
             String itemDespString = modal_manageOrders_pojo_class.getItemdesp_string();
@@ -475,6 +549,21 @@ catch (Exception e){
 
             }
         });
+    }
+
+    private void showBottomSheetDialog_deliveryPartnerList(String orderkey, String deliverypartnerName) {
+
+        String fromActivityName="";
+        bottomSheetDialog = new BottomSheetDialog(Edit_Or_CancelOrder_OrderDetails_Screen.this);
+        bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
+
+        ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
+
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(Edit_Or_CancelOrder_OrderDetails_Screen.this, deliveryPartnerList,orderkey,fromActivityName+"EditOrders",deliverypartnerName);
+
+        ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+        bottomSheetDialog.show();
     }
 
     private void showBottomSheetDialog(String paymentmode, String ordertype ,String orderid) {
@@ -615,6 +704,59 @@ catch (Exception e){
         bottomSheetDialog.show();
     }
 
+    private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
+        if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
+            try {
+                String ordertype = "#", orderid = "";
+                //  sorted_OrdersList.clear();
+
+                //converting jsonSTRING into array
+                JSONObject jsonObject = new JSONObject(deliveryPersonList);
+                JSONArray JArray = jsonObject.getJSONArray("content");
+                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                int i1 = 0;
+                int arrayLength = JArray.length();
+                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                for (; i1 < (arrayLength); i1++) {
+
+                    try {
+                        JSONObject json = JArray.getJSONObject(i1);
+                        AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                        assignDeliveryPartner_pojoClass.deliveryPartnerStatus = String.valueOf(json.get("status"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerKey = String.valueOf(json.get("key"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("mobileno"));
+                        assignDeliveryPartner_pojoClass.deliveryPartnerName = String.valueOf(json.get("name"));
+
+                        // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
+                        deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+
+                        //  Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_AssignDeliveryPartner1.this, deliveryPartnerList, orderKey,IntentFrom);
+
+                        //deliveryPartners_list_widget.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                }
+
+                try{
+                    Collections.sort(deliveryPartnerList, new Comparator<AssignDeliveryPartner_PojoClass>() {
+                        public int compare(AssignDeliveryPartner_PojoClass result1, AssignDeliveryPartner_PojoClass result2) {
+                            return result1.getDeliveryPartnerName().compareTo(result2.getDeliveryPartnerName());
+                        }
+                    });
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 
 
@@ -938,7 +1080,17 @@ catch (Exception e){
             e.printStackTrace();
         }
         new_to_pay_Amount = new_to_pay_Amount-couponDiscount;
+        double deliveryCharges_double=0;
+        try {
+            deliveryCharges_double = Double.parseDouble(deliveryCharges);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
+
         int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+
 
         total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
         old_total_Amount=0;

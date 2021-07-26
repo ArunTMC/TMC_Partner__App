@@ -1,7 +1,7 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuItem_Settings extends Throwable {
-    public String marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
+    public String totalnoofmenuitem,noofmenuitemavailable,noofmenuitemavailableinpercentage,dunzoprice,swiggyprice,reportname,marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
             vendorname,displayno, grossweight,grossweightingrams,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage,tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
@@ -21,6 +21,46 @@ public class Modal_MenuItem_Settings extends Throwable {
 
     public void setItemPrice_quantityBased(String itemPrice_quantityBased) {
         this.itemPrice_quantityBased = itemPrice_quantityBased;
+    }
+
+    public String getTotalnoofmenuitem() {
+        return totalnoofmenuitem;
+    }
+
+    public void setTotalnoofmenuitem(String totalnoofmenuitem) {
+        this.totalnoofmenuitem = totalnoofmenuitem;
+    }
+
+    public String getNoofmenuitemavailable() {
+        return noofmenuitemavailable;
+    }
+
+    public void setNoofmenuitemavailable(String noofmenuitemavailable) {
+        this.noofmenuitemavailable = noofmenuitemavailable;
+    }
+
+    public String getNoofmenuitemavailableinpercentage() {
+        return noofmenuitemavailableinpercentage;
+    }
+
+    public void setNoofmenuitemavailableinpercentage(String noofmenuitemavailableinpercentage) {
+        this.noofmenuitemavailableinpercentage = noofmenuitemavailableinpercentage;
+    }
+
+    public String getDunzoprice() {
+        return dunzoprice;
+    }
+
+    public void setDunzoprice(String dunzoprice) {
+        this.dunzoprice = dunzoprice;
+    }
+
+    public String getReportname() {
+        return reportname;
+    }
+
+    public void setReportname(String reportname) {
+        this.reportname = reportname;
     }
 
     public String getGrossweightingrams() {
@@ -365,5 +405,14 @@ public class Modal_MenuItem_Settings extends Throwable {
 
     public void setEditTextValue(String editTextValue) {
         this.editTextValue = editTextValue;
+    }
+
+
+    public String getSwiggyprice() {
+        return swiggyprice;
+    }
+
+    public void setSwiggyprice(String swiggyprice) {
+        this.swiggyprice = swiggyprice;
     }
 }

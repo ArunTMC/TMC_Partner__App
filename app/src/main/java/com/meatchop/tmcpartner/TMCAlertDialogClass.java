@@ -15,6 +15,7 @@ public class TMCAlertDialogClass extends AlertDialog.Builder {
      /* if (title != 0) {
             setTitle(context.getResources().getString(title));
         } */
+
         TextView titleView = new TextView(context);
         titleView.setPadding(30,40,30,40);
         titleView.setText(message);
@@ -23,6 +24,8 @@ public class TMCAlertDialogClass extends AlertDialog.Builder {
         titleView.setGravity(Gravity.CENTER);
         titleView.setTextSize(17);
         setView(titleView);
+        setCancelable(false);
+
         //setMessage(context.getResources().getString(message));
         setPositiveButton(context.getResources().getString(btn1Caption), new DialogInterface.OnClickListener() {
             @Override
@@ -71,6 +74,8 @@ public class TMCAlertDialogClass extends AlertDialog.Builder {
         }
         titleView.setTextSize(17);
         setView(titleView);
+        setCancelable(false);
+
         //setMessage(message);
         setPositiveButton(btn1Caption, new DialogInterface.OnClickListener() {
             @Override
@@ -111,6 +116,8 @@ public class TMCAlertDialogClass extends AlertDialog.Builder {
         titleView.setGravity(Gravity.CENTER);
         titleView.setTextSize(16);
         setView(titleView);
+        setCancelable(false);
+
         setPositiveButton(context.getResources().getString(btn1Caption), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {

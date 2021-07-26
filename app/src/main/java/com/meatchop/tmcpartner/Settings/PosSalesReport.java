@@ -33,6 +33,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
@@ -57,6 +59,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,7 +78,7 @@ import java.util.Objects;
 public class PosSalesReport extends AppCompatActivity {
     LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView dunzoSales,swiggySales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -85,6 +88,29 @@ public class PosSalesReport extends AppCompatActivity {
 
     public static List<String> paymentModeArray;
     public static HashMap<String, Modal_OrderDetails>  paymentModeHashmap  = new HashMap();;
+
+
+    public static List<String> phoneOrderpaymentModeArray;
+    public static HashMap<String, Modal_OrderDetails>  phoneOrderpaymentModeHashmap  = new HashMap();;
+
+    public static List<String> phoneOrderpaymentMode_DiscountOrderid;
+    public static HashMap<String, Modal_OrderDetails>  phoneOrderpaymentMode_DiscountHashmap  = new HashMap();;
+
+
+    public static List<String> swiggyOrderpaymentModeArray;
+    public static HashMap<String, Modal_OrderDetails>  swiggyOrderpaymentModeHashmap  = new HashMap();;
+
+    public static List<String> swiggyOrderpaymentMode_DiscountOrderid;
+    public static HashMap<String, Modal_OrderDetails>  swiggyOrderpaymentMode_DiscountHashmap  = new HashMap();;
+
+
+    public static List<String> dunzoOrderpaymentModeArray;
+    public static HashMap<String, Modal_OrderDetails>  dunzoOrderpaymentModeHashmap  = new HashMap();;
+
+    public static List<String> dunzoOrderpaymentMode_DiscountOrderid;
+    public static HashMap<String, Modal_OrderDetails>  dunzoOrderpaymentMode_DiscountHashmap  = new HashMap();;
+
+
 
     public static List<String> finalBillDetails;
     public static HashMap<String, String> FinalBill_hashmap = new HashMap();
@@ -109,15 +135,21 @@ public class PosSalesReport extends AppCompatActivity {
     String DateString;
     boolean isgetOrderForSelectedDateCalled=false;
     double CouponDiscount=0;
+    double PhoneOrderCouponDiscount=0;
+    double swiggyOrderCouponDiscount =0;
+    double dunzoOrderCouponDiscount =0;
     ListView posSalesReport_Listview;
     ScrollView scrollView;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
+    List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pos_sales_report);
+        getMenuItemArrayFromSharedPreferences();
+
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         posSalesReport_Listview = findViewById(R.id.posSalesReport_Listview);
@@ -131,9 +163,13 @@ public class PosSalesReport extends AppCompatActivity {
         cashSales = findViewById(R.id.cashSales);
         cardSales = findViewById(R.id.cardSales);
         upiSales  = findViewById(R.id.upiSales);
+        dunzoSales = findViewById(R.id.dunzoSales);
+        swiggySales = findViewById(R.id.swiggySales);
         scrollView  = findViewById(R.id.scrollView);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
-
+        phoneorderupiSales = findViewById(R.id.phoneorderupiSales);
+        phoneordercashSales = findViewById(R.id.phoneordercashSales);
+        phoneordercardSales = findViewById(R.id.phoneordercardSales);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         Order_Item_List = new ArrayList<>();
@@ -141,15 +177,32 @@ public class PosSalesReport extends AppCompatActivity {
         tmcSubCtgykey = new ArrayList<>();
         SubCtgyKey_List =new ArrayList<>();
         paymentModeArray = new ArrayList<>();
+        phoneOrderpaymentModeArray = new ArrayList<>();
+        swiggyOrderpaymentModeArray = new ArrayList<>();
+        dunzoOrderpaymentModeArray = new ArrayList<>();
+
         SubCtgywiseTotalArray = new ArrayList<>();
         paymentMode_DiscountOrderid = new ArrayList<>();
+        phoneOrderpaymentMode_DiscountOrderid = new ArrayList<>();
+        swiggyOrderpaymentMode_DiscountOrderid = new ArrayList<>();
+        dunzoOrderpaymentMode_DiscountOrderid = new ArrayList<>();
 
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
         paymentModeArray .clear();
+        swiggyOrderpaymentModeArray.clear();
+        swiggyOrderpaymentModeHashmap.clear();
+        dunzoOrderpaymentModeArray.clear();
+        dunzoOrderpaymentModeHashmap.clear();
         paymentMode_DiscountHashmap.clear();
         paymentMode_DiscountOrderid.clear();
+        phoneOrderpaymentMode_DiscountOrderid.clear();
+        phoneOrderpaymentMode_DiscountHashmap.clear();
+        swiggyOrderpaymentMode_DiscountOrderid.clear();
+        swiggyOrderpaymentMode_DiscountHashmap.clear();
+        dunzoOrderpaymentMode_DiscountOrderid.clear();
+        dunzoOrderpaymentMode_DiscountHashmap.clear();
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
         FinalBill_hashmap.clear();
@@ -509,6 +562,17 @@ public class PosSalesReport extends AppCompatActivity {
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n"+ "\n");
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "POS Order Sales " + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
             for (int i = 0; i < paymentModeArray.size(); i++) {
@@ -587,6 +651,206 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "Phone Order Sales " + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            for (int i = 0; i < phoneOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = phoneOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = phoneOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = phoneOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("CARD"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("UPI"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                    } catch (Exception e) {
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                        e.printStackTrace();
+
+                    }
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+            }
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "Swiggy Order Sales " + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            for (int i = 0; i < swiggyOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = swiggyOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = swiggyOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = swiggyOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals(Constants.SWIGGYORDER_PAYMENTMODE)) ) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Swiggy Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Swiggy Sales";
+
+                    }
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+            }
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "Dunzo Order Sales " + "\n");
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            for (int i = 0; i < dunzoOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = dunzoOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = dunzoOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = dunzoOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals(Constants.DUNZOORDER_PAYMENTMODE)) ) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Dunzo Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Dunzo Sales";
+
+                    }
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+            }
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
 
             for (int j = 0; j < finalBillDetails.size(); j++) {
                 String key = finalBillDetails.get(j);
@@ -829,15 +1093,27 @@ public class PosSalesReport extends AppCompatActivity {
         paymentModeArray.clear();
         paymentModeHashmap.clear();
         tmcSubCtgywise_sorted_hashmap.clear();
+        phoneOrderpaymentModeArray.clear();
+        phoneOrderpaymentModeHashmap.clear();
 
         paymentMode_DiscountHashmap.clear();
         paymentMode_DiscountOrderid.clear();
+        phoneOrderpaymentMode_DiscountOrderid.clear();
+        phoneOrderpaymentMode_DiscountHashmap.clear();
+        swiggyOrderpaymentModeArray.clear();
+        swiggyOrderpaymentModeHashmap.clear();
+        swiggyOrderpaymentMode_DiscountOrderid.clear();
+        swiggyOrderpaymentMode_DiscountHashmap.clear();
+        dunzoOrderpaymentModeArray.clear();
+        dunzoOrderpaymentModeHashmap.clear();
+        dunzoOrderpaymentMode_DiscountOrderid.clear();
+        dunzoOrderpaymentMode_DiscountHashmap.clear();
         SubCtgywiseTotalArray.clear();
         tmcSubCtgykey.clear();
         SubCtgywiseTotalHashmap.clear();
         Adjusting_Widgets_Visibility(true);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailswithDate_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -954,7 +1230,7 @@ public class PosSalesReport extends AppCompatActivity {
                                     }
 
 
-                                    if(ordertype.equals(Constants.POSORDER)){
+                                    if((ordertype.equals(Constants.POSORDER))){
                                         try{
                                             if (json.has("coupondiscount")) {
 
@@ -1063,19 +1339,364 @@ public class PosSalesReport extends AppCompatActivity {
                                             //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
-                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode);
+                                             getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode,ordertype);
 
                                         }
                                         catch (Exception e ){
                                             e.printStackTrace();
                                         }
                                     }
-                                    else{
-                                        //Log.d(Constants.TAG, "This order is not an Posorder e: " );
+                                    else if(ordertype.equals(Constants.PhoneOrder)){
+                                        try{
+                                            if (json.has("coupondiscount")) {
 
+                                                modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                                                try {
+                                                    String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
+                                                    try {
+                                                        if (couponDiscount_string.equals("")) {
+                                                            couponDiscount_string = "0";
+
+                                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                                            PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
+
+                                                            if(!phoneOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                                phoneOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = false;
+                                                                try{
+                                                                    isAlreadyAvailable = checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                                                }catch(Exception e ){
+                                                                    e.printStackTrace();;
+                                                                }
+                                                                if(isAlreadyAvailable){
+                                                                    Modal_OrderDetails modal_orderDetails1 =  phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                                }
+                                                                else{
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
+                                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                }
+
+
+
+
+
+                                                            }
+                                                            else{
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                                            }
+                                                        } else {
+
+                                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                                            PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
+
+
+                                                            if(! phoneOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                                phoneOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                                                if(isAlreadyAvailable){
+                                                                    Modal_OrderDetails modal_orderDetails1 =  phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                                }
+                                                                else{
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
+                                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                }
+
+
+
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                                            }
+                                                            else{
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+
+
+                                                    }
+
+
+                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                            } else {
+                                                String couponDiscount_string = String.valueOf("0");
+                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+
+                                                PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
+
+
+                                                modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
+
+
+                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+
+                                        }
+                                        catch (Exception e ){
+                                            e.printStackTrace();
+                                        }
                                     }
 
 
+
+                                    else if(ordertype.equals(Constants.SwiggyOrder)){
+                                        try{
+                                            if (json.has("coupondiscount")) {
+
+                                                modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                                                try {
+                                                    String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
+                                                    try {
+                                                        if (couponDiscount_string.equals("")) {
+                                                            couponDiscount_string = "0";
+
+                                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                                            swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
+
+                                                            if(!swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                                swiggyOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = false;
+                                                                try{
+                                                                    isAlreadyAvailable = checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                                                }catch(Exception e ){
+                                                                    e.printStackTrace();;
+                                                                }
+                                                                if(isAlreadyAvailable){
+                                                                    Modal_OrderDetails modal_orderDetails1 =  swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                                }
+                                                                else{
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
+                                                                    swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                }
+
+
+
+
+
+                                                            }
+                                                            else{
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                                            }
+                                                        } else {
+
+                                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                                            swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
+
+
+                                                            if(! swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                                swiggyOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                                                if(isAlreadyAvailable){
+                                                                    Modal_OrderDetails modal_orderDetails1 =  swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                                }
+                                                                else{
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
+                                                                    swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                }
+
+
+
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                                            }
+                                                            else{
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+
+
+                                                    }
+
+
+                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                            } else {
+                                                String couponDiscount_string = String.valueOf("0");
+                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+
+                                                swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
+
+
+                                                modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
+
+
+                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+
+                                        }
+                                        catch (Exception e ){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    else if(ordertype.equals(Constants.DunzoOrder)){
+                                        try{
+                                            if (json.has("coupondiscount")) {
+
+                                                modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                                                try {
+                                                    String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
+                                                    try {
+                                                        if (couponDiscount_string.equals("")) {
+                                                            couponDiscount_string = "0";
+
+                                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                                            dunzoOrderCouponDiscount = dunzoOrderCouponDiscount + CouponDiscount_double;
+
+                                                            if(!dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                                dunzoOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = false;
+                                                                try{
+                                                                    isAlreadyAvailable = checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                                                }catch(Exception e ){
+                                                                    e.printStackTrace();;
+                                                                }
+                                                                if(isAlreadyAvailable){
+                                                                    Modal_OrderDetails modal_orderDetails1 =   dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                                }
+                                                                else{
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
+                                                                    dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                }
+
+
+
+
+
+                                                            }
+                                                            else{
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                                            }
+                                                        } else {
+
+                                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                                            dunzoOrderCouponDiscount =  dunzoOrderCouponDiscount + CouponDiscount_double;
+
+
+                                                            if(!  dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                                dunzoOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                                                if(isAlreadyAvailable){
+                                                                    Modal_OrderDetails modal_orderDetails1 =  dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                                }
+                                                                else{
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
+                                                                    dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                }
+
+
+
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                                            }
+                                                            else{
+                                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+
+
+                                                    }
+
+
+                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                            } else {
+                                                String couponDiscount_string = String.valueOf("0");
+                                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+
+                                                dunzoOrderCouponDiscount = dunzoOrderCouponDiscount + CouponDiscount_double;
+
+
+                                                modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
+
+
+                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+
+                                        }
+                                        catch (Exception e ){
+                                            e.printStackTrace();
+                                        }
+                                    }
 
 
                                 } catch (JSONException e) {
@@ -1118,10 +1739,23 @@ public class PosSalesReport extends AppCompatActivity {
                                 paymentModeArray.clear();
                                 paymentModeHashmap.clear();
                                 tmcSubCtgywise_sorted_hashmap.clear();
+                                phoneOrderpaymentModeArray.clear();
+                                phoneOrderpaymentModeHashmap.clear();
+                                paymentMode_DiscountHashmap.clear();
+                                paymentMode_DiscountOrderid.clear();
+                                phoneOrderpaymentMode_DiscountOrderid.clear();
+                                phoneOrderpaymentMode_DiscountHashmap.clear();
                                 SubCtgywiseTotalArray.clear();
-                                SubCtgywiseTotalHashmap.clear();
                                 tmcSubCtgykey.clear();
-                                dataList.clear();
+                                SubCtgywiseTotalHashmap.clear();
+                                swiggyOrderpaymentModeArray.clear();
+                                swiggyOrderpaymentModeHashmap.clear();
+                                swiggyOrderpaymentMode_DiscountOrderid.clear();
+                                swiggyOrderpaymentMode_DiscountHashmap.clear();
+                                dunzoOrderpaymentModeArray.clear();
+                                dunzoOrderpaymentModeHashmap.clear();
+                                dunzoOrderpaymentMode_DiscountOrderid.clear();
+                                dunzoOrderpaymentMode_DiscountHashmap.clear();
                                 ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
 
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -1148,12 +1782,24 @@ public class PosSalesReport extends AppCompatActivity {
                 FinalBill_hashmap.clear();
                 paymentModeArray.clear();
                 paymentModeHashmap.clear();
-                SubCtgywiseTotalArray.clear();
-                SubCtgywiseTotalHashmap.clear();
                 tmcSubCtgywise_sorted_hashmap.clear();
+                phoneOrderpaymentModeArray.clear();
+                phoneOrderpaymentModeHashmap.clear();
+                paymentMode_DiscountHashmap.clear();
+                paymentMode_DiscountOrderid.clear();
+                phoneOrderpaymentMode_DiscountOrderid.clear();
+                phoneOrderpaymentMode_DiscountHashmap.clear();
+                SubCtgywiseTotalArray.clear();
                 tmcSubCtgykey.clear();
-                dataList.clear();
-
+                SubCtgywiseTotalHashmap.clear();
+                swiggyOrderpaymentModeArray.clear();
+                swiggyOrderpaymentModeHashmap.clear();
+                swiggyOrderpaymentMode_DiscountOrderid.clear();
+                swiggyOrderpaymentMode_DiscountHashmap.clear();
+                dunzoOrderpaymentModeArray.clear();
+                dunzoOrderpaymentModeHashmap.clear();
+                dunzoOrderpaymentMode_DiscountOrderid.clear();
+                dunzoOrderpaymentMode_DiscountHashmap.clear();
                 ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
 
                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -1350,7 +1996,7 @@ public class PosSalesReport extends AppCompatActivity {
 
     private void setAdapter() {
             try {
-                adapter = new Adapter_Pos_Sales_Report(PosSalesReport.this, dataList);
+                adapter = new Adapter_Pos_Sales_Report(PosSalesReport.this, dataList,false);
                 posSalesReport_Listview.setAdapter(adapter);
 
             }
@@ -1436,7 +2082,23 @@ public class PosSalesReport extends AppCompatActivity {
            double cardDiscount_Amount = 0;
            double upiDiscount_Amount = 0;
            double cashDiscount_Amount = 0;
-            String TMCsubCtgyKey = "",subCtgyTotal="";
+
+           double phoneOrder_cardPayment_Amount = 0;
+           double phoneOrder_upiPayment_Amount = 0;
+           double phoneOrder_cashPayment_Amount = 0;
+           double phoneOrder_cardDiscount_Amount = 0;
+           double phoneOrder_upiDiscount_Amount = 0;
+           double phoneOrder_cashDiscount_Amount = 0;
+
+
+           double swiggyOrder_Payment_Amount = 0;
+           double swiggyOrder_Discount_Amount = 0;
+
+
+           double dunzoOrder_Payment_Amount = 0;
+           double dunzoOrder_Discount_Amount = 0;
+
+           String TMCsubCtgyKey = "",subCtgyTotal="";
             for (int i = 0; i < order_item_list.size(); i++) {
                 String menuItemId = order_item_list.get(i);
                 Modal_OrderDetails modal_orderDetails_amountDetails = orderItem_hashmap.get(menuItemId);
@@ -1481,10 +2143,75 @@ public class PosSalesReport extends AppCompatActivity {
                }
 
            }
+
+           for(String paymentmode :phoneOrderpaymentModeArray){
+               Modal_OrderDetails modal_orderDetails = phoneOrderpaymentModeHashmap.get(paymentmode);
+               Modal_OrderDetails Payment_Modewise_discount = phoneOrderpaymentMode_DiscountHashmap.get(paymentmode);
+
+
+               if ((paymentmode.toUpperCase().equals("CASH ON DELIVERY")) || (paymentmode.toUpperCase().equals("CASH"))) {
+                   phoneOrder_cashPayment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   phoneOrder_cashDiscount_Amount = Double.parseDouble(discount_String);
+                   phoneOrder_cashPayment_Amount = phoneOrder_cashPayment_Amount-phoneOrder_cashDiscount_Amount;
+
+
+               }
+               if ((paymentmode.toUpperCase().equals("CARD"))) {
+                   phoneOrder_cardPayment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                   //Log.d(Constants.TAG, "This orders payment mode tmcprice: " +cardPayment_Amount);
+
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   phoneOrder_cardDiscount_Amount = Double.parseDouble(discount_String);
+                   phoneOrder_cardPayment_Amount = phoneOrder_cardPayment_Amount-phoneOrder_cardDiscount_Amount;
+                   //Log.d(Constants.TAG, "This orders payment mode tmcprice 1 : " +cardPayment_Amount);
+
+               }
+               if ((paymentmode.toUpperCase().equals("UPI"))) {
+                   phoneOrder_upiPayment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   phoneOrder_upiDiscount_Amount = Double.parseDouble(discount_String);
+                   phoneOrder_upiPayment_Amount = phoneOrder_upiPayment_Amount-phoneOrder_upiDiscount_Amount;
+               }
+
+           }
+
+
+           for(String paymentmode :swiggyOrderpaymentModeArray){
+               Modal_OrderDetails modal_orderDetails = swiggyOrderpaymentModeHashmap.get(paymentmode);
+               Modal_OrderDetails Payment_Modewise_discount = swiggyOrderpaymentMode_DiscountHashmap.get(paymentmode);
+
+
+               if ((paymentmode.toUpperCase().equals(Constants.SWIGGYORDER_PAYMENTMODE))) {
+                   swiggyOrder_Payment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales());
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   swiggyOrder_Discount_Amount = Double.parseDouble(discount_String);
+                   swiggyOrder_Payment_Amount = swiggyOrder_Payment_Amount-swiggyOrder_Discount_Amount;
+
+
+               }
+
+           }
+           for(String paymentmode :dunzoOrderpaymentModeArray){
+               Modal_OrderDetails modal_orderDetails = dunzoOrderpaymentModeHashmap.get(paymentmode);
+               Modal_OrderDetails Payment_Modewise_discount = dunzoOrderpaymentMode_DiscountHashmap.get(paymentmode);
+
+
+               if ((paymentmode.toUpperCase().equals(Constants.DUNZOORDER_PAYMENTMODE))) {
+                   dunzoOrder_Payment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales());
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   dunzoOrder_Discount_Amount = Double.parseDouble(discount_String);
+                   dunzoOrder_Payment_Amount = dunzoOrder_Payment_Amount-dunzoOrder_Discount_Amount;
+
+
+               }
+
+           }
+
            Log.d(Constants.TAG, "This orders payment mode tmcprice: " +totalAmount);
 
            try {
-               discountAmount = cardDiscount_Amount+cashDiscount_Amount+upiDiscount_Amount;
+               discountAmount = cardDiscount_Amount+cashDiscount_Amount+upiDiscount_Amount+phoneOrder_cardDiscount_Amount+phoneOrder_cashDiscount_Amount+phoneOrder_upiDiscount_Amount+swiggyOrder_Discount_Amount+dunzoOrder_Discount_Amount;
            }
            catch (Exception e){
                e.printStackTrace();
@@ -1517,8 +2244,15 @@ public class PosSalesReport extends AppCompatActivity {
                 cardSales.setText(String.valueOf(decimalFormat.format(cardPayment_Amount)));
                 totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount)));
 
+               phoneorderupiSales.setText(String.valueOf(decimalFormat.format(phoneOrder_upiPayment_Amount)));
+               phoneordercashSales.setText(String.valueOf(decimalFormat.format(phoneOrder_cashPayment_Amount)));
+               phoneordercardSales.setText(String.valueOf(decimalFormat.format(phoneOrder_cardPayment_Amount)));
 
-                finalBillDetails.add("TOTAL : ");
+               swiggySales.setText(String.valueOf(decimalFormat.format(swiggyOrder_Payment_Amount)));
+               dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoOrder_Payment_Amount)));
+
+
+               finalBillDetails.add("TOTAL : ");
                 FinalBill_hashmap.put("TOTAL : ", String.valueOf(decimalFormat.format(totalAmountWithOutGst)));
                 finalBillDetails.add("DISCOUNT : ");
                 FinalBill_hashmap.put("DISCOUNT : ", String.valueOf(decimalFormat.format(discountAmount)));
@@ -1610,7 +2344,7 @@ public class PosSalesReport extends AppCompatActivity {
 
     }
 
-    private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode) {
+    private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode, String ordertype) {
      //   DecimalFormat decimalFormat = new DecimalFormat("0.00");
         String newOrderWeightInGrams,tmcprice_string="";
         double newweight,gstAmount;
@@ -1622,11 +2356,13 @@ public class PosSalesReport extends AppCompatActivity {
 
                 JSONObject json = jsonArray.getJSONObject(i);
                 //Log.d(Constants.TAG, "this json" +json.toString());
+                boolean isItemFoundinMenu = false;
 
                 Modal_OrderDetails modal_orderDetails_ItemDesp = new Modal_OrderDetails();
 
                 if(json.has("menuitemid")) {
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
+                    String menuitemidd = String.valueOf(json.get("menuitemid"));
                      newOrderWeightInGrams =  String.valueOf(json.get("weightingrams"));
                      if(!newOrderWeightInGrams.contains("Pcs")&&(!(newOrderWeightInGrams.contains("Unit")))&&(!(newOrderWeightInGrams.contains("Kg")))&&(!(newOrderWeightInGrams.contains("kg")))&&(!(newOrderWeightInGrams.contains("pcs")))&&(!(newOrderWeightInGrams.contains("pc")))&&(!(newOrderWeightInGrams.contains("Set")))&&(!(newOrderWeightInGrams.contains("set")))) {
                          newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
@@ -1635,9 +2371,40 @@ public class PosSalesReport extends AppCompatActivity {
                          newOrderWeightInGrams ="";
                      }
 
+                    try {
+                        for (int menuiterator = 0; menuiterator < MenuItem.size(); menuiterator++) {
+                            Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(menuiterator);
+                            String menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
+                            String reportname = String.valueOf(modal_menuItemSettings.getReportname());
 
+                            if (menuItemId.equals(menuitemidd)) {
+                                isItemFoundinMenu =true;
 
-                        modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
+                                if ((!reportname.equals(""))&&(!reportname.equals("null"))) {
+                                    modal_orderDetails_ItemDesp.itemname = String.valueOf(reportname);
+                                  //  itemname = String.valueOf(reportname);
+                                }
+                                else{
+                                    modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
+                                 //   itemname = String.valueOf(json.get("itemname"));
+                                }
+
+                            }
+
+                        }
+                        if(!isItemFoundinMenu){
+                            modal_orderDetails_ItemDesp.pricetypeforpos = String.valueOf("tmcprice");
+
+                            modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
+                           // itemname = String.valueOf(json.get("itemname"));
+
+                        }
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+
+                        //modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
                         modal_orderDetails_ItemDesp.ordertype = modal_orderDetailsfromResponse.getOrdertype();
                          modal_orderDetails_ItemDesp.paymentmode = modal_orderDetailsfromResponse.getPaymentmode();
                     String subCtgyKey = "";
@@ -1779,109 +2546,342 @@ public class PosSalesReport extends AppCompatActivity {
                         modal_orderDetails_ItemDesp.gstamount = String.valueOf(gstAmount_string);
                     modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newweight);
 
+                        if(ordertype.equals(Constants.POSORDER)) {
+                            if (paymentModeArray.contains(paymentMode)) {
+                                boolean isAlreadyAvailabe = false;
 
-                        if(paymentModeArray.contains(paymentMode)){
+                                try {
+                                    isAlreadyAvailabe = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    ;
+                                }
+                                if (isAlreadyAvailabe) {
+                                    Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(paymentMode);
+                                    if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
+                                        double cash_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCashOndeliverySales());
+                                        double cash_amount = tmcprice + cash_amount_fromhashmap;
+                                        double newTotalCashAmount = cash_amount + gstAmount;
+                                        modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.CARD) || paymentMode.equals(Constants.Card)) {
+                                        double card_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCardSales());
+                                        //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+
+                                        double card_amount = tmcprice + card_amount_fromhashmap;
+                                        double newTotalcardAmount = card_amount + gstAmount;
+                                        modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.UPI) || paymentMode.equals(Constants.Upi)) {
+                                        double upi_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getUpiSales());
+                                        double upi_amount = tmcprice + upi_amount_fromhashmap;
+                                        double newTotalupiAmount = upi_amount + gstAmount;
+                                        modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                    }
+                                } else {
+                                    Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                                    if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
+                                        double cash_amount = tmcprice;
+                                        double Gst_cash_amount = gstAmount;
+                                        double newTotalCashAmount = cash_amount + Gst_cash_amount;
+
+                                        modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.CARD) || paymentMode.equals(Constants.Card)) {
+                                        double card_amount = tmcprice;
+                                        double Gst_card_amount = gstAmount;
+                                        double newTotalcardAmount = card_amount + Gst_card_amount;
+                                        //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+
+                                        modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.UPI) || paymentMode.equals(Constants.Upi)) {
+                                        double upi_amount = tmcprice;
+                                        double Gst_upi_amount = gstAmount;
+                                        double newTotalupiAmount = upi_amount + Gst_upi_amount;
+
+                                        modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                    }
+                                    paymentModeHashmap.put(paymentMode, modal_orderDetails);
+                                }
+                            } else {
+                                paymentModeArray.add(paymentMode);
+                                Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                                if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
+
+
+                                    double cash_amount = tmcprice;
+                                    double Gst_cash_amount = gstAmount;
+
+                                    double newTotalCashAmount = cash_amount + Gst_cash_amount;
+                                    modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+
+
+                                }
+                                if (paymentMode.equals(Constants.CARD) || paymentMode.equals(Constants.Card)) {
+                                    double newTotalcardAmount = tmcprice + gstAmount;
+                                    //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+
+                                    modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
+
+
+                                }
+                                if (paymentMode.equals(Constants.UPI) || paymentMode.equals(Constants.Upi)) {
+                                    double newTotalupiAmount = tmcprice + gstAmount;
+
+                                    modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                }
+                                paymentModeHashmap.put(paymentMode, modal_orderDetails);
+                            }
+                        }
+                        if(ordertype.equals(Constants.PhoneOrder)){
+                            if (phoneOrderpaymentModeArray.contains(paymentMode)) {
+                                boolean isAlreadyAvailabe = false;
+
+                                try {
+                                    isAlreadyAvailabe = checkIfPhoneOrderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    ;
+                                }
+                                if (isAlreadyAvailabe) {
+                                    Modal_OrderDetails modal_orderDetails = phoneOrderpaymentModeHashmap.get(paymentMode);
+                                    if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
+                                        double cash_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCashOndeliverySales());
+                                        double cash_amount = tmcprice + cash_amount_fromhashmap;
+                                        double newTotalCashAmount = cash_amount + gstAmount;
+                                        modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.CARD) || paymentMode.equals(Constants.Card)) {
+                                        double card_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCardSales());
+                                        //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+
+                                        double card_amount = tmcprice + card_amount_fromhashmap;
+                                        double newTotalcardAmount = card_amount + gstAmount;
+                                        modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.UPI) || paymentMode.equals(Constants.Upi)) {
+                                        double upi_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getUpiSales());
+                                        double upi_amount = tmcprice + upi_amount_fromhashmap;
+                                        double newTotalupiAmount = upi_amount + gstAmount;
+                                        modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                    }
+                                } else {
+                                    Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                                    if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
+                                        double cash_amount = tmcprice;
+                                        double Gst_cash_amount = gstAmount;
+                                        double newTotalCashAmount = cash_amount + Gst_cash_amount;
+
+                                        modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.CARD) || paymentMode.equals(Constants.Card)) {
+                                        double card_amount = tmcprice;
+                                        double Gst_card_amount = gstAmount;
+                                        double newTotalcardAmount = card_amount + Gst_card_amount;
+                                        //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+
+                                        modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.UPI) || paymentMode.equals(Constants.Upi)) {
+                                        double upi_amount = tmcprice;
+                                        double Gst_upi_amount = gstAmount;
+                                        double newTotalupiAmount = upi_amount + Gst_upi_amount;
+
+                                        modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                    }
+                                    phoneOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
+                                }
+                            } else {
+                                phoneOrderpaymentModeArray.add(paymentMode);
+                                Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                                if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
+
+
+                                    double cash_amount = tmcprice;
+                                    double Gst_cash_amount = gstAmount;
+
+                                    double newTotalCashAmount = cash_amount + Gst_cash_amount;
+                                    modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+
+
+                                }
+                                if (paymentMode.equals(Constants.CARD) || paymentMode.equals(Constants.Card)) {
+                                    double newTotalcardAmount = tmcprice + gstAmount;
+                                    //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
+
+                                    modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
+
+
+                                }
+                                if (paymentMode.equals(Constants.UPI) || paymentMode.equals(Constants.Upi)) {
+                                    double newTotalupiAmount = tmcprice + gstAmount;
+
+                                    modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                }
+                                phoneOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
+                            }
+                        }
+
+
+                    if(ordertype.equals(Constants.SwiggyOrder)){
+                        if (swiggyOrderpaymentModeArray.contains(paymentMode)) {
                             boolean isAlreadyAvailabe = false;
 
-                            try{
-                                 isAlreadyAvailabe = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            try {
+                                isAlreadyAvailabe = checkIfSwiggyOrderPaymentdetailisAlreadyAvailableInArray(paymentMode);
 
-                            }catch(Exception e ){
-                                e.printStackTrace();;
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
                             }
-                            if(isAlreadyAvailabe){
-                                Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(paymentMode);
-                                if(paymentMode.equals(Constants.CASH_ON_DELIVERY)||paymentMode.equals(Constants.CASH)){
-                                    double cash_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCashOndeliverySales());
-                                    double  cash_amount = tmcprice+cash_amount_fromhashmap;
-                                    double newTotalCashAmount = cash_amount+gstAmount;
-                                    modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+                            if (isAlreadyAvailabe) {
+                                Modal_OrderDetails modal_orderDetails = swiggyOrderpaymentModeHashmap.get(paymentMode);
+                                if (paymentMode.equals(Constants.SWIGGYORDER_PAYMENTMODE) ) {
+                                    double amount_fromhashmap = Double.parseDouble(modal_orderDetails.getSwiggySales());
+                                    double amount = tmcprice + amount_fromhashmap;
+                                    double newTotalCashAmount = amount + gstAmount;
+                                    modal_orderDetails.setSwiggySales(String.valueOf((newTotalCashAmount)));
 
 
                                 }
-                                if(paymentMode.equals(Constants.CARD)||paymentMode.equals(Constants.Card)){
-                                    double card_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCardSales());
-                                    //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
-
-                                    double  card_amount = tmcprice+card_amount_fromhashmap;
-                                    double newTotalcardAmount = card_amount+gstAmount;
-                                    modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
-
-
+                                else{
+                                   Toast.makeText(getApplicationContext(),"There is another Payment mode fro swiggy order",Toast.LENGTH_LONG).show();
                                 }
-                                if(paymentMode.equals(Constants.UPI)||paymentMode.equals(Constants.Upi)){
-                                    double upi_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getUpiSales());
-                                    double  upi_amount = tmcprice+upi_amount_fromhashmap;
-                                    double newTotalupiAmount = upi_amount+gstAmount;
-                                    modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
 
-
-                                }
-                            }
-                            else{
+                            } else {
                                 Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                if(paymentMode.equals(Constants.CASH_ON_DELIVERY)||paymentMode.equals(Constants.CASH)){
-                                    double  cash_amount = tmcprice;
-                                    double Gst_cash_amount = gstAmount;
-                                    double newTotalCashAmount = cash_amount+Gst_cash_amount;
+                                if (paymentMode.equals(Constants.SWIGGYORDER_PAYMENTMODE) ) {
+                                    double amount = tmcprice;
+                                    double Gst_amount = gstAmount;
+                                    double newTotalAmount = amount + Gst_amount;
 
-                                    modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+                                    modal_orderDetails.setSwiggySales(String.valueOf((newTotalAmount)));
 
 
-                                }
-                                if(paymentMode.equals(Constants.CARD)||paymentMode.equals(Constants.Card)){
-                                    double  card_amount = tmcprice;
-                                    double Gst_card_amount = gstAmount;
-                                    double newTotalcardAmount = card_amount+Gst_card_amount;
-                                    //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
-
-                                    modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
-
+                                }else{
+                                    Toast.makeText(getApplicationContext(),"There is another Payment mode fro swiggy order",Toast.LENGTH_LONG).show();
 
                                 }
-                                if(paymentMode.equals(Constants.UPI)||paymentMode.equals(Constants.Upi)){
-                                    double  upi_amount = tmcprice;
-                                    double Gst_upi_amount = gstAmount;
-                                    double newTotalupiAmount = upi_amount+Gst_upi_amount;
-
-                                    modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
-
-
-                                }
-                                paymentModeHashmap.put(paymentMode,modal_orderDetails);
+                                swiggyOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
                             }
-                        }
-                        else{
-                            paymentModeArray.add(paymentMode);
+                        } else {
+                            swiggyOrderpaymentModeArray.add(paymentMode);
                             Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                            if(paymentMode.equals(Constants.CASH_ON_DELIVERY)||paymentMode.equals(Constants.CASH)){
+                            if (paymentMode.equals(Constants.SWIGGYORDER_PAYMENTMODE) ) {
 
 
-                                double  cash_amount = tmcprice;
-                                double Gst_cash_amount = gstAmount;
+                                double amount = tmcprice;
+                                double Gst_amount = gstAmount;
 
-                                double newTotalCashAmount = cash_amount+Gst_cash_amount;
-                                modal_orderDetails.setCashOndeliverySales(String.valueOf((newTotalCashAmount)));
+                                double newTotalAmount = amount + Gst_amount;
+                                modal_orderDetails.setSwiggySales(String.valueOf((newTotalAmount)));
 
 
-                            }
-                            if(paymentMode.equals(Constants.CARD)||paymentMode.equals(Constants.Card)){
-                                double newTotalcardAmount = tmcprice + gstAmount;
-                                //Log.d(Constants.TAG, "This orders payment mode tmcprice Item desp: " +tmcprice );
 
-                                modal_orderDetails.setCardSales(String.valueOf((newTotalcardAmount)));
-
+                            }else{
+                                Toast.makeText(getApplicationContext(),"There is another Payment mode fro swiggy order",Toast.LENGTH_LONG).show();
 
                             }
-                            if(paymentMode.equals(Constants.UPI)||paymentMode.equals(Constants.Upi)){
-                                double newTotalupiAmount = tmcprice + gstAmount;
-
-                                modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
-
-
-                            }
-                            paymentModeHashmap.put(paymentMode,modal_orderDetails);
+                            swiggyOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
                         }
+                    }
+
+
+
+
+                    if(ordertype.equals(Constants.DunzoOrder)){
+                        if (dunzoOrderpaymentModeArray.contains(paymentMode)) {
+                            boolean isAlreadyAvailabe = false;
+
+                            try {
+                                isAlreadyAvailabe = checkIfDunzoOrderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                            }
+                            if (isAlreadyAvailabe) {
+                                Modal_OrderDetails modal_orderDetails = dunzoOrderpaymentModeHashmap.get(paymentMode);
+                                if (paymentMode.equals(Constants.DUNZOORDER_PAYMENTMODE) ) {
+                                    double amount_fromhashmap = Double.parseDouble(modal_orderDetails.getDunzoSales());
+                                    double amount = tmcprice + amount_fromhashmap;
+                                    double newTotalCashAmount = amount + gstAmount;
+                                    modal_orderDetails.setDunzoSales(String.valueOf((newTotalCashAmount)));
+
+
+                                }
+                                else{
+                                    Toast.makeText(getApplicationContext(),"There is another Payment mode for dunzo order",Toast.LENGTH_LONG).show();
+                                }
+
+                            } else {
+                                Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                                if (paymentMode.equals(Constants.DUNZOORDER_PAYMENTMODE) ) {
+                                    double amount = tmcprice;
+                                    double Gst_amount = gstAmount;
+                                    double newTotalAmount = amount + Gst_amount;
+
+                                    modal_orderDetails.setDunzoSales(String.valueOf((newTotalAmount)));
+
+
+                                }else{
+                                    Toast.makeText(getApplicationContext(),"There is another Payment mode for dunzo order",Toast.LENGTH_LONG).show();
+
+                                }
+                                dunzoOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
+                            }
+                        } else {
+                            dunzoOrderpaymentModeArray.add(paymentMode);
+                            Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                            if (paymentMode.equals(Constants.DUNZOORDER_PAYMENTMODE) ) {
+
+
+                                double amount = tmcprice;
+                                double Gst_amount = gstAmount;
+
+                                double newTotalAmount = amount + Gst_amount;
+                                modal_orderDetails.setDunzoSales(String.valueOf((newTotalAmount)));
+
+
+
+                            }else{
+                                Toast.makeText(getApplicationContext(),"There is another Payment mode for dunzo order",Toast.LENGTH_LONG).show();
+
+                            }
+                            dunzoOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
+                        }
+                    }
 
 
                     String menuitemid = String.valueOf(json.get("menuitemid"));
@@ -2073,6 +3073,17 @@ public class PosSalesReport extends AppCompatActivity {
         return paymentMode_DiscountHashmap.containsKey(menuitemid);
     }
 
+    private boolean checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
+        return phoneOrderpaymentMode_DiscountHashmap.containsKey(menuitemid);
+    }
+
+    private boolean checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
+        return dunzoOrderpaymentMode_DiscountHashmap.containsKey(menuitemid);
+    }
+
+    private boolean checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
+        return swiggyOrderpaymentMode_DiscountHashmap.containsKey(menuitemid);
+    }
 
     private boolean checkIfSubCtgywiseTotalisAlreadyAvailableInArray(String menuitemid) {
         return SubCtgywiseTotalHashmap.containsKey(menuitemid);
@@ -2083,7 +3094,16 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
 
+    private boolean checkIfPhoneOrderPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
+        return phoneOrderpaymentModeHashmap.containsKey(menuitemid);
+    }
 
+    private boolean checkIfSwiggyOrderPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
+        return swiggyOrderpaymentModeHashmap.containsKey(menuitemid);
+    }
+    private boolean checkIfDunzoOrderPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
+        return dunzoOrderpaymentModeHashmap.containsKey(menuitemid);
+    }
     private boolean checkIfMenuItemisAlreadyAvailableInArray(String menuitemid) {
         return OrderItem_hashmap.containsKey(menuitemid);
     }
@@ -2165,6 +3185,25 @@ public class PosSalesReport extends AppCompatActivity {
 
         return CurrentDate;
     }
+
+
+
+    private void getMenuItemArrayFromSharedPreferences() {
+        final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String json = sharedPreferencesMenuitem.getString("MenuList", "");
+        if (json.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "There is something error", Toast.LENGTH_LONG).show();
+        } else {
+            Type type = new TypeToken<List<Modal_MenuItem_Settings>>() {
+            }.getType();
+            MenuItem = gson.fromJson(json, type);
+
+        }
+
+    }
+
 
 
     private String getDate() {
@@ -2446,6 +3485,20 @@ public class PosSalesReport extends AppCompatActivity {
             //}
             layoutDocument.add(table);
 
+            PdfPTable tablePaymentModetitle = new PdfPTable(1);
+            tablePaymentModetitle.setWidthPercentage(100);
+            tablePaymentModetitle.setSpacingBefore(20);
+
+
+            PdfPCell paymentModertitle;
+            paymentModertitle = new PdfPCell(new Phrase("POS Order Sales"));
+            paymentModertitle.setBorder(Rectangle.NO_BORDER);
+            paymentModertitle.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            paymentModertitle.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModertitle.setFixedHeight(25);
+            paymentModertitle.setPaddingRight(20);
+            tablePaymentModetitle.addCell(paymentModertitle);
+            layoutDocument.add(tablePaymentModetitle);
 
 
                          PdfPTable tablePaymentMode = new PdfPTable(4);
@@ -2570,6 +3623,359 @@ public class PosSalesReport extends AppCompatActivity {
 
                          }
                          layoutDocument.add(tablePaymentMode);
+
+
+            PdfPTable tablePaymentModetitle1 = new PdfPTable(1);
+            tablePaymentModetitle1.setWidthPercentage(100);
+            tablePaymentModetitle1.setSpacingBefore(20);
+
+
+            PdfPCell paymentModertitle1;
+                paymentModertitle1 = new PdfPCell(new Phrase("Phone Order Sales"));
+            paymentModertitle1.setBorder(Rectangle.NO_BORDER);
+            paymentModertitle1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            paymentModertitle1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModertitle1.setFixedHeight(25);
+            paymentModertitle1.setPaddingRight(20);
+            tablePaymentModetitle1.addCell(paymentModertitle1);
+            layoutDocument.add(tablePaymentModetitle1);
+
+
+            PdfPTable tablePaymentMode1 = new PdfPTable(4);
+            tablePaymentMode1.setWidthPercentage(100);
+            tablePaymentMode1.setSpacingBefore(20);
+            PdfPCell paymentModeemptycell1;
+            PdfPCell paymentModeemptycellone1;
+            PdfPCell paymentModeitemkeycell1;
+            PdfPCell paymentModeitemValueCell1;
+
+
+            for (int i = 0; i < phoneOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble =0;
+                double payment_AmountDiscDouble =0;
+
+                String Payment_Amount="",key =  phoneOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails =  phoneOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount =  phoneOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+
+
+
+
+
+                if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("CARD"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("UPI"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                    }
+                    catch(Exception e){
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                        e.printStackTrace();
+
+                    }
+                }
+
+
+
+
+
+
+                paymentModeemptycell1 = new PdfPCell(new Phrase(""));
+                paymentModeemptycell1.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycell1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycell1.setFixedHeight(25);
+                tablePaymentMode1.addCell(paymentModeemptycell1);
+
+                paymentModeemptycellone1 = new PdfPCell(new Phrase(""));
+                paymentModeemptycellone1.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycellone1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycellone1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycellone1.setFixedHeight(25);
+                tablePaymentMode1.addCell(paymentModeemptycellone1);
+
+                paymentModeitemkeycell1 = new PdfPCell(new Phrase(key+" :  "));
+                paymentModeitemkeycell1.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemkeycell1.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemkeycell1.setMinimumHeight(25);
+                paymentModeitemkeycell1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemkeycell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablePaymentMode1.addCell(paymentModeitemkeycell1);
+
+
+                paymentModeitemValueCell1 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                paymentModeitemValueCell1.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemValueCell1.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemValueCell1.setMinimumHeight(25);
+                paymentModeitemValueCell1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemValueCell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeitemValueCell1.setPaddingRight(10);
+                tablePaymentMode1.addCell(paymentModeitemValueCell1);
+
+
+
+
+
+            }
+            layoutDocument.add(tablePaymentMode1);
+
+
+
+
+            PdfPTable tablePaymentModetitle2 = new PdfPTable(1);
+            tablePaymentModetitle2.setWidthPercentage(100);
+            tablePaymentModetitle2.setSpacingBefore(20);
+
+
+            PdfPCell paymentModertitle2;
+            paymentModertitle2 = new PdfPCell(new Phrase("Swiggy Order Sales"));
+            paymentModertitle2.setBorder(Rectangle.NO_BORDER);
+            paymentModertitle2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            paymentModertitle2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModertitle2.setFixedHeight(25);
+            paymentModertitle2.setPaddingRight(20);
+            tablePaymentModetitle2.addCell(paymentModertitle2);
+            layoutDocument.add(tablePaymentModetitle2);
+
+
+            PdfPTable tablePaymentMode2 = new PdfPTable(4);
+            tablePaymentMode2.setWidthPercentage(100);
+            tablePaymentMode2.setSpacingBefore(20);
+            PdfPCell paymentModeemptycell2;
+            PdfPCell paymentModeemptycellone2;
+            PdfPCell paymentModeitemkeycell2;
+            PdfPCell paymentModeitemValueCell2;
+
+
+            for (int i = 0; i < swiggyOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble =0;
+                double payment_AmountDiscDouble =0;
+
+                String Payment_Amount="",key =  swiggyOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails =  swiggyOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount =  swiggyOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+
+
+
+
+
+                if ((key.toUpperCase().equals(Constants.SWIGGYORDER_PAYMENTMODE)) ) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Swiggy Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Swiggy Sales";
+
+                    }
+                }
+
+
+
+
+
+
+                paymentModeemptycell2 = new PdfPCell(new Phrase(""));
+                paymentModeemptycell2.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycell2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycell2.setFixedHeight(25);
+                tablePaymentMode2.addCell(paymentModeemptycell2);
+
+                paymentModeemptycellone2 = new PdfPCell(new Phrase(""));
+                paymentModeemptycellone2.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycellone2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycellone2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycellone2.setFixedHeight(25);
+                tablePaymentMode2.addCell(paymentModeemptycellone2);
+
+                paymentModeitemkeycell2 = new PdfPCell(new Phrase(key+" :  "));
+                paymentModeitemkeycell2.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemkeycell2.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemkeycell2.setMinimumHeight(25);
+                paymentModeitemkeycell2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemkeycell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablePaymentMode2.addCell(paymentModeitemkeycell2);
+
+
+                paymentModeitemValueCell2 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                paymentModeitemValueCell2.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemValueCell2.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemValueCell2.setMinimumHeight(25);
+                paymentModeitemValueCell2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemValueCell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeitemValueCell2.setPaddingRight(10);
+                tablePaymentMode2.addCell(paymentModeitemValueCell2);
+
+
+
+
+
+            }
+            layoutDocument.add(tablePaymentMode2);
+
+
+
+
+
+
+            PdfPTable tablePaymentModetitle3 = new PdfPTable(1);
+            tablePaymentModetitle3.setWidthPercentage(100);
+            tablePaymentModetitle3.setSpacingBefore(20);
+
+
+            PdfPCell paymentModertitle3;
+            paymentModertitle3 = new PdfPCell(new Phrase("Dunzo Order Sales"));
+            paymentModertitle3.setBorder(Rectangle.NO_BORDER);
+            paymentModertitle3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            paymentModertitle3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModertitle3.setFixedHeight(25);
+            paymentModertitle3.setPaddingRight(20);
+            tablePaymentModetitle3.addCell(paymentModertitle3);
+            layoutDocument.add(tablePaymentModetitle3);
+
+
+            PdfPTable tablePaymentMode3 = new PdfPTable(4);
+            tablePaymentMode3.setWidthPercentage(100);
+            tablePaymentMode3.setSpacingBefore(20);
+            PdfPCell paymentModeemptycell3;
+            PdfPCell paymentModeemptycellone3;
+            PdfPCell paymentModeitemkeycell3;
+            PdfPCell paymentModeitemValueCell3;
+
+
+            for (int i = 0; i < dunzoOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble =0;
+                double payment_AmountDiscDouble =0;
+
+                String Payment_Amount="",key =  dunzoOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails =  dunzoOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount =  dunzoOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+
+
+
+
+
+                if ((key.toUpperCase().equals(Constants.DUNZOORDER_PAYMENTMODE)) ) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Dunzo Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Dunzo Sales";
+
+                    }
+                }
+
+
+
+
+
+
+                paymentModeemptycell3 = new PdfPCell(new Phrase(""));
+                paymentModeemptycell3.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycell3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycell3.setFixedHeight(25);
+                tablePaymentMode3.addCell(paymentModeemptycell3);
+
+                paymentModeemptycellone3 = new PdfPCell(new Phrase(""));
+                paymentModeemptycellone3.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycellone3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycellone3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycellone3.setFixedHeight(25);
+                tablePaymentMode3.addCell(paymentModeemptycellone3);
+
+                paymentModeitemkeycell3 = new PdfPCell(new Phrase(key+" :  "));
+                paymentModeitemkeycell3.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemkeycell3.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemkeycell3.setMinimumHeight(25);
+                paymentModeitemkeycell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemkeycell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablePaymentMode3.addCell(paymentModeitemkeycell3);
+
+
+                paymentModeitemValueCell3 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                paymentModeitemValueCell3.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemValueCell3.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemValueCell3.setMinimumHeight(25);
+                paymentModeitemValueCell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemValueCell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeitemValueCell3.setPaddingRight(10);
+                tablePaymentMode3.addCell(paymentModeitemValueCell3);
+
+
+
+
+
+            }
+            layoutDocument.add(tablePaymentMode3);
+
 
 
 

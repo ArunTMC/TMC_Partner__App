@@ -213,14 +213,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp"
-                        android:layout_marginEnd="10dp"
-
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:gravity="center_vertical"
                         android:layout_marginStart="13dp"
-                        android:text="No.of.App orders  :-  " />
+                        android:layout_marginEnd="10dp"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        android:gravity="center_vertical"
+                        android:text="No.of.Pos orders  :-  "
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/appOrdersCount_textwidget"

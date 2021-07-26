@@ -1,6 +1,7 @@
 package com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
+import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -27,9 +29,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.json.JSONArray;
@@ -53,6 +58,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
     public Mobile_ManageOrders1 mobile_manageOrders1;
      static BottomSheetDialog bottomSheetDialog;
     String deliverypartnerName="";
+    BluetoothAdapter mBluetoothAdapter =null;
+
     public Adapter_Mobile_ManageOrders_ListView1(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Mobile_ManageOrders1 mobile_manageOrders1, String orderStatus) {
         super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
 
@@ -123,7 +130,9 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         final Button other_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.other_assignDeliveryperson_button_widget);
         final Button cancelled_assignDeliveryperson_button_widget = listViewItem.findViewById(R.id.cancelled_assignDeliveryperson_button_widget);
         final Button generateTokenNo_button_widget = listViewItem.findViewById(R.id.generateTokenNo_button_widget);
-        final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
+        //final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
+        final Button mobileprint_button_widget = listViewItem.findViewById(R.id.mobileprint_button_widget);
+
 
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
       //  //Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.sorted_OrdersList.get(pos));
@@ -190,6 +199,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
 
 
+
         String orderStatusfromArray = modal_manageOrders_pojo_class.getOrderstatus();
        // //Log.i("tag","orderStatusFromArray"+ orderStatusfromArray);
       //  //Log.i("tag","orderStatus"+ orderStatus);
@@ -212,7 +222,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         if((orderStatusfromArray.toUpperCase().equals(Constants.PICKEDUP_ORDER_STATUS))||orderStatusfromArray.toUpperCase().equals(Constants.DELIVERED_ORDER_STATUS)){
             pending_order_assignDeliveryperson_button_widget.setVisibility(View.GONE);
             generateTokenNo_button_widget.setVisibility(View.GONE);
-            transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+            //transit_generateTokenNo_button_widget.setVisibility(View.GONE);
 
             other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
 
@@ -294,25 +304,42 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
                 pending_order_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
                 generateTokenNo_button_widget.setVisibility(View.GONE);
+                mobileprint_button_widget.setVisibility(View.VISIBLE);
+
             }
             else{
                 pending_order_assignDeliveryperson_button_widget.setVisibility(View.GONE);
                 generateTokenNo_button_widget.setVisibility(View.VISIBLE);
-
+                mobileprint_button_widget.setVisibility(View.GONE);
             }
         }
         else{
             String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
             if((tokenNofromArray.length()>0)&&(tokenNofromArray != null)&&(!tokenNofromArray.equals(""))){
                 other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
-                transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+                //transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+                generateTokenNo_button_widget.setVisibility(View.GONE);
+                mobileprint_button_widget.setVisibility(View.VISIBLE);
+
             }
             else{
                 other_assignDeliveryperson_button_widget.setVisibility(View.GONE);
-                transit_generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+              //  transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+                generateTokenNo_button_widget.setVisibility(View.VISIBLE);
+                mobileprint_button_widget.setVisibility(View.GONE);
+
             }
         }
+        try {
+            if (orderStatusfromArray.equals(Constants.NEW_ORDER_STATUS)) {
+                generateTokenNo_button_widget.setVisibility(View.GONE);
+                mobileprint_button_widget.setVisibility(View.GONE);
 
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
         if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
             ready_for_pickup_button_widget.setVisibility(View.GONE);
             if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
@@ -372,17 +399,18 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                     other_assignDeliveryperson_button_widget.setVisibility(View.GONE);
 
                     generateTokenNo_button_widget.setVisibility(View.GONE);
-                    transit_generateTokenNo_button_widget.setVisibility(View.GONE);
+               //     transit_generateTokenNo_button_widget.setVisibility(View.GONE);
                 } else {
                     tokenNoLayout.setVisibility(View.VISIBLE);
                     slotTimeLayout.setVisibility(View.VISIBLE);
                     slotDateLayout.setVisibility(View.VISIBLE);
                     generateTokenNo_button_widget.setVisibility(View.GONE);
-                    transit_generateTokenNo_button_widget.setVisibility(View.GONE);
-                    other_assignDeliveryperson_button_widget.setVisibility(View.VISIBLE);
+              //      transit_generateTokenNo_button_widget.setVisibility(View.GONE);
 
 
                 }
+                other_assignDeliveryperson_button_widget.setVisibility(View.GONE);
+
             }
         }
         catch (Exception e){
@@ -468,6 +496,57 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
 
  */
+
+
+
+        mobileprint_button_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+
+
+
+                try {
+                    if (BluetoothPrintDriver.IsNoConnection()) {
+
+                        Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                        AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                    }
+                    mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+
+                    if(!BluetoothPrintDriver.IsNoConnection()){
+                        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                        if (!mBluetoothAdapter.isEnabled()) {
+                            Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                            AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                        }
+                        else{
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+
+                            mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+
+
+                        }
+                    }
+                    else{
+                        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
         order_item_list_parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -487,6 +566,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             @Override
             public void onClick(View view) {
                 Currenttime = getDate_and_time();
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
 
                 changestatusto =Constants.DELIVERED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
@@ -499,8 +579,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
-                 notifyDataSetChanged();
+              //  mobile_manageOrders1.sorted_OrdersList.remove(pos);
+               //  notifyDataSetChanged();
             }
         });
 
@@ -513,20 +593,75 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                 String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                    changestatusto = "";
+                if (BluetoothPrintDriver.IsNoConnection()) {
 
-                generatingTokenNo(vendorkey,orderDetailsKey);
+                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Printer_is_Disconnected_want_to_generate_TokenNo,
+                            R.string.Yes_Text, R.string.No_Text,
+                            new TMCAlertDialogClass.AlertListener() {
+                                @Override
+                                public void onYes() {
+                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+                                    generatingTokenNo(vendorkey,orderDetailsKey);
+
+                                }
+
+                                @Override
+                                public void onNo() {
+                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                }
+                            });
+
+                }
+
+                if(!BluetoothPrintDriver.IsNoConnection()){
+                    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                    if (!mBluetoothAdapter.isEnabled()) {
+                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Printer_is_Disconnected_want_to_generate_TokenNo,
+                                R.string.Yes_Text, R.string.No_Text,
+                                new TMCAlertDialogClass.AlertListener() {
+                                    @Override
+                                    public void onYes() {
+                                        mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+                                        generatingTokenNo(vendorkey,orderDetailsKey);
+
+                                    }
+
+                                    @Override
+                                    public void onNo() {
+                                        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                    }
+                                });
+
+                    }else{
+
+
+                        mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+                        generatingTokenNo(vendorkey,orderDetailsKey);
+
+                    }
+
+                }
+                else{
+                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                }
 
                 //Log.i("tag","orderkey1"+ OrderKey);
             }
         });
 
-
+/*
         transit_generateTokenNo_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                 String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                changestatusto = "";
 
                 generatingTokenNo(vendorkey,orderDetailsKey);
 
@@ -537,6 +672,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         });
 
 
+
+ */
 
 
 
@@ -545,36 +682,216 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         confirmed_Order_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Currenttime = getDate_and_time();
-                changestatusto =Constants.CONFIRMED_ORDER_STATUS;
-                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                //Log.i("tag","orderkey1"+ OrderKey);
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
 
-                generatingTokenNo(vendorkey,orderDetailsKey);
+                try {
+                    if (BluetoothPrintDriver.IsNoConnection()) {
 
-                //Log.i("Tag","0"+OrderKey);
-                new_Order_Linearlayout.setVisibility(View.GONE);
-                ready_Order_Linearlayout.setVisibility(View.GONE);
-                confirming_order_Linearlayout.setVisibility(View.VISIBLE);
-                cancelled_Order_Linearlayout.setVisibility(View.GONE);
+                        Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Printer_is_Disconnected_want_to_generate_TokenNo,
+                                R.string.Yes_Text, R.string.No_Text,
+                                new TMCAlertDialogClass.AlertListener() {
+                                    @Override
+                                    public void onYes() {
+                                        Currenttime = getDate_and_time();
+                                        changestatusto =Constants.CONFIRMED_ORDER_STATUS;
+                                        OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                                        //Log.i("tag","orderkey1"+ OrderKey);
+                                        String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                                        String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                                        String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
-                notifyDataSetChanged();
+                                        //Log.i("Tag","0"+OrderKey);
+                                        new_Order_Linearlayout.setVisibility(View.GONE);
+                                        ready_Order_Linearlayout.setVisibility(View.GONE);
+                                        confirming_order_Linearlayout.setVisibility(View.VISIBLE);
+                                        cancelled_Order_Linearlayout.setVisibility(View.GONE);
+                                        if((tokenNofromArray.length()<=0)||(tokenNofromArray == null)||(tokenNofromArray.equals(""))) {
+                                            generatingTokenNo(vendorkey, orderDetailsKey);
+                                        }
+                                        else{
+                                            ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                                            if (BluetoothPrintDriver.IsNoConnection()) {
+
+                                                Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                                AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                                            }
+
+                                            if(!BluetoothPrintDriver.IsNoConnection()){
+                                                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                                                if (!mBluetoothAdapter.isEnabled()) {
+                                                    Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                                    AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                                                }
+                                                else{
+                                                    //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
+
+                                                    mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+
+                                                }
+                                            }
+                                            else{
+                                                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onNo() {
+
+                                    }
+                                });
+                    }
+
+                    if(!BluetoothPrintDriver.IsNoConnection()){
+                        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                        if (!mBluetoothAdapter.isEnabled()) {
+                            Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+
+                            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Printer_is_Disconnected_want_to_generate_TokenNo,
+                                    R.string.Yes_Text, R.string.No_Text,
+                                    new TMCAlertDialogClass.AlertListener() {
+                                        @Override
+                                        public void onYes() {
+                                            Currenttime = getDate_and_time();
+                                            changestatusto =Constants.CONFIRMED_ORDER_STATUS;
+                                            OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                                            //Log.i("tag","orderkey1"+ OrderKey);
+                                            String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                                            String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                                            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+
+                                            //Log.i("Tag","0"+OrderKey);
+                                            new_Order_Linearlayout.setVisibility(View.GONE);
+                                            ready_Order_Linearlayout.setVisibility(View.GONE);
+                                            confirming_order_Linearlayout.setVisibility(View.VISIBLE);
+                                            cancelled_Order_Linearlayout.setVisibility(View.GONE);
+                                            if((tokenNofromArray.length()<=0)||(tokenNofromArray == null)||(tokenNofromArray.equals(""))) {
+                                                generatingTokenNo(vendorkey, orderDetailsKey);
+                                            }
+                                            else{
+                                                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                                                if (BluetoothPrintDriver.IsNoConnection()) {
+
+                                                    Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                                    AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                                                }
+
+                                                if(!BluetoothPrintDriver.IsNoConnection()){
+                                                    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                                                    if (!mBluetoothAdapter.isEnabled()) {
+                                                        Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                                        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                                        AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                                                    }
+                                                    else{
+                                                        //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
+
+                                                        mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+
+                                                    }
+                                                }
+                                                else{
+                                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onNo() {
+
+                                        }
+                                    });
+                        }
+                        else{
+                            Currenttime = getDate_and_time();
+                            changestatusto =Constants.CONFIRMED_ORDER_STATUS;
+                            OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                            //Log.i("tag","orderkey1"+ OrderKey);
+                            String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                            String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                            String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+
+                            //Log.i("Tag","0"+OrderKey);
+                            new_Order_Linearlayout.setVisibility(View.GONE);
+                            ready_Order_Linearlayout.setVisibility(View.GONE);
+                            confirming_order_Linearlayout.setVisibility(View.VISIBLE);
+                            cancelled_Order_Linearlayout.setVisibility(View.GONE);
+                            if((tokenNofromArray.length()<=0)||(tokenNofromArray == null)||(tokenNofromArray.equals(""))) {
+                                generatingTokenNo(vendorkey, orderDetailsKey);
+                            }
+                            else{
+                                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                                if (BluetoothPrintDriver.IsNoConnection()) {
+
+                                    Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                    AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                                }
+
+                                if(!BluetoothPrintDriver.IsNoConnection()){
+                                    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                                    if (!mBluetoothAdapter.isEnabled()) {
+                                        Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                        AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                                    }
+                                    else{
+                                        //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
+
+                                        mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+
+                                    }
+                                }
+                                else{
+                                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                //ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+
+           //     mobile_manageOrders1.sorted_OrdersList.remove(pos);
+               //mobile_manageOrders1.displayorderDetailsinListview(mobile_manageOrders1.orderStatus,mobile_manageOrders1.ordersList,mobile_manageOrders1.slottypefromSpinner);
+            //    notifyDataSetChanged();
             }
         });
         cancel_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Currenttime = getDate_and_time();
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
 
                 changestatusto =Constants.CANCELLED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 //Log.i("Tag","0"+OrderKey);
-                ChangeStatusOftheOrder(changestatusto,OrderKey, Currenttime);
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
@@ -583,7 +900,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
+            //    mobile_manageOrders1.sorted_OrdersList.remove(pos);
             }
         });
 
@@ -592,6 +909,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         ready_for_pickup_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+
                 changestatusto =Constants.READY_FOR_PICKUP_ORDER_STATUS;
                 Currenttime = getDate_and_time();
 
@@ -606,7 +925,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
 
-                mobile_manageOrders1.sorted_OrdersList.remove(pos);
+             //   mobile_manageOrders1.sorted_OrdersList.remove(pos);
             }
         });
 
@@ -737,7 +1056,12 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         }
     }
 
+
+
+
+
     private void generatingTokenNo(String vendorkey, String orderDetailsKey) {
+        mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_generateTokenNo+vendorkey,
                 null, new Response.Listener<JSONObject>() {
@@ -753,6 +1077,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                     UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
                 } catch (JSONException e) {
                     e.printStackTrace();
+
                     new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Found_Instruction,
                             R.string.OK_Text,R.string.Empty_Text,
                             new TMCAlertDialogClass.AlertListener() {
@@ -766,6 +1091,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                                 }
                             });
+                    mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
                 }
             }
         }, new Response.ErrorListener() {
@@ -787,6 +1114,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                             }
                         });
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
 
                 error.printStackTrace();
             }
@@ -809,6 +1137,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
     }
 
     private void UpdateTokenNoInOrderDetails(String tokenNo, String orderDetailsKey) {
+        mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+
         JSONObject  jsonObject = new JSONObject();
         try {
 
@@ -826,6 +1156,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         } catch (JSONException e) {
             e.printStackTrace();
             //Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
 
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
@@ -839,8 +1170,70 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                     String key = modal_manageOrders_pojo_class.getOrderdetailskey();
                     if(orderDetailsKey.equals(key)){
                         modal_manageOrders_pojo_class.setTokenno(tokenNo);
-                        notifyDataSetChanged();
 
+                        try {
+                            for (int sortedarrayIterator = 0; sortedarrayIterator < Mobile_ManageOrders1.sorted_OrdersList.size(); sortedarrayIterator++) {
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList = Mobile_ManageOrders1.sorted_OrdersList.get(sortedarrayIterator);
+                                String sortedArraykey = modal_manageOrders_pojo_class_sortedOrdersList.getOrderdetailskey();
+                                if (orderDetailsKey.equals(sortedArraykey)) {
+                                    modal_manageOrders_pojo_class_sortedOrdersList.setTokenno(tokenNo);
+
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                            mobile_manageOrders1.displayorderDetailsinListview(mobile_manageOrders1.orderStatus,mobile_manageOrders1.ordersList,mobile_manageOrders1.slottypefromSpinner);
+
+                            e.printStackTrace();
+                        }
+
+
+                        if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                            ChangeStatusOftheOrder(changestatusto, OrderKey, Currenttime);
+                        }
+                        else{
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+                            notifyDataSetChanged();
+
+                            //mobile_manageOrders1.displayorderDetailsinListview(mobile_manageOrders1.orderStatus,mobile_manageOrders1.ordersList,mobile_manageOrders1.slottypefromSpinner);
+
+                        }
+                        if (BluetoothPrintDriver.IsNoConnection()) {
+
+                            Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+
+                            AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                        }
+                        mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+
+                        if(!BluetoothPrintDriver.IsNoConnection()){
+                            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                            if (!mBluetoothAdapter.isEnabled()) {
+                                Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                                AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Printer_is_Disconnected);
+
+                            }
+                            else{
+                               //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
+                                    mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+                                
+
+                            }
+
+
+
+
+                        }
+                        else{
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                        }
                     }
                 }
 
@@ -865,6 +1258,8 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                             }
                         });
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
                 error.printStackTrace();
             }
         }) {
@@ -971,6 +1366,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
                 jsonObject, new Response.Listener<JSONObject>() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 for(int i = 0; i< mobile_manageOrders1.ordersList.size(); i++){
@@ -981,15 +1377,97 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                         if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
                             modal_manageOrders_pojo_class.setOrderconfirmedtime(Currenttime);
+                            modal_manageOrders_pojo_class.setOrderconfirmedtime_in_long(String.valueOf(mobile_manageOrders1.getLongValuefortheDate(Currenttime)));
                         }
                         if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
                             modal_manageOrders_pojo_class.setOrderreadytime(Currenttime);
+                            modal_manageOrders_pojo_class.setOrderreadytime_in_long(String.valueOf(mobile_manageOrders1.getLongValuefortheDate(Currenttime)));
+
+                        }
+
+
+
+
+                        try {
+                            for (int sortedarrayIterator = 0; sortedarrayIterator < Mobile_ManageOrders1.sorted_OrdersList.size(); sortedarrayIterator++) {
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList =Mobile_ManageOrders1.sorted_OrdersList.get(sortedarrayIterator);
+                                String sortedArraykey = modal_manageOrders_pojo_class_sortedOrdersList.getKeyfromtrackingDetails();
+                                if (OrderKey.equals(sortedArraykey)) {
+                                    modal_manageOrders_pojo_class_sortedOrdersList.setOrderstatus(changestatusto);
+                                    if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                                        modal_manageOrders_pojo_class_sortedOrdersList.setOrderconfirmedtime(Currenttime);
+                                        modal_manageOrders_pojo_class_sortedOrdersList.setOrderconfirmedtime_in_long(String.valueOf(mobile_manageOrders1.getLongValuefortheDate(Currenttime)));
+                                        int neworderCount = mobile_manageOrders1.newCount-1;
+
+                                        if(neworderCount>0) {
+                                            mobile_manageOrders1.mobile_new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, neworderCount));
+                                            mobile_manageOrders1.newCount=neworderCount;
+                                        }
+                                        else{
+                                            mobile_manageOrders1.mobile_new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
+
+                                        }
+
+                                        int ConfirmedorderCount = mobile_manageOrders1.confirmedCount+1;
+
+                                        if(ConfirmedorderCount>0) {
+                                            mobile_manageOrders1.mobile_confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, ConfirmedorderCount));
+                                            mobile_manageOrders1.confirmedCount=ConfirmedorderCount;
+
+                                        }
+                                        else{
+                                            mobile_manageOrders1.mobile_confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
+
+                                        }
+
+
+
+                                    }
+                                    if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                                        modal_manageOrders_pojo_class_sortedOrdersList.setOrderreadytime(Currenttime);
+                                        modal_manageOrders_pojo_class_sortedOrdersList.setOrderreadytime_in_long(String.valueOf(mobile_manageOrders1.getLongValuefortheDate(Currenttime)));
+                                        int orderCount = mobile_manageOrders1.confirmedCount-1;
+
+                                        if(orderCount>0) {
+                                            mobile_manageOrders1.mobile_confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, orderCount));
+                                            mobile_manageOrders1.confirmedCount =orderCount;
+                                        }
+                                        else{
+                                            mobile_manageOrders1.mobile_confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
+
+                                        }
+                                        int readyorderCount = mobile_manageOrders1.readyForPickupCount+1;
+
+                                        //3
+                                        if(readyorderCount>0) {
+                                            mobile_manageOrders1.mobile_ready_Order_widget.setText(String.format("%s ( %d )", Constants.READY_FOR_PICKUP_ORDER_STATUS, readyorderCount));
+                                            mobile_manageOrders1.readyForPickupCount =readyorderCount;
+                                        }
+                                        else{
+                                            mobile_manageOrders1.mobile_ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
+
+                                        }
+
+                                    }
+                                    Mobile_ManageOrders1.sorted_OrdersList.remove(sortedarrayIterator);
+
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                            mobile_manageOrders1.displayorderDetailsinListview(mobile_manageOrders1.orderStatus,mobile_manageOrders1.ordersList,mobile_manageOrders1.slottypefromSpinner);
+
                         }
                         notifyDataSetChanged();
                     }
                 }
                 //Log.d(Constants.TAG, "Responsewwwww: " + response);
-                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+               mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+               // mobile_manageOrders1.displayorderDetailsinListview(mobile_manageOrders1.orderStatus,mobile_manageOrders1.ordersList,mobile_manageOrders1.slottypefromSpinner);
+
             }
         }, new Response.ErrorListener() {
             @Override

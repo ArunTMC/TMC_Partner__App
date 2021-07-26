@@ -2,13 +2,17 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -108,6 +112,11 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     private static String[] columns = {"S.No ","User Mobile","Payable Amount","Ordertype"};
     int spinnerselecteditem=1;
     int spinnerselecteditem_Count =1;
+    private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
+    private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
+
+    String selectedStartDate = "";
+    String selectedEndDate = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -217,8 +226,24 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-                    AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+                    // If do not grant write external storage permission.
+                    if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                        // Request user to grant write external storage permission.
+                        ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        Toast.makeText(GenerateCustomerMobileNo_BillValueReport.this, "Click Allow and then Generate Again", Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        showProgressBar(true);
+
+                        try {
+                            AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         });
@@ -535,6 +560,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             fromdateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             //getOrderForSelectedDate(DateString, vendorKey);
                             fromdatestring = fromdateSelector_text.getText().toString();
+                            selectedStartDate = fromdatestring;
+                            selectedEndDate = getDatewithNameoftheseventhDayFromSelectedStartDate(DateString);
 
                             //      showProgressBar(true);
 
@@ -548,13 +575,16 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                 }, year, month, day);
 
 
+
         Calendar c = Calendar.getInstance();
 
 
 
         DatePicker datePicker = fromdatepicker.getDatePicker();
 
-        c.add(Calendar.DATE, -6);
+        c.add(Calendar.DATE, -30);
+        // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
+        Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
         long oneMonthAhead = c.getTimeInMillis();
         datePicker.setMaxDate(System.currentTimeMillis() - 1000);
         datePicker.setMinDate(oneMonthAhead);
@@ -621,15 +651,57 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                         }
                     }
                 }, year, month, day);
+
+
+
+
         Calendar c = Calendar.getInstance();
 
 
-        DatePicker datePicker = fromdatepicker.getDatePicker();
 
-        c.add(Calendar.DATE, -6);
+
+        boolean isEndDateisAfterCurrentDate = false;
+        Date d2=null,d1 = null;
+        long MaxDate = getMillisecondsFromDate(selectedEndDate);
+        long MinDate = getMillisecondsFromDate(selectedStartDate);
+
+        String todayDate = getDate_and_time();
+        SimpleDateFormat sdformat = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            d2 = sdformat.parse(todayDate);
+
+            d1 = sdformat.parse(selectedEndDate);
+            if((d1.compareTo(d2) < 0)||(d1.compareTo(d2) == 0)){
+                isEndDateisAfterCurrentDate =false;
+            }
+            else if(d1.compareTo(d2) > 0){
+                isEndDateisAfterCurrentDate =true;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        DatePicker datePicker = todatepicker.getDatePicker();
+        c.add(Calendar.DATE, -30);
+        try {
+            if (!isEndDateisAfterCurrentDate) {
+
+                MaxDate = getMillisecondsFromDate(selectedEndDate);
+
+            } else {
+                MaxDate = getMillisecondsFromDate(todayDate);
+
+            }
+            MinDate = getMillisecondsFromDate(selectedStartDate);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
         long oneMonthAhead = c.getTimeInMillis();
-        datePicker.setMaxDate(System.currentTimeMillis() - 1000);
-        datePicker.setMinDate(oneMonthAhead);
+        datePicker.setMaxDate(MaxDate);
+        datePicker.setMinDate(MinDate);
 
 
         todatepicker.show();
@@ -651,7 +723,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
     private void openDatePicker() {
-
+        array_of_Dates.clear();
         spinnerselecteditem = 1 ;
         spinnerselecteditem_Count=1;
         final Calendar cldr = Calendar.getInstance();
@@ -1277,7 +1349,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     private void AddDatatoExcelSheet(List<Modal_ManageOrders_Pojo_Class> OrdersList, String name) {
 
 
-        Log.d(Constants.TAG, "prepareDataForExcelSheet type  addData: " + name);
+       // Log.d(Constants.TAG, "prepareDataForExcelSheet type  addData: " + name);
         for(int i =0;array_of_Dates.size()>i;i++) {
             String date = array_of_Dates.get(i);
             List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList = getorderlistdatewise(OrdersList,date );
@@ -1419,7 +1491,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        File file = new File(dir, "Customer Mobileno & Bill value"+ System.currentTimeMillis()  +".xls");
+        File file = new File(dir, "Customer Mobileno & Bill value.xls");
 
 
         //   File file = new File(getExternalFilesDir(null), "Onlineorderdetails.xls");
@@ -1459,16 +1531,14 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             //     startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(Uri.fromFile(file), "application/xls"));
 
             Toast.makeText(getApplicationContext(), "File Created", Toast.LENGTH_LONG).show();
+            Objects.requireNonNull(outputStream).close();
+
         } catch (java.io.IOException e) {
             e.printStackTrace();
             showProgressBar(false);
 
-            Toast.makeText(getApplicationContext(), "File can't be  Created", Toast.LENGTH_LONG).show();
-            try {
-                outputStream.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            Toast.makeText(getApplicationContext(), "File can't be  Created Permission Denied", Toast.LENGTH_LONG).show();
+
         }
         Uri pdfUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -1538,6 +1608,53 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
 
+
+    private long getMillisecondsFromDate(String dateString) {
+        Calendar calendarr = Calendar.getInstance();
+
+
+
+        calendarr.add(Calendar.DATE,-1);
+
+
+
+        long milliseconds = calendarr.getTimeInMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try{
+            //formatting the dateString to convert it into a Date
+            Date date = sdf.parse(dateString);
+            System.out.println("Given Time in milliseconds : "+date.getTime());
+
+            Calendar calendar = Calendar.getInstance();
+            //Setting the Calendar date and time to the given date and time
+            calendar.setTime(date);
+            System.out.println("Given Time in milliseconds : "+calendar.getTimeInMillis());
+            milliseconds = calendar.getTimeInMillis();
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        return  milliseconds;
+    }
+
+    public String getDate_and_time()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+
+        SimpleDateFormat dayname = new SimpleDateFormat("EEE");
+        String Currentday = dayname.format(c);
+
+
+
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDate = df.format(c);
+        String date = Currentday+", "+CurrentDate;
+
+
+        return date;
+    }
 
     private String getTomorrowsDate(String datestring) {
 
@@ -1830,11 +1947,45 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     }
 
 
+
+    private String getDatewithNameoftheseventhDayFromSelectedStartDate(String sDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+        calendar.add(Calendar.DATE, 6);
+
+
+
+
+        Date c1 = calendar.getTime();
+
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        String PreviousdayDay = previousday.format(c1);
+
+
+
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        String  PreviousdayDate = df1.format(c1);
+        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+        return yesterdayAsString;
+    }
     private String getLongValuefortheDate2(String orderplacedtime) {
         String longvalue = "";
         try {
             String time1 = orderplacedtime;
-            //   Log.d(TAG, "time1long  "+orderplacedtime);
+               Log.d(Constants.TAG, "time1long  "+orderplacedtime);
 
             SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
             Date date = sdf.parse(time1);
@@ -1855,7 +2006,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             ex.printStackTrace();
             try {
                 String time1 = orderplacedtime;
-                //     Log.d(TAG, "time1long  "+orderplacedtime);
+                     Log.d(Constants.TAG, "time1long  "+orderplacedtime);
 
                 SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
                 Date date = sdf.parse(time1);

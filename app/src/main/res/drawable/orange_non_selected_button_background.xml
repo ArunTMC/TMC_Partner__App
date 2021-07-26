@@ -4,7 +4,7 @@
 
     <stroke
 
-        android:width="0.9dp"
+        android:width="1.5dp"
 
         android:color="@color/TMC_Primary_Text_Color"/>
 

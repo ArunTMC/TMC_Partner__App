@@ -35,11 +35,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.itextpdf.kernel.geom.Line;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
-import com.meatchop.tmcpartner.Settings.AppSales_Report;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.pos.printer.PrinterFunctions;
 
@@ -47,6 +47,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -59,7 +61,6 @@ import java.util.Objects;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
-import static com.meatchop.tmcpartner.Constants.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -75,8 +76,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     public static List<Modal_NewOrderItems> menuItem;
     public static List<Modal_NewOrderItems> completemenuItem;
     Context mContext;
-    public TextView total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
-    Button procced_to_pay_widget,discount;
+    public TextView redeemed_points_text_widget,total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
+    Button procced_to_pay_widget,redeemPoints_button_widget,discount_button_widget,check_redeemPoints_widget;
     EditText mobileNo_Edit_widget;
     String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay,OrderTypefromSpinner;
     String portName = "USB";
@@ -89,19 +90,35 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     static Adapter_CartItem_Recyclerview adapter_cartItem_recyclerview;
     static Adapter_CartItem_Listview adapter_cartItem_listview;
     TextView discount_Edit_widget,discount_rs_text_widget;
-    Button discount_button_widget;
     String discountAmount ="" ;
-    String finaltoPayAmount;
+    String finaltoPayAmount="",maxpointsinaday_String="",minordervalueforredeem_String="",pointsfor100rs_String="",totalamounttoPaywithoutredeempoints="";
+    String vendorKey="",vendorname="",finaltoPayAmountwithRedeemPoints="",
+            redeemPoints_String="",redeemKey="",mobileno_redeemKey="",discountAmountalreadyusedtoday=""
+            ,totalpointsredeemedalreadybyuser="",totalordervalue_tillnow="",totalredeempointsuserhave="";
+    double maxpointsinaday_double,minordervalueforredeem_double,pointsfor100rs_double,totalAmounttopay,finalamounttoPay;
+    double totalredeempointsusergetfromorder=0;
+    double pointsalreadyredeemDouble,totalpointsuserhave_afterapplypoints,pointsenteredToredeem_double=0;
+    String pointsenteredToredeem="";
+    String ordertype;
     int new_totalAmount_withGst;
     int netTotaL;
-    LinearLayout loadingPanel,loadingpanelmask;
+    LinearLayout loadingPanel,loadingpanelmask,discountAmountLayout,redeemPointsLayout;
+
+    boolean ispointsApplied_redeemClicked=false;
+    boolean isProceedtoCheckoutinRedeemdialogClicked =false;
+    boolean isRedeemDialogboxOpened=false;
+    boolean isUpdateRedeemPointsMethodCalled=false;
+    boolean isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+    boolean isMobileAppDataFetchedinDashboard=false;
+    boolean isDiscountApplied=false;
+
+    boolean isUpdateCouponTransactionMethodCalled=false;
     private  boolean isOrderDetailsMethodCalled =false;
     private  boolean isOrderTrackingDetailsMethodCalled =false;
     private  boolean isPaymentDetailsMethodCalled =false;
-
     boolean isproceedtoPay_Clicked =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false;
     Spinner orderTypeSpinner;
-
+   
 
     public NewOrders_MenuItem_Fragment() {
         // Required empty public constructor
@@ -161,20 +178,566 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         discount_Edit_widget  = view.findViewById(R.id.discount_Edit_widget);
         discount_button_widget = view.findViewById(R.id.discount_widget);
         discount_rs_text_widget = view.findViewById(R.id.discount_rs_text_widget);
+        redeemPoints_button_widget = view.findViewById(R.id.redeemPoints_widget);
+        redeemed_points_text_widget = view.findViewById(R.id.redeemed_points_text_widget);
+        check_redeemPoints_widget = view.findViewById(R.id.check_redeemPoints_widget);
+        redeemPointsLayout = view.findViewById(R.id.redeemPointsLayout);
+        discountAmountLayout = view.findViewById(R.id.discountAmountLayout);
+        try{
+            SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+            vendorKey = shared.getString("VendorKey","vendor_1");
+
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            SharedPreferences shared = requireContext().getSharedPreferences("RedeemData", MODE_PRIVATE);
+            maxpointsinaday_String = (shared.getString("maxpointsinaday", ""));
+            maxpointsinaday_double = Double.parseDouble(maxpointsinaday_String);
+            minordervalueforredeem_String = (shared.getString("minordervalueforredeem", ""));
+            minordervalueforredeem_double = Double.parseDouble(minordervalueforredeem_String);
+            pointsfor100rs_String = (shared.getString("pointsfor100rs", ""));
+            pointsfor100rs_double = Double.parseDouble(pointsfor100rs_String);
+            isMobileAppDataFetchedinDashboard = (shared.getBoolean("fetchedindashboard", false));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
 
 
         addDatatoOrderTypeSpinner();
+        redeemPointsLayout.setVisibility(View.GONE);
+        discountAmountLayout.setVisibility(View.VISIBLE);
+        String dummytime = getDate_and_time();
+
+        try{
+            if(maxpointsinaday_double==0||minordervalueforredeem_double==0||pointsfor100rs_double==0||(!isMobileAppDataFetchedinDashboard)){
+
+
+                showProgressBar(true);
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetMobileAppData, null,
+                            new com.android.volley.Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(@NonNull JSONObject response) {
+
+
+                                    try {
+
+                                        Log.d(Constants.TAG, " response: " + response);
+                                        try {
+                                            String jsonString =response.toString();
+                                            Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                                            JSONObject jsonObject = new JSONObject(jsonString);
+                                            JSONArray JArray  = jsonObject.getJSONArray("content");
+                                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                            int i1=0;
+                                            int arrayLength = JArray.length();
+                                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                                            for(;i1<(arrayLength);i1++) {
+
+                                                try {
+                                                    JSONObject json = JArray.getJSONObject(i1);
+
+                                                    JSONArray array  = json.getJSONArray("redeemdata ");
+
+                                                    for(int i=0; i < array.length(); i++) {
+                                                        JSONObject redeemdata_json = array.getJSONObject(i);
+                                                        maxpointsinaday_String = redeemdata_json.getString("maxpointsinaday");
+                                                        minordervalueforredeem_String= redeemdata_json.getString("minordervalueforredeem");
+                                                        pointsfor100rs_String = redeemdata_json.getString("pointsfor100rs");
+                                                        Log.d("Constants.TAG", "maxpointsinaday Response: " + maxpointsinaday_String);
+                                                        Log.d("Constants.TAG", "minordervalueforredeem Response: " + minordervalueforredeem_String);
+                                                        Log.d("Constants.TAG", "pointsfor100rs Response: " + pointsfor100rs_String);
+
+
+                                                        try {
+                                                            maxpointsinaday_double = Double.parseDouble(maxpointsinaday_String);
+                                                            minordervalueforredeem_double = Double.parseDouble(minordervalueforredeem_String);
+                                                            pointsfor100rs_double = Double.parseDouble(pointsfor100rs_String);
+                                                            Toast.makeText(mContext,"Can't  Details", Toast.LENGTH_LONG).show();
+
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                            showProgressBar(false);
+                                                            Toast.makeText(mContext,"Can't get RedeemPoints Details", Toast.LENGTH_LONG).show();
+                                                        }
+
+                                                        showProgressBar(false);
+
+                                                        saveredeemDetailsinSharePreferences(maxpointsinaday_String,minordervalueforredeem_String,pointsfor100rs_String);
+
+                                                    }
+                                                } catch (Exception e) {
+                                                    showProgressBar(false);
+                                                    Toast.makeText(mContext,"Can't get RedeemPoints Details", Toast.LENGTH_LONG).show();
+
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        } catch (Exception e) {
+                                            showProgressBar(false);
+                                            Toast.makeText(mContext,"Can't get RedeemPoints Details", Toast.LENGTH_LONG).show();
+
+                                            e.printStackTrace();
+                                        }
+
+                                    } catch (Exception e) {
+                                        showProgressBar(false);
+                                        Toast.makeText(mContext,"Can't get RedeemPoints Details", Toast.LENGTH_LONG).show();
+
+                                        e.printStackTrace();
+                                    }
+
+
+                                }
+
+                            }, new com.android.volley.Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(@NonNull VolleyError error) {
+                            Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                            Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                            Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+                            showProgressBar(false);
+                            Toast.makeText(mContext,"Can't get RedeemPoints Details", Toast.LENGTH_LONG).show();
+
+                            error.printStackTrace();
+                        }
+                    }) {
+                        @Override
+                        public Map<String, String> getParams() throws AuthFailureError {
+                            final Map<String, String> params = new HashMap<>();
+                            params.put("modulename", "Mobile");
+                            //params.put("orderplacedtime", "12/26/2020");
+
+                            return params;
+                        }
+
+
+                        @NonNull
+                        @Override
+                        public Map<String, String> getHeaders() throws AuthFailureError {
+                            final Map<String, String> header = new HashMap<>();
+                            header.put("Content-Type", "application/json");
+
+                            return header;
+                        }
+                    };
+                    jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+                    // Make the request
+                    Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        check_redeemPoints_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String deliveryUserMobileNumber ="+91"+mobileNo_Edit_widget.getText().toString();
+
+                if (deliveryUserMobileNumber.length() == 13) {
+                    String deliveryUserMobileNumberEncoded  = deliveryUserMobileNumber;
+                    try {
+                        deliveryUserMobileNumberEncoded = URLEncoder.encode(deliveryUserMobileNumber, "utf-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    showProgressBar(true);
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetRedeemPointsDetailsFortheUser+"?transactiondate="+CurrentDate+"&mobileno="+deliveryUserMobileNumberEncoded, null,
+                            new com.android.volley.Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(@NonNull JSONObject response) {
+
+
+                                    try {
+                                        String jsonString = response.toString();
+                                        Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                                        JSONObject jsonObject = new JSONObject(jsonString);
+
+                                        String message = jsonObject.getString("message").toString().toUpperCase();
+                                        JSONArray JArray = jsonObject.getJSONArray("content");
+                                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                        int i1 = 0;
+                                        int arrayLength = JArray.length();
+                                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                        if ((message.equals("SUCCESS"))&&(arrayLength>0)){
+
+
+                                            for (; i1 < (arrayLength); i1++) {
+
+                                                try {
+                                                    Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                                    Log.d("Constants.TAG", "redeem points Response: object 0 " + JArray.getJSONObject(0));
+                                                    //  Log.d("Constants.TAG", "redeem points Response: array 0 " + JArray.getJSONArray(0));
+                                                    JSONObject jsonObject1 = JArray.getJSONObject(i1);
+                                                    try {
+                                                        redeemKey = String.valueOf(jsonObject1.get("key"));
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                        redeemKey ="";
+                                                    }
+
+                                                    try {
+                                                        mobileno_redeemKey = String.valueOf(jsonObject1.get("mobileno"));
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                        mobileno_redeemKey ="";
+                                                    }
+
+                                                    try {
+                                                        discountAmountalreadyusedtoday = String.valueOf(jsonObject1.get("discountamountalreadyusedtoday"));
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                        discountAmountalreadyusedtoday ="";
+                                                    }
+
+
+                                                    try {
+                                                        totalpointsredeemedalreadybyuser = String.valueOf(jsonObject1.get("pointsredeemed"));
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                        totalpointsredeemedalreadybyuser ="";
+                                                    }
+
+
+                                                    try {
+                                                        totalordervalue_tillnow = String.valueOf(jsonObject1.get("totalordervalue"));
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                        totalordervalue_tillnow ="";
+                                                    }
+
+
+                                                    try {
+                                                        totalredeempointsuserhave = String.valueOf(jsonObject1.get("totalredeempoints"));
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                        totalredeempointsuserhave ="";
+                                                    }
+
+
+
+
+
+                                                    Log.d("Constants.TAG", "redeem points Response: jsonObject1 0 " + jsonObject1.get("key"));
+                                                    isProceedtoCheckoutinRedeemdialogClicked = false;
+                                                    ispointsApplied_redeemClicked = false;
+
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                            if(!redeemKey.equals("")) {
+                                                OpenRedeemDialogScreen(false);
+                                            }
+                                            else{
+                                                isProceedtoCheckoutinRedeemdialogClicked = false;
+                                                ispointsApplied_redeemClicked = false;
+                                                AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsTryAgainInstruction , 0);
+                                                showProgressBar(false);
+
+                                            }
+
+                                        }
+
+                                        else{
+                                            isProceedtoCheckoutinRedeemdialogClicked = false;
+                                            ispointsApplied_redeemClicked = false;
+                                            AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsIsNotExistedInstruction , 0);
+                                            showProgressBar(false);
+
+                                        }
+
+
+
+                                    } catch (Exception e) {
+                                        showProgressBar(false);
+
+                                        e.printStackTrace();
+                                    }
+
+
+                                }
+
+                            }, new com.android.volley.Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(@NonNull VolleyError error) {
+                            Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
+                            isProceedtoCheckoutinRedeemdialogClicked = false;
+                            ispointsApplied_redeemClicked = false;
+                            AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsTryAgainInstruction , 0);
+                            showProgressBar(false);
+
+                            Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                            Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                            Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+
+                            error.printStackTrace();
+                        }
+                    }) {
+                        @Override
+                        public Map<String, String> getParams() throws AuthFailureError {
+                            final Map<String, String> params = new HashMap<>();
+                            params.put("modulename", "Mobile");
+                            //params.put("orderplacedtime", "12/26/2020");
+
+                            return params;
+                        }
+
+
+                        @NonNull
+                        @Override
+                        public Map<String, String> getHeaders() throws AuthFailureError {
+                            final Map<String, String> header = new HashMap<>();
+                            header.put("Content-Type", "application/json");
+
+                            return header;
+                        }
+                    };
+                    jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+                    // Make the request
+                    Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+                } else {
+                    AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_mobile_no_text);
+
+                }
+            }
+        });
+
+
+        redeemPoints_button_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                discountAmount = discount_Edit_widget.getText().toString();
+                if (discountAmount.equals("") || discountAmount.equals("0")) {
+                   //  totalAmounttopay = Double.parseDouble(total_Rs_to_Pay_text_widget.getText().toString());
+                    String deliveryUserMobileNumber ="+91"+mobileNo_Edit_widget.getText().toString();
+
+                    if (totalAmounttopay >= minordervalueforredeem_double) {
+                        if (deliveryUserMobileNumber.length() == 13) {
+                            String deliveryUserMobileNumberEncoded  = deliveryUserMobileNumber;
+                            try {
+                                deliveryUserMobileNumberEncoded = URLEncoder.encode(deliveryUserMobileNumber, "utf-8");
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                            showProgressBar(true);
+                            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetRedeemPointsDetailsFortheUser+"?transactiondate="+CurrentDate+"&mobileno="+deliveryUserMobileNumberEncoded, null,
+                                    new com.android.volley.Response.Listener<JSONObject>() {
+                                        @Override
+                                        public void onResponse(@NonNull JSONObject response) {
+
+
+                                            try {
+                                                String jsonString = response.toString();
+                                                Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                                                JSONObject jsonObject = new JSONObject(jsonString);
+
+                                                String message = jsonObject.getString("message").toString().toUpperCase();
+                                                    JSONArray JArray = jsonObject.getJSONArray("content");
+                                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                                int i1 = 0;
+                                                int arrayLength = JArray.length();
+                                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                                if ((message.equals("SUCCESS"))&&(arrayLength>0)){
+
+
+                                                    for (; i1 < (arrayLength); i1++) {
+
+                                                    try {
+                                                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                                        Log.d("Constants.TAG", "redeem points Response: object 0 " + JArray.getJSONObject(0));
+                                                        //  Log.d("Constants.TAG", "redeem points Response: array 0 " + JArray.getJSONArray(0));
+                                                        JSONObject jsonObject1 = JArray.getJSONObject(i1);
+                                                        try {
+                                                            redeemKey = String.valueOf(jsonObject1.get("key"));
+                                                        }
+                                                        catch(Exception e){
+                                                            e.printStackTrace();
+                                                            redeemKey ="";
+                                                        }
+
+                                                        try {
+                                                            mobileno_redeemKey = String.valueOf(jsonObject1.get("mobileno"));
+                                                        }
+                                                        catch(Exception e){
+                                                            e.printStackTrace();
+                                                            mobileno_redeemKey ="";
+                                                        }
+
+                                                        try {
+                                                            discountAmountalreadyusedtoday = String.valueOf(jsonObject1.get("discountamountalreadyusedtoday"));
+                                                        }
+                                                        catch(Exception e){
+                                                            e.printStackTrace();
+                                                            discountAmountalreadyusedtoday ="";
+                                                        }
+
+
+                                                        try {
+                                                            totalpointsredeemedalreadybyuser = String.valueOf(jsonObject1.get("pointsredeemed"));
+                                                        }
+                                                        catch(Exception e){
+                                                            e.printStackTrace();
+                                                            totalpointsredeemedalreadybyuser ="";
+                                                        }
+
+
+                                                        try {
+                                                            totalordervalue_tillnow = String.valueOf(jsonObject1.get("totalordervalue"));
+                                                        }
+                                                        catch(Exception e){
+                                                            e.printStackTrace();
+                                                            totalordervalue_tillnow ="";
+                                                        }
+
+
+                                                        try {
+                                                            totalredeempointsuserhave = String.valueOf(jsonObject1.get("totalredeempoints"));
+                                                        }
+                                                        catch(Exception e){
+                                                            e.printStackTrace();
+                                                            totalredeempointsuserhave ="";
+                                                        }
+
+
+
+
+
+                                                        Log.d("Constants.TAG", "redeem points Response: jsonObject1 0 " + jsonObject1.get("key"));
+                                                        isProceedtoCheckoutinRedeemdialogClicked = false;
+                                                        ispointsApplied_redeemClicked = false;
+
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                                    if(!redeemKey.equals("")) {
+                                                        OpenRedeemDialogScreen(true);
+                                                    }
+                                                    else{
+                                                        isProceedtoCheckoutinRedeemdialogClicked = false;
+                                                        ispointsApplied_redeemClicked = false;
+                                                        AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsTryAgainInstruction , 0);
+                                                        showProgressBar(false);
+
+                                                    }
+
+                                                }
+
+                                                else{
+                                                    isProceedtoCheckoutinRedeemdialogClicked = false;
+                                                    ispointsApplied_redeemClicked = false;
+                                                    AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsIsNotExistedInstruction , 0);
+                                                    showProgressBar(false);
+
+                                                }
+
+
+
+                                            } catch (Exception e) {
+                                                showProgressBar(false);
+
+                                                e.printStackTrace();
+                                            }
+
+
+                                        }
+
+                                    }, new com.android.volley.Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(@NonNull VolleyError error) {
+                                    Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
+                                    isProceedtoCheckoutinRedeemdialogClicked = false;
+                                    ispointsApplied_redeemClicked = false;
+                                    AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsTryAgainInstruction , 0);
+                                    showProgressBar(false);
+
+                                    Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                                    Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                                    Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+
+                                    error.printStackTrace();
+                                }
+                            }) {
+                                @Override
+                                public Map<String, String> getParams() throws AuthFailureError {
+                                    final Map<String, String> params = new HashMap<>();
+                                    params.put("modulename", "Mobile");
+                                    //params.put("orderplacedtime", "12/26/2020");
+
+                                    return params;
+                                }
+
+
+                                @NonNull
+                                @Override
+                                public Map<String, String> getHeaders() throws AuthFailureError {
+                                    final Map<String, String> header = new HashMap<>();
+                                    header.put("Content-Type", "application/json");
+
+                                    return header;
+                                }
+                            };
+                            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+                            // Make the request
+                            Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+                        } else {
+                            AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_mobile_no_text);
+
+                        }
+                    } else {
+                        AlertDialogClass.showDialog(getActivity(), Constants.Order_Value_should_be_above + " " + minordervalueforredeem_String + " rs", 0);
+
+                    }
+                } else {
+                    AlertDialogClass.showDialog(getActivity(), Constants.RedeemPoints_and_Discount_Instruction, 0);
+
+
+                }
+            }
+        });
 
 
         orderTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 OrderTypefromSpinner = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Selected: " + OrderTypefromSpinner,          Toast.LENGTH_LONG).show();
+                Toast.makeText(parent.getContext(), "Selected: " + OrderTypefromSpinner, Toast.LENGTH_LONG).show();
             }
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
-                OrderTypefromSpinner = "Store Pickup";
+                OrderTypefromSpinner = "POS Order";
             }
         });
 
@@ -193,22 +756,36 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             public void onClick(View view) {
                 try {
                     if (cart_Item_List.size() > 0 && cartItem_hashmap.size() > 0) {
-                        if ((!total_item_Rs_text_widget.getText().toString().equals("0")) || (!total_Rs_to_Pay_text_widget.getText().toString().equals("0"))||(!total_item_Rs_text_widget.getText().toString().equals("0.00")) || (!total_Rs_to_Pay_text_widget.getText().toString().equals("0.00"))) {
+                        if((redeemed_points_text_widget.getText().toString().equals(""))||(redeemed_points_text_widget.getText().toString().equals("0"))){
 
-                            discountAmount = discount_Edit_widget.getText().toString();
-                            if(!discountAmount.equals("")){
-                                double discountAmountdouble = Double.parseDouble(discountAmount);
-                                double toPayAmt = Double.parseDouble(finaltoPayAmount);
-                                toPayAmt = toPayAmt - discountAmountdouble;
-                                int toPayAmountInt = (int) Math.round((toPayAmt));
+                            if ((!total_item_Rs_text_widget.getText().toString().equals("0")) || (!total_Rs_to_Pay_text_widget.getText().toString().equals("0")) || (!total_item_Rs_text_widget.getText().toString().equals("0.00")) || (!total_Rs_to_Pay_text_widget.getText().toString().equals("0.00"))) {
 
+                                discountAmount = discount_Edit_widget.getText().toString();
+                                if (!discountAmount.equals("")) {
+                                    double discountAmountdouble = Double.parseDouble(discountAmount);
+                                    double toPayAmt = Double.parseDouble(finaltoPayAmount);
+                                    if (toPayAmt > discountAmountdouble) {
+                                        toPayAmt = toPayAmt - discountAmountdouble;
+                                        int toPayAmountInt = (int) Math.round((toPayAmt));
+                                        totalAmounttopay = toPayAmt;
 
-                                total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
+                                        total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
+                                    }
+                                    else{
+                                        AlertDialogClass.showDialog(getActivity(), Constants.DiscountAmountInstruction, 0);
+
+                                    }
+                                }
                             }
+                        }
+                        else{
+                            AlertDialogClass.showDialog(getActivity(), Constants.RedeemPoints_and_Discount_Instruction2, 0);
+
                         }
                     }
                     else{
-                        Toast.makeText(mContext,"Can't Apply discount when Cart is Empty",Toast.LENGTH_SHORT).show();
+                        AlertDialogClass.showDialog(getActivity(), Constants.CantApplyDiscountInstruction, 0);
+
                     }
                 }
 
@@ -235,92 +812,104 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                         showProgressBar(true);
 
 
+                        if (cart_Item_List.size() > 0 && cartItem_hashmap.size() > 0) {
 
-                        if ((!total_item_Rs_text_widget.getText().toString().equals("0")) && (!total_Rs_to_Pay_text_widget.getText().toString().equals("0"))) {
+                        if ((!total_item_Rs_text_widget.getText().toString().equals("0")) && (!total_Rs_to_Pay_text_widget.getText().toString().equals("0"))&&(!total_item_Rs_text_widget.getText().toString().equals("0.0")) && (!total_Rs_to_Pay_text_widget.getText().toString().equals("0.0"))&&(!total_item_Rs_text_widget.getText().toString().equals("0.00")) && (!total_Rs_to_Pay_text_widget.getText().toString().equals("0.00"))&&(!total_item_Rs_text_widget.getText().toString().equals("")) && (!total_Rs_to_Pay_text_widget.getText().toString().equals(""))) {
                             if (checkforBarcodeInCart("empty")) {
                                 NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
 
                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
                             }
-                            //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
-
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                            try {
-                            Dialog dialog = new Dialog(getActivity());
-                            dialog.setContentView(R.layout.select_payment_mode_layout);
-                            dialog.setTitle("Select the Payment Mode ");
-                            dialog.setCanceledOnTouchOutside(true);
-
-                            Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
-                            Button via_card = (Button) dialog.findViewById(R.id.via_card);
-                            Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
-
-                            Currenttime = getDate_and_time();
-                            //Log.d(TAG, "Currenttime: " + Currenttime);
 
                             long sTime = System.currentTimeMillis();
-                            //Log.i(TAG, "date and time " + sTime);
+                            Currenttime = getDate_and_time();
+
+                            //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            Dialog dialog = new Dialog(getActivity());
+                                            dialog.setContentView(R.layout.select_payment_mode_layout);
+                                            dialog.setTitle("Select the Payment Mode ");
+                                            dialog.setCanceledOnTouchOutside(true);
+
+                                            Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                            Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                            Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+
+                                            //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                            //Log.i(TAG, "date and time " + sTime);
 
 
+                                            if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
 
-                            via_card.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    dialog.dismiss();
-
-                                    PlaceOrdersinDatabaseaAndPrintRecipt("CARD",sTime,Currenttime,cart_Item_List);
+                                            }
 
 
+                                            via_card.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    dialog.dismiss();
 
-                                }
-                            });
-
-
-                            via_cash.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    dialog.dismiss();
-
-                                    PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                    PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime, cart_Item_List);
 
 
-
-                                }
-                            });
-
-
-                            via_upi.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    dialog.dismiss();
-
-                                    PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
+                                                }
+                                            });
 
 
+                                            via_cash.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    dialog.dismiss();
+
+                                                    PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
 
 
-                                }
-                            });
+                                                }
+                                            });
 
 
-                            dialog.show();
-                            showProgressBar(false);
+                                            via_upi.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    dialog.dismiss();
 
-                                   }
-                                    catch (WindowManager.BadTokenException e) {
-                                        showProgressBar(false);
+                                                    PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
 
-                                        e.printStackTrace();
+
+                                                }
+                                            });
+
+
+                                            dialog.show();
+                                            showProgressBar(false);
+
+                                        } catch (WindowManager.BadTokenException e) {
+                                            showProgressBar(false);
+
+                                            e.printStackTrace();
+                                        }
                                     }
-                                }
-                            });
+                                });
+
+
+
+
                         } else {
                             showProgressBar(false);
 
                             AlertDialogClass.showDialog(getActivity(), R.string.Cant_place_order);
+
+                        }
+
+
+                        } else {
+                            AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
 
                         }
 
@@ -335,6 +924,144 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
 
+
+
+    }
+
+    private void OpenRedeemDialogScreen(boolean showButtons) {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Dialog dialog = new Dialog(getActivity());
+                    dialog.setContentView(R.layout.redeem_pointswise_discount_layout);
+                    showProgressBar(false);
+                    isRedeemDialogboxOpened = true;
+
+
+                    Currenttime = getDate_and_time();
+                    //Log.d(TAG, "Currenttime: " + Currenttime);
+                    TextView usermobileno_textwidget = (TextView) dialog.findViewById(R.id.usermobileno_textwidget);
+                    TextView totalNoofPoints_textwidget = (TextView) dialog.findViewById(R.id.totalNoofPoints_textwidget);
+                    TextView points_you_can_redeemToday_textwidget = (TextView) dialog.findViewById(R.id.points_you_can_redeemToday_textwidget);
+                    EditText points_to_redeem_edittext = (EditText) dialog.findViewById(R.id.points_to_redeem_edittext);
+                    Button applyRedeemPoints = (Button) dialog.findViewById(R.id.applyRedeemPoints);
+                    TextView totalbillAmount_textwidget = (TextView) dialog.findViewById(R.id.totalbillAmount_textwidget);
+                    TextView redeemedpoints_textwidget = (TextView) dialog.findViewById(R.id.redeemedpoints_textwidget);
+                    TextView finalAmounttopay_textwidget = (TextView) dialog.findViewById(R.id.finalAmounttopay_textwidget);
+                    TextView points_user_already_redeemed = (TextView) dialog.findViewById(R.id.points_user_already_redeemed);
+                    LinearLayout billDetailsLayout = (LinearLayout) dialog.findViewById(R.id.billDetailsLayout);
+                    LinearLayout enterpointsLayout = (LinearLayout) dialog.findViewById(R.id.enterpointsLayout);
+                    Button proceedtoCheckoutWidget = (Button) dialog.findViewById(R.id.proceedtoCheckoutWidget);
+                    TextView total_noof_points_allowedPerDay_textWidget = (TextView) dialog.findViewById(R.id.total_noof_points_allowedPerDay_textWidget);
+                    if(showButtons){
+                        proceedtoCheckoutWidget.setVisibility(View.VISIBLE);
+                        applyRedeemPoints.setVisibility(View.VISIBLE);
+                        billDetailsLayout.setVisibility(View.VISIBLE);
+                        enterpointsLayout.setVisibility(View.VISIBLE);
+                        dialog.setCanceledOnTouchOutside(false);
+
+                    }
+                    else{
+                        proceedtoCheckoutWidget.setVisibility(View.GONE);
+                        applyRedeemPoints.setVisibility(View.GONE);
+                        billDetailsLayout.setVisibility(View.GONE);
+                        enterpointsLayout.setVisibility(View.GONE);
+                        dialog.setCanceledOnTouchOutside(true);
+                    }
+                    pointsalreadyredeemDouble = Double.parseDouble(totalpointsredeemedalreadybyuser);
+
+                    double pointsredeemedtodayDouble =  Double.parseDouble(discountAmountalreadyusedtoday);
+                    double pointsallowedtouseToday = maxpointsinaday_double-pointsredeemedtodayDouble;
+                    usermobileno_textwidget.setText(mobileno_redeemKey);
+                    totalNoofPoints_textwidget.setText(totalredeempointsuserhave);
+                    totalbillAmount_textwidget.setText(String.valueOf(totalAmounttopay));
+                    finalAmounttopay_textwidget.setText(String.valueOf(totalAmounttopay));
+                    points_user_already_redeemed.setText(totalpointsredeemedalreadybyuser);
+                    redeemedpoints_textwidget.setText("0  Points");
+
+                    total_noof_points_allowedPerDay_textWidget.setText(String.format("( %s Points allowed / day ) ", maxpointsinaday_String));
+                    points_you_can_redeemToday_textwidget.setText(String.valueOf(Math.round((pointsallowedtouseToday)))+" Points");
+                    applyRedeemPoints.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            double totalpointsuseralreadyhave = Double.parseDouble(totalredeempointsuserhave);
+                            pointsenteredToredeem = points_to_redeem_edittext.getText().toString();
+                            if(pointsenteredToredeem.equals("")|| pointsenteredToredeem == null){
+                                pointsenteredToredeem ="0";
+                            }
+                            pointsenteredToredeem_double =  Double.parseDouble(pointsenteredToredeem);
+                            if (totalpointsuseralreadyhave >= pointsenteredToredeem_double) {
+                                pointsalreadyredeemDouble = pointsalreadyredeemDouble + pointsenteredToredeem_double;
+                                totalpointsuserhave_afterapplypoints =totalpointsuseralreadyhave-pointsenteredToredeem_double;
+
+                                 finalamounttoPay = totalAmounttopay - pointsenteredToredeem_double;
+                                if (pointsenteredToredeem_double <= pointsallowedtouseToday) {
+                                    ispointsApplied_redeemClicked = true;
+                                    redeemedpoints_textwidget.setText(new StringBuilder().append(String.valueOf(Math.round(pointsenteredToredeem_double))).append("  Points").toString());
+
+                                    finalAmounttopay_textwidget.setText(String.valueOf(finalamounttoPay));
+                                    //redeemPointsKey_fromRedeem = redeemKey;
+
+
+                                } else {
+                                    AlertDialogClass.showDialog(getActivity(), Constants.PointusercanRedeemtoday , 0);
+
+                                }
+                            }
+                            else {
+                                AlertDialogClass.showDialog(getActivity(), "User got  " + String.valueOf(totalredeempointsuserhave) + "  Points only", 0);
+                            }
+                        }
+                    });
+
+
+                    proceedtoCheckoutWidget.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(ispointsApplied_redeemClicked) {
+                                isProceedtoCheckoutinRedeemdialogClicked = true;
+
+                                finaltoPayAmountwithRedeemPoints = finalAmounttopay_textwidget.getText().toString();
+                                redeemPoints_String =  pointsenteredToredeem ;
+                                redeemed_points_text_widget.setText(redeemPoints_String);
+                              //  totalpointsredeemedalreadybyuser=String.valueOf(pointsalreadyredeemDouble);
+                                totalredeempointsuserhave = String.valueOf(totalpointsuserhave_afterapplypoints);
+                                if(pointsenteredToredeem_double>0){
+                                    discountAmountLayout.setVisibility(View.GONE);
+                                    redeemPointsLayout.setVisibility(View.VISIBLE);
+                                }
+                                else{
+                                    redeemPoints_String ="0";
+                                    totalpointsredeemedalreadybyuser="0";
+                                    totalredeempointsuserhave="0";
+                                    pointsalreadyredeemDouble=0;
+                                    isProceedtoCheckoutinRedeemdialogClicked=false;
+                                    discountAmountLayout.setVisibility(View.VISIBLE);
+                                    redeemPointsLayout.setVisibility(View.GONE);
+                                }
+                                total_Rs_to_Pay_text_widget.setText(finaltoPayAmountwithRedeemPoints);
+                                dialog.cancel();
+                            }
+                            else{
+                                AlertDialogClass.showDialog(getActivity(), Constants.FirstApplyRedeemPoints_Instruction,0);
+
+                            }
+                        }
+                    });
+
+
+                    dialog.show();
+                    showProgressBar(false);
+
+                } catch (WindowManager.BadTokenException e) {
+                    showProgressBar(false);
+
+                    e.printStackTrace();
+                }
+            }
+        });
 
 
     }
@@ -354,11 +1081,104 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     private void PlaceOrdersinDatabaseaAndPrintRecipt(String paymentMode, long sTime, String currenttime, List<String> cart_Item_list) {
         showProgressBar(true);
+
         if (ispaymentMode_Clicked) {
             return;
         }
         else {
+
             ispaymentMode_Clicked = true;
+            String payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
+
+            if(payableAmount.equals("")||payableAmount.equals("0")||payableAmount.equals("0.00")||payableAmount.equals("0.0")){
+
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Dialog dialog = new Dialog(getActivity());
+                            dialog.setContentView(R.layout.print_again);
+                            dialog.setTitle("Last Order is Not Placed .Please Try Again !!!! ");
+                            dialog.setCanceledOnTouchOutside(false);
+                            dialog.setCancelable(false);
+
+                            Button printAgain = (Button) dialog.findViewById(R.id.printAgain);
+                            printAgain.setText("OK");
+
+                            printAgain.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    dialog.cancel();
+
+
+                                    cart_Item_List.clear();
+                                    cartItem_hashmap.clear();
+                                    ispaymentMode_Clicked = false;
+                                    isOrderDetailsMethodCalled = false;
+
+                                    isPaymentDetailsMethodCalled = false;
+                                    isOrderTrackingDetailsMethodCalled = false;
+                                    new_to_pay_Amount = 0;
+                                    old_taxes_and_charges_Amount = 0;
+                                    old_total_Amount = 0;
+                                    createEmptyRowInListView("empty");
+                                    CallAdapter();
+                                    discountAmount = "0";
+
+                                    discount_Edit_widget.setText("0");
+                                    finaltoPayAmount = "0";
+                                    discount_rs_text_widget.setText(discountAmount);
+                                    OrderTypefromSpinner = "POS Order";
+                                    orderTypeSpinner.setSelection(0);
+                                    total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                    taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                    total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                                    mobileNo_Edit_widget.setText("");
+                                    isPrintedSecondTime = false;
+                                    showProgressBar(false);
+
+                                    ispointsApplied_redeemClicked=false;
+                                    isProceedtoCheckoutinRedeemdialogClicked =false;
+                                    isRedeemDialogboxOpened=false;
+                                    isUpdateRedeemPointsMethodCalled=false;
+                                    isUpdateCouponTransactionMethodCalled=false;
+                                    isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                    totalAmounttopay=0;
+                                    finalamounttoPay=0;
+
+                                    pointsalreadyredeemDouble=0;
+                                    totalpointsuserhave_afterapplypoints=0;
+                                    pointsenteredToredeem_double=0;
+                                    pointsenteredToredeem="";
+
+                                    finaltoPayAmountwithRedeemPoints="";
+                                    redeemPoints_String="";
+                                    redeemKey="";
+                                    mobileno_redeemKey="";
+                                    discountAmountalreadyusedtoday="";
+                                    totalpointsredeemedalreadybyuser="";
+                                    totalordervalue_tillnow="";
+                                    totalredeempointsuserhave="";
+
+                                    redeemed_points_text_widget.setText("");
+                                    redeemPointsLayout.setVisibility(View.GONE);
+                                    discountAmountLayout.setVisibility(View.VISIBLE);
+                                    return;
+
+                                }
+                            });
+
+
+                            dialog.show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+            }
             if (!isOrderDetailsMethodCalled) {
 
                 PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
@@ -366,6 +1186,49 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             if (!isOrderTrackingDetailsMethodCalled) {
 
                 PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+            }
+            
+            if(isProceedtoCheckoutinRedeemdialogClicked){
+                if((!redeemPoints_String.equals(""))&&(!redeemPoints_String.equals("0"))){
+                    String transactiontime = getDate_and_time();
+                    double totalredeempointsusergetfromorder=0;
+                    double redeempointsuserapplied=Double.parseDouble(redeemPoints_String);
+                    double finalamountwithredeempointsint = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
+                    double totalpointredeembyuserint =  Double.parseDouble(totalpointsredeemedalreadybyuser);
+                    double totalordervalue_tillnowint =  Double.parseDouble(totalordervalue_tillnow);
+                    double totalredeempointsuserhaveint =  Double.parseDouble(totalredeempointsuserhave);
+
+                    double finalamountwithredeempointsdouble = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
+                    double pointsfor100rs_double = Double.parseDouble(pointsfor100rs_String);
+
+
+                    totalordervalue_tillnowint = totalordervalue_tillnowint+finalamountwithredeempointsint;
+                    totalordervalue_tillnow = String.valueOf(totalordervalue_tillnowint);
+
+
+                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
+                    totalredeempointsuserhaveint = totalredeempointsuserhaveint+totalredeempointsusergetfromorder;
+                    totalredeempointsuserhave = String.valueOf(totalredeempointsuserhaveint);
+
+                    totalpointredeembyuserint = totalpointredeembyuserint+redeempointsuserapplied;
+                    totalpointsredeemedalreadybyuser=String.valueOf(totalpointredeembyuserint);
+
+
+                    updateRedeemPointsDetailsInDBWithkey(redeemKey,totalpointredeembyuserint,totalordervalue_tillnowint,totalredeempointsuserhaveint);
+                    addDatatoCouponTransactioninDB(redeemPoints_String,"REDEEM",mobileno_redeemKey,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
+                }
+            }
+            else{
+
+
+                totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
+                String UserMobile = "+91" + mobileNo_Edit_widget.getText().toString();
+
+              //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
+             //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
+                updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+
             }
         }
 
@@ -382,7 +1245,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         return false;
     }
 
-    private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt) {
+    private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt, String ordertype) {
         try {
             Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
             double oldSavedAmount = 0;
@@ -690,7 +1553,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-/*
+
+
+
+
+
+     /*
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -777,8 +1645,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             String NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
-            try {
-                if (NetTotal.contains(".")) {
+          /*  try {
+                if (!NetTotal.contains(".")) {
                     int netTotaLint = Integer.parseInt(NetTotal);
                     int netdiscountAmountint = Integer.parseInt(discountAmountt);
                     netTotaL = netTotaLint - netdiscountAmountint;
@@ -787,7 +1655,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                     double nettotalDouble = Double.parseDouble(NetTotal);
                     double discountAmountDouble = Double.parseDouble(discountAmountt);
-                    netTotaL = (Integer.parseInt(String.valueOf(nettotalDouble))) - (Integer.parseInt(String.valueOf(discountAmountDouble)));
+                    //netTotaL = (Integer.parseInt(String.valueOf(nettotalDouble))) - (Integer.parseInt(String.valueOf(discountAmountDouble)));
+                    netTotaL = (int) Math.round(nettotalDouble-discountAmountDouble);
 
                 }
                 NetTotal = String.valueOf(netTotaL);
@@ -797,6 +1666,9 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
 
             }
+
+           */
+
             if (NetTotal.length() > 6) {
 
                 if (NetTotal.length() == 7) {
@@ -840,6 +1712,25 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Earned Rewards : " +  String.valueOf((int)(totalredeempointsusergetfromorder))+"\n");
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            if(!ordertype.equals(Constants.POSORDER)) {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Order Type: ");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, ordertype + "\n");
+            }
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -897,12 +1788,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             public void onYes() {
                                 isPrintedSecondTime = true;
 
-                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount);
+                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount, ordertype);
 
                             }
 
                             @Override
                             public void onNo() {
+
 
                                 cart_Item_List.clear();
                                 cart_Item_hashmap.clear();
@@ -923,7 +1815,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 discount_Edit_widget.setText("0");
                                 finaltoPayAmount = "0";
                                 discount_rs_text_widget.setText(discountAmount);
-
+                                OrderTypefromSpinner = "POS Order";
+                                orderTypeSpinner.setSelection(0);
                                 total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
                                 taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
                                 total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
@@ -931,6 +1824,33 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 mobileNo_Edit_widget.setText("");
                                 isPrintedSecondTime = false;
                                 showProgressBar(false);
+
+                                ispointsApplied_redeemClicked=false;
+                                isProceedtoCheckoutinRedeemdialogClicked =false;
+                                isRedeemDialogboxOpened=false;
+                                isUpdateRedeemPointsMethodCalled=false;
+                                isUpdateCouponTransactionMethodCalled=false;
+                                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                totalAmounttopay=0;
+                                finalamounttoPay=0;
+
+                                pointsalreadyredeemDouble=0;
+                                totalpointsuserhave_afterapplypoints=0;
+                                pointsenteredToredeem_double=0;
+                                pointsenteredToredeem="";
+
+                                finaltoPayAmountwithRedeemPoints="";
+                                redeemPoints_String="";
+                                redeemKey="";
+                                mobileno_redeemKey="";
+                                discountAmountalreadyusedtoday="";
+                                totalpointsredeemedalreadybyuser="";
+                                totalordervalue_tillnow="";
+                                totalredeempointsuserhave="";
+
+                                redeemed_points_text_widget.setText("");
+                                redeemPointsLayout.setVisibility(View.GONE);
+                                discountAmountLayout.setVisibility(View.VISIBLE);
 
                             }
                         });
@@ -941,11 +1861,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 cart_Item_hashmap.clear();
                 cart_item_list.clear();
                 cartItem_hashmap.clear();
-                ispaymentMode_Clicked = false;
-                isOrderDetailsMethodCalled = false;
 
-                isPaymentDetailsMethodCalled = false;
-                isOrderTrackingDetailsMethodCalled = false;
                 new_to_pay_Amount = 0;
                 old_taxes_and_charges_Amount = 0;
                 old_total_Amount = 0;
@@ -956,13 +1872,48 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 discount_Edit_widget.setText("0");
                 finaltoPayAmount = "0";
                 discount_rs_text_widget.setText(discountAmount);
-
+                OrderTypefromSpinner = "POS Order";
+                orderTypeSpinner.setSelection(0);
                 total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
                 taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
                 total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
 
+
+
+
                 mobileNo_Edit_widget.setText("");
                 isPrintedSecondTime = false;
+                ispaymentMode_Clicked = false;
+                isOrderDetailsMethodCalled = false;
+
+                isPaymentDetailsMethodCalled = false;
+                isOrderTrackingDetailsMethodCalled = false;
+                ispointsApplied_redeemClicked=false;
+                isProceedtoCheckoutinRedeemdialogClicked =false;
+                isRedeemDialogboxOpened=false;
+                isUpdateRedeemPointsMethodCalled=false;
+                isUpdateCouponTransactionMethodCalled=false;
+                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                totalAmounttopay=0;
+                finalamounttoPay=0;
+
+                pointsalreadyredeemDouble=0;
+                totalpointsuserhave_afterapplypoints=0;
+                pointsenteredToredeem_double=0;
+                pointsenteredToredeem="";
+
+                finaltoPayAmountwithRedeemPoints="";
+                redeemPoints_String="";
+                redeemKey="";
+                mobileno_redeemKey="";
+                discountAmountalreadyusedtoday="";
+                totalpointsredeemedalreadybyuser="";
+                totalordervalue_tillnow="";
+                totalredeempointsuserhave="";
+
+                redeemed_points_text_widget.setText("");
+                redeemPointsLayout.setVisibility(View.GONE);
+                discountAmountLayout.setVisibility(View.VISIBLE);
                 showProgressBar(false);
 
             }
@@ -1012,6 +1963,263 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     }
 
+    private void updateRedeemPointsDetailsInDBWithkey(String redeemPointsKey, double totalpointsredeemedbyuser, double totalordervalue, double totalredeempoints) {
+        if(isUpdateRedeemPointsMethodCalled){
+            return;
+        }
+        isUpdateRedeemPointsMethodCalled =true;
+
+
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("key", redeemPointsKey);
+
+            jsonObject.put("pointsredeemed", (int) Math.round(totalpointsredeemedbyuser));
+            jsonObject.put("totalordervalue",  (int) Math.round( totalordervalue));
+            jsonObject.put("totalredeempoints",  (int) Math.round( totalredeempoints));
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateRedeemPointsTablewithkey,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        Log.d(Constants.TAG, "Points Redeem details uploaded Succesfully " + response);
+                    }
+                    else{
+                        Log.d(Constants.TAG, "Failed during uploading Points Redeem  details" + response);
+
+                    }
+                } catch (JSONException e) {
+                    Log.d(Constants.TAG, "Failed during uploading Points Redeem  details" + response);
+                    isUpdateRedeemPointsMethodCalled=false;
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                Log.d(Constants.TAG, "Failed during uploading Points Redeem  details" + error.toString());
+                isUpdateRedeemPointsMethodCalled=false;
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+
+
+    private void updateRedeemPointsDetailsInDBWithoutkey(String userMobile, double totalAmounttopay, double totalredeempointsusergetfromorder) {
+
+
+        if(isUpdateRedeemPointsWithoutKeyMethodCalled){
+            return;
+        }
+        isUpdateRedeemPointsWithoutKeyMethodCalled =true;
+
+
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+
+            jsonObject.put("mobileno", String.valueOf( userMobile));
+            jsonObject.put("totalordervalue",(int) Math.round( totalAmounttopay));
+            jsonObject.put("totalredeempoints", (int) Math.round( totalredeempointsusergetfromorder));
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateRedeemPointsTablewithoutKey,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        Log.d(Constants.TAG, "Points Redeem details uploaded Succesfully " + response);
+                    }
+                    else{
+                        Log.d(Constants.TAG, "Failed during uploading Points Redeem  details" + response);
+
+                    }
+                } catch (JSONException e) {
+                    Log.d(Constants.TAG, "Failed during uploading Points Redeem  details" + response);
+                    isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                Log.d(Constants.TAG, "Failed during uploading Points Redeem  details" + error.toString());
+                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+
+
+    }
+
+    private void addDatatoCouponTransactioninDB(String coupondiscountamount, String coupontype, String mobileno, String orderid, String transactiondate, String transactiontime, String vendorkey) {
+
+        if(isUpdateCouponTransactionMethodCalled){
+            return;
+        }
+        isUpdateCouponTransactionMethodCalled =true;
+
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("orderid", orderid);
+
+            jsonObject.put("coupondiscountamount", Double.parseDouble(coupondiscountamount));
+            jsonObject.put("coupontype", coupontype);
+            jsonObject.put("mobileno", mobileno);
+            jsonObject.put("transactiondate", transactiondate);
+            jsonObject.put("transactiontime", transactiontime);
+            jsonObject.put("vendorkey", vendorkey);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addCouponDetailsInCouponTranactionsTable,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        Log.d(Constants.TAG, "Response for Coupon details: " + response);
+
+                        //   printRecipt(taxAmount,payableAmount,orderid,cart_Item_List);
+                    }
+                    else{
+                        //Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + response);
+
+                    }
+                } catch (JSONException e) {
+                    //Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + response);
+                    isUpdateCouponTransactionMethodCalled=false;
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                //Log.d(Constants.TAG, "Failed  while PlaceOrder_in_OrderItemDetails: " + error);
+                isUpdateCouponTransactionMethodCalled=false;
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+    }
+
+    public void cancelRedeemPointsFromOrder() {
+
+        ispointsApplied_redeemClicked=false;
+        isProceedtoCheckoutinRedeemdialogClicked=false;
+        AlertDialogClass.showDialog(getActivity(), Constants.AddedRedeemPointsCancelledInstruction , 0);
+        finaltoPayAmount = String.valueOf(totalAmounttopay);
+
+        total_Rs_to_Pay_text_widget.setText( String.valueOf(totalAmounttopay));
+        redeemPoints_String =  "0" ;
+        redeemed_points_text_widget.setText(redeemPoints_String);
+
+            discountAmountLayout.setVisibility(View.VISIBLE);
+            redeemPointsLayout.setVisibility(View.GONE);
+
+
+    }
+
+
     private void openPrintAgainDialog(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_Item_List, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode) {
 
 
@@ -1036,7 +2244,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 showProgressBar(true);
 
 
-                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount);
+                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount, ordertype);
 
                                 dialog.cancel();
                             }
@@ -1485,7 +2693,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
              new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
             finaltoPayAmount = String.valueOf(new_totalAmount_withGst)+".00";
             total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
-
+            totalAmounttopay=new_totalAmount_withGst;
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -1585,10 +2793,17 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             String orderplacedTime = Currenttime;
             String tokenno = "";
             String userid = "";
-            String ordertype = "POSORDER";
-            String deliverytype = "STOREPICKUP";
-            String slotname = "EXPRESSDELIVERY";
+             ordertype = Constants.POSORDER;
+            String deliverytype = Constants.STOREPICKUP_DELIVERYTYPE;
             String slotdate = "";
+            if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+                ordertype = OrderTypefromSpinner;
+                deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
+                slotdate  = CurrentDate;
+            }
+
+            String slotname = "EXPRESSDELIVERY";
+
             String orderPlacedDate = CurrentDate;
 
             String slottimerange = "";
@@ -1597,6 +2812,103 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             String vendorName = sh.getString("VendorName", "TMCHasthinapuram");
             String itemTotalwithoutGst = total_item_Rs_text_widget.getText().toString();
             String payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
+          try {
+              double payableamount_double = Double.parseDouble(payableAmount);
+
+              if(payableamount_double<=0){
+
+                  runOnUiThread(new Runnable() {
+                      @Override
+                      public void run() {
+                          try {
+                              Dialog dialog = new Dialog(getActivity());
+                              dialog.setContentView(R.layout.print_again);
+                              dialog.setTitle("Last Order is Not Placed .Please Try Again !!!! ");
+                              dialog.setCanceledOnTouchOutside(false);
+                              dialog.setCancelable(false);
+
+                              Button printAgain = (Button) dialog.findViewById(R.id.printAgain);
+                              printAgain.setText("OK");
+
+                              printAgain.setOnClickListener(new View.OnClickListener() {
+                                  @Override
+                                  public void onClick(View view) {
+                                      dialog.cancel();
+
+
+                                      cart_Item_List.clear();
+                                      cartItem_hashmap.clear();
+                                      ispaymentMode_Clicked = false;
+                                      isOrderDetailsMethodCalled = false;
+
+                                      isPaymentDetailsMethodCalled = false;
+                                      isOrderTrackingDetailsMethodCalled = false;
+                                      new_to_pay_Amount = 0;
+                                      old_taxes_and_charges_Amount = 0;
+                                      old_total_Amount = 0;
+                                      createEmptyRowInListView("empty");
+                                      CallAdapter();
+                                      discountAmount = "0";
+
+                                      discount_Edit_widget.setText("0");
+                                      finaltoPayAmount = "0";
+                                      discount_rs_text_widget.setText(discountAmount);
+                                      OrderTypefromSpinner = "POS Order";
+                                      orderTypeSpinner.setSelection(0);
+                                      total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                      taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                      total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                                      mobileNo_Edit_widget.setText("");
+                                      isPrintedSecondTime = false;
+                                      showProgressBar(false);
+
+                                      ispointsApplied_redeemClicked=false;
+                                      isProceedtoCheckoutinRedeemdialogClicked =false;
+                                      isRedeemDialogboxOpened=false;
+                                      isUpdateRedeemPointsMethodCalled=false;
+                                      isUpdateCouponTransactionMethodCalled=false;
+                                      isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                      totalAmounttopay=0;
+                                      finalamounttoPay=0;
+
+                                      pointsalreadyredeemDouble=0;
+                                      totalpointsuserhave_afterapplypoints=0;
+                                      pointsenteredToredeem_double=0;
+                                      pointsenteredToredeem="";
+
+                                      finaltoPayAmountwithRedeemPoints="";
+                                      redeemPoints_String="";
+                                      redeemKey="";
+                                      mobileno_redeemKey="";
+                                      discountAmountalreadyusedtoday="";
+                                      totalpointsredeemedalreadybyuser="";
+                                      totalordervalue_tillnow="";
+                                      totalredeempointsuserhave="";
+
+                                      redeemed_points_text_widget.setText("");
+                                      redeemPointsLayout.setVisibility(View.GONE);
+                                      discountAmountLayout.setVisibility(View.VISIBLE);
+                                      return;
+
+                                  }
+                              });
+
+
+                              dialog.show();
+                          } catch (Exception e) {
+                              e.printStackTrace();
+                          }
+                      }
+                  });
+
+
+                  return;
+              }
+          }
+          catch(Exception e){
+              e.printStackTrace();
+          }
             String taxAmount = taxes_and_Charges_rs_text_widget.getText().toString();
                 PlaceOrder_in_PaymentTransactionDetails(sTime, Payment_mode, payableAmount, UserMobile);
 
@@ -1605,18 +2917,100 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             for (int i = 0; i < cart_Item_List.size(); i++) {
                 String itemUniqueCode = cart_Item_List.get(i);
                 Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
-                String itemName = String.valueOf(modal_newOrderItems.getItemname());
-                String price = modal_newOrderItems.getItemPrice_quantityBased();
-                String weight = modal_newOrderItems.getItemFinalWeight();
-                String quantity = modal_newOrderItems.getQuantity();
-                String GstAmount = modal_newOrderItems.getGstAmount();
-                String menuItemId = modal_newOrderItems.getMenuItemId();
-                String netweight = modal_newOrderItems.getNetweight();
-                String portionsize = modal_newOrderItems.getPortionsize();
-                String grossweight = modal_newOrderItems.getGrossweight();
-                String subCtgyKey = modal_newOrderItems.getTmcsubctgykey();
+                String itemName =
+                        String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+                String price = "";
+                        if( modal_newOrderItems.getItemPrice_quantityBased()!=null){
+                            price =  modal_newOrderItems.getItemPrice_quantityBased();
+                        }
+                        else{
+                            price ="";
+                        }
+                      //  modal_newOrderItems.getItemPrice_quantityBased();
+                String weight = "";
+                        if(modal_newOrderItems.getItemFinalWeight()!=null){
+                            weight = modal_newOrderItems.getItemFinalWeight();
 
-                PlaceOrder_in_OrderItemDetails(subCtgyKey,itemName,grossweight, weight,netweight, quantity, price, "", GstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName);
+                        }
+                        else{
+                            weight = "";
+                        }
+                String quantity = "";
+                if( modal_newOrderItems.getQuantity()!=null){
+                    quantity =  modal_newOrderItems.getQuantity();;
+
+                }
+                else{
+                    quantity = "";
+                }
+
+                String GstAmount = "";
+                if(modal_newOrderItems.getGstAmount()!=null){
+                    GstAmount = (modal_newOrderItems.getGstAmount());
+                }
+                else{
+                    GstAmount ="";
+                }
+
+                String menuItemId ="";
+                        if( modal_newOrderItems.getMenuItemId()!=null) {
+                            menuItemId =    modal_newOrderItems.getMenuItemId();
+                        }
+                        else{
+                            menuItemId ="";
+                        }
+                String netweight ="";
+                        if( modal_newOrderItems.getNetweight()!=null){
+                            netweight = modal_newOrderItems.getNetweight();
+                        }
+                        else{
+                            netweight ="";
+                        }
+
+                String portionsize = "";
+                        if(modal_newOrderItems.getPortionsize()!=null){
+                            portionsize = modal_newOrderItems.getPortionsize();
+                        }
+                        else{
+                            portionsize = "";
+                        }
+
+                String grossweight ="";
+                        if(modal_newOrderItems.getGrossweight()!=null){
+                            grossweight    = modal_newOrderItems.getGrossweight();
+
+                        }
+                        else{
+                            grossweight ="";
+                        }
+                String subCtgyKey = "";
+                        if(modal_newOrderItems.getTmcsubctgykey()!=null){
+                            subCtgyKey =   modal_newOrderItems.getTmcsubctgykey();
+                        }
+                        else{
+                            subCtgyKey = "";
+                        }
+
+                String grossWeightingrams = "";
+               try {
+                   if (!grossweight.equals("")) {
+                       grossWeightingrams = grossweight.replaceAll("[^\\d.]", "");
+
+                   }
+               }
+               catch(Exception e){
+                   e.printStackTrace();
+               }
+                double grossweightingrams_double =0;
+                try{
+                    if(!grossWeightingrams.equals("")) {
+                        grossweightingrams_double = Double.parseDouble(grossWeightingrams);
+                    }
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                PlaceOrder_in_OrderItemDetails(subCtgyKey,itemName,grossweight, weight,netweight, quantity, price, "", GstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName,grossWeightingrams,grossweightingrams_double);
 
 
                 JSONObject itemdespObject = new JSONObject();
@@ -1633,13 +3027,35 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                     try {
                         if (weight.equals("") || weight == (null)) {
                             itemdespObject.put("grossweight", grossweight);
-                            itemdespObject.put("netweight", grossweight);
 
+                            if(grossweight.equals("")){
+                                itemdespObject.put("netweight", netweight);
+
+                            }
+                            else
+                            {
+                                itemdespObject.put("netweight", grossweight);
+                                if(grossweightingrams_double!=0) {
+                                    itemdespObject.put("grossweightingrams", grossweightingrams_double);
+                                }
+
+
+                            }
                             itemdespObject.put("weightingrams", grossweight);
 
                         } else {
                             itemdespObject.put("grossweight", weight);
-                            itemdespObject.put("netweight", weight);
+                            if(grossweight.equals("")){
+                                itemdespObject.put("netweight", netweight);
+
+                            }
+                            else
+                            {
+                                itemdespObject.put("netweight", weight);
+                                if(grossweightingrams_double!=0) {
+                                    itemdespObject.put("grossweightingrams", grossweightingrams_double);
+                                }
+                            }
                             itemdespObject.put("weightingrams", weight);
 
                         }
@@ -1656,18 +3072,74 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
             }
-
-
-        if((CouponDiscountAmount .equals("0"))||(CouponDiscountAmount.equals("0.00"))){
-            CouponDiscountAmount = "";
-        }
         String StoreCoupon = "";
-        if((!CouponDiscountAmount.equals("0"))&&(!CouponDiscountAmount.equals(""))){
-            StoreCoupon = "storeCoupon";
+        if((CouponDiscountAmount.equals("0"))||(CouponDiscountAmount.equals(""))||(CouponDiscountAmount.equals("0.00"))){
+            StoreCoupon = "";
+            if((redeemPoints_String .equals("0"))||(redeemPoints_String.equals("0.00"))||(redeemPoints_String.equals(""))) {
+                StoreCoupon = "";
+
+
+            }
+            else{
+                StoreCoupon = "REDEEM";
+
+            }
         }
+        else{
+            StoreCoupon = "STORECOUPON";
+
+        }
+
+        if((CouponDiscountAmount .equals("0"))||(CouponDiscountAmount.equals("0.00"))||(CouponDiscountAmount.equals(""))){
+
+
+            if((redeemPoints_String .equals("0"))||(redeemPoints_String.equals("0.00"))||(redeemPoints_String.equals(""))) {
+                CouponDiscountAmount = "";
+
+            }
+            else{
+                CouponDiscountAmount = redeemPoints_String;
+            }
+
+
+        }
+
+        if(StoreCoupon.equals("STORECOUPON")){
+            String transactiontime = getDate_and_time();
+
+
+            addDatatoCouponTransactioninDB(CouponDiscountAmount,"STORECOUPON",UserMobile,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
+
+
+        }
+
+
             JSONObject jsonObject = new JSONObject();
+            double  CouponDiscountAmount_double =0;
             try {
-                jsonObject.put("coupondiscount", CouponDiscountAmount);
+                try {
+                    if (!CouponDiscountAmount.equals("")) {
+                        CouponDiscountAmount = (CouponDiscountAmount.replaceAll("[^\\d.]", ""));
+                        CouponDiscountAmount_double = Double.parseDouble(CouponDiscountAmount);
+                    }
+                    else{
+                        CouponDiscountAmount_double =0;
+                    }
+
+
+                }
+                catch (Exception e){
+                    CouponDiscountAmount_double =0;
+                    e.printStackTrace();
+                }
+                if(CouponDiscountAmount_double>0){
+                    jsonObject.put("coupondiscount", CouponDiscountAmount_double);
+
+                }
+                else{
+                    jsonObject.put("coupondiscount", CouponDiscountAmount);
+
+                }
                 jsonObject.put("deliveryamount", 0);
                 jsonObject.put("couponkey", StoreCoupon);
 
@@ -1716,9 +3188,9 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                             // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                             // startTwice.main();
 
+                            printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,discountAmount,ordertype);
 
-                                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,discountAmount);
-
+                          //  showProgressBar(false);
 
                         }
                         else{
@@ -1758,7 +3230,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             // Make the request
 
 
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
@@ -1773,9 +3245,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                                 String Netweight, String quantityy, String itemamountt,
                                                 String discountamountt,
                                                 String gstamountt, String vendorkeyy, String currenttime,
-                                                long sTime, String vendorkey, String vendorName){
-
-
+                                                long sTime, String vendorkey, String vendorName, String grossWeightingrams, double grossweightingrams_double){
 
             String orderid = String.valueOf(sTime);
 
@@ -1788,16 +3258,47 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                 jsonObject.put("quantity", quantityy);
                 try {
+
                     if (itemweightt.equals("") || itemweightt == (null)) {
                         jsonObject.put("grossweight", Grossweight);
                         jsonObject.put("netweight", Grossweight);
+                        if(Grossweight.equals("")){
+                            jsonObject.put("netweight", Netweight);
+                            jsonObject.put("grossweightingrams", Grossweight);
 
-                        jsonObject.put("grossweightingrams", Grossweight);
+                        }
+                        else
+                        {
+                            jsonObject.put("netweight", Grossweight);
+                            if(grossweightingrams_double!=0) {
+                                jsonObject.put("grossweightingrams", grossweightingrams_double);
+                            }
+                            else{
+                                jsonObject.put("grossweightingrams", Grossweight);
+
+                            }
+
+
+                        }
 
                     } else {
                         jsonObject.put("grossweight", itemweightt);
-                        jsonObject.put("netweight", itemweightt);
-                        jsonObject.put("grossweightingrams", itemweightt);
+                        if(Grossweight.equals("")){
+                            jsonObject.put("netweight", Netweight);
+                            jsonObject.put("grossweightingrams", itemweightt);
+
+                        }
+                        else
+                        {
+                            jsonObject.put("netweight", itemweightt);
+                            if(grossweightingrams_double!=0) {
+                                jsonObject.put("grossweightingrams", grossweightingrams_double);
+                            }
+                            else{
+                                jsonObject.put("grossweightingrams", itemweightt);
+
+                            }
+                        }
 
                     }
                 }
@@ -1863,7 +3364,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 }
             };
             // Make the request
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
@@ -1895,8 +3396,9 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         JSONObject  orderTrackingTablejsonObject = new JSONObject();
         try {
             orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
-
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
+
+            orderTrackingTablejsonObject.put("usermobileno","+91" + mobileNo_Edit_widget.getText().toString());
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
             orderTrackingTablejsonObject.put("orderstatus","DELIVERED");
@@ -1957,7 +3459,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 return params;
             }
         };
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         // Make the request
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
@@ -2048,12 +3550,32 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             }
         };
         // Make the request
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
 
     }
+
+
+
+    private void saveredeemDetailsinSharePreferences(String maxpointsinaday, String minordervalueforredeem, String pointsfor100rs) {
+        final SharedPreferences sharedPreferences = mContext.getSharedPreferences("RedeemData", MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("maxpointsinaday", maxpointsinaday);
+        editor.putString("minordervalueforredeem", minordervalueforredeem);
+        editor.putString("pointsfor100rs", pointsfor100rs);
+
+
+        editor.apply();
+
+
+
+
+
+    }
+
 
 
 }

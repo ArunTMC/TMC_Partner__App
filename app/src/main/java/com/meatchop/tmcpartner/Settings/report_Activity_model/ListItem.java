@@ -4,7 +4,15 @@ package com.meatchop.tmcpartner.Settings.report_Activity_model;
  * Created by Krrishnaaaa on Dec 08, 2015
  */
 public class ListItem extends ListData {
-    String message, messageLine2;
+    String message, messageLine2,tokens;
+
+    public String getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(String tokens) {
+        this.tokens = tokens;
+    }
 
     public String getMessage() {
         return message;

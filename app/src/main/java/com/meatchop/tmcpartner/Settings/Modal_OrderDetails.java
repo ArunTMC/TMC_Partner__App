@@ -4,8 +4,56 @@ import org.json.JSONArray;
 
 public class Modal_OrderDetails {
     JSONArray itemdesp;
-    String deliverydistance,deliverytype,grossweight,orderstatus,slotname,posSales,appSales,UpiSales,phonepeSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,weightingrams,finalAmount,usermobile,barcode,ordertype,paymentmode,coupondiscount,gstamount,itemname,menuitemid,netweight,portionsize,quantity,tmcprice;
-    String totalAmount_Price,discountAmount,subtotalAmount_discount_price,total_gstAmount,totalAmount_discount_price_gst;
+    String deliveryamount,pricetypeforpos,itemFinalWeight,deliverydistance,deliverytype,grossweight,orderstatus,slotname,posSales,appSales,UpiSales,phonepeSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,weightingrams,finalAmount,usermobile,barcode,ordertype,paymentmode,coupondiscount,gstamount,itemname,menuitemid,netweight,portionsize,quantity,tmcprice;
+    String dunzoSales,swiggySales,PhoneOrderSales,totalAmount_Price,discountAmount,subtotalAmount_discount_price,total_gstAmount,totalAmount_discount_price_gst;
+
+    public String getDunzoSales() {
+        return dunzoSales;
+    }
+
+    public String getDeliveryamount() {
+        return deliveryamount;
+    }
+
+    public void setDeliveryamount(String deliveryamount) {
+        this.deliveryamount = deliveryamount;
+    }
+
+    public void setDunzoSales(String dunzoSales) {
+        this.dunzoSales = dunzoSales;
+    }
+
+    public String getPricetypeforpos() {
+        return pricetypeforpos;
+    }
+
+    public void setPricetypeforpos(String pricetypeforpos) {
+        this.pricetypeforpos = pricetypeforpos;
+    }
+
+    public String getItemFinalWeight() {
+        return itemFinalWeight;
+    }
+
+    public void setItemFinalWeight(String itemFinalWeight) {
+        this.itemFinalWeight = itemFinalWeight;
+    }
+
+    public String getSwiggySales() {
+        return swiggySales;
+    }
+
+    public void setSwiggySales(String swiggySales) {
+        this.swiggySales = swiggySales;
+    }
+
+    public String getPhoneOrderSales() {
+        return PhoneOrderSales;
+    }
+
+    public void setPhoneOrderSales(String phoneOrderSales) {
+        PhoneOrderSales = phoneOrderSales;
+    }
 
     public String getDeliverydistance() {
         return deliverydistance;

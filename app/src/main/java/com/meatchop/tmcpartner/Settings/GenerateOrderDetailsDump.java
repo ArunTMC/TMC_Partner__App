@@ -2,13 +2,17 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -49,6 +53,7 @@ import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.formula.functions.Count;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -103,11 +108,15 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         static boolean isSearchButtonClicked = false;
         Workbook wb;
         Sheet sheet = null;
-        private static String[] columns = {"Order Details Key", "Order Placed Time", "Order Confirmed Time",
-                "Order Ready Time","Order PickedUp Time", "Order Delivered Time ",  "Slot Date", "Slot Time Range","Slot Name", "Orderid","Token No","Item Desp", "Order Status","Payment Mode","Payable Amount","User Mobile","User Address"};
+
+    String selectedStartDate = "";
+    String selectedEndDate = "";
+        private static String[] columns = {"Order Details Key", "Order Placed Time","OrderType","User Mobile","Slot Name","Slot Date", "Slot Time Range",  "Item Desp","DeliveryType", "Orderid","Payment Mode", "Payable Amount","Coupon Discount Amount","Vendor Key","Delivery Distance","User Address","Order Confirmed Time",
+                "Order Ready Time","Order PickedUp Time", "Order Delivered Time ", "Token No", "Order Status"};
         int spinnerselecteditem=1;
         int spinnerselecteditem_Count =1;
-
+    private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
+    private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -179,10 +188,10 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                 TodaysDate = getDatewithNameoftheDay();
                 PreviousDateString = getDatewithNameofthePreviousDay();
                 //Now we are creating sheet
-                String date = getDate();
-                String sevendaysbackdate = getOldDatewithNameusingCurrentDate(date,"-7");
-                currentdateLong = getLongValuefortheDate(date);
-                oldDayLong = getLongValuefortheDate(sevendaysbackdate);
+                //String date = getDate();
+               // String sevendaysbackdate = getOldDatewithNameusingCurrentDate(date,"-7");
+               // currentdateLong = getLongValuefortheDate(date);
+               // oldDayLong = getLongValuefortheDate(sevendaysbackdate);
 
                // isSearchButtonClicked = false;
 
@@ -216,7 +225,27 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+                    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateOrderDetailsDump.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+                    // If do not grant write external storage permission.
+                    if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(GenerateOrderDetailsDump.this, "Click Allow and then Generate Again", Toast.LENGTH_SHORT).show();
+
+                        // Request user to grant write external storage permission.
+                        ActivityCompat.requestPermissions(GenerateOrderDetailsDump.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+
+
+                    } else {
+                        showProgressBar(true);
+
+                        try {
+                            AddDatatoExcelSheet(ordersList,"orderDetailsfrom   "+fromdatestring);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         });
@@ -302,7 +331,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                 spinnerselecteditem_Count=1;
                 showProgressBar(true);
                 todatestring=dateSelector_text.getText().toString();
-
+                fromdatestring = todatestring;
                 PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(todatestring);
 
 
@@ -529,6 +558,8 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                             fromdateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             //getOrderForSelectedDate(DateString, vendorKey);
                             fromdatestring = fromdateSelector_text.getText().toString();
+                            selectedStartDate = fromdatestring;
+                            selectedEndDate = getDatewithNameoftheseventhDayFromSelectedStartDate(DateString);
 
                       //      showProgressBar(true);
 
@@ -541,18 +572,25 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                     }
                 }, year, month, day);
 
-
         Calendar c = Calendar.getInstance();
+
+
 
 
 
         DatePicker datePicker = fromdatepicker.getDatePicker();
 
-        c.add(Calendar.DATE, -6);
+        c.add(Calendar.DATE, -30);
+        // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
+        Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
         long oneMonthAhead = c.getTimeInMillis();
         datePicker.setMaxDate(System.currentTimeMillis() - 1000);
         datePicker.setMinDate(oneMonthAhead);
 
+
+
+
+ 
         fromdatepicker.show();
 
 
@@ -615,15 +653,53 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                         }
                     }
                 }, year, month, day);
+
+
         Calendar c = Calendar.getInstance();
 
+        boolean isEndDateisAfterCurrentDate = false;
+        Date d2=null,d1 = null;
+        long MaxDate = getMillisecondsFromDate(selectedEndDate);
+        long MinDate = getMillisecondsFromDate(selectedStartDate);
 
-        DatePicker datePicker = fromdatepicker.getDatePicker();
+        String todayDate = getDate_and_time();
+        SimpleDateFormat sdformat = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            d2 = sdformat.parse(todayDate);
 
-        c.add(Calendar.DATE, -6);
+            d1 = sdformat.parse(selectedEndDate);
+            if((d1.compareTo(d2) < 0)||(d1.compareTo(d2) == 0)){
+                isEndDateisAfterCurrentDate =false;
+            }
+            else if(d1.compareTo(d2) > 0){
+                isEndDateisAfterCurrentDate =true;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        DatePicker datePicker = todatepicker.getDatePicker();
+        c.add(Calendar.DATE, -30);
+        try {
+            if (!isEndDateisAfterCurrentDate) {
+
+                MaxDate = getMillisecondsFromDate(selectedEndDate);
+
+            } else {
+                MaxDate = getMillisecondsFromDate(todayDate);
+
+            }
+            MinDate = getMillisecondsFromDate(selectedStartDate);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
         long oneMonthAhead = c.getTimeInMillis();
-        datePicker.setMaxDate(System.currentTimeMillis() - 1000);
-        datePicker.setMinDate(oneMonthAhead);
+        datePicker.setMaxDate(MaxDate);
+        datePicker.setMinDate(MinDate);
+
 
 
         todatepicker.show();
@@ -691,6 +767,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                             //getOrderForSelectedDate(DateString, vendorKey);
                             showProgressBar(true);
                             todatestring=DateString;
+                            fromdatestring = dateSelector_text.getText().toString();
 
                             getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
 
@@ -736,8 +813,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
             public void onErrorResponse(@NonNull VolleyError error) {
                 try {
                     Toast.makeText(GenerateOrderDetailsDump.this, "There is no Order     " + todaysdate, Toast.LENGTH_LONG).show();
-                    ordersList.clear();
-                    array_of_orderId.clear();
+                    if(array_of_orderId.size()<=0){
                    loadingpanelmask.setVisibility(View.GONE);
                     loadingPanel.setVisibility(View.GONE);
                     manageOrders_ListView.setVisibility(View.GONE);
@@ -745,7 +821,19 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
                     orderinstruction.setVisibility(View.VISIBLE);
                     appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                }
+                    if(todaysdate.equals(todatestring)) {
+                        //   Toast.makeText(GenerateOrderDetailsDump.this, String.valueOf(spinnerselecteditem_Count), Toast.LENGTH_LONG).show();
+                        //    Toast.makeText(GenerateOrderDetailsDump.this, String.valueOf("spinnerselecteditem  "+spinnerselecteditem), Toast.LENGTH_LONG).show();
 
+                        // appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                        DisplayOrderListDatainListView(ordersList);
+                    }
+                    else{
+                        String nextday = getTomorrowsDate(todaysdate);
+                        calculate_the_dateandgetData(nextday,todatestring);
+
+                    }
 
 
 //
@@ -795,6 +883,53 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
 
+
+    private long getMillisecondsFromDate(String dateString) {
+        Calendar calendarr = Calendar.getInstance();
+
+
+
+        calendarr.add(Calendar.DATE,-1);
+
+
+
+        long milliseconds = calendarr.getTimeInMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try{
+            //formatting the dateString to convert it into a Date
+            Date date = sdf.parse(dateString);
+            System.out.println("Given Time in milliseconds : "+date.getTime());
+
+            Calendar calendar = Calendar.getInstance();
+            //Setting the Calendar date and time to the given date and time
+            calendar.setTime(date);
+            System.out.println("Given Time in milliseconds : "+calendar.getTimeInMillis());
+            milliseconds = calendar.getTimeInMillis();
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        return  milliseconds;
+    }
+
+    public String getDate_and_time()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+
+        SimpleDateFormat dayname = new SimpleDateFormat("EEE");
+        String Currentday = dayname.format(c);
+
+
+
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDate = df.format(c);
+        String date = Currentday+", "+CurrentDate;
+
+
+        return date;
+    }
 
 
 
@@ -1198,7 +1333,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                         Long i2 = Long.valueOf(orderplacedtime_2);
                         Long i1 = Long.valueOf(orderplacedtime_1);
 
-                        return i2.compareTo(i1);
+                        return i1.compareTo(i2);
                     }
                 });
 
@@ -1305,33 +1440,53 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                     headercell.setCellValue(columns[i]);
                     headercell.setCellStyle(headerCellStyle);
                 }
+                Log.d(Constants.TAG, "prepareDataForExcelSheet type  itemRow: " + String.valueOf( itemRow.getItemdesp()));
+
 
                 try {
-                    Row row = sheet.createRow(rowNum++);
+                        Row row = sheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(itemRow.getOrderdetailskey());
                     row.createCell(1).setCellValue(itemRow.getOrderplacedtime());
-                    row.createCell(2).setCellValue(itemRow.getOrderconfirmedtime());
-                    row.createCell(3).setCellValue(itemRow.getOrderreadytime());
-                    row.createCell(4).setCellValue(itemRow.getOrderpickeduptime());
-                    row.createCell(5).setCellValue(itemRow.getOrderdeliveredtime());
-                    row.createCell(6).setCellValue(itemRow.getSlotdate());
-                    row.createCell(7).setCellValue(itemRow.getSlottimerange());
-                    row.createCell(8).setCellValue(itemRow.getSlotname());
+                    row.createCell(2).setCellValue(itemRow.getOrderType());
+                    row.createCell(3).setCellValue(itemRow.getUsermobile());
+                    row.createCell(4).setCellValue(itemRow.getSlotname());
+                    row.createCell(5).setCellValue(itemRow.getSlotdate());
+                    row.createCell(6).setCellValue(itemRow.getSlottimerange());
+                    row.createCell(7).setCellValue(String.valueOf(itemRow.getItemdesp()));
+
+                    row.createCell(8).setCellValue(itemRow.getDeliverytype());
 
                     row.createCell(9).setCellValue(itemRow.getOrderid());
-                    row.createCell(10).setCellValue(itemRow.getTokenno());
-                    row.createCell(11).setCellValue(String.valueOf(itemRow.getItemdesp()));
-                    row.createCell(12).setCellValue(String.valueOf(itemRow.getOrderstatus()));
-                    row.createCell(13).setCellValue(String.valueOf(itemRow.getPaymentmode()));
-                    row.createCell(14).setCellValue(String.valueOf(itemRow.getPayableamount()));
-                    row.createCell(15).setCellValue(String.valueOf(itemRow.getUsermobile()));
-                    if(!(String.valueOf(itemRow.getUseraddress()).equals("null"))){
-                        row.createCell(16).setCellValue(String.valueOf(itemRow.getUseraddress()));
+                    row.createCell(11).setCellValue(itemRow.getPayableamount());
+                    row.createCell(10).setCellValue(String.valueOf(itemRow.getPaymentmode()));
+                    row.createCell(12).setCellValue(String.valueOf(itemRow.getCoupondiscamount()));
+                    row.createCell(13).setCellValue(String.valueOf(itemRow.getVendorkey()));
+                    if(!(String.valueOf(itemRow.getDeliverydistance()).equals("null"))) {
+                        row.createCell(14).setCellValue(String.valueOf(itemRow.getDeliverydistance()));
                     }
                     else{
-                        row.createCell(16).setCellValue("");
+                        row.createCell(14).setCellValue("");
 
                     }
+
+                        if(!(String.valueOf(itemRow.getUseraddress()).equals("null"))){
+                        row.createCell(15).setCellValue(String.valueOf(itemRow.getUseraddress()));
+                    }
+                    else{
+                        row.createCell(15).setCellValue("");
+
+                    }
+
+
+                    row.createCell(16).setCellValue(itemRow.getOrderconfirmedtime());
+                    row.createCell(17).setCellValue(itemRow.getOrderreadytime());
+                    row.createCell(18).setCellValue(itemRow.getOrderpickeduptime());
+                    row.createCell(19).setCellValue(itemRow.getOrderdeliveredtime());
+                    row.createCell(20).setCellValue(itemRow.getTokenno());
+                    row.createCell(21).setCellValue(String.valueOf(itemRow.getOrderstatus()));
+
+
+
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1355,6 +1510,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                 sheet.setColumnWidth(14, (10 * 600));
                 sheet.setColumnWidth(15, (10 * 600));
                 sheet.setColumnWidth(16, (10 * 600));
+                sheet.setColumnWidth(17, (10 * 600));
 
 
 
@@ -1366,8 +1522,9 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                         Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
 
                         GenerateExcelSheet();
-                    } else {
-                        //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                       //   Toast.makeText(GenerateOrderDetailsDump.this,"here is no data to create",Toast.LENGTH_LONG).show();
 
 
                 }
@@ -1402,6 +1559,12 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
             outputStream = new FileOutputStream(file);
             wb.write(outputStream);
             showProgressBar(false);
+          //  Toast.makeText(getApplicationContext(), "File can't be  Created", Toast.LENGTH_LONG).show();
+            try {
+                outputStream.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
           /*  StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
             Uri pdfUri;
@@ -1433,15 +1596,12 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
             Toast.makeText(getApplicationContext(), "File Created", Toast.LENGTH_LONG).show();
         } catch (java.io.IOException e) {
+            Toast.makeText(getApplicationContext(), "File can't Created Permission Denied", Toast.LENGTH_LONG).show();
+
             e.printStackTrace();
             showProgressBar(false);
 
-            Toast.makeText(getApplicationContext(), "File can't be  Created", Toast.LENGTH_LONG).show();
-            try {
-                outputStream.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+
         }
         Uri pdfUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -1535,6 +1695,41 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
     }
 
+
+
+    private String getDatewithNameoftheseventhDayFromSelectedStartDate(String sDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+        calendar.add(Calendar.DATE, 6);
+
+
+
+
+        Date c1 = calendar.getTime();
+
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        String PreviousdayDay = previousday.format(c1);
+
+
+
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        String  PreviousdayDate = df1.format(c1);
+        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+        return yesterdayAsString;
+    }
 
 
 

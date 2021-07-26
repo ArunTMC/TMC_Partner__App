@@ -240,7 +240,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
                 Adjusting_Widgets_Visibility(true);
                 String Todaysdate = dateSelector_text.getText().toString();
-                PreviousDateString = getDatewithNameofthePreviousDay();
+                PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(Todaysdate);
 
                 isSearchButtonClicked = false;
                 orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
@@ -911,7 +911,7 @@ else{
 
     private void convertingJsonStringintoArray(String orderStatus, String jsonString) {
         try {
-            String slottimeString = "", ordertype = "#", orderid = "", orderdeliveredTime = "", orderplacedtime = "", slotdate = "", slottime = "", slottime_in_long = "", orderplacedtime_in_long = "", orderdeliveredtime_in_long = "";
+            String deliverytype="",slottimeString = "", ordertype = "#", orderid = "", orderdeliveredTime = "", orderplacedtime = "", slotdate = "", slottime = "", slottime_in_long = "", orderplacedtime_in_long = "", orderdeliveredtime_in_long = "";
             sorted_OrdersList.clear();
             Adjusting_Widgets_Visibility(true);
             //converting jsonSTRING into array
@@ -1101,8 +1101,9 @@ else{
 
                         if (json.has("deliverytype")) {
                             manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
-
+                            deliverytype =  String.valueOf(json.get("deliverytype")).toString().toUpperCase();
                         } else {
+                            deliverytype ="";
                             manageOrdersPojoClass.deliverytype = "";
                         }
 
@@ -1127,6 +1128,9 @@ else{
 
 
                         if (!slotdate.contains("nil") && !slottime.contains("nil")) {
+                            if(deliverytype.contains(Constants.STOREPICKUP_DELIVERYTYPE)){
+                                slottime = "09:00 - 18:00";
+                            }
                             slottimeString = getSlotTime(slottime, orderplacedtime, slotdate);
                             slottime_in_long = getLongValuefortheDate(slottimeString);
                             manageOrdersPojoClass.slottime_in_long = slottime_in_long;
@@ -1395,15 +1399,28 @@ else{
     private String getSlotTime(String slottime, String orderplacedtime, String slotdate) {
         String result = "", lastFourDigits = "";
         //   Log.d(TAG, "slottime  "+slottime);
-        if (slottime.contains("90 mins")) {
+        if (slottime.contains("mins")) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
-
+              String timeoftheSlot ="";
+              try {
+                  timeoftheSlot = (slottime.replaceAll("[^\\d.]", ""));
+              }
+              catch(Exception e){
+                  e.printStackTrace();
+              }
+                int timeoftheSlotDouble =0;
+                try {
+                    timeoftheSlotDouble = Integer.parseInt(timeoftheSlot);
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
                 calendar.setTime(date);
-                calendar.add(Calendar.MINUTE, 90);
+                calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
                 //     System.out.println("Time here " + sdf.format(calendar.getTime()));
                 System.out.println("Time here 90 mins" + orderplacedtime);
@@ -2008,6 +2025,41 @@ else{
 
         return PreviousdayDate;
     }
+
+    private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+        calendar.add(Calendar.DATE, -1);
+
+
+
+
+        Date c1 = calendar.getTime();
+
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        String PreviousdayDay = previousday.format(c1);
+
+
+
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        String  PreviousdayDate = df1.format(c1);
+        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+        return yesterdayAsString;
+    }
+
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {

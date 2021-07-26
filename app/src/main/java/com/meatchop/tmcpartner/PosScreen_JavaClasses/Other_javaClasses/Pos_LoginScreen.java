@@ -60,23 +60,24 @@ public class Pos_LoginScreen extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-        //Log.d("debug","Screen inches : " + screenInches);
-        SharedPreferences sharedPreferences
-                = getSharedPreferences("CurrentSelectedStatus",
-                MODE_PRIVATE);
 
-        SharedPreferences.Editor myEdit
-                = sharedPreferences.edit();
-
-
-        myEdit.putString(
-                "currentstatus",
-                Constants.NEW_ORDER_STATUS);
-        myEdit.apply();
-
-        if(screenInches < 8 ){
+        if(screenInches < Constants.default_mobileScreenSize ){
             //Log.d("debug","Mobile device");
           // setContentView(R.layout.pos_login_activity);
+
+            //Log.d("debug","Screen inches : " + screenInches);
+            SharedPreferences sharedPreferences
+                    = getSharedPreferences("CurrentSelectedStatus",
+                    MODE_PRIVATE);
+
+            SharedPreferences.Editor myEdit
+                    = sharedPreferences.edit();
+
+
+            myEdit.putString(
+                    "currentstatus",
+                    Constants.NEW_ORDER_STATUS);
+            myEdit.apply();
 
            Intent i =new Intent(Pos_LoginScreen.this, Mobile_LoginScreen.class);
            startActivity(i);
@@ -91,6 +92,20 @@ public class Pos_LoginScreen extends AppCompatActivity {
                 //Log.d("debug","Pos device");
 
                 setContentView(R.layout.pos_login_activity);
+
+                //Log.d("debug","Screen inches : " + screenInches);
+                SharedPreferences sharedPreferences
+                        = getSharedPreferences("CurrentSelectedStatus",
+                        MODE_PRIVATE);
+
+                SharedPreferences.Editor myEdit
+                        = sharedPreferences.edit();
+
+
+                myEdit.putString(
+                        "currentstatus",
+                        Constants.NEW_ORDER_STATUS);
+                myEdit.apply();
 
             //
                  pos_mobileNo_widget = findViewById(R.id.pos_mobileNo_widget);
@@ -187,7 +202,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
         double y = Math.pow(dm.heightPixels/dm.ydpi,2);
         double screenInches = Math.sqrt(x+y);
         //Log.d("debug","Screen inches : " + screenInches);
-        if(screenInches < 8 ){
+        if(screenInches < Constants.default_mobileScreenSize ){
             Intent i =new Intent(Pos_LoginScreen.this, Mobile_LoginScreen.class);
             startActivity(i);
             finish();

@@ -26,6 +26,8 @@ import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDelivery
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Adapter_Mobile_SearchOrders_usingMobileNumber_ListView;
+import com.meatchop.tmcpartner.Settings.Edit_Or_CancelOrder_OrderDetails_Screen;
+import com.meatchop.tmcpartner.Settings.Edit_Or_CancelTheOrders;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONException;
@@ -157,6 +159,26 @@ public void onClick(View view) {
 
 
 
+    try {
+        if (IntentFrom.contains("EditOrders")) {
+            try {
+
+
+                Edit_Or_CancelOrder_OrderDetails_Screen.bottomSheetDialog.dismiss();
+
+                Edit_Or_CancelOrder_OrderDetails_Screen.loadingpanelmask.setVisibility(View.VISIBLE);
+                Edit_Or_CancelOrder_OrderDetails_Screen.loadingPanel.setVisibility(View.VISIBLE);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
 
 
 
@@ -169,7 +191,6 @@ public void onClick(View view) {
         jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
         jsonObject.put("deliveryusername", deliveryPartnerName);
 
-      //  Log.i("tag","listenertoken"+ "");
 
         } catch (JSONException e) {
         e.printStackTrace();
@@ -244,6 +265,56 @@ public void onResponse(@NonNull JSONObject response) {
 
                         searchOrdersUsingMobileNumber.loadingpanelmask.setVisibility(View.GONE);
                         searchOrdersUsingMobileNumber.loadingPanel.setVisibility(View.GONE);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try {
+                if (IntentFrom.equals("EditOrders")) {
+
+                    try {
+
+                        Log.i("tag","deliveryPartnerName"+ deliveryPartnerName);
+
+                        for (int i = 0; i < Edit_Or_CancelTheOrders.ordersList.size(); i++) {
+                            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.ordersList.get(i);
+                            String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
+                            if (TrackingTableKey.equals(OrderKey)) {
+                                modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+                                Edit_Or_CancelOrder_OrderDetails_Screen.modal_manageOrders_pojo_class.setDeliveryPartnerName(deliveryPartnerName);
+                                Edit_Or_CancelOrder_OrderDetails_Screen.modal_manageOrders_pojo_class.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+                                Edit_Or_CancelOrder_OrderDetails_Screen.modal_manageOrders_pojo_class.setDeliveryPartnerKey(deliveryPartnerKey);
+
+                            }
+                        }
+
+                        if(Edit_Or_CancelTheOrders.sorted_OrdersList.size()>0){
+                            for (int i = 0; i < Edit_Or_CancelTheOrders.sorted_OrdersList.size(); i++) {
+                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.sorted_OrdersList.get(i);
+                                String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
+                                if (TrackingTableKey.equals(OrderKey)) {
+                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+                                }
+                            }
+                        }
+                        Log.i("tag","deliveryPartnerName   2  "+ deliveryPartnerName);
+
+                        Edit_Or_CancelOrder_OrderDetails_Screen.deliveryPersonMobileNotext_widget.setText(deliveryPartnerMobileNo);
+                        Edit_Or_CancelOrder_OrderDetails_Screen. deliveryPersonNametext_widget.setText(deliveryPartnerName);
+                        Edit_Or_CancelOrder_OrderDetails_Screen.deliverypartnerName = deliveryPartnerName;
+                        Edit_Or_CancelOrder_OrderDetails_Screen.loadingpanelmask.setVisibility(View.GONE);
+                        Edit_Or_CancelOrder_OrderDetails_Screen.loadingPanel.setVisibility(View.GONE);
 
                     }
                     catch (Exception e){

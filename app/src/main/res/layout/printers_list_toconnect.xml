@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_marginTop="15dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Printer Status : "
+            android:layout_weight=".1"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="16sp"
+            android:fontFamily="@font/open_sans_semibold"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="....Loading.... "
+            android:layout_weight="1"
+            android:id="@+id/printerConnectionStatus_Textwidget"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="16sp"
+            android:fontFamily="@font/open_sans_semibold"/>
+        <LinearLayout
+            android:id="@+id/scanAgain_layout"
+            android:layout_width="38dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="10dp"
+
+            android:layout_weight=".1"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="center"
+                android:foregroundGravity="bottom"
+                android:visibility="visible"
+                android:layout_marginStart="10dp"
+
+                app:srcCompat="@mipmap/neworder_sync_icon" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="20dp"
+
+        android:background="@drawable/border_line"
+        />
+
+    <ListView
+        android:id="@+id/availableDevices_Listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

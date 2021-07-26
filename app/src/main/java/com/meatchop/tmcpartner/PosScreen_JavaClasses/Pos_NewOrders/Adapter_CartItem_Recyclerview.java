@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
 
@@ -186,7 +187,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                     }
-
+        
 
                     holder.addNewItem_layout.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -199,6 +200,15 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                                 newOrders_menuItem_fragment.CallAdapter();
 
+                                if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
+                                    newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
+
+                                }
+                                if((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0"))||(!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))){
+                                    newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
+                                    newOrders_menuItem_fragment.discount_rs_text_widget.setText("0.00");
+                                    newOrders_menuItem_fragment.discountAmount="0";
+                                }
 
                             } else {
                                 Toast.makeText(context, "You have to fill this Item First", Toast.LENGTH_LONG).show();
@@ -252,6 +262,15 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                             }
+                            if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
+                                newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
+
+                            }
+                            if((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0"))||(!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))){
+                                newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
+                                newOrders_menuItem_fragment.discount_rs_text_widget.setText("0.00");
+                                newOrders_menuItem_fragment.discountAmount="0";
+                            }
 
 
                         }
@@ -283,6 +302,15 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                                 modal_newOrderItems.setQuantity(String.valueOf(quantity));
                                 newOrders_menuItem_fragment.add_amount_ForBillDetails();
+                                if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
+                                    newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
+
+                                }
+                                if((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0"))||(!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))){
+                                    newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
+                                    newOrders_menuItem_fragment.discount_rs_text_widget.setText("0.00");
+                                    newOrders_menuItem_fragment.discountAmount="0";
+                                }
 
                             }
                             else{
@@ -314,6 +342,17 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(item_price)));
 
                                 newOrders_menuItem_fragment.add_amount_ForBillDetails();
+
+                                if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
+                                    newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
+
+                                }
+                                if((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0"))||(!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))){
+                                    newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
+                                    newOrders_menuItem_fragment.discount_rs_text_widget.setText("0.00");
+                                    newOrders_menuItem_fragment.discountAmount="0";
+                                }
+
                             } else {
                                 Toast.makeText(context, "To Remove the Item Click the Delete Icon", Toast.LENGTH_LONG).show();
                             }
@@ -488,7 +527,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                 //Log.e(TAG, " barcode  1   " + barcode);
 
                 for (int i = 0; i < NewOrders_MenuItem_Fragment.completemenuItem.size(); i++) {
-                    String itemWeight;
+                    String itemWeight="";
                     //Log.e(TAG, " barcode  1  for" + barcode);
 
                     Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.completemenuItem.get(i);
@@ -529,33 +568,43 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.total_of_subTotal_perItem = "";
                             newItem_newOrdersPojoClass.totalGstAmount = "";
 
-                            if (modal_newOrderItems.getGrossweight().equals("") && modal_newOrderItems.getNetweight().equals("")) {
-                                //Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
-                                newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getPortionsize());
-
-                                itemWeight = String.valueOf(modal_newOrderItems.getPortionsize());
-                            } else if (modal_newOrderItems.getNetweight().equals("")) {
-
-                                //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
-
+                            try{
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
+
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
 
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            try{
+                                newItem_newOrdersPojoClass.grossweight = (modal_newOrderItems.getGrossweight());
 
-                            } else if (modal_newOrderItems.getGrossweight().equals("")) {
-                                //Log.e(Constants.TAG, "getNetweight " + (String.format(" %s", modal_newOrderItems.getNetweight())));
-                                newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getNetweight());
-
-                                itemWeight = String.valueOf(modal_newOrderItems.getNetweight());
-
-
-                            } else {
-                                //Log.e(Constants.TAG, "getGrossweight " + (String.format(" %s", modal_newOrderItems.getGrossweight())));
-
-                                newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
 
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
 
+                            try{
+                                newItem_newOrdersPojoClass.netweight = (modal_newOrderItems.getNetweight());
+
+                                itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            try{
+                                newItem_newOrdersPojoClass.portionsize = (modal_newOrderItems.getPortionsize());
+
+                                itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
                             }
 
                             addItemIntheCart(barcode, newItem_newOrdersPojoClass, itemWeight, modal_newOrderItems.getItemuniquecode());
@@ -589,7 +638,6 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         Modal_NewOrderItems newItem_newOrdersPojoClass = new Modal_NewOrderItems();
                         newItem_newOrdersPojoClass.itemname = modal_newOrderItems.getItemname();
                         newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
-                        newItem_newOrdersPojoClass.grossweight = modal_newOrderItems.getGrossweight();
                         newItem_newOrdersPojoClass.netweight = modal_newOrderItems.getNetweight();
                         newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
                         newItem_newOrdersPojoClass.gstpercentage = modal_newOrderItems.getGstpercentage();
@@ -639,6 +687,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(item_total));
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(item_total));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
+                                newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
+
                                 //Log.e("TAg", "weight item_total" + item_total);
 
                                 itemPrice_Widget.setText(String.valueOf(item_total));
@@ -651,6 +701,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(priceperKg));
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(priceperKg));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
+                                newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
 
                                 //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -683,6 +734,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(total));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
                                 //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                                newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
 
                                 itemPrice_Widget.setText(String.valueOf(total));
                                 NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
@@ -697,7 +749,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(modal_newOrderItems.getTmcprice()));
 
                             newItem_newOrdersPojoClass.setItemFinalPrice(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getTmcprice())));
-
+                          /*
                             if (modal_newOrderItems.getGrossweight().equals("") && modal_newOrderItems.getNetweight().equals("")) {
                                 //Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getPortionsize());
@@ -725,6 +777,45 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
 
 
+                            }
+                            */
+                            try{
+                                newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getGrossweight());
+
+                                itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            try{
+                                newItem_newOrdersPojoClass.grossweight = (modal_newOrderItems.getGrossweight());
+
+                                itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            try{
+                                newItem_newOrdersPojoClass.netweight = (modal_newOrderItems.getNetweight());
+
+                                itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            try{
+                                newItem_newOrdersPojoClass.portionsize = (modal_newOrderItems.getPortionsize());
+
+                                itemWeight = String.valueOf(modal_newOrderItems.getGrossweight());
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
                             }
 
                         }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp"
     android:orientation="horizontal"
     android:layout_height="match_parent">
@@ -8,24 +9,41 @@
     <TextView
         android:id="@+id/name_and_quantity"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_height="40dp"
+        android:layout_weight=".75"
         android:gravity="left"
         android:textSize="13sp"
-        android:fontFamily="@font/open_sans_semibold"
+        android:layout_marginTop="14dp"
+        android:fontFamily="@font/open_sans_bold"
         android:textColor="@color/TMC_Primary_Text_Color"
         android:text="Chicken Curry Cut (4)" />
 
     <TextView
         android:id="@+id/price"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="2.8"
+        android:layout_height="40dp"
+        android:layout_weight="2"
         android:gravity="right"
+        android:layout_marginTop="13dp"
+        android:layout_marginEnd="5dp"
         android:textSize="13sp"
-        android:fontFamily="@font/open_sans_semibold"
+        android:fontFamily="@font/open_sans_bold"
         android:textColor="@color/TMC_Primary_Text_Color"
         android:text="TextView" />
+<LinearLayout
+    android:layout_width="35dp"
+    android:gravity="center"
+    android:id="@+id/viewtokens"
+
+    android:layout_height="50dp">
+
+    <ImageView
+        android:layout_width="15dp"
+        android:layout_height="30dp"
+        android:visibility="visible"
+        app:srcCompat="@mipmap/plainrightarrow" />
+</LinearLayout>
+
 </LinearLayout>
 
 <!--<?xml version="1.0" encoding="utf-8"?>

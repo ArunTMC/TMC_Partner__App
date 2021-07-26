@@ -104,7 +104,7 @@
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_semibold"
                                 android:gravity="right"
-                                android:text="03924782902100"
+                                android:text=""
 
                                 android:textAlignment="gravity"
                                 android:textColor="@color/TMC_Primary_Text_Color"
@@ -169,7 +169,7 @@
                                 android:fontFamily="@font/open_sans_semibold"
 
                                 android:gravity="right"
-                                android:text="Delivered"
+                                android:text=""
 
                                 android:textAlignment="gravity"
                                 android:textColor="@color/TMC_Primary_Text_Color"
@@ -207,20 +207,48 @@
 
 
                             <LinearLayout
-                                android:id="@+id/showlocation"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
+                                android:layout_width="41dp"
+                                android:layout_height="41dp"
                                 android:gravity="center"
+                                android:id="@+id/whole_showlocation"
+
                                 android:orientation="horizontal">
+                                <RelativeLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
+                                    <LinearLayout
+                                        android:id="@+id/showlocation"
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:gravity="center"
+                                        android:visibility="gone"
+                                        android:orientation="horizontal">
 
-
-                                <ImageView
+                                    <ImageView
                                     android:id="@+id/imageView7"
                                     android:layout_width="match_parent"
 
                                     android:layout_height="30dp"
                                     app:srcCompat="@mipmap/mapmarker" />
+                                    </LinearLayout>
+                                    <LinearLayout
+                                        android:id="@+id/Location_loadinganim_layout"
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:gravity="center"
+                                        android:visibility="visible"
+                                        android:orientation="horizontal">
 
+                                        <com.wang.avi.AVLoadingIndicatorView
+                                            android:layout_width="22dp"
+                                            android:layout_height="28dp"
+                                            android:layout_gravity="center"
+                                            android:visibility="visible"
+                                            app:indicatorColor="@color/TMC_Orange"
+                                            app:indicatorName="BallSpinFadeLoaderIndicator" />
+                                    </LinearLayout>
+
+                                </RelativeLayout>
 
                             </LinearLayout>
                         </LinearLayout>
@@ -255,6 +283,50 @@
                                 android:textAlignment="gravity"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="12sp" />
+                            <LinearLayout
+                                android:layout_width="41dp"
+                                android:layout_height="41dp"
+                                android:gravity="center"
+                                android:id="@+id/refresh_paymentmode_layout"
+
+                                android:orientation="horizontal">
+                                <RelativeLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
+                                    <LinearLayout
+                                        android:id="@+id/refreshpaymentmode_image_layout"
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:gravity="center"
+                                        android:visibility="visible"
+                                        android:orientation="horizontal">
+
+                                        <ImageView
+                                            android:layout_width="match_parent"
+
+                                            android:layout_height="20dp"
+                                            app:srcCompat="@mipmap/neworders_sync_icon" />
+                                    </LinearLayout>
+                                    <LinearLayout
+                                        android:id="@+id/refreshpaymentmode__loadinganim_layout"
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:gravity="center"
+                                        android:visibility="gone"
+                                        android:orientation="horizontal">
+
+                                        <com.wang.avi.AVLoadingIndicatorView
+                                            android:layout_width="22dp"
+                                            android:layout_height="28dp"
+                                            android:layout_gravity="center"
+                                            android:visibility="visible"
+                                            app:indicatorColor="@color/TMC_Orange"
+                                            app:indicatorName="BallSpinFadeLoaderIndicator" />
+                                    </LinearLayout>
+
+                                </RelativeLayout>
+
+                            </LinearLayout>
                         </LinearLayout>
 
                         <LinearLayout
@@ -508,7 +580,37 @@
                                 android:textSize="12sp" />
                         </LinearLayout>
 
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:gravity="center"
 
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Notes"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="12sp"
+
+                                />
+
+                            <TextView
+                                android:id="@+id/notestext_widget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="right"
+                                android:text=""
+
+                                android:textAlignment="gravity"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="12sp" />
+                        </LinearLayout>
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
@@ -534,6 +636,36 @@
                                 android:fontFamily="@font/open_sans_semibold"
                                 android:gravity="right"
                                 android:text=""
+                                android:textAlignment="gravity"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight=".1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Google Map Address"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="12sp"
+
+                                />
+
+                            <TextView
+                                android:id="@+id/googleAddress_textwidget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="right"
+                                android:text="Loading"
                                 android:textAlignment="gravity"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="12sp" />
@@ -739,12 +871,18 @@
                         android:layout_weight="1">
 
                     </ListView>
-
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginStart="1dp"
+                        android:layout_marginEnd="1dp"
+                        android:background="@mipmap/black_line" />
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1.9"
-
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="15dp"
                         android:orientation="vertical">
 
                         <LinearLayout
@@ -768,7 +906,7 @@
 
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="50dp"
 
                                 android:orientation="horizontal"
                                 tools:ignore="NestedWeights">
@@ -776,24 +914,36 @@
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
 
-                                    android:layout_weight="1"
+                                    android:layout_weight="1.2"
                                     android:fontFamily="@font/open_sans_bold"
                                     android:text="@string/Item_Total"
                                     android:textColor="@color/TMC_Primary_Text_Color"
-                                    android:textSize="18sp" />
+                                    android:textSize="16sp" />
 
 
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
+                                    android:layout_weight=".7"
                                     android:fontFamily="@font/open_sans_bold"
-                                    android:paddingStart="30dp"
+                                    android:paddingStart="10dp"
+                                    android:layout_marginTop="5dp"
                                     android:paddingEnd="10dp"
                                     android:text="@string/Taxes_and_charges"
                                     android:textColor="@color/TMC_Primary_Text_Color"
-                                    android:textSize="18sp" />
+                                    android:textSize="17sp" />
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:text="@string/Delivery_Charges"
+                                    android:layout_marginTop="3dp"
+
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="15sp" />
 
                                 <TextView
                                     android:layout_width="0dp"
@@ -801,8 +951,10 @@
                                     android:layout_weight="1"
                                     android:fontFamily="@font/open_sans_bold"
                                     android:text="@string/Coupon_discount"
+                                    android:layout_marginTop="5dp"
+
                                     android:textColor="@color/TMC_Primary_Text_Color"
-                                    android:textSize="17sp" />
+                                    android:textSize="16sp" />
 
 
                                 <TextView
@@ -811,9 +963,11 @@
                                     android:layout_weight=".8"
                                     android:fontFamily="@font/open_sans_bold"
                                     android:gravity="right"
+                                    android:layout_marginTop="5dp"
+
                                     android:text="@string/To_Pay"
                                     android:textColor="@color/TMC_Primary_Text_Color"
-                                    android:textSize="18sp" />
+                                    android:textSize="17sp" />
 
 
                             </LinearLayout>
@@ -821,6 +975,7 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
                                 android:orientation="horizontal"
                                 tools:ignore="NestedWeights">
 
@@ -829,7 +984,7 @@
                                     android:id="@+id/total_amount_text_widget"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
+                                    android:layout_weight="1.2"
                                     android:fontFamily="@font/open_sans_bold"
                                     android:text="0.00"
                                     android:textColor="@color/TMC_Primary_Text_Color"
@@ -840,13 +995,26 @@
 
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
+                                    android:layout_weight=".7"
                                     android:fontFamily="@font/open_sans_bold"
-                                    android:paddingStart="30dp"
+                                    android:paddingStart="10dp"
                                     android:paddingEnd="10dp"
                                     android:text="0.00"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="15sp" />
+                                <TextView
+                                    android:id="@id/deliveryCharges_text_widget"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="10dp"
+                                    android:text="0.00"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+
+                                    android:textSize="15sp" />
+
 
                                 <TextView
                                     android:id="@+id/discounttext_widget"
@@ -854,7 +1022,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:fontFamily="@font/open_sans_bold"
-                                    android:paddingStart="30dp"
+                                    android:paddingStart="10dp"
                                     android:paddingEnd="10dp"
                                     android:text="0.00"
                                     android:textColor="@color/TMC_Primary_Text_Color"
@@ -868,8 +1036,8 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight=".8"
                                     android:fontFamily="@font/open_sans_bold"
-                                    android:gravity="right"
-                                    android:paddingStart="18dp"
+                                    android:gravity="left"
+                                    android:paddingStart="8dp"
                                     android:text="0.00"
                                     android:textColor="@color/TMC_Primary_Text_Color"
 

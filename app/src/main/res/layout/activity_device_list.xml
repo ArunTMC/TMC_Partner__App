@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <!-- Copyright (C) 2009 The Android Open Source Project
+
+         Licensed under the Apache License, Version 2.0 (the "License");
+         you may not use this file except in compliance with the License.
+         You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+         Unless required by applicable law or agreed to in writing, software
+         distributed under the License is distributed on an "AS IS" BASIS,
+         WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+         See the License for the specific language governing permissions and
+         limitations under the License.
+    -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Settings.DeviceListActivity">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:textColor="@color/TMC_White"
+        android:textSize="17sp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical"
+        android:fontFamily="@font/open_sans_bold"
+        android:background="@color/TMC_Orange"
+        android:text="Select Printer from the List" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/pairedDevices_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.3"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/orange_non_selected_button_background"
+            android:textColor="@color/TMC_Primary_Text_Color"
+
+            android:text="Paired Devices" />
+
+        <Button
+            android:id="@+id/allavailable_Devices_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/TMC_White"
+            android:background="@drawable/orange_selected_button_background"
+            android:text="All Available Devices" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:id="@+id/paired_devices_layout"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+    <TextView android:id="@+id/title_paired_devices"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Paired Devices"
+    android:visibility="visible"
+        android:fontFamily="@font/open_sans_bold"
+        android:textSize="20sp"
+        android:textColor="@color/TMC_Orange"
+    android:paddingLeft="5dp"
+    />
+<ListView android:id="@+id/paired_devices"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:divider="@color/TMC_Hint_Color"
+    android:dividerHeight="3dp"
+    android:layout_weight="1"
+    />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:id="@+id/allAvailabledevices_layout"
+        android:visibility="visible"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:orientation="horizontal">
+
+    <TextView android:id="@+id/title_new_devices"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:text="All Available Devices"
+    android:visibility="visible"
+        android:layout_weight="10"
+        android:fontFamily="@font/open_sans_bold"
+        android:textSize="20sp"
+        android:textColor="@color/TMC_Orange"
+    android:paddingLeft="5dp"
+
+    />
+
+        <LinearLayout
+            android:id="@+id/scanAvailableDevices_Layout"
+            android:layout_width="0dp"
+            android:layout_height="28dp"
+            android:layout_weight="1"
+
+            android:visibility="visible"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:foregroundGravity="bottom"
+                android:visibility="visible"
+                app:srcCompat="@mipmap/neworder_sync_icon" />
+
+        </LinearLayout>
+        </LinearLayout>
+
+        <ListView android:id="@+id/new_devices"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:divider="@color/TMC_Hint_Color"
+    android:dividerHeight="3dp"
+    android:layout_weight="1"
+    />
+    </LinearLayout>
+
+    <Button android:id="@+id/button_scan"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+        android:visibility="gone"
+    android:text="button_scan"
+    />
+
+
+
+    <LinearLayout
+        android:id="@+id/loadingpanelmask_dailyItemWisereport"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/TMC_proressbar_mask_Color"
+        android:alpha="0.85"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/loadingPanel_dailyItemWisereport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:visibility="gone">
+
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/loadinganim_layout"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="visible"
+            android:layout_gravity="center"
+            app:indicatorColor="@color/TMC_Orange"
+            app:indicatorName="BallPulseIndicator" />
+    </LinearLayout>
+        </LinearLayout>
+
+</RelativeLayout>
+</LinearLayout>

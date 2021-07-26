@@ -1,11 +1,16 @@
 package com.meatchop.tmcpartner.Settings;
 
 import android.content.Context;
+import android.content.Intent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -23,9 +28,13 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
     private LayoutInflater layoutInflater;
     private List<ListData> dataList;
     int header_count=2;
-    public Adapter_Pos_Sales_Report(Context context, List<ListData> dataList) {
+    Context context;
+    private boolean isFromSlotAppordersList;
+    public Adapter_Pos_Sales_Report(Context context, List<ListData> dataList,boolean isFromSlotAppordersList) {
         this.dataList = dataList;
         this.layoutInflater = LayoutInflater.from(context);
+        this.isFromSlotAppordersList=isFromSlotAppordersList;
+        this.context = context;
     }
 
     public Adapter_Pos_Sales_Report() {
@@ -71,6 +80,25 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
         itemViewHolder.setMessage(listItem.getMessage());
         itemViewHolder.setMessageLine2(listItem.getMessageLine2());
       //  posSalesReport.setHeightforListview();
+        if(isFromSlotAppordersList) {
+            itemViewHolder.viewtokens.setVisibility(View.VISIBLE);
+
+            itemViewHolder.viewtokens.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                   // Toast.makeText(context, "Token no : " + listItem.getTokens(), Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(context,TokenNoShowingActivity.class);
+                    i.putExtra("tokenNo",listItem.getTokens());
+                    i.putExtra("itemname",listItem.getMessage());
+                    i.putExtra("quantity",listItem.getMessageLine2());
+                    context.startActivity(i);
+                }
+            });
+        }
+        else{
+            itemViewHolder.viewtokens.setVisibility(View.GONE);
+        }
         return convertView;
     }
     @NonNull
@@ -121,6 +149,8 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
 
         }
         public void setTitle(String title) {
+                tvTitle.setGravity(Gravity.TOP);
+
             tvTitle.setText(title);
         }
        public void setTvtotalAmount(String amount) {
@@ -131,9 +161,19 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
     }
     class ItemViewHolder {
         TextView tvMessage, tvMessageLine2;
+        LinearLayout viewtokens;
         public ItemViewHolder(View itemView) {
             tvMessage = (TextView) itemView.findViewById(R.id.name_and_quantity);
             tvMessageLine2 = (TextView) itemView.findViewById(R.id.price);
+            viewtokens = (LinearLayout) itemView.findViewById(R.id.viewtokens);
+            viewtokens.setVisibility(View.GONE);
+            if(isFromSlotAppordersList){
+                viewtokens.setVisibility(View.VISIBLE);
+                tvMessageLine2.setTextColor(context.getResources().getColor(R.color.TMC_Orange));
+            }
+            else{
+                viewtokens.setVisibility(View.GONE);
+            }
         }
         public void setMessage(String message) {
             tvMessage.setText(message);

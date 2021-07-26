@@ -20,6 +20,13 @@
     <string name="No_Text">No </string>
     <string name="Empty_Text"> </string>
     <string name="RePrint_Instruction">Do you want to another Copy ? </string>
+    <string name="Do_You_Want_to_Connect_Printer_Now">Printer Is Not Connected Yet !! Do You Want to Connect Now ???</string>
+    <string name="Bluetooth_turnedOff_Information">Connection Lost!! Turn On Bluetooth Again</string>
+    <string name="Printer_is_Disconnected">Printer is Disconnected Please Goto Settings and Connect it</string>
+    <string name="Please_Wait_Until_Printer_Stop">Please Wait Until Printer Stop</string>
+
+    <string name="Printer_is_Disconnected_want_to_generate_TokenNo">Printer is Disconnected . Are u sure you need to Generate Token No withOut Recipt</string>
+    <string name="Vendor_logoutInstruction">Are you sure you want to Logout from this Vendor </string>
 
     <string name="Exit_Instruction">Are you sure do you want to Exit now ? </string>
     <string name="ResetToken_Instruction">Click Yes to Reset the Token No for your Store </string>
@@ -30,22 +37,30 @@
     <string name="TurnOnMenuInstruction">   Turn ON this Menu  </string>
     <string name="TurnOffMenuInstruction">  Turn OFF this Menu  </string>
 
+
+    <string name="TurnOnAllMenuSubCtgywiseInstruction">   Turn ON All Menu with this SubCtgy </string>
+    <string name="TurnOffAllMenuSubCtgywiseInstruction">  Turn OFF All Menu with this SubCtgy </string>
+
+
     <string name="Enter_Correct_Password">Enter Correct Password </string>
     <string name="Enter_Correct_OTP">Enter Correct Otp </string>
     <string name="Enter_Password">Password Field Cannot be Empty </string>
 
     //DashBoard
     <string name="Manage_Orders_Text">Manage Orders </string>
-    <string name="Manage_Menu_Text">Manage Menu </string>
+    <string name="Manage_Menu_Text">Manage Menu &amp; Slots</string>
 
     <string name="New_order_text">Place New Order</string>
     <string name="Settings_text">Settings </string>
+    <string name="Cart_is_empty">Cart is Empty So Add the Items</string>
+    <string name="Orders_weight_Cant_be_leave_unedited">Please Add Weight and click next button to all the Orders</string>
 
     <string name="Cant_place_order">Cannot Place Order while Bill amount is 0</string>
     <string name="TodaysOrderText">Todays Order </string>
     <string name="TomorrowsOrderText">Tomorrows Order</string>
+    <string name="Enter_the_mobile_no_text">Enter the Valid Mobile Number</string>
 
-    <string name="Enter_the_mobile_no_text">Enter the Mobile Number</string>
+    <string name="PointusercanRedeemtoday">You Cant redeem more than  : </string>
     <string name="Name_Of_the_Vendor_text">TMC Hasthinapuram , Chromepet</string>
     <string name="No_Orders_Instruction_text">No Orders Available. </string>
     <string name="New_button_text">New</string>
@@ -101,16 +116,20 @@
     <string name="Bill_Details">Bill Details </string>
     <string name="Item_Total">Item Total </string>
     <string name="Coupon_discount"> Discount </string>
+    <string name="Delivery_Charges"> Delivery Charges </string>
+
     <string name="Taxes_and_charges">GST </string>
     <string name="To_Pay">To Pay </string>
     <string name="Check_out"> Check Out </string>
+    <string name="RedeemPoints"> Redeem Points </string>
+
     <string name="Discount_percentage"> Add Discount  </string>
     <string name="OrderType">Order Type </string>
 
     <string-array name="OrderType">
-        <item>Store Pickup</item>
+        <item>POSORDER</item>
 
-        <item>Home Delivery</item>
+        <item>PHONEORDER</item>
 
 
     </string-array>
@@ -129,13 +148,18 @@
     <string name="ExpressDelivery_slotDetails_Text">Express Delivery Slot Status </string>
     <string name="Todays_Preorder_slotDetails_Text">Todays Preorder Slot Status</string>
     <string name="Tomorrows_Preorder_slotDetails_Text">Tomorrows Preorder Slot Status</string>
-    <string name="No.of.ordersDelivered">Total No.of.Orders Delivered </string>
+    <string name="No.of.ordersDelivered">Delivered Orders</string>
+    <string name="No.of.ordersAssigned">Assigned Orders</string>
+
+    <string name="Menu_Item_Availability_Transaction_Details">Menu Item Availability Transaction Details </string>
 
     <string name="Change_Menu_Item_Status">Change Menu Availability Status </string>
     <string name="Change_Menu_Item_Visibility_in_Tv">Change Menu Visibility In TV </string>
     <string name="Change_Menu_Item_Price">Change Menu Item Price</string>
-    <string name="Version_No">Version No : 1.4.8 </string>
     <string name="AppOrdersList">App Orders List </string>
+    <string name="slotAppOrdersList">Slotwise Item Report </string>
+    <string name="OrderedMenuItemDetails">Selected  Menu Item Details</string>
+
     <string name="PosOrdersList">Pos Orders List </string>
     <string name="CancelledOrdersList">Cancelled Orders List </string>
 
@@ -144,21 +168,34 @@
     <string name="ChangePaymentMode">Change Payment Mode </string>
     <string name="CancelOrder">Cancel Order </string>
     <string name="GenerateOrderDetailsDump">Generate OrderDetails Dump  </string>
+    <string name="GenerateTrackingOrderDetailsDump">Generate OrderTracking Details Dump  </string>
     <string name="GenereateCustomerMobilenOReort">Generate Customer MobileNumber wise  Report  </string>
+    <string name="PlotOrdersLocation">Plot Orders Location   </string>
+    <string name="AddSwiggyOrders">Add Swiggy Orders </string>
+    <string name="AddDunzoOrders">Add Dunzo Orders </string>
+    <string name="SelectItemCtgy">Select Item Category  : </string>
 
-
-    <string name="ItemStatus">Item Status </string>
+    <string name="ItemStatus">Item Status         </string>
     <string name="LogOut">Log out </string>
+    <string name="LogInAsAnotherVendor">LogIn as another Vendor</string>
     <string name="Vendor_Name">Store Name :   </string>
+    <string name="total_No_of_Points_user_have">Total No.of Points User have  :   </string>
+    <string name="No_of_Points_user_can_redeem"> No.of Points User can Redeem today  :   </string>
+    <string name="enter_the_points_user_needs_to_redeem"> Enter the Points User wants to Redeem :   </string>
+    <string name="total_No_of_Points_user_redeemed_already">Total No.of Points User have already used : </string>
+    <string name="Menu_Item_Availability_Status_Report">Menu Item Availability Status Report </string>
 
     <string name="Mobile_Number">Mobile :   </string>
     <string name="Consolidated_Sales_Report">Consolidated Sales Report </string>
     <string name="Pos_Sales_Report">POS Sales Report </string>
     <string name="App_Sales_Report">APP Sales Report </string>
     <string name="Delivery_Partner_settlement_report">Delivery Partner Settlement Report </string>
+    <string name="Consolidated_Sales_Report_Weekwise">Consolidated Sales Report Weekwise </string>
 
     <string name="Reset_token_no">Reset</string>
     <string name="Current_token_no">Current Token No   : </string>
+    <string name="Genereate_User_Details">Generate User Details With Address</string>
+    <string name="Generate_OrderItemDetails">Generate Order Item Details </string>
 
 
     <!-- TODO: Remove or change this placeholder text -->
@@ -180,5 +217,13 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
+    <string name="Version_No">Version No : 1.6.8 </string>
+    <string name="scanning">scanning for devices...</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_found">No devices found</string>
+    <string name="none_paired">No devices have been paired</string>
 
+    <string name="title_connecting">connecting...</string>
+    <string name="title_connected_to">connected - </string>
+    <string name="title_not_connected">not connected</string>
 </resources>

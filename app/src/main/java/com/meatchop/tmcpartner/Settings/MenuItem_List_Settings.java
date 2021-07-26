@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -47,8 +48,8 @@ public class MenuItem_List_Settings extends AppCompatActivity {
     String vendorkey,deliverySlotKey ;
     ListView MenuItemsListView;
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
-
-
+    TextView headingTextview;
+    String IntentFrom ;
     public static List<Modal_MenuItem_Settings> displaying_menuItems;
     //public static List<Modal_MenuItem_Settings> completemenuItem;
     public static List<String> subCtgyName_arrayList;
@@ -57,18 +58,22 @@ public class MenuItem_List_Settings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.menu_item_list_settings_activity);
-
+        IntentFrom = getIntent().getExtras().getString("ClickedOn","ChangeMenuItemPrice");
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
         subCtgyItem_spinner = findViewById(R.id.subCtgyItem);
         MenuItemsListView = findViewById(R.id.MenuItemsListView);
+        headingTextview = findViewById(R.id.headingTextview);
         Adjusting_Widgets_Visibility(true);
-        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginStatus", MODE_PRIVATE);
+        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", "vendor_1"));
         getMenuItemArrayFromSharedPreferences();
-
-
-
+        if(IntentFrom.equals("ChangeMenuItemPrice")) {
+            headingTextview.setText("Select Menu Item to Change Price ");
+        }
+        if(IntentFrom.equals("MenuAvailabilityTransactionDetails")) {
+            headingTextview.setText("Select Item to get its On/Off Transaction");
+        }
         getMenuCategoryList();
         displaying_menuItems = new ArrayList<>();
         subCtgyName_arrayList = new ArrayList<>();
@@ -252,7 +257,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
 
 
 
-                Adapter_ChangeMenuItem_Price adapter_changeMenuItem_price = new Adapter_ChangeMenuItem_Price(MenuItem_List_Settings.this, displaying_menuItems, MenuItem_List_Settings.this);
+                Adapter_ChangeMenuItem_Price adapter_changeMenuItem_price = new Adapter_ChangeMenuItem_Price(MenuItem_List_Settings.this, displaying_menuItems, MenuItem_List_Settings.this,IntentFrom);
 
                 MenuItemsListView.setAdapter(adapter_changeMenuItem_price);
 

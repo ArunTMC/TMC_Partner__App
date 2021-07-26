@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -29,15 +30,19 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,23 +56,27 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
   ///  private LinkedHashMap<String, GroupInfo> childCtgyHashmap = new LinkedHashMap<String, GroupInfo>();
   //  private ArrayList<GroupInfo> ctgyList = new ArrayList<GroupInfo>();
   //  ArrayList<ChildInfo> childList;
-    LinearLayout loadingPanel,loadingpanelmask;
+    LinearLayout loadingPanel,loadingpanelmask,subCtgyMenuSwitch_Layout;
     public static HashMap<String, List<Modal_MenuItem_Settings>> MenuItem_hashmap = new HashMap();
     Spinner subCtgyItem_spinner;
-    ArrayAdapter adapter_subCtgy_spinner;
+    ArrayAdapter<Modal_SubCtgyList> adapter_subCtgy_spinner;
     String MenuItems ;
-    String vendorkey,deliverySlotKey ;
+    String vendorkey,SubCtgyName,deliverySlotKey,UserPhoneNumber  ;
     ListView MenuItemsListView;
     List<Modal_MenuItem_Settings>MenuItem = new ArrayList<>();
     String SubCtgyKey;
     public static List<Modal_MenuItem_Settings> marinadeMenuList;
-
+    boolean isSubCtgySwitchTouched;
     public static List<Modal_MenuItem_Settings> displaying_menuItems;
     //public static List<Modal_MenuItem_Settings> completemenuItem;
-    public static List<String> subCtgyName_arrayList;
+    public static List<Modal_SubCtgyList> subCtgyName_arrayList;
     JSONArray result;
+    Adapter_ChangeMenutem_Availability_settings adapter_Change_menutem_availability_settings;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
-    Switch vendorSlotAvailabiltySwitch;
+    Switch vendorSlotAvailabiltySwitch,subctgy_on_Off_Switch;
+    TextView itemAvailabilityCount_textWidget;
+    int total_no_of_item = 0;
+    int total_no_item_availability = 0 ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,11 +86,14 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
         subCtgyItem_spinner = findViewById(R.id.subCtgyItem);
         MenuItemsListView = findViewById(R.id.MenuItemsListView);
         vendorSlotAvailabiltySwitch =findViewById(R.id.vendorSlotAvailabiltySwitch);
+        subctgy_on_Off_Switch = findViewById(R.id.subctgy_on_Off_Switch);
+        subCtgyMenuSwitch_Layout  = findViewById(R.id.subCtgyMenuSwitch_Layout);
+        itemAvailabilityCount_textWidget = findViewById(R.id.itemAvailabilityCount_textWidget);
         Adjusting_Widgets_Visibility(true);
-        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginStatus", MODE_PRIVATE);
+        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", "vendor_1"));
+        UserPhoneNumber =  (shared.getString("UserPhoneNumber", ""));
         getMenuItemArrayFromSharedPreferences();
-
 
         getMenuCategoryList();
         getMarinadeMenuItem(vendorkey);
@@ -93,14 +105,69 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
        // completemenuItem = new ArrayList<>();
         marinadeMenuList=new ArrayList<>();
         //completemenuItem= getMenuItemfromString(MenuItems);
+        //subctgy_on_Off_Switch.setChecked(false);
+
+
+        subctgy_on_Off_Switch.setChecked(false);
+
+        subCtgyMenuSwitch_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isSubCtgySwitchTouched=true;
+                if(!subctgy_on_Off_Switch.isChecked()){
+                    new TMCAlertDialogClass(ChangeMenuItemStatus_Settings.this, R.string.app_name, R.string.TurnOnAllMenuSubCtgywiseInstruction,
+                            R.string.Yes_Text, R.string.No_Text,
+                            new TMCAlertDialogClass.AlertListener() {
+                                @Override
+                                public void onYes() {
+                                    subctgy_on_Off_Switch.setChecked(true);
+                                    if(isSubCtgySwitchTouched) {
+                                        ChangeAvailability_subctgywise_InMenuItemDB(true);
+                                        // Toast.makeText(ChangeMenuItemStatus_Settings.this,String.valueOf(isChecked),Toast.LENGTH_LONG).show();
+                                    }
+
+                                }
+
+                                @Override
+                                public void onNo() {
+                                }
+                            });
+                }
+                else{
+                    new TMCAlertDialogClass(ChangeMenuItemStatus_Settings.this, R.string.app_name, R.string.TurnOffAllMenuSubCtgywiseInstruction,
+                            R.string.Yes_Text, R.string.No_Text,
+                            new TMCAlertDialogClass.AlertListener() {
+                                @Override
+                                public void onYes() {
+                                    subctgy_on_Off_Switch.setChecked(false);
+                                    ChangeAvailability_subctgywise_InMenuItemDB(false);
+
+
+                                }
+
+                                @Override
+                                public void onNo() {
+                                }
+                            });
+
+                }
+            }
+        });
+
+        subctgy_on_Off_Switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
 
 
 
+            }
+        });
             subCtgyItem_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                     //Log.d(Constants.TAG, "displaying_menuItems: " + displaying_menuItems.size());
-
+                    subctgy_on_Off_Switch.setChecked(false);
+                            SubCtgyName = getVendorData(i,"subctgyname");
                             SubCtgyKey=getVendorData(i,"key");
                              getMenuItemsbasedOnSubCtgy(SubCtgyKey);
                 }
@@ -134,6 +201,155 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
 
 
     }
+
+    private void ChangeAvailability_subctgywise_InMenuItemDB(boolean isChecked) {
+        String checked_or_not =  String.valueOf(isChecked).toUpperCase();
+        String dateandtime = getDate_and_time();
+        isSubCtgySwitchTouched =false;
+        loadingPanel.setVisibility(View.VISIBLE);
+        loadingpanelmask.setVisibility(View.VISIBLE);
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("subctgykey", SubCtgyKey);
+            jsonObject.put("itemavailability",checked_or_not);
+            jsonObject.put("vendorkey", vendorkey);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.d(TAG, "change menu  jsonObject  " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_Update_ChangeMenuItemAvailability_SubCtgywise,
+                jsonObject, new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                String message ="";
+                        Log.d(TAG, "change menu Item " + response.length());
+                try {
+                     message = response.getString("message");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,SubCtgyName,checked_or_not,SubCtgyKey,vendorkey,dateandtime,SubCtgyKey,message);
+
+                JSONArray JArray = null;
+                try {
+                    JArray = response.getJSONArray("content");
+
+                    int i1 = 0;
+                    int arrayLength = JArray.length();
+                    Log.d("Constants.TAG", "change menu Item Response: " + arrayLength);
+
+
+                    for (; i1 < (arrayLength); i1++) {
+
+                        try {
+                            JSONObject json = JArray.getJSONObject(i1);
+                          Log.d(Constants.TAG, "change menu Item menuListFull: " + json);
+                            String key = json.getString("key");
+                            try {
+                                for (int i = 0; i < MenuItem.size(); i++) {
+                                    Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(i);
+                                    String MenuItemkey = modal_menuItemSettings.getKey();
+                                    if (MenuItemkey.equals(key)) {
+                                        modal_menuItemSettings.setItemavailability(checked_or_not);
+
+                                    }
+
+
+                                }
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            try {
+                                for (int i = 0; i < displaying_menuItems.size(); i++) {
+                                    Modal_MenuItem_Settings modal_menuItemSettings = displaying_menuItems.get(i);
+                                    String MenuItemkey = modal_menuItemSettings.getKey();
+                                    if (MenuItemkey.equals(key)) {
+                                        modal_menuItemSettings.setItemavailability(checked_or_not);
+
+                                    }
+                                }
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                            //Log.d(Constants.TAG, "e: " + e.getMessage());
+                            //Log.d(Constants.TAG, "e: " + e.toString());
+                            Log.d(Constants.TAG, "change menu Item menuListFull11111111111: " + e);
+
+                        }
+
+
+                    }
+                    savedMenuIteminSharedPrefrences(MenuItem);
+                    adapter_Change_menutem_availability_settings.notifyDataSetChanged();
+
+                    loadingpanelmask.setVisibility(View.GONE);
+                    loadingPanel.setVisibility(View.GONE);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(Constants.TAG, "change menu Item menuListFull: 22222 " + e);
+
+                }
+
+
+
+
+
+
+
+
+            }
+
+
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
+                Log.d(Constants.TAG, "change menu Item menuListFull: 333333333333333333" + error);
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                params.put("storeid", vendorkey);
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(ChangeMenuItemStatus_Settings.this).add(jsonObjectRequest);
+
+
+
+
+    }
+
     private void getMenuItemArrayFromSharedPreferences() {
         final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
 
@@ -455,8 +671,12 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                                 String subctgyname = String.valueOf(json.get("subctgyname"));
                                 String displayNo = String.valueOf(json.get("displayno"));
                                 //Log.d(Constants.TAG, "subctgyname from subCtgy: " + subctgyname);
+                                Modal_SubCtgyList  modal_subCtgyList = new Modal_SubCtgyList();
+                                modal_subCtgyList.setKey(key);
+                                modal_subCtgyList.setSubCtgyName(subctgyname);
+
                                 if (!subCtgyName_arrayList.contains(subctgyname)) {
-                                    subCtgyName_arrayList.add(subctgyname);
+                                    subCtgyName_arrayList.add(modal_subCtgyList);
 
                                 }
 
@@ -473,7 +693,7 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                adapter_subCtgy_spinner = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, subCtgyName_arrayList);
+                adapter_subCtgy_spinner = new ArrayAdapter<Modal_SubCtgyList>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, subCtgyName_arrayList);
                 subCtgyItem_spinner.setAdapter(adapter_subCtgy_spinner);
 
 
@@ -524,9 +744,11 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         for (int i = 0; i < MenuItem.size(); i++) {
             Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(i);
             String MenuItemkey = modal_menuItemSettings.getKey();
+            String MenuItemName = modal_menuItemSettings.getItemname();
+            String MenuItemSubCtgykey = modal_menuItemSettings.getTmcsubctgykey();
             if (MenuItemkey.equals(menuItemkey)) {
                 modal_menuItemSettings.setItemavailability(availability);
-                ChangeAvailabilityInMenuItemDB(MenuItemkey,availability);
+                ChangeAvailabilityInMenuItemDB(MenuItemkey,availability,MenuItemName,MenuItemSubCtgykey);
                 savedMenuIteminSharedPrefrences(MenuItem);
 
             }
@@ -547,9 +769,11 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         editor.apply();
     }
 
-    private void ChangeAvailabilityInMenuItemDB(String menuItemKey, String availability) {
+    private void ChangeAvailabilityInMenuItemDB(String menuItemKey, String availability, String menuItemName, String menuItemSubCtgykey) {
         Adjusting_Widgets_Visibility(true);
         //Log.d(TAG, " uploaduserDatatoDB.");
+        String dateandtime  = getDate_and_time();
+
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("key", menuItemKey);
@@ -567,6 +791,14 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                  //Log.d(Constants.TAG, "Response: " + response);
+                String message ="";
+                Log.d(TAG, "change menu Item " + response.length());
+                try {
+                    message = response.getString("message");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,menuItemName,availability,menuItemSubCtgykey,vendorkey,dateandtime,menuItemKey, message);
                 Adjusting_Widgets_Visibility(false);
             }
         }, new Response.ErrorListener() {
@@ -601,9 +833,73 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
 
     }
 
+    private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, String availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message) {
+
+
+        Adjusting_Widgets_Visibility(true);
+        //Log.d(TAG, " uploaduserDatatoDB.");
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("itemname", menuItemName);
+            jsonObject.put("Status", availability);
+            jsonObject.put("subCtgykey", menuItemSubCtgykey);
+            jsonObject.put("transactiontime", dateandtime);
+            jsonObject.put("mobileno", userPhoneNumber);
+            jsonObject.put("vendorkey", vendorkey);
+            jsonObject.put("menuitemkey", menuItemKey);
+            jsonObject.put("transcationstatus",message);
+
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addMenuavailabilityTransaction,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                //Log.d(Constants.TAG, "Response: " + response);
+                Adjusting_Widgets_Visibility(false);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Adjusting_Widgets_Visibility(false);
+
+                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+
+
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+
+    }
+
 
     private void getMenuItemsbasedOnSubCtgy(String subCtgykey) {
-
+        total_no_item_availability =0;
+        total_no_of_item =0;
         displaying_menuItems.clear();
         for(int i=0;i<MenuItem.size();i++){
             Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(i);
@@ -634,6 +930,9 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                         selected_CtgyItems.marinadeItemUniqueCode = "";
                         selected_CtgyItems.isMarinadeItem =false;
                     }
+                    if(String.valueOf(modal_menuItemSettings.getItemavailability()).equals("TRUE")) {
+                            total_no_item_availability = total_no_item_availability+1;
+                        }
                         displaying_menuItems.add(selected_CtgyItems);
                         //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
                         Adjusting_Widgets_Visibility(false);
@@ -649,9 +948,15 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                         catch (Exception e){
                             e.printStackTrace();
                         }
-                        Adapter_ChangeMenutem_Availability_settings adapter_Change_menutem_availability_settings = new Adapter_ChangeMenutem_Availability_settings(ChangeMenuItemStatus_Settings.this, displaying_menuItems, ChangeMenuItemStatus_Settings.this);
+                        total_no_of_item = displaying_menuItems.size();
+                        //  itemAvailabilityCount_textWidget.setText("Out of "+String.valueOf(total_no_of_item)+" Items / "+String.valueOf(total_no_item_availability)+" Items Available");
+                         adapter_Change_menutem_availability_settings = new Adapter_ChangeMenutem_Availability_settings(ChangeMenuItemStatus_Settings.this, displaying_menuItems, ChangeMenuItemStatus_Settings.this);
 
                         MenuItemsListView.setAdapter(adapter_Change_menutem_availability_settings);
+
+                    }
+                    if(displaying_menuItems.size()<=0){
+                        itemAvailabilityCount_textWidget.setText("There is no MenuItem Under this SubCtgy");
 
                     }
 
@@ -794,4 +1099,27 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
 
 
     }
+
+
+
+    public String getDate_and_time()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+
+        SimpleDateFormat day = new SimpleDateFormat("EEE");
+      String  CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDatee = df.format(c);
+        String   CurrentDate = CurrentDay+", "+CurrentDatee;
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        String   FormattedTime = dfTime.format(c);
+        String   formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
+        return formattedDate;
+    }
+
 }

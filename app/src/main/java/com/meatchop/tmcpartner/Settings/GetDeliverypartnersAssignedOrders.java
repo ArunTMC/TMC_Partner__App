@@ -24,9 +24,9 @@ import java.util.List;
 
 public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
     String assignedOrdersString = "",deliveryUserMobileno="";
-    List<Modal_ManageOrders_Pojo_Class> ordersList;
+    public static List<Modal_ManageOrders_Pojo_Class> ordersList;
     boolean isnewOrdersSyncButtonClicked = false;
-    static Adapter_Mobile_GetDeliveryPartnersAssignedOrders adapter_mobile_getDeliveryPartnersAssignedOrders;
+    public static Adapter_Mobile_GetDeliveryPartnersAssignedOrders adapter_mobile_getDeliveryPartnersAssignedOrders;
     ListView assignedOrdersListview;
     TextView deliveryUserMobileno_textWidget;
     @Override
@@ -267,19 +267,23 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
 
                     try {
                         if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
-                            if (json.has("useraddress")) {
+                            String addresss = "";
 
-                                String addresss = String.valueOf(json.get("useraddress"));
-                                if (!addresss.equals(null) && (!addresss.equals("null"))) {
-                                    manageOrdersPojoClass.useraddress = String.valueOf(json.get("useraddress"));
+                            if (json.has("addressline1")) {
+                                addresss = String.valueOf(json.get("addressline1"));
 
-                                } else {
-                                    manageOrdersPojoClass.useraddress = "";
-
-                                }
                             } else {
-                                manageOrdersPojoClass.useraddress = "";
+                                addresss = "no value";
+
                             }
+                            if (json.has("addressline2")) {
+                                addresss = addresss + "   " + String.valueOf(json.get("addressline2"));
+
+                            } else {
+                                addresss = addresss + "   " + "no value";
+
+                            }
+                            manageOrdersPojoClass.useraddress = addresss;
 
                         }
                     } catch (Exception E) {

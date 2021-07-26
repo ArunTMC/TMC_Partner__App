@@ -76,7 +76,7 @@ import java.util.Objects;
 public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     LinearLayout PrintReport_Layout, generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView totalSales_headingText, cashSales, cardSales, upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView deliveryChargeAmount_textwidget,totalSales_headingText, cashSales, cardSales, upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey;
     String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf, finalPaytmAmount_pdf;
     String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf;
@@ -104,12 +104,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     public static HashMap<String, Modal_OrderDetails> preorder_paymentModeHashmap = new HashMap();
     ;
 
+    public static List<String> array_of_orderId;
 
     public static List<String> preorderpaymentMode_DiscountOrderid;
     public static HashMap<String, Modal_OrderDetails> preorderpaymentMode_DiscountHashmap = new HashMap();
     ;
 
-    public static List<String> array_of_orderId;
 
 
     public static List<String> paymentMode_DiscountOrderid;
@@ -118,6 +118,16 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
     public static List<String> SubCtgywiseTotalArray;
     public static HashMap<String, String> SubCtgywiseTotalHashmap = new HashMap();
+    ;
+
+    public static List<String> preorderpaymentMode_DeliveryChargeOrderid;
+    public static HashMap<String, Modal_OrderDetails> preorderpaymentMode_DeliveryChargeHashmap = new HashMap();
+    ;
+
+
+
+    public static List<String> paymentMode_DeliveryChargeOrderid;
+    public static HashMap<String, Modal_OrderDetails> paymentMode_DeliveryChargeHashmap = new HashMap();
     ;
 
 
@@ -133,6 +143,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     String DateString;
 
     double CouponDiscount = 0;
+    double deliveryamount = 0;
     ListView posSalesReport_Listview;
     ScrollView scrollView;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -164,7 +175,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         upiSales = findViewById(R.id.upiSales);
         scrollView = findViewById(R.id.scrollView);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
-
+        deliveryChargeAmount_textwidget = findViewById(R.id.deliveryChargeAmount_textwidget);
         appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
         preorder_cashOnDelivery = findViewById(R.id.preorder_cashOnDelivery);
         preorder_Phonepe = findViewById(R.id.preorder_Phonepe);
@@ -179,10 +190,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         SubCtgyKey_List = new ArrayList<>();
         paymentModeArray = new ArrayList<>();
         SubCtgywiseTotalArray = new ArrayList<>();
-        paymentMode_DiscountOrderid = new ArrayList<>();
         array_of_orderId = new ArrayList<>();
         preorder_paymentModeArray = new ArrayList<>();
         preorderpaymentMode_DiscountOrderid = new ArrayList<>();
+        paymentMode_DiscountOrderid = new ArrayList<>();
+        preorderpaymentMode_DeliveryChargeOrderid = new ArrayList<>();
+        paymentMode_DeliveryChargeOrderid = new ArrayList<>();
 
         CurrentDate = getDate();
         PreviousDateString = getDatewithNameofthePreviousDay();
@@ -211,12 +224,19 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         paymentModeHashmap.clear();
         paymentModeArray.clear();
         array_of_orderId.clear();
-        paymentMode_DiscountHashmap.clear();
-        paymentMode_DiscountOrderid.clear();
         preorder_paymentModeHashmap.clear();
         preorder_paymentModeArray.clear();
+        paymentMode_DiscountHashmap.clear();
+        paymentMode_DiscountOrderid.clear();
+
         preorderpaymentMode_DiscountOrderid.clear();
         preorderpaymentMode_DiscountHashmap.clear();
+        paymentMode_DeliveryChargeHashmap.clear();
+        paymentMode_DeliveryChargeOrderid.clear();
+
+        preorderpaymentMode_DeliveryChargeOrderid.clear();
+        preorderpaymentMode_DeliveryChargeHashmap.clear();
+
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
         getPreOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
@@ -829,6 +849,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             SubCtgywiseTotalArray.clear();
                             SubCtgywiseTotalHashmap.clear();
                             tmcSubCtgykey.clear();
+                            paymentMode_DeliveryChargeHashmap.clear();
+                            paymentMode_DeliveryChargeOrderid.clear();
+
+                            preorderpaymentMode_DeliveryChargeOrderid.clear();
+                            preorderpaymentMode_DeliveryChargeHashmap.clear();
+
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
@@ -993,10 +1019,18 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         dataList.clear();
         preorderpaymentMode_DiscountOrderid.clear();
         preorderpaymentMode_DiscountHashmap.clear();
+
+        paymentMode_DeliveryChargeHashmap.clear();
+        paymentMode_DeliveryChargeOrderid.clear();
+
+        preorderpaymentMode_DeliveryChargeOrderid.clear();
+        preorderpaymentMode_DeliveryChargeHashmap.clear();
+
         //    addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
         CouponDiscount=0;
+        deliveryamount=0;
         Adjusting_Widgets_Visibility(true);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforSlotDate_Vendorkey + "?slotdate="+currentDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsUsingSlotDate_forReport + "?slotdate="+currentDate+"&vendorkey="+vendorKey+"&previousdaydate="+previousDaydate,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1006,10 +1040,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: getPreOrderForSelectedDate" + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
-                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            Log.d("Constants.TAG", " getPreOrderForSelectedDate" + arrayLength);
 
                             if(arrayLength>0){
 
@@ -1057,7 +1091,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                         }
 
-                                        if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME))) {
+                                        if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME) )) {
                                             if (json.has("paymentmode")) {
 
                                                 try {
@@ -1121,7 +1155,110 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 array_of_orderId.add(orderid);
 
 
-                                                if (json.has("coupondiscount")) {
+                                                if (json.has("deliveryamount")) {
+
+                                                    modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+                                                    try {
+                                                        String deliveryamount_string = String.valueOf(json.get("deliveryamount"));
+                                                        try {
+                                                            if ( deliveryamount_string.equals("")) {
+                                                                deliveryamount_string = "0";
+
+                                                                double  deliveryamount_double = Double.parseDouble(deliveryamount_string);
+                                                                deliveryamount =  deliveryamount +  deliveryamount_double;
+
+                                                                if (!preorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                                                    preorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                                                    boolean isAlreadyAvailable = false;
+                                                                    try {
+                                                                        isAlreadyAvailable = checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                        ;
+                                                                    }
+                                                                    if (isAlreadyAvailable) {
+                                                                        Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                                        String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                                        double deliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                                        double deliveryCharge_double = Double.parseDouble(deliveryamount_string);
+
+                                                                        deliveryCharge_double = deliveryCharge_double + deliveryCharge_doublefromArray;
+                                                                        modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharge_double));
+                                                                    } else {
+                                                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                        modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryamount_string));
+                                                                        preorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                                                    }
+
+
+                                                                } else {
+                                                                    //Log.d(Constants.TAG, "orderid already availabe");
+
+                                                                }
+                                                            } else {
+
+                                                                double deliveryamount_double = Double.parseDouble(deliveryamount_string);
+                                                                deliveryamount = deliveryamount + deliveryamount_double;
+
+
+                                                                if (!preorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                                                    preorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                                                    boolean isAlreadyAvailable = checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                                                    if (isAlreadyAvailable) {
+                                                                        Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                                        String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                                        double deliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                                        double deliveryCharge_double = Double.parseDouble(deliveryamount_string);
+                                                                        deliveryCharge_double = deliveryCharge_double + deliveryCharge_doublefromArray;
+                                                                        modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharge_double));
+                                                                    } else {
+                                                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                        modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryamount_string));
+                                                                        preorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                                                    }
+
+
+                                                                    //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                                                } else {
+                                                                    //Log.d(Constants.TAG, "orderid already availabe");
+
+                                                                }
+                                                            }
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+
+
+                                                        }
+
+
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                } else {
+                                                    String deliveryamount_string = String.valueOf("0");
+                                                    double deliveryCharge_double = Double.parseDouble(deliveryamount_string);
+
+                                                    deliveryamount = deliveryamount + deliveryCharge_double;
+
+
+                                                    modal_orderDetails.deliveryamount = "There is no deliveryamount";
+
+                                                }
+
+
+
+
+
+
+
+
+
+                                            if (json.has("coupondiscount")) {
 
                                                     modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
                                                     try {
@@ -1220,7 +1357,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 try {
 
 
-                                                    if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME))) {
+                                                    if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME)) ) {
                                                         getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
                                                     } else {
                                                         //Log.d(Constants.TAG, "This order is not an Apporder e: ");
@@ -1252,6 +1389,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         SubCtgywiseTotalArray.clear();
                                         SubCtgywiseTotalHashmap.clear();
                                         CouponDiscount = 0;
+                                        deliveryamount=0;
+                                        paymentMode_DeliveryChargeHashmap.clear();
+                                        paymentMode_DeliveryChargeOrderid.clear();
+
+                                        preorderpaymentMode_DeliveryChargeOrderid.clear();
+                                        preorderpaymentMode_DeliveryChargeHashmap.clear();
+
+
                                         Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
                                         tmcSubCtgykey.clear();
@@ -1278,9 +1423,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             SubCtgywiseTotalArray.clear();
                                             SubCtgywiseTotalHashmap.clear();
                                             CouponDiscount = 0;
+                                            deliveryamount=0;
                                             Helper.getListViewSize(posSalesReport_Listview, screenInches);
                                             tmcSubCtgykey.clear();
+                                            paymentMode_DeliveryChargeHashmap.clear();
+                                            paymentMode_DeliveryChargeOrderid.clear();
 
+                                            preorderpaymentMode_DeliveryChargeOrderid.clear();
+                                            preorderpaymentMode_DeliveryChargeHashmap.clear();
                                             addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
 
                                             getOrderForSelectedDate(DateString, vendorKey);
@@ -1303,6 +1453,13 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 SubCtgywiseTotalArray.clear();
                                 SubCtgywiseTotalHashmap.clear();
                                 CouponDiscount = 0;
+                                deliveryamount=0;
+                                paymentMode_DeliveryChargeHashmap.clear();
+                                paymentMode_DeliveryChargeOrderid.clear();
+
+                                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                                preorderpaymentMode_DeliveryChargeHashmap.clear();
+
                                 Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
                                 tmcSubCtgykey.clear();
@@ -1326,9 +1483,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             paymentMode_DiscountHashmap.clear();
                             paymentMode_DiscountOrderid.clear();
                             CouponDiscount=0;
+                            deliveryamount=0;
                             SubCtgywiseTotalArray.clear();
                             SubCtgywiseTotalHashmap.clear();
                             dataList.clear();
+
+                            paymentMode_DeliveryChargeHashmap.clear();
+                            paymentMode_DeliveryChargeOrderid.clear();
+
+                            preorderpaymentMode_DeliveryChargeOrderid.clear();
+                            preorderpaymentMode_DeliveryChargeHashmap.clear();
+
                             tmcSubCtgykey.clear();
                             Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
@@ -1383,7 +1548,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Pre Order On this Date ", Toast.LENGTH_LONG).show();
                 Adjusting_Widgets_Visibility(false);
                 Adjusting_Widgets_Visibility(false);
                 Order_Item_List.clear();
@@ -1397,6 +1562,15 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 SubCtgywiseTotalArray.clear();
                 SubCtgywiseTotalHashmap.clear();
                 dataList.clear();
+
+                paymentMode_DeliveryChargeHashmap.clear();
+                paymentMode_DeliveryChargeOrderid.clear();
+
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                preorderpaymentMode_DeliveryChargeHashmap.clear();
+
+                error.printStackTrace();
+
                 Helper.getListViewSize(posSalesReport_Listview, screenInches);
 
                 getOrderForSelectedDate(DateString, vendorKey);
@@ -1407,7 +1581,6 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
-                error.printStackTrace();
             }
         }) {
             @Override
@@ -1440,20 +1613,20 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private void getOrderForSelectedDate(String dateString, String vendorKey) {
 
         Adjusting_Widgets_Visibility(true);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailswithDate_forReport + "?orderplaceddate=" + dateString+"&vendorkey="+vendorKey, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                        Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
                             String paymentMode="",ordertype = "",orderid = "",slotname="",deliverytype="";
 
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
-                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
-                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            Log.d("Constants.TAG", "getOrderForSelectedDate Response: " + arrayLength);
 
 
                             for (; i1 < (arrayLength); i1++) {
@@ -1506,8 +1679,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 deliverytype =  String.valueOf(json.get("deliverytype"));
 
                                                 if(deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)){
-                                                    slotname =  String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
-                                                    modal_orderDetails.slotname =String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
+                                                    if(slotname.equals("")) {
+                                                        slotname = String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
+                                                        modal_orderDetails.slotname = String.valueOf(Constants.EXPRESSDELIVERY_SLOTNAME);
+                                                    }
                                                     //Log.d(Constants.TAG, "deliverytype: " + String.valueOf(json.get("orderid")));
 
                                                 }
@@ -1602,6 +1777,107 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 Toast.makeText(App_Sales_Report_Subctgywise.this, "- ", Toast.LENGTH_LONG).show();
 
                                             }
+
+
+
+
+
+                                            if (json.has("deliveryamount")) {
+
+                                                modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+                                                try {
+                                                    String deliveryamount_string = String.valueOf(json.get("deliveryamount"));
+                                                    try {
+                                                        if (deliveryamount_string.equals("")) {
+                                                            deliveryamount_string = "0";
+
+                                                            double deliveryamount_double = Double.parseDouble(deliveryamount_string);
+                                                            deliveryamount = deliveryamount + deliveryamount_double;
+
+                                                            if (!paymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                                                paymentMode_DeliveryChargeOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = false;
+                                                                try {
+                                                                    isAlreadyAvailable = checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    ;
+                                                                }
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = paymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                                    String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                                    double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                                    double DeliveryCharge_double = Double.parseDouble(deliveryamount_string);
+
+                                                                    DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                                                } else {
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryamount_string));
+                                                                    paymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                                                }
+
+
+                                                            } else {
+                                                                //Log.d(Constants.TAG, "mode already availabe");
+
+                                                            }
+                                                        } else {
+
+                                                            double deliveryamount_double = Double.parseDouble(deliveryamount_string);
+                                                            deliveryamount = deliveryamount + deliveryamount_double;
+
+
+                                                            if (!paymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                                                paymentMode_DeliveryChargeOrderid.add(orderid);
+                                                                boolean isAlreadyAvailable = checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = paymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                                    String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                                    double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                                    double DeliveryCharge_double = Double.parseDouble(deliveryamount_string);
+
+                                                                    DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                                                } else {
+                                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryamount_string));
+                                                                    paymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                                                }
+
+
+                                                                //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                                            } else {
+                                                                //Log.d(Constants.TAG, "mode already availabe");
+
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+
+
+                                                    }
+
+
+                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                            } else {
+                                                String deliveryamount_string = String.valueOf("0");
+                                                double DeliveryCharge_double = Double.parseDouble(deliveryamount_string);
+
+                                                deliveryamount = deliveryamount + DeliveryCharge_double;
+
+
+                                                modal_orderDetails.deliveryamount = "There is no deliveryamount";
+
+                                            }
+
 
 
 
@@ -1763,14 +2039,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             FinalBill_hashmap.clear();
                             paymentModeHashmap.clear();
                             paymentModeArray.clear();
-                            preorder_paymentModeArray.clear();
-                            preorder_paymentModeHashmap.clear();
+                            paymentMode_DeliveryChargeHashmap.clear();
+                            paymentMode_DeliveryChargeOrderid.clear();
                             paymentMode_DiscountHashmap.clear();
                             paymentMode_DiscountOrderid.clear();
                             SubCtgywiseTotalArray.clear();
                             SubCtgywiseTotalHashmap.clear();
                             CouponDiscount=0;
+                            deliveryamount=0;
                             tmcSubCtgykey.clear();
+
+                            Log.d(Constants.TAG, "orderid");
 
 
 
@@ -1821,13 +2100,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     FinalBill_hashmap.clear();
                     paymentModeHashmap.clear();
                     paymentModeArray.clear();
-                    preorder_paymentModeArray.clear();
-                    preorder_paymentModeHashmap.clear();
+                    paymentMode_DeliveryChargeHashmap.clear();
+                    paymentMode_DeliveryChargeOrderid.clear();
                     paymentMode_DiscountHashmap.clear();
                     paymentMode_DiscountOrderid.clear();
                     SubCtgywiseTotalArray.clear();
                     SubCtgywiseTotalHashmap.clear();
                     CouponDiscount=0;
+                    deliveryamount=0;
                     tmcSubCtgykey.clear();
 
 
@@ -1964,6 +2244,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 weightinGrams = 0;
                             }
                             String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
+                            Log.i("TAG", "Key : "+ String.valueOf(itemname));
+                            Log.i("TAG", "Key : "+ String.valueOf(weightinGrams));
 
                             if(itemname.equals("Fresh Goat Meat - Curry Cut")){
                                 Log.i("TAG", "Key : "+ String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
@@ -2032,7 +2314,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
     private void setAdapter() {
         try {
-            adapter = new Adapter_Pos_Sales_Report(App_Sales_Report_Subctgywise.this, dataList);
+            adapter = new Adapter_Pos_Sales_Report(App_Sales_Report_Subctgywise.this, dataList,false);
             posSalesReport_Listview.setAdapter(adapter);
 
         }
@@ -2062,7 +2344,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         double preorderphonepe_amount = 0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
                 preorderRazorpayDiscount_amount=0,preordertotalAmount=0;
 
-
+        double razorpayDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
+        cash_on_del_preorderDeliveryCharge=0,paytmpreorderDeliveryCharge=0,phonepepreorderDeliveryCharge=0;
         appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
 
@@ -2070,6 +2353,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         for(String PaymentModefromArray : paymentModeArray) {
             Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(PaymentModefromArray);
             Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(PaymentModefromArray);
+            Modal_OrderDetails Payment_Modewise_DeliveryCharge = paymentMode_DeliveryChargeHashmap.get(PaymentModefromArray);
 
             if (PaymentModefromArray.equals(Constants.RAZORPAY)) {
 
@@ -2085,6 +2369,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    razorpayDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2108,6 +2394,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    paytmDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2136,6 +2424,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     GST = GST + GST_array;
 
                     //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    cash_on_del_DeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2160,7 +2450,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     //Log.d(Constants.TAG, "before for " );
 
-
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phonepeDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -2172,6 +2463,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         for(String preorderPaymentModefromArray : preorder_paymentModeArray) {
             Modal_OrderDetails modal_orderDetails = preorder_paymentModeHashmap.get(preorderPaymentModefromArray);
             Modal_OrderDetails Payment_Modewise_discount = preorderpaymentMode_DiscountHashmap.get(preorderPaymentModefromArray);
+            Modal_OrderDetails Payment_Modewise_DeliveryCharge = preorderpaymentMode_DeliveryChargeHashmap.get(preorderPaymentModefromArray);
 
             if (preorderPaymentModefromArray.equals(Constants.RAZORPAY)) {
 
@@ -2187,7 +2479,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
-
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    razorpaypreorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -2210,6 +2503,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     double GST_array  = Double.parseDouble(gst_String);
                     GST = GST + GST_array;
                     //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    paytmpreorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2239,7 +2534,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     //Log.d(Constants.TAG, "before for " );
 
-
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                   cash_on_del_preorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -2262,7 +2559,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                     //Log.d(Constants.TAG, "before for " );
 
-
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                   phonepepreorderDeliveryCharge = Double.parseDouble(deliveryCharge_String);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -2273,7 +2572,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            cash_amount = cash_amount-cash_Discount_amount;
+            cash_amount = cash_amount-cash_Discount_amount+cash_on_del_DeliveryCharge_amount;
             finalCashAmount_pdf=String.valueOf(cash_amount);
         }
         catch (Exception e){
@@ -2282,7 +2581,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            Razorpay_amount = Razorpay_amount-RazorpayDiscount_amount;
+            Razorpay_amount = Razorpay_amount-RazorpayDiscount_amount+razorpayDeliveryCharge_amount;
             finalRazorpayAmount_pdf=String.valueOf(Razorpay_amount);
 
         }
@@ -2292,7 +2591,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            Paytm_amount = Paytm_amount-PaytmDiscount_amount;
+            Paytm_amount = Paytm_amount-PaytmDiscount_amount+paytmDeliveryCharge_amount;
             finalPaytmAmount_pdf=String.valueOf(Paytm_amount);
 
         }
@@ -2301,7 +2600,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         }
 
         try{
-            phonepe_amount = phonepe_amount-phonepe_Discount_amount;
+            phonepe_amount = phonepe_amount-phonepe_Discount_amount+phonepeDeliveryCharge_amount;
             finalPhonepeAmount_pdf=String.valueOf(phonepe_amount);
 
         }
@@ -2320,7 +2619,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            preordercash_amount = preordercash_amount-preordercash_Discount_amount;
+            preordercash_amount = preordercash_amount-preordercash_Discount_amount+cash_on_del_preorderDeliveryCharge;
             finalpreorderCashAmount_pdf=String.valueOf(preordercash_amount);
         }
         catch (Exception e){
@@ -2329,7 +2628,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            preorderRazorpay_amount = preorderRazorpay_amount-preorderRazorpayDiscount_amount;
+            preorderRazorpay_amount = preorderRazorpay_amount-preorderRazorpayDiscount_amount+razorpaypreorderDeliveryCharge;
             finalpreorderRazorpayAmount_pdf=String.valueOf(preorderRazorpay_amount);
 
         }
@@ -2339,7 +2638,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            preorderPaytm_amount = preorderPaytm_amount-preorderPaytmDiscount_amount;
+            preorderPaytm_amount = preorderPaytm_amount-preorderPaytmDiscount_amount+paytmpreorderDeliveryCharge;
             finalpreorderPaytmAmount_pdf=String.valueOf(preorderPaytm_amount);
 
         }
@@ -2348,7 +2647,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         }
 
         try{
-            preorderphonepe_amount = preorderphonepe_amount-preorderphonepe_Discount_amount;
+            preorderphonepe_amount = preorderphonepe_amount-preorderphonepe_Discount_amount+phonepepreorderDeliveryCharge;
             finalpreorderPhonepeAmount_pdf=String.valueOf(preorderphonepe_amount);
 
         }
@@ -2360,7 +2659,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
-        totalAmount_with_Coupondiscount_double = totalAmountWithOutGst-CouponDiscount;
+        totalAmount_with_Coupondiscount_double = totalAmountWithOutGst-CouponDiscount+deliveryamount;
         totalAmount = totalAmount_with_Coupondiscount_double+GST;
 
 
@@ -2375,7 +2674,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             Razorpay.setText(String.valueOf(decimalFormat.format(Razorpay_amount)));
             Paytm.setText(String.valueOf(decimalFormat.format(Paytm_amount)));
             Phonepe.setText(String.valueOf(decimalFormat.format(phonepe_amount)));
-
+            deliveryChargeAmount_textwidget.setText(String.valueOf(decimalFormat.format(deliveryamount)));
 
 
             preorder_cashOnDelivery.setText(String.valueOf(decimalFormat.format(preordercash_amount)));
@@ -2391,6 +2690,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             FinalBill_hashmap.put("TOTAL : ", String.valueOf(decimalFormat.format(totalAmountWithOutGst)));
             finalBillDetails.add("DISCOUNT : ");
             FinalBill_hashmap.put("DISCOUNT : ", String.valueOf(CouponDiscount));
+            finalBillDetails.add("Delivery Charges : ");
+            FinalBill_hashmap.put("Delivery Charges : ", String.valueOf(deliveryamount));
             finalBillDetails.add("SUBTOTAL : ");
             FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmount_with_Coupondiscount_double)));
             finalBillDetails.add("GST : ");
@@ -2426,10 +2727,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 if(json.has("menuitemid")) {
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
                     String menuid= String.valueOf(json.get("menuitemid")+"#");
-                    if(menuid.contains("5932fd977777")){
-                        Log.d(Constants.TAG, "menuitemid: "+"#"+String.valueOf(json.get("menuitemid"))+"#");
 
-                    }
 
                     try {
                         if (json.has("grossweight")) {
@@ -2449,6 +2747,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams+"g");
 
                             modal_orderDetails_ItemDesp.grossweight = String.valueOf(newOrderWeightInGrams);
+                            if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                Log.d(Constants.TAG, "newOrderWeightInGrams grossweight 1: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                            }
                         }
                         else {
                             if (json.has("grossweightingrams")) {
@@ -2459,6 +2761,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams+"g");
 
                                         modal_orderDetails_ItemDesp.grossweight = String.valueOf(newOrderWeightInGrams);
+                                        if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                            Log.d(Constants.TAG, "newOrderWeightInGrams grossweightingrams 1: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                        }
+
                                     }
                                     else {
                                         if (json.has("netweight")) {
@@ -2466,7 +2773,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             try {
 
                                                 newOrderWeightInGrams = String.valueOf(json.get("netweight"));
-                                                if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+                                                if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))&&(!newOrderWeightInGrams.contains("to"))&&(!newOrderWeightInGrams.contains("-"))) {
                                                     newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
                                                     String lastThree_weightInGrams = null;
                                                     if (newOrderWeightInGrams != null && newOrderWeightInGrams.length() >= 3) {
@@ -2475,7 +2782,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     modal_orderDetails_ItemDesp.weightingrams = String.valueOf(lastThree_weightInGrams + "g");
 
                                                     modal_orderDetails_ItemDesp.netweight = String.valueOf(lastThree_weightInGrams);
+                                                    if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                        Log.d(Constants.TAG, "newOrderWeightInGrams netweight 1: "+"#"+String.valueOf(newOrderWeightInGrams));
 
+                                                    }
 
                                                 }
                                                 else{
@@ -2495,6 +2805,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                             modal_orderDetails_ItemDesp.portionsize = String.valueOf("");
                                                         }
 
+
+                                                        if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                            Log.d(Constants.TAG, "newOrderWeightInGrams portionsize 1: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                                        }
+
                                                     }
                                                 }
 
@@ -2504,6 +2820,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                 modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
 
                                                 modal_orderDetails_ItemDesp.netweight = String.valueOf("");
+                                                Log.d(Constants.TAG, "newOrderWeightInGrams e 1: "+"#"+String.valueOf(newOrderWeightInGrams));
+                                                if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                    Log.d(Constants.TAG, "newOrderWeightInGrams e 1: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                                }
+
                                             }
                                         }
                                         else{
@@ -2516,6 +2838,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
 
                                                     modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                                    if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                        Log.d(Constants.TAG, "newOrderWeightInGrams portionsize 2: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                                    }
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                     modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
@@ -2541,7 +2867,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                     try {
                                         newOrderWeightInGrams = String.valueOf(json.get("netweight"));
-                                        if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+                                        if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))&&(!newOrderWeightInGrams.contains("to"))&&(!newOrderWeightInGrams.contains("-"))) {
 
                                             String lastThree_weightInGrams = null;
                                             if (newOrderWeightInGrams != null && newOrderWeightInGrams.length() >= 3) {
@@ -2549,6 +2875,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             }
                                             modal_orderDetails_ItemDesp.weightingrams = String.valueOf(lastThree_weightInGrams + "g");
                                             modal_orderDetails_ItemDesp.netweight = String.valueOf(lastThree_weightInGrams);
+
+                                            if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                Log.d(Constants.TAG, "newOrderWeightInGrams netweight 2: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                            }
                                         }
 
                                         else{
@@ -2561,6 +2892,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                                     modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
 
                                                     modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                                    if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                        Log.d(Constants.TAG, "newOrderWeightInGrams portionsize 3: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                                    }
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                     modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
@@ -2590,6 +2925,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             modal_orderDetails_ItemDesp.weightingrams = String.valueOf(newOrderWeightInGrams);
 
                                             modal_orderDetails_ItemDesp.portionsize = String.valueOf(newOrderWeightInGrams);
+                                            if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                                Log.d(Constants.TAG, "newOrderWeightInGrams portionsize 4: "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                                            }
+
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                             modal_orderDetails_ItemDesp.weightingrams = String.valueOf("");
@@ -2614,6 +2954,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     }
                     if(!newOrderWeightInGrams.contains("Pcs")&&(!(newOrderWeightInGrams.contains("Unit")))&&(!(newOrderWeightInGrams.contains("Kg")))&&(!(newOrderWeightInGrams.contains("kg")))&&(!(newOrderWeightInGrams.contains("pcs")))&&(!(newOrderWeightInGrams.contains("pc")))&&(!(newOrderWeightInGrams.contains("Set")))&&(!(newOrderWeightInGrams.contains("set")))) {
                         newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
+                        if(menuid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                            Log.d(Constants.TAG, "newOrderWeightInGrams 12  "+"#"+String.valueOf(newOrderWeightInGrams));
+
+                        }
                     }
                     else{
                         newOrderWeightInGrams ="";
@@ -2715,7 +3059,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                                 try {
                                                     newOrderWeightInGrams = String.valueOf(marinadesObject.get("netweight"));
-                                                    if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+                                                    if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))&&(!newOrderWeightInGrams.contains("to"))&&(!newOrderWeightInGrams.contains("-"))) {
 
                                                         newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
                                                         String lastThree_weightInGrams = null;
@@ -2791,7 +3135,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         try {
                                             newOrderWeightInGrams = String.valueOf(marinadesObject.get("netweight"));
 
-                                            if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))) {
+                                            if(((!newOrderWeightInGrams.equals("")))&&(!newOrderWeightInGrams.equals("0"))&&(!newOrderWeightInGrams.contains("to"))&&(!newOrderWeightInGrams.contains("-"))) {
 
                                                 String lastThree_weightInGrams = null;
                                                 if (newOrderWeightInGrams != null && newOrderWeightInGrams.length() >= 3) {
@@ -3870,6 +4214,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
+                            if(menuitemid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                Log.d(Constants.TAG, "newOrderWeightInGrams 14  "+"#"+String.valueOf(oldOrder_WeightInGrams));
+
+                                Log.d(Constants.TAG, "newOrderWeightInGrams 15  "+"#"+String.valueOf(doubleoldOrder_WeightInGrams));
+                                Log.d(Constants.TAG, "newOrderWeightInGrams 16  "+"#"+String.valueOf(newweight));
+
+                                Log.d(Constants.TAG, "newOrderWeightInGrams 17  "+"#"+String.valueOf(intNewOrder_WeightInGrams));
+                                Log.d(Constants.TAG, "newOrderWeightInGrams 18  "+"#"+String.valueOf(intOldOrder_WeightInGrams));
+
+
+                            }
                             tmcprice = tmcprice + tmcprice_from_HashMap;
                             quantity = quantity + quantity_from_HashMap;
                             gstAmount = gstAmount + gstAmount_from_HashMap;
@@ -3928,7 +4283,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                 intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
                                 //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
+                                if(menuitemid.contains("da6d4e81-4c4b-42c5-aabd-64e78059e615")){
+                                    Log.d(Constants.TAG, "newOrderWeightInGrams 141  "+"#"+String.valueOf(oldOrder_WeightInGrams));
 
+                                    Log.d(Constants.TAG, "newOrderWeightInGrams 151  "+"#"+String.valueOf(doubleoldOrder_WeightInGrams));
+                                    Log.d(Constants.TAG, "newOrderWeightInGrams 161  "+"#"+String.valueOf(newweight));
+
+                                    Log.d(Constants.TAG, "newOrderWeightInGrams 171  "+"#"+String.valueOf(intNewOrder_WeightInGrams));
+                                    Log.d(Constants.TAG, "newOrderWeightInGrams 181  "+"#"+String.valueOf(intOldOrder_WeightInGrams));
+
+
+                                }
 
                                 modal_orderDetails_itemDespfrom_hashMap.setWeightingrams(String.valueOf((intOldOrder_WeightInGrams)));
                                 if(menuitemid.contains("5932fd977777")){
@@ -4055,6 +4420,19 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private boolean checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
         return preorderpaymentMode_DiscountHashmap.containsKey(menuitemid);
     }
+
+
+
+    private boolean checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(String menuitemid) {
+        return paymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
+    }
+
+
+
+    private boolean checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(String menuitemid) {
+        return preorderpaymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
+    }
+
 
 
     private boolean checkIfPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
@@ -4242,7 +4620,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             boolean bool = folder.mkdirs();
         }
         try {
-            String filename = "POS Sales Report_" + System.currentTimeMillis() + ".pdf";
+            String filename = "APP Sales Report_" + System.currentTimeMillis() + ".pdf";
             final File file = new File(folder, filename);
             file.createNewFile();
             FileOutputStream fOut = new FileOutputStream(file);

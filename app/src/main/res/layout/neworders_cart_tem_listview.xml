@@ -96,6 +96,38 @@
                 android:layout_width="0dp" />
 
 
+            <EditText
+                android:id="@+id/itemWeight_edittextwidget"
+                android:layout_height="match_parent"
+                android:textSize="16sp"
+                android:hint="Enter weight of the Item"
+                android:layout_weight="1.2"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:imeOptions="actionDone"
+
+                android:layout_marginStart="10dp"
+                android:text="0"
+                android:singleLine="true"
+                android:paddingStart="15dp"
+                android:inputType="phone"
+                android:digits="0123456789"
+
+                android:paddingEnd="15dp"
+                android:gravity="center_vertical|center_horizontal"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:layout_marginEnd="5dp"
+                android:fontFamily="@font/open_sans_semibold"
+                android:layout_width="0dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:id="@+id/gramsTextview"
+                    android:visibility="gone"
+                    android:text="Grams"/>
+
+
              
 
             <LinearLayout

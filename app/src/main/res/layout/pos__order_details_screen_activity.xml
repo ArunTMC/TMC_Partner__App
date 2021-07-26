@@ -232,7 +232,56 @@
                 android:textAlignment="gravity"
                 android:gravity="right"
                 />
-        </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="41dp"
+                    android:layout_height="41dp"
+                    android:gravity="center"
+                    android:id="@+id/refresh_paymentmode_layout"
+
+                    android:orientation="horizontal">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:id="@+id/refreshpaymentmode_image_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+
+                                android:layout_height="20dp"
+                                app:srcCompat="@mipmap/neworders_sync_icon" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/refreshpaymentmode__loadinganim_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="gone"
+                            android:orientation="horizontal">
+
+                            <com.wang.avi.AVLoadingIndicatorView
+                                android:layout_width="22dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:visibility="visible"
+                                app:indicatorColor="@color/TMC_Orange"
+                                app:indicatorName="BallSpinFadeLoaderIndicator" />
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+
+
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
@@ -475,7 +524,37 @@
                     />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:visibility="visible"
 
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".1"
+                    android:text="Notes "
+                    android:textSize="22sp"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:fontFamily="@font/open_sans_semibold"
+
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:id="@+id/notes_textwidget"
+                    android:textSize="19sp"
+                    android:textAlignment="gravity"
+                    android:gravity="right"
+                    />
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -508,15 +587,16 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:visibility="gone"
+                android:layout_marginTop="5dp"
                 android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight=".3"
-                    android:text="                "
+                    android:text="Google's Address "
                     android:textSize="22sp"
                     android:textColor="@color/TMC_Primary_Text_Color"
                     android:fontFamily="@font/open_sans_semibold"
@@ -527,14 +607,59 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text=""
+                    android:text="Loading......."
                     android:fontFamily="@font/open_sans_semibold"
                     android:textColor="@color/TMC_Primary_Text_Color"
-                    android:id="@+id/AddressLine2_textwidget"
+                    android:id="@+id/googleAddress_textwidget"
                     android:textSize="19sp"
                     android:textAlignment="gravity"
                     android:gravity="right"
                     />
+                <LinearLayout
+                    android:layout_width="41dp"
+                    android:layout_height="41dp"
+                    android:gravity="center"
+                    android:id="@+id/refresh_googleAddress_layout"
+
+                    android:orientation="horizontal">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:id="@+id/refresh_googleAddress_image_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+
+                                android:layout_height="20dp"
+                                app:srcCompat="@mipmap/neworders_sync_icon" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/refresh_googleAddress_loadinganim_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="gone"
+                            android:orientation="horizontal">
+
+                            <com.wang.avi.AVLoadingIndicatorView
+                                android:layout_width="22dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:visibility="visible"
+                                app:indicatorColor="@color/TMC_Orange"
+                                app:indicatorName="BallSpinFadeLoaderIndicator" />
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
@@ -913,6 +1038,14 @@
                     android:fontFamily="@font/open_sans_light"
                     android:layout_height="wrap_content"
                     android:text="@string/Taxes_and_charges" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1.4"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="24sp"
+                    android:fontFamily="@font/open_sans_light"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Delivery_Charges" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -971,6 +1104,19 @@
 
                     android:text="0.00" />
 
+
+                <TextView
+                    android:id="@+id/deliveryCharges_text_widget"
+
+                    android:layout_width="0dp"
+                    android:layout_weight="1.4"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="25sp"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:layout_height="wrap_content"
+
+                    android:text="0.00" />
+
                 <TextView
                     android:id="@+id/discounttext_widget"
 
@@ -1005,7 +1151,14 @@
             </LinearLayout>
 
             </LinearLayout>
-
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@drawable/verticalbroder"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+        </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dp"
+    android:background="@color/TMC_PaleOrange"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/subCtgyName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:textColor="@color/TMC_Orange"
+        android:textSize="18sp"
+        android:fontFamily="@font/open_sans_semibold"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/availabilityCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:textSize="16sp"
+        android:fontFamily="@font/open_sans_semibold"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/availabilityinPercentage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:textSize="16sp"
+        android:visibility="gone"
+        android:fontFamily="@font/open_sans_semibold"
+        android:text="TextView" />
+</LinearLayout>

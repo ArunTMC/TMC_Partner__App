@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
@@ -60,7 +61,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     LinearLayout loadingPanel,loadingpanelmask;
     int gettingMenuItemRetryCount = 5;
     String vendorkey;
-    String MenuItemKey;
+    String MenuItemKey,UserRole;
     List<Modal_MenuItem> MarinadeMenuList=new ArrayList<>();
 
     List<Modal_MenuItem> MenuList=new ArrayList<>();
@@ -71,7 +72,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pos__dashboard__screen_activity);
 //
-        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginStatus", MODE_PRIVATE);
+        SharedPreferences shared =getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", "vendor_1"));
 
         bottomNavigationView = findViewById(R.id.bottomnav);
@@ -85,9 +86,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
             @Override
             public void run() {
                 try {
-                    completemenuItem = getMenuItemusingStoreId();
+                    completemenuItem = getMenuItemusingStoreId(vendorkey);
                     getMarinadeMenuItemusingStoreId(vendorkey);
-
+                    getDatafromMobileApp();
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -99,6 +100,131 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
     }
 
+    private void getDatafromMobileApp() {
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetMobileAppData, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+
+                            Log.d(Constants.TAG, " response: " + response);
+                            try {
+                                String jsonString =response.toString();
+                                Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                                JSONObject jsonObject = new JSONObject(jsonString);
+                                JSONArray JArray  = jsonObject.getJSONArray("content");
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+
+                                        JSONArray array  = json.getJSONArray("redeemdata ");
+
+                                        for(int i=0; i < array.length(); i++) {
+                                            JSONObject redeemdata_json = array.getJSONObject(i);
+                                            String maxpointsinaday = redeemdata_json.getString("maxpointsinaday");
+                                            String minordervalueforredeem = redeemdata_json.getString("minordervalueforredeem");
+                                            String pointsfor100rs = redeemdata_json.getString("pointsfor100rs");
+                                            Log.d("Constants.TAG", "maxpointsinaday Response: " + maxpointsinaday);
+                                            Log.d("Constants.TAG", "minordervalueforredeem Response: " + minordervalueforredeem);
+                                            Log.d("Constants.TAG", "pointsfor100rs Response: " + pointsfor100rs);
+                                            saveredeemDetailsinSharePreferences(maxpointsinaday,minordervalueforredeem,pointsfor100rs);
+
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        JSONObject json = JArray.getJSONObject(i1);
+
+                                        JSONArray array  = json.getJSONArray("partnerappacessdetails");
+
+                                        for(int i=0; i < array.length(); i++) {
+                                            JSONObject parrtnerappacessdetails_data_json = array.getJSONObject(i);
+                                            String admin_role = parrtnerappacessdetails_data_json.getString("admin");
+                                            String cashier_role = parrtnerappacessdetails_data_json.getString("cashier");
+                                            String deliverymanager_role = parrtnerappacessdetails_data_json.getString("deliverymanager");
+                                            String reportsviewer_role = parrtnerappacessdetails_data_json.getString("reportsviewer");
+                                            String storemanager_role = parrtnerappacessdetails_data_json.getString("storemanager");
+                                            Log.d("Constants.TAG", "admin_role Response: " + admin_role);
+                                            Log.d("Constants.TAG", "cashier_role Response: " + cashier_role);
+                                            Log.d("Constants.TAG", "deliverymanager_role Response: " + deliverymanager_role);
+                                            Log.d("Constants.TAG", "reportsviewer_role Response: " + reportsviewer_role);
+                                            Log.d("Constants.TAG", "storemanager_role Response: " + storemanager_role);
+
+                                            savepartnerappacessdetailsinSharePreferences(admin_role,cashier_role,deliverymanager_role,reportsviewer_role,storemanager_role);
+                                            //   AlertDialogClass.showDialog(MobileScreen_Dashboard.this, Constants.Order_Value_should_be_above+" "+minordervalueforredeem+" rs",0);
+
+                                        }
+                                    }
+                                    catch(Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Mobile");
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_Dashboard_Screen.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
 
 
 
@@ -124,9 +250,9 @@ catch (Exception e){
 
 
 
-    private String getMenuItemusingStoreId() {
+    private String getMenuItemusingStoreId(String vendorkey) {
         //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems+"?storeid="+vendorkey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -183,6 +309,30 @@ catch (Exception e){
 
 
                            }
+                           if(json.has("swiggyprice")){
+                               modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice"));
+
+                           }
+                           else{
+                               modal_menuItem.swiggyprice = "0";
+                               Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " +MenuItemKey );
+
+
+                           }
+
+
+                           if(json.has("dunzoprice")){
+                               modal_menuItem.dunzoprice= String.valueOf(json.get("dunzoprice"));
+
+                           }
+                           else{
+                               modal_menuItem.dunzoprice = "0";
+                               Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " +MenuItemKey );
+
+
+                           }
+
+
 
                            if(json.has("grossweightingrams")){
                                modal_menuItem.grossweightingrams = String.valueOf(json.get("grossweightingrams"));
@@ -258,6 +408,18 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.itemuniquecode = "";
+                               //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+
+
+                           }
+
+
+                           if(json.has("reportname")){
+                               modal_menuItem.reportname = String.valueOf(json.get("reportname"));
+
+                           }
+                           else{
+                               modal_menuItem.reportname = "";
                                //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
@@ -432,7 +594,7 @@ catch (Exception e){
             public Map<String, String> getHeaders() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
                 params.put("Content-Type", "application/json");
-                params.put("storeid", vendorkey);
+                params.put("storeid", Pos_Dashboard_Screen.this.vendorkey);
 
                 return params;
             }
@@ -466,7 +628,10 @@ catch (Exception e){
            loadingpanelmask.setVisibility(View.GONE);
            loadingPanel.setVisibility(View.GONE);
            bottomNavigationView.setVisibility(View.VISIBLE);
-           loadMyFragment(new Pos_ManageOrderFragment());
+
+               loadMyFragment(new Pos_ManageOrderFragment());
+
+
 
        }
        catch (Exception e){
@@ -475,7 +640,37 @@ catch (Exception e){
     }
 
 
+    private void saveredeemDetailsinSharePreferences(String maxpointsinaday, String minordervalueforredeem, String pointsfor100rs) {
+        final SharedPreferences sharedPreferences = getSharedPreferences("RedeemData", MODE_PRIVATE);
 
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("maxpointsinaday", maxpointsinaday);
+        editor.putString("minordervalueforredeem", minordervalueforredeem);
+        editor.putString("pointsfor100rs", pointsfor100rs);
+        editor.putBoolean("fetchedindashboard",true );
+
+        editor.apply();
+
+
+
+
+
+    }
+
+    private void savepartnerappacessdetailsinSharePreferences(String admin_role, String cashier_role, String deliverymanager_role, String reportsviewer_role, String storemanager_role) {
+        final SharedPreferences sharedPreferences = getSharedPreferences("PartnerAppAccessDetails", MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(Constants.ADMIN_ROLENAME, admin_role);
+        editor.putString(Constants.CASHIER_ROLENAME, cashier_role);
+        editor.putString(Constants.DELIVERYMANAGER_ROLENAME, deliverymanager_role);
+
+        editor.putString(Constants.REPORTSVIEWER_ROLENAME, reportsviewer_role);
+        editor.putString(Constants.STOREMANAGER_ROLENAME,storemanager_role );
+        editor.apply();
+
+
+    }
 
 
 
@@ -831,26 +1026,30 @@ catch (Exception e){
 
             case manage_order_navigatioBar_widget:
                 try {
-                    mfragment = new Pos_ManageOrderFragment();
-                    // loadMyFragment(mfragment);
-                    SharedPreferences sharedPreferences
-                            = getSharedPreferences("CurrentSelectedStatus",
-                            MODE_PRIVATE);
+                        mfragment = new Pos_ManageOrderFragment();
+                        // loadMyFragment(mfragment);
+                        SharedPreferences sharedPreferences
+                                = getSharedPreferences("CurrentSelectedStatus",
+                                MODE_PRIVATE);
 
-                    SharedPreferences.Editor myEdit
-                            = sharedPreferences.edit();
+                        SharedPreferences.Editor myEdit
+                                = sharedPreferences.edit();
 
 
-                    myEdit.putString(
-                            "currentstatus",
-                            Constants.NEW_ORDER_STATUS);
-                    myEdit.apply();
+                        myEdit.putString(
+                                "currentstatus",
+                                Constants.NEW_ORDER_STATUS);
+                        myEdit.apply();
 
-                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.frame, new Pos_ManageOrderFragment());
-                    transaction.commit();
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.frame, new Pos_ManageOrderFragment());
+                        transaction.commit();
 
-                    Toast.makeText(Pos_Dashboard_Screen.this, "Clicked on Manage Orders Button", Toast.LENGTH_LONG).show();
+                        Toast.makeText(Pos_Dashboard_Screen.this, "Clicked on Manage Orders Button", Toast.LENGTH_LONG).show();
+
+
+
+
                 }
                 catch(Exception e ){
                     e.printStackTrace();

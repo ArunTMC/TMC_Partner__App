@@ -107,6 +107,7 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         final Button ready_for_pickup_delivered_button_widget = listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
         final TextView deliveryType_text_widget = listViewItem.findViewById(R.id.deliveryType_text_widget);
         final TextView payableAmount_text_widget = listViewItem.findViewById(R.id.payableAmount_text_widget);
+        final TextView slottime_label_widget = listViewItem.findViewById(R.id.slottime_label_widget);
 
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
@@ -250,11 +251,17 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         catch (Exception e){
             e.printStackTrace();
         }
-        if(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.POSORDER)){
+        if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.POSORDER))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))){
             slotTimeLayout.setVisibility(View.GONE);
             tokenNoLayout.setVisibility(View.GONE);
             slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderdeliveredtime()));
 
+        }
+
+        if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))){
+            slotTimeLayout.setVisibility(View.VISIBLE);
+            slottime_label_widget.setText("Order Type");
+            slottime_text_widget.setText(modal_manageOrders_pojo_class.getOrderType().toUpperCase());
         }
         try {
 

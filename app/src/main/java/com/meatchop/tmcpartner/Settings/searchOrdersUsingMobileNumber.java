@@ -1,13 +1,19 @@
-package com.meatchop.tmcpartner.Settings;
+ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -26,6 +32,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -38,6 +45,7 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -92,15 +100,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     DatePickerDialog datepicker;
 
     List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
-    List<Modal_ManageOrders_Pojo_Class> ordersList;
+   public static List<Modal_ManageOrders_Pojo_Class> ordersList;
     public static String completemenuItem;
     public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
     String Currenttime,FormattedTime,CurrentDate,formattedDate,CurrentDay,TodaysDate,DeliveryPersonList;
     int slottypefromSpinner=0;
     Spinner deliverDistance_Spinner;
     int deliveryDistancefromSpinner=0;
-    static Adapter_Mobile_SearchOrders_usingMobileNumber_ListView adapter_mobileSearchOrders_usingMobileNumber_listView;
-    static Adapter_Pos_SearchOrders_usingMobileNumber adapter_PosSearchOrders_usingMobileNumber_listView;
+    public static Adapter_Mobile_SearchOrders_usingMobileNumber_ListView adapter_mobileSearchOrders_usingMobileNumber_listView;
+    public  static Adapter_Pos_SearchOrders_usingMobileNumber adapter_PosSearchOrders_usingMobileNumber_listView;
     Workbook wb;
     Sheet sheet=null;
     private static String[] columns = {"Delivery Type","Token No", "Order Status",
@@ -117,10 +125,11 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     public static List<String> array_of_orderId;
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     Spinner SlotrangeSelector_spinner;
-    List<String> slottime = new ArrayList<>();
     List<String> slotrangeChoosingSpinnerData;
     String selectedTimeRange_spinner = "All";
     int spinner_check = 0;
+
+
 
     List<String> deliverydistanceChoosingSpinnerData;
     String selected_DeliveryDistanceRange_spinner = "All";
@@ -129,11 +138,57 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     Button AddFilters_button,clearFilters_button;
     boolean isFilterChanged = false;
 
+
+    Spinner statusfilter_Spinner;
+    List<String> StatusSpinnerData;
+    String selected_StatusFrom_spinner = "All";
+    int statusspinner_check = 0;
+
+    Button connect_printer_button_widget;
+    // Local Bluetooth adapter
+    private BluetoothAdapter mBluetoothAdapter = null;
+    // Member object for the chat services
+    private BluetoothPrintDriver mChatService = null;
+
+
+    // Message types sent from the BluetoothChatService Handler
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    public static final int MESSAGE_READ = 2;
+    public static final int MESSAGE_WRITE = 3;
+    public static final int MESSAGE_DEVICE_NAME = 4;
+    public static final int MESSAGE_TOAST = 5;
+
+    // Key names received from the BluetoothChatService Handler
+    public static final String DEVICE_NAME = "device_name";
+    public static final String TOAST = "toast";
+
+    // Intent request codes
+    private static final int REQUEST_CONNECT_DEVICE = 1;
+    private static final int REQUEST_ENABLE_BT = 2;
+    private BluetoothAdapter mBtAdapter;
+
+    String mConnectedDeviceName ;
+    TextView printerConnectionStatus_Textwidget;
+    boolean isPrinterCnnected = false;
+    String printerName = "";
+    String printerStatus= "";
+    boolean isPrinterCnnectedfromSP = false;
+    String printerNamefromSP = "";
+    String printerStatusfromSP= "";
+    String deliveryTimeForExpr_Delivery;
+    double totalAmountFromAddingSubtotal=0;
+    double couponDiscount_double=0;
+    double deliveryAmount_double=0;
+    double totalAmountFromAddingSubtotalWithDiscount =0;
+    double totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt =0;
+    String DeliveryAmount =  "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_orders_using_mobile_number);
         deliveryPartnerList = new ArrayList<>();
+        printerConnectionStatus_Textwidget = findViewById(R.id.printerConnectionStatus_Textwidget);
 
         try{
            SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
@@ -150,6 +205,28 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
            e.printStackTrace();
        }
 
+        try{
+            SharedPreferences shared2 = getSharedPreferences("PrinterConnectionData", MODE_PRIVATE);
+
+            isPrinterCnnectedfromSP = (shared2.getBoolean("isPrinterConnected", false));
+            printerNamefromSP = (shared2.getString("printerName", ""));
+            printerStatusfromSP = (shared2.getString("printerStatus", ""));
+            if(isPrinterCnnectedfromSP){
+                printerConnectionStatus_Textwidget.setText(String.valueOf(printerStatusfromSP+"-"+printerNamefromSP));
+
+            }
+            else{
+                printerConnectionStatus_Textwidget.setText(String.valueOf("Not Connected"));
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+
          DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
@@ -157,6 +234,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         screenInches = Math.sqrt(x + y);
         SlotrangeSelector_spinner =  findViewById(R.id.SlotrangeSelector_spinner);
         slotrangeChoosingSpinnerData = new ArrayList<>();
+        StatusSpinnerData = new ArrayList<>();
+
+        statusfilter_Spinner = findViewById(R.id.statusfilter_Spinner);
 
         deliverDistance_Spinner =  findViewById(R.id.deliveerydistanse_Spinner);
         deliverydistanceChoosingSpinnerData = new ArrayList<>();
@@ -175,7 +255,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         generateReport_Layout = findViewById(R.id.generateReport_Layout);
         addFilters_Layout = findViewById(R.id.addFilters_Layout);
-
         filterLayout = findViewById(R.id.filterLayout);
 
         //
@@ -195,8 +274,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         clearFilters_button = findViewById(R.id.clearFilters_button);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
-        Adjusting_Widgets_Visibility(true);
+        connect_printer_button_widget= findViewById(R.id.connect_printer_button_widget);
 
+        Adjusting_Widgets_Visibility(true);
+        setDataForFilterSpinners();
         mobile_nameofFacility_Textview.setText(vendorname);
 
 
@@ -222,6 +303,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
 
 
+
+
+
         }
         catch (Exception e){
             e.printStackTrace();
@@ -238,14 +322,38 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-        setDataForFilterSpinners();
+
+        connect_printer_button_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ConnectPrinter();
+
+            }
+        });
+
+        statusfilter_Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                if(statusspinner_check>1) {
+                    selected_StatusFrom_spinner = statusfilter_Spinner.getSelectedItem().toString();
+                    displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner,selected_StatusFrom_spinner);
+                    isFilterChanged = true;
+                }
+                statusspinner_check=2;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         SlotrangeSelector_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 if(spinner_check>1) {
                     selectedTimeRange_spinner = SlotrangeSelector_spinner.getSelectedItem().toString();
-                //    displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner);
+                    displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner, selected_StatusFrom_spinner);
                     isFilterChanged = true;
                 }
                 spinner_check=2;
@@ -264,7 +372,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                 if(deliverydistancespinner_check>1) {
                     selected_DeliveryDistanceRange_spinner = deliverDistance_Spinner.getSelectedItem().toString();
-              //      displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selected_DeliveryDistanceRange_spinner);
+                    displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner, selected_StatusFrom_spinner);
                     isFilterChanged = true;
                 }
                 deliverydistancespinner_check=2;
@@ -276,7 +384,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             }
         });
 
-        AddFilters_button.setOnClickListener(new View.OnClickListener() {
+    /*    AddFilters_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                     filterLayout.setVisibility(View.GONE);
@@ -288,6 +396,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                    displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner);
             }
         });
+
+
 
 
         clearFilters_button.setOnClickListener(new View.OnClickListener() {
@@ -325,6 +435,14 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             }
         });
 
+
+     */
+
+
+
+
+
+
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -334,7 +452,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                 Adjusting_Widgets_Visibility(true);
                 String Todaysdate =  dateSelector_text.getText().toString();
-                PreviousDateString = getDatewithNameofthePreviousDay();
+                PreviousDateString =     getDatewithNameofthePreviousDayfromSelectedDay2(Todaysdate);
+
 
                 isSearchButtonClicked = false;
                 orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
@@ -350,7 +469,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 mobile_search_barEditText.setText("");
                 isSearchButtonClicked = false;
 
-                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner, selected_DeliveryDistanceRange_spinner);
+                displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner,selectedTimeRange_spinner, selected_DeliveryDistanceRange_spinner, selected_StatusFrom_spinner);
             }
         });
         mobile_search_button.setOnClickListener(new View.OnClickListener() {
@@ -454,19 +573,32 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
                                 modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
                                 modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                                modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                                modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                                modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                                modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                                modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+
+                                modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                                 modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
                                 modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
                                 modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
-                                modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
-                                 modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                                 modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                                modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
-                                modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
 
                                 modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                                 modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
                                 modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
                                 modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+
+                                modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
 
                                 sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
@@ -522,6 +654,1987 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
     }
 
+    public void printBill(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
+
+        loadingPanel.setVisibility(View.VISIBLE);
+        loadingpanelmask.setVisibility(View.VISIBLE);
+
+        manageOrders_ListView.setVisibility(View.GONE);
+
+        if (BluetoothPrintDriver.IsNoConnection()) {
+            loadingPanel.setVisibility(View.GONE);
+            loadingpanelmask.setVisibility(View.GONE);
+            manageOrders_ListView.setVisibility(View.VISIBLE);
+
+            Toast.makeText(searchOrdersUsingMobileNumber.this,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+
+            new TMCAlertDialogClass(searchOrdersUsingMobileNumber.this, R.string.app_name, R.string.Do_You_Want_to_Connect_Printer_Now,
+                    R.string.Yes_Text, R.string.No_Text,
+                    new TMCAlertDialogClass.AlertListener() {
+                        @Override
+                        public void onYes() {
+                            ConnectPrinter();
+
+                        }
+
+                        @Override
+                        public void onNo() {
+
+                        }
+                    });
+        }
+
+        if(!BluetoothPrintDriver.IsNoConnection()){
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if (!mBluetoothAdapter.isEnabled()) {
+                Toast.makeText(searchOrdersUsingMobileNumber.this,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+
+                new TMCAlertDialogClass(searchOrdersUsingMobileNumber.this, R.string.app_name, R.string.Bluetooth_turnedOff_Information,
+                        R.string.Yes_Text, R.string.No_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                                ConnectPrinter();
+
+                            }
+
+                            @Override
+                            public void onNo() {
+
+                            }
+                        });
+            }
+        }
+
+        String Title = "The Meat Chop";
+         String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+        String StoreAddressLine2 = "Hasthinapuram Chromepet";
+        String StoreAddressLine3 = "Chennai - 600044";
+        String StoreLanLine = "PH No :4445568499";
+        String GSTIN = "GSTIN :33AAJCC0055D1Z9";
+        String CurrentTime =getDate_and_time();
+
+        String OrderPlacedtime = "";
+        String Orderid = "";
+        String CouponDiscount ="";
+        String OrderType = "";
+        String PayableAmountfromArray = "";
+        String PayableAmount = "";
+        String PaymentMode = "";
+        String MobileNumber ="";
+        String TokenNo="";
+        String Notes ="";
+        String Slotname ="";
+        String SlotDate = "";
+        String DeliveryTime = "";
+        String DeliveryType ="";
+        String DistanceFromStore ="";
+        String Address =  "";
+
+
+        try {
+            OrderPlacedtime= modal_manageOrders_pojo_class.getOrderplacedtime();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+        try {
+            Orderid= "# "+modal_manageOrders_pojo_class.getOrderid();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            CouponDiscount= modal_manageOrders_pojo_class.getCoupondiscamount();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            OrderType= modal_manageOrders_pojo_class.getOrderType();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            PayableAmountfromArray= modal_manageOrders_pojo_class.getPayableamount();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            PaymentMode= modal_manageOrders_pojo_class.getPaymentmode();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+        try {
+            MobileNumber=modal_manageOrders_pojo_class.getUsermobile();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            TokenNo= modal_manageOrders_pojo_class.getTokenno();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            Notes= modal_manageOrders_pojo_class.getNotes();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            Slotname= modal_manageOrders_pojo_class.getSlotname();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+
+
+
+        try {
+            SlotDate= modal_manageOrders_pojo_class.getSlotdate();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+        try {
+            DeliveryTime=modal_manageOrders_pojo_class.getSlottimerange();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            DeliveryType= modal_manageOrders_pojo_class.getDeliverytype();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            DistanceFromStore= modal_manageOrders_pojo_class.getDeliverydistance();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+        try {
+            Address= modal_manageOrders_pojo_class.getUseraddress();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+
+
+
+
+        try {
+
+
+
+            try {
+
+                JSONArray array = modal_manageOrders_pojo_class.getItemdesp();
+                //Log.i("tag","array.length()"+ array.length());
+                String b = array.toString();
+                modal_manageOrders_pojo_class.setItemdesp_string(b);
+                String itemDesp = "";
+
+
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject json = array.getJSONObject(i);
+
+
+
+                    if (json.has("marinadeitemdesp")) {
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x05);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        try{
+                            BluetoothPrintDriver.printString("TokenNo : "+ TokenNo);
+                            BluetoothPrintDriver.BT_Write("\r");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                        }
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                        BluetoothPrintDriver.printString("Order Id : "+ Orderid);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        String finalitemname = "", finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+                        JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
+                        Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                        marinades_manageOrders_pojo_class.itemName = marinadesObject.getString("itemname");
+                        marinades_manageOrders_pojo_class.ItemFinalPrice = marinadesObject.getString("tmcprice");
+                        marinades_manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                        marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");
+                        if (json.has("netweight")) {
+                            marinades_manageOrders_pojo_class.ItemFinalWeight = marinadesObject.getString("netweight");
+
+                        } else {
+                            marinades_manageOrders_pojo_class.ItemFinalWeight = "";
+
+                        }
+
+                        String fullitemName = String.valueOf(marinadesObject.getString("itemname"));
+                        String itemName = "";
+                        String itemNameAfterBraces = "";
+
+                        String tmcSubCtgyKey = String.valueOf(marinadesObject.getString("tmcsubctgykey"));
+                        try {
+                            if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                                int indexofbraces = fullitemName.indexOf("(");
+                                int lastindexofbraces = fullitemName.indexOf(")");
+                                int lengthofItemname = fullitemName.length();
+                                lastindexofbraces = lastindexofbraces + 1;
+
+                                if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                    itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                    itemName = fullitemName.substring(0, indexofbraces);
+                                    itemName = itemName + itemNameAfterBraces;
+                                    fullitemName = fullitemName.substring(0, indexofbraces);
+                                    fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                                }
+
+                                if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                    // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                    itemName = fullitemName.substring(0, indexofbraces);
+
+                                    fullitemName = fullitemName.substring(0, indexofbraces);
+                                    fullitemName = fullitemName;
+
+
+                                }
+
+                                if (fullitemName.length() > 21) {
+                                    itemName = fullitemName.substring(0, 21);
+                                    itemName = itemName + "...";
+
+                                    fullitemName = fullitemName.substring(0, 21);
+                                    fullitemName = fullitemName + "...";
+                                }
+                                if (fullitemName.length() <= 21) {
+                                    itemName = fullitemName;
+
+                                    fullitemName = fullitemName;
+
+                                }
+
+                            } else {
+                                int indexofbraces = fullitemName.indexOf("(");
+                                if (indexofbraces >= 0) {
+                                    itemName = fullitemName.substring(0, indexofbraces);
+
+                                }
+                                if (fullitemName.length() > 21) {
+                                    itemName = fullitemName.substring(0, 21);
+                                    itemName = itemName + "...";
+                                }
+                                if (fullitemName.length() <= 21) {
+                                    itemName = fullitemName;
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            itemName = fullitemName;
+
+                            e.printStackTrace();
+                        }
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                        BluetoothPrintDriver.printString(fullitemName);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        try {
+                            finalitemNetweight = marinadesObject.getString("netweight");
+                            //Log.i("tag","grossweight Log    "+                grossweight);
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            finalQuantity = json.getString("quantity");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try {
+                            finalgrossweight = marinadesObject.getString("grossweight");
+
+
+                            if ((finalgrossweight.equals(""))||(finalgrossweight.equals(null))||(finalgrossweight.equals(" - "))) {
+                                try {
+                                    finalgrossweight = marinadesObject.getString("grossweightingrams");
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                                //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            try {
+                                if (finalgrossweight.equals("")) {
+                                    finalgrossweight = marinadesObject.getString("grossweightingrams");
+                                    //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                                }
+                            }
+                            catch (Exception e1){
+                                e1.printStackTrace();
+                            }
+                            e.printStackTrace();
+                        }
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                        BluetoothPrintDriver.printString("Grossweight : "+finalgrossweight);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                        BluetoothPrintDriver.printString("Netweight : "+finalitemNetweight);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                        BluetoothPrintDriver.printString("Quantity : "+finalQuantity);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.FeedAndCutPaper((byte)66,(byte)40);
+
+                    }
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x05);
+                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    try{
+                        BluetoothPrintDriver.printString("TokenNo : "+ TokenNo);
+                        BluetoothPrintDriver.BT_Write("\r");
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                    }
+                    BluetoothPrintDriver.LF();
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("Order Id : "+ Orderid);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    String finalitemname = "", finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+
+
+                    Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                    if (json.has("netweight")) {
+                        manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
+
+                    } else {
+                        manageOrders_pojo_class.ItemFinalWeight = "";
+
+                    }
+
+                    manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+                    manageOrders_pojo_class.ItemFinalPrice = String.valueOf(json.get("tmcprice"));
+                    manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                    manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
+
+
+                    String fullitemName = String.valueOf(json.getString("itemname"));
+                    String itemName = "";
+                    String itemNameAfterBraces = "";
+
+                    String tmcSubCtgyKey = String.valueOf(json.getString("tmcsubctgykey"));
+                    try {
+                        if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                            int indexofbraces = fullitemName.indexOf("(");
+                            int lastindexofbraces = fullitemName.indexOf(")");
+                            int lengthofItemname = fullitemName.length();
+                            lastindexofbraces = lastindexofbraces + 1;
+
+                            if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                itemName = fullitemName.substring(0, indexofbraces);
+                                itemName = itemName + itemNameAfterBraces;
+                                fullitemName = fullitemName.substring(0, indexofbraces);
+                                fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                            }
+
+                            if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                itemName = fullitemName.substring(0, indexofbraces);
+
+                                fullitemName = fullitemName.substring(0, indexofbraces);
+                                fullitemName = fullitemName;
+
+
+                            }
+
+                            if (fullitemName.length() > 21) {
+                                itemName = fullitemName.substring(0, 21);
+                                itemName = itemName + "...";
+
+
+                            }
+
+                        } else {
+                            int indexofbraces = fullitemName.indexOf("(");
+                            if (indexofbraces >= 0) {
+                                itemName = fullitemName.substring(0, indexofbraces);
+
+                            }
+                            if (fullitemName.length() > 21) {
+                                itemName = fullitemName.substring(0, 21);
+                                itemName = itemName + "...";
+                            }
+                            if (fullitemName.length() <= 21) {
+                                itemName = fullitemName;
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        itemName = fullitemName;
+
+                        e.printStackTrace();
+                    }
+                    BluetoothPrintDriver.Begin();
+
+
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                    BluetoothPrintDriver.printString(fullitemName);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+                    try {
+                        finalitemNetweight = json.getString("netweight");
+                        //Log.i("tag","grossweight Log    "+                grossweight);
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        finalQuantity = json.getString("quantity");
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        finalgrossweight = json.getString("grossweight");
+
+
+                        if ((finalgrossweight.equals(""))||(finalgrossweight.equals(null))||(finalgrossweight.equals(" - "))) {
+                            try {
+                                finalgrossweight = json.getString("grossweightingrams");
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        try {
+                            if (finalgrossweight.equals("")) {
+                                finalgrossweight = json.getString("grossweightingrams");
+                                //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                            }
+                        }
+                        catch (Exception e1){
+                            e1.printStackTrace();
+                        }
+                        e.printStackTrace();
+                    }
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("Grossweight : "+finalgrossweight);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("Netweight : "+finalitemNetweight);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("Quantity : "+finalQuantity);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+                    BluetoothPrintDriver.LF();
+
+                    BluetoothPrintDriver.FeedAndCutPaper((byte)66,(byte)40);
+
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            BluetoothPrintDriver.Begin();
+
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+            BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.printString(Title);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.printString(StoreAddressLine1);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.printString(StoreAddressLine2);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+            BluetoothPrintDriver.printString(StoreAddressLine3);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.printString(StoreLanLine);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.printString(CurrentTime);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.SetLineSpacing((byte) 130);
+            BluetoothPrintDriver.printString(GSTIN);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+            BluetoothPrintDriver.printString("Order Placed time : " + OrderPlacedtime);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+            BluetoothPrintDriver.printString("Order Id : " + Orderid);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetLineSpacing((byte) 55);
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.printString("----------------------------------------------");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetLineSpacing((byte) 120);
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.printString("ItemName * Quantity ");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetLineSpacing((byte) 55);
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.printString("RATE                                  SUBTOTAL");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+            BluetoothPrintDriver.printString("----------------------------------------------");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+            try {
+
+                JSONArray array = modal_manageOrders_pojo_class.getItemdesp();
+                //Log.i("tag","array.length()"+ array.length());
+                String b = array.toString();
+                modal_manageOrders_pojo_class.setItemdesp_string(b);
+                String itemDesp = "";
+
+
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject json = array.getJSONObject(i);
+
+                    if (json.has("marinadeitemdesp")) {
+                        String itemDespName_Weight_quantity = "", itemwise_price = "", itemwise_Subtotal = "";
+                        JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
+                        Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                        marinades_manageOrders_pojo_class.itemName = marinadesObject.getString("itemname");
+                        marinades_manageOrders_pojo_class.ItemFinalPrice = marinadesObject.getString("tmcprice");
+                        marinades_manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                        marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");
+                        if (json.has("netweight")) {
+                            marinades_manageOrders_pojo_class.ItemFinalWeight = marinadesObject.getString("netweight");
+
+                        } else {
+                            marinades_manageOrders_pojo_class.ItemFinalWeight = "";
+
+                        }
+
+                        String fullitemName = String.valueOf(marinadesObject.getString("itemname"));
+                        String itemName = "";
+                        String itemNameAfterBraces = "";
+
+                        String tmcSubCtgyKey = String.valueOf(marinadesObject.getString("tmcsubctgykey"));
+                        try {
+                            if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                                int indexofbraces = fullitemName.indexOf("(");
+                                int lastindexofbraces = fullitemName.indexOf(")");
+                                int lengthofItemname = fullitemName.length();
+                                lastindexofbraces = lastindexofbraces + 1;
+
+                                if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                    itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                    itemName = fullitemName.substring(0, indexofbraces);
+                                    itemName = itemName + itemNameAfterBraces;
+                                    fullitemName = fullitemName.substring(0, indexofbraces);
+                                    fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                                }
+
+                                if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                    // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                    itemName = fullitemName.substring(0, indexofbraces);
+
+                                    fullitemName = fullitemName.substring(0, indexofbraces);
+                                    fullitemName = fullitemName;
+
+
+                                }
+
+                                if (fullitemName.length() > 21) {
+                                    itemName = fullitemName.substring(0, 21);
+                                    itemName = itemName + "...";
+
+                                    fullitemName = fullitemName.substring(0, 21);
+                                    fullitemName = fullitemName + "...";
+                                }
+                                if (fullitemName.length() <= 21) {
+                                    itemName = fullitemName;
+
+                                    fullitemName = fullitemName;
+
+                                }
+                            } else {
+                                int indexofbraces = fullitemName.indexOf("(");
+                                if (indexofbraces >= 0) {
+                                    itemName = fullitemName.substring(0, indexofbraces);
+
+                                }
+                                if (fullitemName.length() > 21) {
+                                    itemName = fullitemName.substring(0, 21);
+                                    itemName = itemName + "...";
+                                }
+                                if (fullitemName.length() <= 21) {
+                                    itemName = fullitemName;
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            itemName = fullitemName;
+
+                            e.printStackTrace();
+                        }
+
+                        itemDespName_Weight_quantity = String.valueOf(itemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        itemwise_price = marinadesObject.getString("tmcprice");
+                        double itemwise_price_double = 0;
+                        double quantity_double = 0;
+                        double itemwise_Subtotal_double = 0;
+                        try {
+                            itemwise_price_double = Double.parseDouble(itemwise_price);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            quantity_double = Double.parseDouble(String.valueOf(json.get("quantity")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            itemwise_price_double = 0;
+                        }
+
+
+                        try {
+                            itemwise_Subtotal_double = itemwise_price_double * quantity_double;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try{
+                            totalAmountFromAddingSubtotal =  totalAmountFromAddingSubtotal + itemwise_Subtotal_double ;
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        itemwise_Subtotal = String.valueOf(itemwise_Subtotal_double);
+                        itemwise_price = String.valueOf(itemwise_Subtotal_double);
+
+
+                        itemwise_price = "Rs. " + itemwise_price;
+                        itemwise_Subtotal = "Rs." + itemwise_Subtotal;
+
+                        if (itemwise_price.length() == 4) {
+                            //21spaces
+                            itemwise_price = itemwise_price + "                              ";
+                        }
+                        if (itemwise_price.length() == 5) {
+                            //20spaces
+                            itemwise_price = itemwise_price + "                             ";
+                        }
+                        if (itemwise_price.length() == 6) {
+                            //19spaces
+                            itemwise_price = itemwise_price + "                           ";
+                        }
+                        if (itemwise_price.length() == 7) {
+                            //18spaces
+                            itemwise_price = itemwise_price + "                          ";
+                        }
+                        if (itemwise_price.length() == 8) {
+                            //17spaces
+                            itemwise_price = itemwise_price + "                        ";
+                        }
+                        if (itemwise_price.length() == 9) {
+                            //16spaces
+                            itemwise_price = itemwise_price + "                       ";
+                        }
+                        if (itemwise_price.length() == 10) {
+                            //15spaces
+                            itemwise_price = itemwise_price + "                       ";
+                        }
+                        if (itemwise_price.length() == 11) {
+                            //14spaces
+                            itemwise_price = itemwise_price + "                      ";
+                        }
+                        if (itemwise_price.length() == 12) {
+                            //13spaces
+                            itemwise_price = itemwise_price + "                     ";
+                        }
+                        if (itemwise_price.length() == 13) {
+                            //12spaces
+                            itemwise_price = itemwise_price + "                    ";
+                        }
+                        if (itemwise_price.length() == 14) {
+                            //11spaces
+                            itemwise_price = itemwise_price + "                   ";
+                        }
+                        if (itemwise_price.length() == 15) {
+                            //10spaces
+                            itemwise_price = itemwise_price + "                  ";
+                        }
+                        if (itemwise_price.length() == 16) {
+                            //9spaces
+                            itemwise_price = itemwise_price + "                 ";
+                        }
+                        if (itemwise_price.length() == 17) {
+                            //8spaces
+                            itemwise_price = itemwise_price + "                ";
+                        }
+                        if (itemwise_price.length() == 18) {
+                            //7spaces
+                            itemwise_price = itemwise_price + "               ";
+                        }
+
+
+
+
+
+                        if (itemwise_Subtotal.length() == 4) {
+                            //6spaces
+                            itemwise_Subtotal = "      " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 5) {
+                            //7spaces
+                            itemwise_Subtotal = "       " + itemwise_Subtotal;
+                        }
+
+                        if (itemwise_Subtotal.length() == 6) {
+                            //8spaces
+                            itemwise_Subtotal = "        " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 7) {
+                            //7spaces
+                            itemwise_Subtotal = "       " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 8) {
+                            //6spaces
+                            itemwise_Subtotal = "      " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 9) {
+                            //5spaces
+                            itemwise_Subtotal = "     " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 10) {
+                            //4spaces
+                            itemwise_Subtotal = "    " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 11) {
+                            //3spaces
+                            itemwise_Subtotal = "   " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 12) {
+                            //2spaces
+                            itemwise_Subtotal = "  " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 13) {
+                            //1spaces
+                            itemwise_Subtotal = " " + itemwise_Subtotal;
+                        }
+                        if (itemwise_Subtotal.length() == 14) {
+                            //no space
+                            itemwise_Subtotal = "" + itemwise_Subtotal;
+                        }
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 80);
+
+                        BluetoothPrintDriver.printString(itemwise_price + itemwise_Subtotal);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                    }
+                    String itemDespName_Weight_quantity = "", itemwise_price = "", itemwise_Subtotal = "";
+                    ;
+
+                    Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                    if (json.has("netweight")) {
+                        manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
+
+                    } else {
+                        manageOrders_pojo_class.ItemFinalWeight = "";
+
+                    }
+
+                    manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+                    manageOrders_pojo_class.ItemFinalPrice = String.valueOf(json.get("tmcprice"));
+                    manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                    manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
+
+
+                    String fullitemName = String.valueOf(json.getString("itemname"));
+                    String itemName = "";
+                    String itemNameAfterBraces = "";
+
+                    String tmcSubCtgyKey = String.valueOf(json.getString("tmcsubctgykey"));
+                    try {
+                        if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                            int indexofbraces = fullitemName.indexOf("(");
+                            int lastindexofbraces = fullitemName.indexOf(")");
+                            int lengthofItemname = fullitemName.length();
+                            lastindexofbraces = lastindexofbraces + 1;
+
+                            if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                itemName = fullitemName.substring(0, indexofbraces);
+                                itemName = itemName + itemNameAfterBraces;
+                                fullitemName = fullitemName.substring(0, indexofbraces);
+                                fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                            }
+
+                            if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                itemName = fullitemName.substring(0, indexofbraces);
+
+                                fullitemName = fullitemName.substring(0, indexofbraces);
+                                fullitemName = fullitemName;
+
+
+                            }
+
+                            if (fullitemName.length() > 21) {
+                                itemName = fullitemName.substring(0, 21);
+                                itemName = itemName + "...";
+
+                                fullitemName = fullitemName.substring(0, 21);
+                                fullitemName = fullitemName + "...";
+                            }
+                            if (fullitemName.length() <= 21) {
+                                itemName = fullitemName;
+
+                                fullitemName = fullitemName;
+
+                            }
+                        } else {
+                            int indexofbraces = fullitemName.indexOf("(");
+                            if (indexofbraces >= 0) {
+                                itemName = fullitemName.substring(0, indexofbraces);
+
+                            }
+                            if (fullitemName.length() > 21) {
+                                itemName = fullitemName.substring(0, 21);
+                                itemName = itemName + "...";
+                            }
+                            if (fullitemName.length() <= 21) {
+                                itemName = fullitemName;
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        itemName = fullitemName;
+
+                        e.printStackTrace();
+                    }
+
+                    itemDespName_Weight_quantity = String.valueOf(itemName) + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                    BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    itemwise_price = json.getString("tmcprice");
+
+                    double itemwise_price_double = 0;
+                    double quantity_double = 0;
+                    double itemwise_Subtotal_double = 0;
+                    try {
+                        itemwise_price_double = Double.parseDouble(itemwise_price);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        quantity_double = Double.parseDouble(String.valueOf(json.get("quantity")));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        itemwise_price_double = 0;
+                    }
+
+
+                    try {
+                        itemwise_Subtotal_double = itemwise_price_double * quantity_double;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        totalAmountFromAddingSubtotal =  totalAmountFromAddingSubtotal + itemwise_Subtotal_double ;
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    itemwise_Subtotal = String.valueOf(itemwise_Subtotal_double);
+                    itemwise_price = String.valueOf(itemwise_Subtotal_double);
+
+                    itemwise_price = "Rs. " + itemwise_price;
+                    itemwise_Subtotal = "Rs." + itemwise_Subtotal;
+
+
+                    if (itemwise_price.length() == 4) {
+                        //21spaces
+                        itemwise_price = itemwise_price + "                              ";
+                    }
+                    if (itemwise_price.length() == 5) {
+                        //20spaces
+                        itemwise_price = itemwise_price + "                             ";
+                    }
+                    if (itemwise_price.length() == 6) {
+                        //19spaces
+                        itemwise_price = itemwise_price + "                           ";
+                    }
+                    if (itemwise_price.length() == 7) {
+                        //18spaces
+                        itemwise_price = itemwise_price + "                          ";
+                    }
+                    if (itemwise_price.length() == 8) {
+                        //17spaces
+                        itemwise_price = itemwise_price + "                        ";
+                    }
+                    if (itemwise_price.length() == 9) {
+                        //16spaces
+                        itemwise_price = itemwise_price + "                       ";
+                    }
+                    if (itemwise_price.length() == 10) {
+                        //15spaces
+                        itemwise_price = itemwise_price + "                       ";
+                    }
+                    if (itemwise_price.length() == 11) {
+                        //14spaces
+                        itemwise_price = itemwise_price + "                      ";
+                    }
+                    if (itemwise_price.length() == 12) {
+                        //13spaces
+                        itemwise_price = itemwise_price + "                     ";
+                    }
+                    if (itemwise_price.length() == 13) {
+                        //12spaces
+                        itemwise_price = itemwise_price + "                    ";
+                    }
+                    if (itemwise_price.length() == 14) {
+                        //11spaces
+                        itemwise_price = itemwise_price + "                   ";
+                    }
+                    if (itemwise_price.length() == 15) {
+                        //10spaces
+                        itemwise_price = itemwise_price + "                  ";
+                    }
+                    if (itemwise_price.length() == 16) {
+                        //9spaces
+                        itemwise_price = itemwise_price + "                 ";
+                    }
+                    if (itemwise_price.length() == 17) {
+                        //8spaces
+                        itemwise_price = itemwise_price + "                ";
+                    }
+                    if (itemwise_price.length() == 18) {
+                        //7spaces
+                        itemwise_price = itemwise_price + "               ";
+                    }
+
+
+
+
+
+                    if (itemwise_Subtotal.length() == 4) {
+                        //6spaces
+                        itemwise_Subtotal = "      " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 5) {
+                        //7spaces
+                        itemwise_Subtotal = "       " + itemwise_Subtotal;
+                    }
+
+                    if (itemwise_Subtotal.length() == 6) {
+                        //8spaces
+                        itemwise_Subtotal = "        " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 7) {
+                        //7spaces
+                        itemwise_Subtotal = "       " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 8) {
+                        //6spaces
+                        itemwise_Subtotal = "      " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 9) {
+                        //5spaces
+                        itemwise_Subtotal = "     " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 10) {
+                        //4spaces
+                        itemwise_Subtotal = "    " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 11) {
+                        //3spaces
+                        itemwise_Subtotal = "   " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 12) {
+                        //2spaces
+                        itemwise_Subtotal = "  " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 13) {
+                        //1spaces
+                        itemwise_Subtotal = " " + itemwise_Subtotal;
+                    }
+                    if (itemwise_Subtotal.length() == 14) {
+                        //no space
+                        itemwise_Subtotal = "" + itemwise_Subtotal;
+                    }
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString(itemwise_price + itemwise_Subtotal);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.printString("----------------------------------------------");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            PayableAmount = "Rs." + String.valueOf(totalAmountFromAddingSubtotal);
+            if (PayableAmount.length() == 4) {
+                //21spaces
+                PayableAmount = PayableAmount + "                                     " + PayableAmount;
+            }
+            if (PayableAmount.length() == 5) {
+                //20spaces
+                PayableAmount = PayableAmount + "                                  " + PayableAmount;
+            }
+            if (PayableAmount.length() == 6) {
+                //19spaces
+                PayableAmount = PayableAmount + "                                 " + PayableAmount;
+            }
+            if (PayableAmount.length() == 7) {
+                //18spaces
+                PayableAmount = PayableAmount + "                                " + PayableAmount;
+            }
+            if (PayableAmount.length() == 8) {
+                //17spaces
+                PayableAmount = PayableAmount + "                               " + PayableAmount;
+            }
+            if (PayableAmount.length() == 9) {
+                //16spaces
+                PayableAmount = PayableAmount + "                              " + PayableAmount;
+            }
+            if (PayableAmount.length() == 10) {
+                //15spaces
+                PayableAmount = PayableAmount + "                             " + PayableAmount;
+            }
+            if (PayableAmount.length() == 11) {
+                //14spaces
+                PayableAmount = PayableAmount + "                            " + PayableAmount;
+            }
+            if (PayableAmount.length() == 12) {
+                //13spaces
+                PayableAmount = PayableAmount + "                           " + PayableAmount;
+            }
+            if (PayableAmount.length() == 13) {
+                //12spaces
+                PayableAmount = PayableAmount + "                          " + PayableAmount;
+            }
+            if (PayableAmount.length() == 14) {
+                //11spaces
+                PayableAmount = PayableAmount + "                         " + PayableAmount;
+            }
+            if (PayableAmount.length() == 15) {
+                //10spaces
+                PayableAmount = PayableAmount + "                        " + PayableAmount;
+            }
+            if (PayableAmount.length() == 16) {
+                //9spaces
+                PayableAmount = PayableAmount + "                       " + PayableAmount;
+            }
+            if (PayableAmount.length() == 17) {
+                //8spaces
+                PayableAmount = PayableAmount + "                       " + PayableAmount;
+            }
+            if (PayableAmount.length() == 18) {
+                //7spaces
+                PayableAmount = PayableAmount + "                     " + PayableAmount;
+            }
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.printString(PayableAmount);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.printString("----------------------------------------------");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
+                if (OrderType.equals(Constants.APPORDER)) {
+                    if (CouponDiscount.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        CouponDiscount = "Coupon Discount                           " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        CouponDiscount = "Coupon Discount                        " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        CouponDiscount = "Coupon Discount                        " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        CouponDiscount = "Coupon Discount                       " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        CouponDiscount = "Coupon Discount                      " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Coupon Discount                     " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Coupon Discount                    " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Coupon Discount                   " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Coupon Discount                  " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Coupon Discount                 " + CouponDiscount;
+                    }
+                }
+
+                if (OrderType.equals(Constants.POSORDER)) {
+                    if (CouponDiscount.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        CouponDiscount = "Discount Amount                          " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        CouponDiscount = "Discount Amount                        " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        CouponDiscount = "Discount Amount                       " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        CouponDiscount = "Discount Amount                      " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        CouponDiscount = " Discount Amount                     " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount                    " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount                   " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount                " + CouponDiscount;
+                    }
+                }
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.printString(CouponDiscount);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.printString("----------------------------------------------");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+                try{
+                    totalAmountFromAddingSubtotalWithDiscount =  totalAmountFromAddingSubtotal - couponDiscount_double ;
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+            }
+
+
+
+            try{
+                totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt = totalAmountFromAddingSubtotalWithDiscount+deliveryAmount_double;
+
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+
+            if( deliveryAmount_double>0) {
+                if (DeliveryAmount.length() == 4) {
+                    //25spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                         " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 5) {
+                    //24spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                        " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 6) {
+                    //23spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
+                }
+
+                if (DeliveryAmount.length() == 7) {
+                    //22spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                      " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 8) {
+                    //21spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                     " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 9) {
+                    //20spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                    " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 10) {
+                    //19spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                   " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 11) {
+                    //18spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                  " + DeliveryAmount;
+                }
+                if (DeliveryAmount.length() == 12) {
+                    //17spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                 " + DeliveryAmount;
+                }
+
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                BluetoothPrintDriver.printString(DeliveryAmount);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.printString("----------------------------------------------");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+            }
+
+
+
+
+            String NetTotal = "Rs." + String.valueOf(totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt);
+            if (NetTotal.length() == 4) {
+                //27spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                               " + NetTotal;
+            }
+            if (NetTotal.length() == 5) {
+                //26spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                               " + NetTotal;
+            }
+            if (NetTotal.length() == 6) {
+                //25spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                               " + NetTotal;
+            }
+
+            if (NetTotal.length() == 7) {
+                //24spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                              " + NetTotal;
+            }
+            if (NetTotal.length() == 8) {
+                //23spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                            " + NetTotal;
+            }
+            if (NetTotal.length() == 9) {
+                //22spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                           " + NetTotal;
+            }
+            if (NetTotal.length() == 10) {
+                //21spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                          " + NetTotal;
+            }
+            if (NetTotal.length() == 11) {
+                //20spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                         " + NetTotal;
+            }
+            if (NetTotal.length() == 12) {
+                //19spaces+4spaces
+                //NEW TOTAL =9
+                NetTotal = "NET TOTAL                       " + NetTotal;
+            }
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.printString(NetTotal);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.printString("----------------------------------------------");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Payment Mode : "+PaymentMode);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 110);
+            BluetoothPrintDriver.printString("Mobile No : "+MobileNumber);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 110);
+            BluetoothPrintDriver.SetBold((byte) 0x08);//´ÖÌå
+            BluetoothPrintDriver.SetCharacterFont((byte)48);
+            BluetoothPrintDriver.SetFontEnlarge((byte) 0x07);
+            BluetoothPrintDriver.SetFontEnlarge((byte) 0x30);
+            BluetoothPrintDriver.printString("TOKENNO: "+TokenNo);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Slot Name : "+Slotname);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Slot Date : "+SlotDate);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Delivery time : "+DeliveryTime);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Delivery type : "+DeliveryType);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Distance from Store : "+DistanceFromStore+" Kms");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+            BluetoothPrintDriver.printString("Address : ");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 120);
+            BluetoothPrintDriver.printString(Address);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+            if(!Notes.equals("")) {
+
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.SetLineSpacing((byte) 70);
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x01);
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                BluetoothPrintDriver.printString("Notes :" + Notes);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+            }
+            else{
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.SetLineSpacing((byte) 30);
+                BluetoothPrintDriver.printString("");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+            }
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 120);
+            BluetoothPrintDriver.printString("                                          ");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 49);
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.printString("Thank You For Choosing Us !!!! ");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+            BluetoothPrintDriver.LF();
+            BluetoothPrintDriver.LF();
+            BluetoothPrintDriver.LF();
+            BluetoothPrintDriver.FeedAndCutPaper((byte)66,(byte)50);
+
+
+
+
+
+
+        }
+        catch ( Exception e){
+            Adjusting_Widgets_Visibility(false);
+
+            e.printStackTrace();
+        }
+
+        Adjusting_Widgets_Visibility(false);
+
+    }
+
+
+    private void ConnectPrinter() {
+
+
+        try{
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            // If the adapter is null, then Bluetooth is not supported
+            if (mBluetoothAdapter == null) {
+                Toast.makeText(searchOrdersUsingMobileNumber.this, "Bluetooth is not Supported", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!mBluetoothAdapter.isEnabled()) {
+                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                // Otherwise, setup the chat session
+
+            } else {
+                if (mChatService == null) {
+
+                    setupChat();
+
+                }
+                Intent serverIntent = null;
+                //showBottomSheetDialog();
+                // Launch the DeviceListActivity to see devices and do scan
+                serverIntent = new Intent(searchOrdersUsingMobileNumber.this, DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+            }
+
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+
+
+
+    private void setupChat() {
+
+        Log.d("TAG", "setupChat()");
+        // Initialize the BluetoothChatService to perform bluetooth connections
+        mChatService = new BluetoothPrintDriver(this, mHandler);
+    }
+
+
+
+
+
+    // The Handler that gets information back from the BluetoothChatService
+    private final Handler mHandler = new Handler() {
+        @SuppressLint("HandlerLeak")
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MESSAGE_STATE_CHANGE:
+                    //if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                    switch (msg.arg1) {
+                        case BluetoothPrintDriver.STATE_CONNECTED:
+                            printerConnectionStatus_Textwidget.setText(R.string.title_connected_to);
+                            printerConnectionStatus_Textwidget.append(mConnectedDeviceName);
+                            isPrinterCnnected =true;
+                            printerStatus = "Connected";
+                            printerName = mConnectedDeviceName;
+                             setTitle(R.string.title_connected_to);
+                             setTitle(mConnectedDeviceName);
+                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+
+                            break;
+                        case BluetoothPrintDriver.STATE_CONNECTING:
+                            printerConnectionStatus_Textwidget.setText(R.string.title_connecting);
+                            setTitle(R.string.title_connecting);
+                            isPrinterCnnected =false;
+                            printerStatus = "Connecting";
+                            printerName = mConnectedDeviceName;
+                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+
+                            break;
+                        case BluetoothPrintDriver.STATE_LISTEN:
+                            printerConnectionStatus_Textwidget.setText("state listen");
+
+                        case BluetoothPrintDriver.STATE_NONE:
+                            printerConnectionStatus_Textwidget.setText(R.string.title_not_connected);
+                            setTitle(R.string.title_not_connected);
+                            isPrinterCnnected =false;
+                            printerStatus = "Not Connected";
+                            printerName = mConnectedDeviceName;
+                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+
+                            break;
+                    }
+                    break;
+                case MESSAGE_WRITE:
+                    break;
+                case MESSAGE_READ:
+                    String ErrorMsg = null;
+                    byte[] readBuf = (byte[]) msg.obj;
+                    float Voltage = 0;
+                    //  if(D) Log.i(TAG, "readBuf[0]:"+readBuf[0]+"  readBuf[1]:"+readBuf[1]+"  readBuf[2]:"+readBuf[2]);
+                    if(readBuf[2]==0)
+                        ErrorMsg = "NO ERROR!         ";
+                    else
+                    {
+                        if((readBuf[2] & 0x02) != 0)
+                            ErrorMsg = "ERROR: No printer connected!";
+                        if((readBuf[2] & 0x04) != 0)
+                            ErrorMsg = "ERROR: No paper!  ";
+                        if((readBuf[2] & 0x08) != 0)
+                            ErrorMsg = "ERROR: Voltage is too low!  ";
+                        if((readBuf[2] & 0x40) != 0)
+                            ErrorMsg = "ERROR: Printer Over Heat!  ";
+                    }
+                    Voltage = (float) ((readBuf[0]*256 + readBuf[1])/10.0);
+                    //if(D) Log.i(TAG, "Voltage: "+Voltage);
+                    //   DisplayToast(ErrorMsg+"                                        "+"Battery voltage£º"+Voltage+" V");
+                    break;
+                case MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
+                    Toast.makeText(getApplicationContext(), "Connected to "
+                            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                    break;
+                case MESSAGE_TOAST:
+                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + msg.what);
+            }
+       //     printerConnectionStatus_Textwidget.setText(String.valueOf(mBluetoothAdapter.getState()));
+        }
+    };
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //  if(D) Log.d(TAG, "onActivityResult " + resultCode);
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    // Get the device MAC address
+                    try {
+                        String address = data.getExtras()
+                                .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                        // Get the BLuetoothDevice object
+                        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+                        // Attempt to connect to the device
+                        mChatService.connect(device);
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled, so set up a chat session
+                    setupChat();
+                    Intent serverIntent = null;
+                    //showBottomSheetDialog();
+                    // Launch the DeviceListActivity to see devices and do scan
+                    serverIntent = new Intent(searchOrdersUsingMobileNumber.this, DeviceListActivity.class);
+                    startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+                } else {
+                    // User did not enable Bluetooth or an error occured
+                    Log.d("TAG", "BT not enabled");
+                    Toast.makeText(this, "bt_not_enabled_leaving", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
     private void setDataForFilterSpinners() {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, api_GetDeliverySlots+"?storeid="+vendorKey,
                 null, new Response.Listener<JSONObject>() {
@@ -534,18 +2647,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     JSONArray jArray = (JSONArray) content;
                     if (jArray != null) {
                         slotrangeChoosingSpinnerData.add("All");
-                        slotrangeChoosingSpinnerData.add(Constants.EXPRESS_DELIVERY_SLOTNAME);
+                         slotrangeChoosingSpinnerData.add(Constants.EXPRESS_DELIVERY_SLOTNAME);
                         for (int i = 0; i < jArray.length(); i++) {
                             try {
                                 JSONObject json = content.getJSONObject(i);
 
-                                String slotName = String.valueOf(json.get("slotname"));
+                                String slotName = String.valueOf(json.get("slotname").toString().toUpperCase());
                                 String slotdateType = String.valueOf(json.get("slotdatetype"));
                                 if(slotdateType.equals("TODAY")) {
-                                    if (slotName.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
-                                        String deliverytime = String.valueOf(json.get("deliverytime"));
+                                    if ((slotName.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotName.equals(Constants.EXPRESSDELIVERY_SLOTNAME))) {
+                                         deliveryTimeForExpr_Delivery = String.valueOf(json.get("deliverytime")).toUpperCase();
 
-                                        slotrangeChoosingSpinnerData.add(deliverytime);
+                                      //  slotrangeChoosingSpinnerData.add(deliveryTimeForExpr_Delivery);
 
 
                                     } else {
@@ -561,6 +2674,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
+                        slotrangeChoosingSpinnerData.add(Constants.STOREPICKUP_DELIVERYTYPE);
                         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(searchOrdersUsingMobileNumber.this,android.R.layout.simple_spinner_item, slotrangeChoosingSpinnerData);
                         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         SlotrangeSelector_spinner.setAdapter(arrayAdapter);
@@ -622,6 +2736,23 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         deliverDistance_Spinner.setAdapter(arrayAdapter);
         selected_DeliveryDistanceRange_spinner = "All";
+
+
+
+
+
+        StatusSpinnerData.add("All");
+        StatusSpinnerData.add(Constants.NEW_ORDER_STATUS);
+        StatusSpinnerData.add(Constants.CONFIRMED_ORDER_STATUS);
+        StatusSpinnerData.add(Constants.READY_FOR_PICKUP_ORDER_STATUS);
+        StatusSpinnerData.add(Constants.PICKEDUP_ORDER_STATUS);
+        StatusSpinnerData.add(Constants.DELIVERED_ORDER_STATUS);
+
+
+        ArrayAdapter<String> arrayAdapter_statusFilter = new ArrayAdapter<String>(searchOrdersUsingMobileNumber.this,android.R.layout.simple_spinner_item, StatusSpinnerData);
+        arrayAdapter_statusFilter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        statusfilter_Spinner.setAdapter(arrayAdapter_statusFilter);
+        selected_StatusFrom_spinner = "All";
 
 
 
@@ -873,7 +3004,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
                       try {
-                          //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                          Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                           mobile_jsonString = response.toString();
 
                           convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
@@ -904,8 +3035,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     Adjusting_Widgets_Visibility(false);
                    // appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
-                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                    Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
                     error.printStackTrace();
 
@@ -969,7 +3100,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-
+/*
     private void getOrderDetailsUsingOrderPlacedDate(String date, String vendorKey, String selectedStatus) {
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
 
@@ -1347,13 +3478,13 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
                         //    mobile_search_barEditText.setAdapter(adapter);
-                       /* Adjusting_Widgets_Visibility(true);
+                        Adjusting_Widgets_Visibility(true);
                         String Todaysdate = getDatewithNameoftheDay();
                         isSearchButtonClicked =false;
                         orderStatus = "TODAYS"+Constants.PREORDER_SLOTNAME;
                         getOrderDetailsUsingOrderSlotDate(Todaysdate, vendorKey, orderStatus);
 
-                        */
+
                     }
 
                 },new com.android.volley.Response.ErrorListener() {
@@ -1402,22 +3533,26 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         Volley.newRequestQueue(searchOrdersUsingMobileNumber.this).add(jsonObjectRequest);
 
     }
-
+*/
 
 
 
     private void convertingJsonStringintoArray(String orderStatus, String jsonString) {
         try {
+            ordersList.clear();
+            sorted_OrdersList.clear();
+            array_of_orderId.clear();
+
             String ordertype="#",orderid="";
             sorted_OrdersList.clear();
             Adjusting_Widgets_Visibility(true);
             //converting jsonSTRING into array
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray JArray  = jsonObject.getJSONArray("content");
-            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
             int i1=0;
             int arrayLength = JArray.length();
-            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+            Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
             for(;i1<(arrayLength);i1++) {
@@ -1443,7 +3578,16 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         manageOrdersPojoClass.orderid ="";
                     }
 
-                    if (!array_of_orderId.contains(orderid)) {
+
+                        if (json.has("deliveryamount")) {
+                            manageOrdersPojoClass.deliveryamount = String.valueOf(json.get("deliveryamount"));
+
+                        } else {
+                            manageOrdersPojoClass.deliveryamount = "";
+                        }
+
+
+                        if (!array_of_orderId.contains(orderid)) {
                         array_of_orderId.add(orderid);
                     }
 
@@ -1714,7 +3858,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                                 String deliverydistance = String.valueOf(json.get("deliverydistance"));
                                 if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
-                                    manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                   manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
 
                                 } else {
                                     manageOrdersPojoClass.deliverydistance = "0";
@@ -1786,7 +3930,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
          */
 
-            displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner,selectedTimeRange_spinner, selected_DeliveryDistanceRange_spinner);
+            displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner,selectedTimeRange_spinner, selected_DeliveryDistanceRange_spinner, selected_StatusFrom_spinner);
          //   appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
         } catch (JSONException e) {
@@ -1801,7 +3945,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-    private void displayorderDetailsinListview(String orderStatus, @NotNull List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner, String selectedTimeRange_spinner, String selected_DeliveryDistanceRange_spinner) {
+    public void displayorderDetailsinListview(String orderStatus, @NotNull List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner, String selectedTimeRange_spinner, String selected_DeliveryDistanceRange_spinner, String selected_StatusFrom_spinner) {
         Adjusting_Widgets_Visibility(true);
 
 
@@ -1843,10 +3987,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
               final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
               String slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange().toUpperCase();
               String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+              String deliveryType = String.valueOf(modal_manageOrders_forOrderDetailList.getDeliverytype()).toUpperCase();
+              String ordertype = String.valueOf(modal_manageOrders_forOrderDetailList.getOrderType()).toUpperCase();
+              String orderstatus = String.valueOf(modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase());
+
              Log.i(" slotname n   " ,slotname);
                Log.i(" slottimerange n " , slottimerange);
 
-              if(selectedTimeRange_spinner.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)&&slottimerange.equals("90 MINS")) {
+
+              if(((selectedTimeRange_spinner.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(selectedTimeRange_spinner.equals(Constants.EXPRESSDELIVERY_SLOTNAME)))&&(slottimerange.equals(deliveryTimeForExpr_Delivery.toUpperCase()))) {
                   modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
                   modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
                   modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
@@ -1869,6 +4018,91 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                   modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
                   modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                   modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                  modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                  modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+
+                  modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                  modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                  modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                  modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                  modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                  deliverydistancefromarray = Double.parseDouble( modal_manageOrders_forOrderDetailList.getDeliverydistance());
+
+                  modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                  modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                  modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                  modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+                  try {
+                      modal_manageOrders_forOrderDetailList1.intTokenNo = Integer.parseInt(modal_manageOrders_forOrderDetailList.getTokenno());
+                  } catch (Exception e) {
+                      modal_manageOrders_forOrderDetailList1.intTokenNo = 0;
+
+                  }
+
+                  if (selected_DeliveryDistanceRange_spinner.equals("All")) {
+                        if(selected_StatusFrom_spinner.equals("All")) {
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                        }
+                       else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                        }
+                  }
+                  else{
+                      if(selectedDeliveryDistance==10){
+                          if(selectedDeliveryDistance<deliverydistancefromarray){
+                              if(selected_StatusFrom_spinner.equals("All")) {
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                              }
+                              else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                              }
+                          }
+                      }
+                      else{
+                          if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance <= deliverydistancefromarray)){
+                              if(selected_StatusFrom_spinner.equals("All")) {
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                              }
+                              else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                              }
+                          }
+                      }
+                  }
+              }
+
+
+
+
+
+              if(((selectedTimeRange_spinner.equals(Constants.STOREPICKUP_DELIVERYTYPE)))&&(deliveryType.equals(Constants.STOREPICKUP_DELIVERYTYPE))&&(ordertype.equals(Constants.APPORDER))) {
+                  modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                  modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                  modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                  modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                  modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                  modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                  modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                  modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                  modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                  modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                  modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                  modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                  modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                  modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                  modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                  modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                  modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                  modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                  modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                  modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                  modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                  modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                  modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                  modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
                   modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                   modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -1890,23 +4124,42 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                   if (selected_DeliveryDistanceRange_spinner.equals("All")) {
 
-                      sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
-                  }
+                      if(selected_StatusFrom_spinner.equals("All")) {
+                          sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                      }
+                      else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                          sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                      }                  }
                   else{
                       if(selectedDeliveryDistance==10){
                           if(selectedDeliveryDistance<deliverydistancefromarray){
-                              sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                              if(selected_StatusFrom_spinner.equals("All")) {
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                              }
+                              else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
+                              }
                           }
                       }
                       else{
-                          if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance < deliverydistancefromarray)){
-                              sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                          if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance <= deliverydistancefromarray)){
+                              if(selected_StatusFrom_spinner.equals("All")) {
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                              }
+                              else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                                  sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
+                              }
                           }
                       }
                   }
               }
+
+
+
+
 
                 if(selectedTimeRange_spinner.equals(slottimerange)||selectedTimeRange_spinner.equals("All")) {
                     modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
@@ -1931,7 +4184,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
                     modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                     modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                    modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
 
+                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
                     modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                     modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
                     modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
@@ -1953,19 +4208,34 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                     if (selected_DeliveryDistanceRange_spinner.equals("All")) {
 
-                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
-                    }
+                        if(selected_StatusFrom_spinner.equals("All")) {
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                        }
+                        else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+                        }                    }
                     else{
                         if(selectedDeliveryDistance==10){
                             if(selectedDeliveryDistance<deliverydistancefromarray){
-                                sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                                if(selected_StatusFrom_spinner.equals("All")) {
+                                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                                }
+                                else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
+                                }
                             }
                         }
                         else{
-                                if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance < deliverydistancefromarray)){
-                                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                                if((selectedDeliveryDistance>=deliverydistancefromarray) && ( minimumdeliverydistance <= deliverydistancefromarray)){
+                                    if(selected_StatusFrom_spinner.equals("All")) {
+                                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                                    }
+                                    else if(selected_StatusFrom_spinner.equals(orderstatus)){
+                                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
+                                    }
                                 }
 
                         }
@@ -2006,7 +4276,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 appOrdersCount_textwidget.setText(String.valueOf(sorted_OrdersList.size()));
 
 
-                setAdapter(sorted_OrdersList);
+                setAdapter();
 
 
 
@@ -2025,7 +4295,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
             if (sorted_OrdersList.size() > 0) {
-                setAdapter(sorted_OrdersList);
+                setAdapter();
 
             } else {
                 loadingpanelmask.setVisibility(View.GONE);
@@ -2042,14 +4312,14 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 //callAdapter();
     }
 
-    private void setAdapter(List<Modal_ManageOrders_Pojo_Class> sorted_ordersList) {
+    private void setAdapter() {
 
         if(screenInches>8){
 
-            adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_ordersList, searchOrdersUsingMobileNumber.this, orderStatus);
+            adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
             manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
         }else {
-            adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_ordersList, searchOrdersUsingMobileNumber.this, orderStatus);
+            adapter_mobileSearchOrders_usingMobileNumber_listView = new Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
             manageOrders_ListView.setAdapter(adapter_mobileSearchOrders_usingMobileNumber_listView);
         }
 
@@ -2088,8 +4358,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
     }
-
-
 
 
     private String getDatewithNameofthePreviousDay() {
@@ -2152,6 +4420,45 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         return yesterdayAsString;
     }
+
+
+
+
+
+    private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+        calendar.add(Calendar.DATE, -1);
+
+
+
+
+        Date c1 = calendar.getTime();
+
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        String PreviousdayDay = previousday.format(c1);
+
+
+
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        String  PreviousdayDate = df1.format(c1);
+        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+        return yesterdayAsString;
+    }
+
 
 
 
@@ -2257,16 +4564,19 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(filterLayout.getVisibility()==View.VISIBLE){
-            filterLayout.setVisibility(View.GONE);
-            if(!isFilterChanged){
-                Toast.makeText(searchOrdersUsingMobileNumber.this,"Filter is not changed",Toast.LENGTH_LONG).show();
-            }
+        if(isSearchButtonClicked){
+            
+            hideKeyboard(mobile_search_barEditText);
+            closeSearchBarEditText();
+            mobile_search_barEditText.setText("");
+            isSearchButtonClicked = false;
 
+            displayorderDetailsinListview(orderStatus, ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner, selected_StatusFrom_spinner);
         }
         else {
             super.onBackPressed();
         }
+
     }
 
     private void hideKeyboard(EditText editText) {
@@ -2352,6 +4662,51 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         return "";
     }
 
+    public String getDate_and_time()
+    {
 
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+
+        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDatee = df.format(c);
+        CurrentDate = CurrentDay+", "+CurrentDatee;
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        FormattedTime = dfTime.format(c);
+        formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
+        return formattedDate;
+    }
+
+
+
+
+    private void SaveDatainSharedPreferences(boolean isPrinterCnnected, String printerName, String printerStatus) {
+        SharedPreferences sharedPreferences
+                = getSharedPreferences("PrinterConnectionData",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor myEdit
+                = sharedPreferences.edit();
+        myEdit.putString(
+                "printerStatus",
+                printerStatus);
+        myEdit.putString(
+                "printerName",
+                printerName);
+        myEdit.putBoolean(
+                "isPrinterConnected",
+                isPrinterCnnected);
+        myEdit.apply();
+
+
+
+
+
+    }
 
 }

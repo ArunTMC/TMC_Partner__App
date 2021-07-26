@@ -56,7 +56,7 @@ public class Edit_Or_CancelTheOrders extends AppCompatActivity {
 private  String OrderDetailsResultjsonString,CurrentDate,CurrentDay,TodaysDate,DateString,PreviousDateString,vendorKey,vendorname;
 private double screenInches;
 public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
-static List<Modal_ManageOrders_Pojo_Class> ordersList;
+public static List<Modal_ManageOrders_Pojo_Class> ordersList;
     TextView appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
     EditText mobile_search_barEditText;
@@ -64,10 +64,11 @@ static List<Modal_ManageOrders_Pojo_Class> ordersList;
     public LinearLayout PrintReport_Layout;
     public LinearLayout generateReport_Layout;
     public LinearLayout dateSelectorLayout;
+    DatePickerDialog datepicker;
+
     public static LinearLayout loadingpanelmask;
     public static LinearLayout loadingPanel;
     public LinearLayout newOrdersSync_Layout;
-    DatePickerDialog datepicker;
     public static List<String> array_of_orderId;
     static boolean isSearchButtonClicked = false;
 
@@ -259,6 +260,7 @@ static List<Modal_ManageOrders_Pojo_Class> ordersList;
                                 modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                                 modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                                 modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
                                 modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
 
@@ -520,9 +522,20 @@ static List<Modal_ManageOrders_Pojo_Class> ordersList;
                         }
                         else{
                             manageOrdersPojoClass.orderid ="";
+
                         }
 
-                        if (!array_of_orderId.contains(orderid)) {
+                    if (json.has("deliveryamount")) {
+                        manageOrdersPojoClass.deliveryamount = String.valueOf(json.get("deliveryamount"));
+
+                    } else {
+                        manageOrdersPojoClass.deliveryamount = "";
+                    }
+
+
+
+
+                    if (!array_of_orderId.contains(orderid)) {
                             array_of_orderId.add(orderid);
                         }
 

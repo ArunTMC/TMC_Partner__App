@@ -350,6 +350,40 @@
                                 android:textSize="15sp" />
 
                         </LinearLayout>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp"
+                            android:background="@drawable/border_line" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="(C) Delivery Charge  "
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                            <TextView
+                                android:id="@+id/deliveryChargeAmount_textwidget"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans"
+                                android:gravity="right"
+                                android:text="0.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="15sp" />
+
+                        </LinearLayout>
 
                         <View
                             android:layout_width="match_parent"
@@ -369,7 +403,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(C) TOTAL (A-B)  "
+                                android:text="(D) TOTAL ((A-B)+C)  "
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -405,7 +439,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(D) GST  "
+                                android:text="(E) GST  "
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -443,7 +477,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(E) FINAL SALES (C+D)  "
+                                android:text="(F) FINAL SALES (D+E)  "
                                 android:textColor="@color/TMC_Orange"
                                 android:textSize="16sp" />
 
@@ -480,7 +514,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(E) FINAL SALES BREAKUP  "
+                                android:text="(G) FINAL SALES BREAKUP  "
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 

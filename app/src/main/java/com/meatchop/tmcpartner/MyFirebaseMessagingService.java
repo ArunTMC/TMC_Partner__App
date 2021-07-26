@@ -92,7 +92,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 channel.setVibrationPattern(new long[]{400, 400});
                 channel.setShowBadge(true);
 
-                channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+              //  channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
                 channel.setImportance(NotificationManager.IMPORTANCE_HIGH);
                 notificationManager.createNotificationChannel(channel);

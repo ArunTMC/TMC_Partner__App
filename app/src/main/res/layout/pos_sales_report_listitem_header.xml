@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="left"
+    android:background="@color/TMC_Hint_Color"
 
     android:orientation="horizontal"
 
@@ -10,28 +11,37 @@
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:textSize="15sp"
-        android:text="chicken"
+        android:layout_height="50dp"
+        android:textSize="14sp"
+        android:text="dummy title"
         android:layout_weight="1"
-        android:background="@color/TMC_Hint_Color"
-        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+
         android:textColor="@color/TMC_Primary_Text_Color"
         android:fontFamily="@font/open_sans_bold"
         />
+
+
+
+    <View
+        android:layout_width="20dp"
+        android:layout_height="50dp"
+        android:background="@drawable/vertical_line" />
+
     <TextView
         android:id="@+id/totalAmount"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:textSize="15sp"
-        android:text="ddd"
-        android:layout_weight="3"
+        android:layout_height="50dp"
+        android:textSize="14sp"
+        android:text="subtit"
+        android:layout_weight="2.9"
         android:layout_marginStart="1dp"
         android:layout_marginEnd="1dp"
-        android:background="@color/TMC_Hint_Color"
+        android:paddingEnd="10dp"
         android:gravity="center_vertical|right"
         android:visibility="visible"
         android:textColor="@color/TMC_Primary_Text_Color"
+
         android:fontFamily="@font/open_sans_bold"
         />
 </LinearLayout>

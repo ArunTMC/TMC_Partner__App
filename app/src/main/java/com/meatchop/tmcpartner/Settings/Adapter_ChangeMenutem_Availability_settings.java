@@ -18,11 +18,17 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Modal_MenuItem_Settings> {
     Context mContext;
     boolean isSwitchClicked =false;
+    boolean isoverlaplayoutClicked =false;
+
+    int total_no_of_item=0;
+    int total_no_of_item_Available = 0 ;
+    double total_no_of_item_Available_inPercentage = 0;
     List<Modal_MenuItem_Settings> menuList;
     ChangeMenuItemStatus_Settings changeMenuItemStatus_Settings;
     public Adapter_ChangeMenutem_Availability_settings(Context mContext, List<Modal_MenuItem_Settings> menuList, ChangeMenuItemStatus_Settings changeMenuItemStatus_Settings) {
@@ -61,15 +67,54 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
        // itemName_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemname()));
         menuItemAvailabiltySwitch.setText(String.valueOf(modal_manageOrders_pojo_class.getItemname()));
       String  itemAvailability =String.valueOf(modal_manageOrders_pojo_class.getItemavailability()).toUpperCase();
+
+
       if(itemAvailability.equals("TRUE")){
           menuItemAvailabiltySwitch.setChecked(true);
+          if(!changeMenuItemStatus_Settings.subctgy_on_Off_Switch.isChecked()){
+              changeMenuItemStatus_Settings.subctgy_on_Off_Switch.setChecked(true);
+          }
       }
       if(itemAvailability.equals("FALSE")){
           menuItemAvailabiltySwitch.setChecked(false);
 
+
       }
+      try {
+          total_no_of_item_Available = 0;
+          total_no_of_item_Available_inPercentage =0;
+          for (int i = 0; i < menuList.size(); i++) {
 
+              Modal_MenuItem_Settings modal_manageOrders = menuList.get(i);
+              String itemAvailabilityforcount = String.valueOf(modal_manageOrders.getItemavailability()).toUpperCase();
+              total_no_of_item = menuList.size();
+              if (itemAvailabilityforcount.equals("TRUE")) {
+                  total_no_of_item_Available = total_no_of_item_Available + 1;
 
+              }
+
+          }
+          if(menuList.size()<=0){
+              changeMenuItemStatus_Settings.itemAvailabilityCount_textWidget.setText("There is no MenuItem Under this SubCtgy");
+
+          }
+          else{
+              try {
+                  total_no_of_item_Available_inPercentage = (Double.parseDouble(String.valueOf((total_no_of_item_Available))) / Double.parseDouble(String.valueOf(total_no_of_item) ));
+                  total_no_of_item_Available_inPercentage = total_no_of_item_Available_inPercentage*100;
+                  DecimalFormat decimalFormat = new DecimalFormat("0.00");
+                  total_no_of_item_Available_inPercentage = Double.parseDouble(decimalFormat.format(total_no_of_item_Available_inPercentage));
+              }catch (Exception e ) {
+                e.printStackTrace();
+              }
+                  changeMenuItemStatus_Settings.itemAvailabilityCount_textWidget.setText("Out of "+String.valueOf(total_no_of_item)+" Items / "+String.valueOf(total_no_of_item_Available)+" Items Available"+" ( "+String.valueOf(total_no_of_item_Available_inPercentage)+" % ) ");
+
+              }
+
+      }
+      catch(Exception e){
+          e.printStackTrace();
+      }
         menuItemAvailabiltySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
@@ -78,96 +123,8 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
 
 
 
-                    changeMenuItemStatus_Settings. Adjusting_Widgets_Visibility(true);
-
-                    String menuItemkey = String.valueOf(modal_manageOrders_pojo_class.getKey());
-                    String itemuniquecode = String.valueOf(modal_manageOrders_pojo_class.getItemuniquecode());
-                 /*   for(int i =0; i<changeMenuItemStatus_Settings.marinadeMenuList.size();i++){
-                        Modal_MenuItem_Settings modal_menuItemSettings = changeMenuItemStatus_Settings.marinadeMenuList.get(i);
-                        String marinadeItem_itemuniquecode = modal_menuItemSettings.getItemuniquecode();
-                        String marinadeItemKey = modal_menuItemSettings.getKey();
-                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
-
-                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"TRUE",itemuniquecode);
-                        }
-                    }
-
-                  */
-                    boolean isMarinadeItem = false;
-                    try {
-                         isMarinadeItem = modal_manageOrders_pojo_class.getisMarinadeItem();
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        isMarinadeItem = false;
-                    }
-                    if(isMarinadeItem){
-                        String marinadeItem_itemuniquecode = modal_manageOrders_pojo_class.getMarinadeItemUniqueCode();
-                        String marinadeItemKey = modal_manageOrders_pojo_class.getMarinadeKey();
-                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
-
-                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"TRUE",itemuniquecode);
-                        }
-
-                    }
-
-
-                    changeMenuItemStatus_Settings.ChangeMenuitemAvailabilityStatus(menuItemkey,"TRUE",itemuniquecode);
-                    modal_manageOrders_pojo_class.setItemavailability("TRUE");
-                    notifyDataSetChanged();
-
-
-
-
-
-
 
                 } else {
-
-
-
-
-
-                                    changeMenuItemStatus_Settings. Adjusting_Widgets_Visibility(true);
-
-                    String menuItemkey = String.valueOf(modal_manageOrders_pojo_class.getKey());
-                    String itemuniquecode = String.valueOf(modal_manageOrders_pojo_class.getItemuniquecode());
-                   /* for(int i =0; i<changeMenuItemStatus_Settings.marinadeMenuList.size();i++){
-                        Modal_MenuItem_Settings modal_menuItemSettings = changeMenuItemStatus_Settings.marinadeMenuList.get(i);
-                        String marinadeItem_itemuniquecode = modal_menuItemSettings.getItemuniquecode();
-                        String marinadeItemKey = modal_menuItemSettings.getKey();
-
-                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
-                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"FALSE",itemuniquecode);
-                        }
-                        }
-                    */
-
-                    boolean isMarinadeItem = false;
-                    try {
-                        isMarinadeItem = modal_manageOrders_pojo_class.getisMarinadeItem();
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        isMarinadeItem = false;
-                    }
-
-
-                    if(isMarinadeItem){
-                        String marinadeItem_itemuniquecode = modal_manageOrders_pojo_class.getMarinadeItemUniqueCode();
-                        String marinadeItemKey = modal_manageOrders_pojo_class.getMarinadeKey();
-                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
-
-                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"FALSE",itemuniquecode);
-                        }
-
-                    }
-                    changeMenuItemStatus_Settings.ChangeMenuitemAvailabilityStatus(menuItemkey,"FALSE", itemuniquecode);
-
-                    modal_manageOrders_pojo_class.setItemavailability("FALSE");
-                    notifyDataSetChanged();
-
-
 
 
 
@@ -181,6 +138,11 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
         overlapLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(isoverlaplayoutClicked){
+                    return;
+                }
+                isoverlaplayoutClicked = true;
+
                 String availability = ( modal_manageOrders_pojo_class.getItemavailability()).toUpperCase();
                 //Toast.makeText(mContext,availability   , Toast.LENGTH_SHORT).show();
                 if(availability.equals("TRUE")) {
@@ -192,6 +154,52 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
                                 @Override
                                 public void onYes() {
                                     menuItemAvailabiltySwitch.setChecked(false);
+
+
+
+
+                                    changeMenuItemStatus_Settings. Adjusting_Widgets_Visibility(true);
+
+                                    String menuItemkey = String.valueOf(modal_manageOrders_pojo_class.getKey());
+                                    String itemuniquecode = String.valueOf(modal_manageOrders_pojo_class.getItemuniquecode());
+                   /* for(int i =0; i<changeMenuItemStatus_Settings.marinadeMenuList.size();i++){
+                        Modal_MenuItem_Settings modal_menuItemSettings = changeMenuItemStatus_Settings.marinadeMenuList.get(i);
+                        String marinadeItem_itemuniquecode = modal_menuItemSettings.getItemuniquecode();
+                        String marinadeItemKey = modal_menuItemSettings.getKey();
+
+                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
+                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"FALSE",itemuniquecode);
+                        }
+                        }
+                    */
+
+                                    boolean isMarinadeItem = false;
+                                    try {
+                                        isMarinadeItem = modal_manageOrders_pojo_class.getisMarinadeItem();
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        isMarinadeItem = false;
+                                    }
+
+
+                                    if(isMarinadeItem){
+                                        String marinadeItem_itemuniquecode = modal_manageOrders_pojo_class.getMarinadeItemUniqueCode();
+                                        String marinadeItemKey = modal_manageOrders_pojo_class.getMarinadeKey();
+                                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
+
+                                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"FALSE",itemuniquecode);
+                                        }
+
+                                    }
+                                    changeMenuItemStatus_Settings.ChangeMenuitemAvailabilityStatus(menuItemkey,"FALSE", itemuniquecode);
+                                    changeMenuItemStatus_Settings.subctgy_on_Off_Switch.setChecked(false);
+
+                                    modal_manageOrders_pojo_class.setItemavailability("FALSE");
+                                    notifyDataSetChanged();
+
+
+
 
 
                                 }
@@ -210,6 +218,49 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
                                     menuItemAvailabiltySwitch.setChecked(true);
 
 
+
+                                    changeMenuItemStatus_Settings. Adjusting_Widgets_Visibility(true);
+
+                                    String menuItemkey = String.valueOf(modal_manageOrders_pojo_class.getKey());
+                                    String itemuniquecode = String.valueOf(modal_manageOrders_pojo_class.getItemuniquecode());
+                 /*   for(int i =0; i<changeMenuItemStatus_Settings.marinadeMenuList.size();i++){
+                        Modal_MenuItem_Settings modal_menuItemSettings = changeMenuItemStatus_Settings.marinadeMenuList.get(i);
+                        String marinadeItem_itemuniquecode = modal_menuItemSettings.getItemuniquecode();
+                        String marinadeItemKey = modal_menuItemSettings.getKey();
+                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
+
+                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"TRUE",itemuniquecode);
+                        }
+                    }
+
+                  */
+                                    boolean isMarinadeItem = false;
+                                    try {
+                                        isMarinadeItem = modal_manageOrders_pojo_class.getisMarinadeItem();
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        isMarinadeItem = false;
+                                    }
+                                    if(isMarinadeItem){
+                                        String marinadeItem_itemuniquecode = modal_manageOrders_pojo_class.getMarinadeItemUniqueCode();
+                                        String marinadeItemKey = modal_manageOrders_pojo_class.getMarinadeKey();
+                                        if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
+
+                                            changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"TRUE",itemuniquecode);
+                                        }
+
+                                    }
+
+
+                                    changeMenuItemStatus_Settings.ChangeMenuitemAvailabilityStatus(menuItemkey,"TRUE",itemuniquecode);
+                                    modal_manageOrders_pojo_class.setItemavailability("TRUE");
+                                    notifyDataSetChanged();
+
+
+
+
+
                                 }
 
                                 @Override
@@ -217,6 +268,7 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
                                 }
                             });
                 }
+                isoverlaplayoutClicked=false;
             }
 
 

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical"
+    >
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:textColor="@color/TMC_White"
+    android:textSize="17sp"
+    android:paddingStart="20dp"
+    android:id="@+id/headingTextview"
+    android:paddingEnd="20dp"
+    android:gravity="center_vertical"
+    android:fontFamily="@font/open_sans_bold"
+    android:background="@color/TMC_Orange"
+    android:text="Select Item to View its On/Off Transaction" />
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <LinearLayout
+        android:id="@+id/loadingpanelmask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/TMC_ProgressBar_Color"
+        android:alpha="0.85"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:visibility="visible">
+
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/loadinganim_layout"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="visible"
+            android:layout_gravity="center"
+            app:indicatorColor="@color/TMC_Orange"
+            app:indicatorName="BallPulseIndicator" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:layout_above="@+id/divider"
+        android:layout_alignParentEnd="true"
+        android:orientation="vertical">
+
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:text="@string/SelectItemCtgy"
+
+            android:textSize="19sp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/border_line"
+            />
+
+
+
+
+        <Spinner
+            android:id="@+id/subCtgyItem"
+            android:layout_width="wrap_content"
+
+            android:layout_height="50dp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/border_line"
+            />
+
+
+        <ListView
+            android:id="@+id/MenuItemsListView"
+            android:layout_width="match_parent"
+            android:layout_weight="9"
+            android:layout_marginBottom="20dp"
+            android:scrollbars="none"
+            android:scrollIndicators="none"
+            android:layout_height="wrap_content" />
+
+
+
+
+    </LinearLayout>
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/border_line" />
+
+</RelativeLayout>
+
+</LinearLayout>

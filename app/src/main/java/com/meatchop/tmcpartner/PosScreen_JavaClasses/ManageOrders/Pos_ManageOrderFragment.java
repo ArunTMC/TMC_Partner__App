@@ -84,7 +84,7 @@ public class Pos_ManageOrderFragment extends Fragment {
     Button new_Order_widget, confirmed_Order_widget,ready_Order_widget,transist_Order_widget,delivered_Order_widget;
     ImageView search_button,search_close_btn;
     EditText search_barEditText;
-    String jsonString,orderStatus,vendorKey,slotName = "EXPRESS DELIVERY";
+    String jsonString,orderStatus,vendorKey,vendorname,slotName = "EXPRESS DELIVERY";
     ListView manageOrders_ListView;
     LinearLayout loadingPanel,loadingpanelmask,newOrdersSync_Layout,preorderdate_layout;
     List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
@@ -180,7 +180,8 @@ public class Pos_ManageOrderFragment extends Fragment {
 
         SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorKey = (shared.getString("VendorKey", "vendor_1"));
-
+        vendorname = (shared.getString("VendorName", "TMC"));
+        nameofFacility_Textview.setText(vendorname);
         SharedPreferences shared2 = requireContext().getSharedPreferences("CurrentSelectedStatus", MODE_PRIVATE);
         orderStatus = (shared2.getString("currentstatus", ""));
         TodaysDate=getDate();
@@ -397,17 +398,32 @@ public class Pos_ManageOrderFragment extends Fragment {
                                 modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
                                 modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
                                 modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                                modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                                modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                                modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                                modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                                modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+
+                                modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                                 modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
                                 modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
                                 modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
-                                modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                                modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                                modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
-                                modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
 
                                 modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                                 modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
                                 modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
                                 modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+
+                                modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
+                                modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
 
                                 sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
@@ -865,7 +881,7 @@ public class Pos_ManageOrderFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        bottomNavigationView = ((Pos_Dashboard_Screen) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
+        bottomNavigationView = ((Pos_Dashboard_Screen) requireActivity()).findViewById(R.id.bottomnav);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver,new IntentFilter("YOUR"));
 
         return inflater.inflate(R.layout.pos_manage_order_fragment, container, false);
@@ -1082,6 +1098,15 @@ public class Pos_ManageOrderFragment extends Fragment {
                         } else {
                             manageOrdersPojoClass.orderid = "";
                         }
+
+                        if (json.has("deliveryamount")) {
+                            manageOrdersPojoClass.deliveryamount = String.valueOf(json.get("deliveryamount"));
+
+                        } else {
+                            manageOrdersPojoClass.deliveryamount = "";
+                        }
+
+
 
 
                         if (json.has("orderplacedtime")) {
@@ -1523,6 +1548,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                     modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                     modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                     modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
                     modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                     modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -1582,6 +1608,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                     modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
                     modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                     modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
                     modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                     modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -1642,6 +1669,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                     modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                     modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                     modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
 
 

@@ -403,8 +403,19 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:visibility="visible"
+                            android:orientation="vertical"
+                            >
+
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:visibility="gone"
                             android:orientation="horizontal"
+                            android:paddingTop="10dp"
+                            android:paddingBottom="8dp"
                             android:id="@+id/new_Order_Linearlayout"
                             >
 
@@ -439,13 +450,16 @@
                                 android:textSize="15sp"
 
                                 android:textColor="@color/TMC_White"
-                                android:background="@drawable/button_background"                            android:text="@string/cancel_Order_text" />
+                                android:background="@drawable/button_background"
+                                android:text="@string/cancel_Order_text" />
                         </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:visibility="gone"
+                            android:paddingTop="10dp"
+                            android:paddingBottom="8dp"
                             android:orientation="horizontal"
                             android:id="@+id/confirming_order_Linearlayout"
                             >
@@ -489,33 +503,17 @@
                                 android:textColor="@color/TMC_White"
                                 android:background="@drawable/button_background"
                                 android:text="@string/AssignPartner" />
-                            <Button
-                                android:id="@+id/generateTokenNo_button_widget"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
-                                android:layout_weight="1"
-                                android:layout_marginStart="5dp"
-                                android:layout_marginEnd="5dp"
-                                android:visibility="gone"
 
-                                android:fontFamily="@font/open_sans_bold"
-                                android:textAllCaps="false"
-                                android:textSize="13sp"
-
-                                android:textColor="@color/TMC_White"
-                                android:background="@drawable/button_background"
-                                android:text="@string/Generate_Token_No_text" />
 
                         </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:visibility="visible"
+                            android:visibility="gone"
                             android:orientation="horizontal"
-                            android:paddingTop="20dp"
-                            android:paddingBottom="20dp"
+                            android:paddingTop="10dp"
+                            android:paddingBottom="8dp"
                             android:id="@+id/ready_Order_Linearlayout"
                             >
 
@@ -616,6 +614,41 @@
                                 android:background="@drawable/button_background"  />
 
 
+                        </LinearLayout>
+                            <RelativeLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                            <Button
+                                android:id="@+id/mobileprint_button_widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="5dp"
+                                android:layout_marginEnd="5dp"
+
+                                android:fontFamily="@font/open_sans_bold"
+                                android:textAllCaps="false"
+                                android:textSize="15sp"
+                                android:text="@string/Print_text"
+                                android:textColor="@color/TMC_White"
+                                android:background="@drawable/button_background"  />
+                            <Button
+                                android:id="@+id/generateTokenNo_button_widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="5dp"
+                                android:layout_marginEnd="5dp"
+                                android:visibility="visible"
+
+                                android:fontFamily="@font/open_sans_bold"
+                                android:textAllCaps="false"
+                                android:textSize="13sp"
+
+                                android:textColor="@color/TMC_White"
+                                android:background="@drawable/button_background"
+                                android:text="@string/Generate_Token_No_text" />
+                            </RelativeLayout>
                         </LinearLayout>
 
 

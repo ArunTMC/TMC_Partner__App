@@ -6,7 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,16 +17,26 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.FetchAddressIntentService;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.DeliveryPartnerSettlementReport;
+import com.meatchop.tmcpartner.Settings.GetDeliverypartnersAssignedOrders;
+import com.meatchop.tmcpartner.Settings.Pos_Orders_List;
+import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,18 +52,20 @@ import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class Pos_OrderDetailsScreen extends AppCompatActivity {
 TextView mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
-        ,deliveryPartner_name_widget,deliveryPartner_mobileNo_widget,delivery_type_widget,slotTime_Range_textwidget;
-TextView distancebetweencustomer_vendortext_widget,discounttext_widget,addresstype_textwidget,AddressLine2_textwidget,landmark_textwidget,AddressLine1_textwidget,total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
+        ,googleAddress_textwidget,deliveryPartner_name_widget,deliveryPartner_mobileNo_widget,delivery_type_widget,slotTime_Range_textwidget;
+TextView deliveryCharges_text_widget,notes_textwidget,distancebetweencustomer_vendortext_widget,discounttext_widget,addresstype_textwidget,AddressLine2_textwidget,landmark_textwidget,AddressLine1_textwidget,total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
 Button changeDeliveryPartner;
     Adapter_forOrderDetails_Listview adapter_forOrderDetails_listview;
     List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
     ListView itemDesp_listview;
-    LinearLayout deliveryPartnerAssignLayout;
+    LinearLayout deliveryPartnerAssignLayout,refresh_googleAddress_loadinganim_layout,refresh_googleAddress_image_layout,refresh_googleAddress_layout,refreshpaymentmode__loadinganim_layout,refreshpaymentmode_image_layout,refresh_paymentmode_layout;
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
-    String ordertype,coupondiscountAmount,useraddreskey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,deliverydistance;
+    String ordertype,coupondiscountAmount,deliveryCharges,useraddreskey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,deliverydistance,fromActivityName;
     ScrollView parentScrollView;
+    ResultReceiver resultReceiver;
+    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +99,17 @@ Button changeDeliveryPartner;
         ordertypetext_widget = findViewById(R.id.ordertypetext_widget);
         distancebetweencustomer_vendortext_widget = findViewById(R.id.distancebetweencustomer_vendortext_widget);
         mobileNotext_widget = findViewById(R.id.mobileNotext_widget);
+        notes_textwidget = findViewById(R.id.notes_textwidget);
         deliveryPartnerAssignLayout = findViewById(R.id.deliveryPartnerAssignLayout);
-
+        googleAddress_textwidget = findViewById(R.id.googleAddress_textwidget);
+        deliveryCharges_text_widget = findViewById(R.id.deliveryCharges_text_widget);
+        refresh_paymentmode_layout = findViewById(R.id.refresh_paymentmode_layout);
+        refresh_paymentmode_layout = findViewById(R.id.refresh_paymentmode_layout);
+        refreshpaymentmode_image_layout = findViewById(R.id.refreshpaymentmode_image_layout);
+        refreshpaymentmode__loadinganim_layout = findViewById(R.id.refreshpaymentmode__loadinganim_layout);
+        refresh_googleAddress_loadinganim_layout = findViewById(R.id.refresh_googleAddress_loadinganim_layout);
+        refresh_googleAddress_image_layout = findViewById(R.id.refresh_googleAddress_image_layout);
+        refresh_googleAddress_layout = findViewById(R.id.refresh_googleAddress_layout);
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
 
@@ -95,31 +119,39 @@ Button changeDeliveryPartner;
 
         OrderdItems_desp = new ArrayList<>();
 
+        resultReceiver = new AddressResultReceiver(new Handler());
 
         Bundle bundle = getIntent().getExtras();
-        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = bundle.getParcelable("data");
+         modal_manageOrders_pojo_class = bundle.getParcelable("data");
+        fromActivityName = bundle.getString("From");
+
         ordertype = String.valueOf(modal_manageOrders_pojo_class.getOrderType());
             try {
                 if(ordertype.equals(Constants.APPORDER)) {
-
-                    customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
-                    customerLongitutde = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
                     try {
                         deliverydistance = String.valueOf(modal_manageOrders_pojo_class.getDeliverydistance());
+                        distancebetweencustomer_vendortext_widget.setText(deliverydistance+" Km");
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if ((!deliverydistance.equals("0") && (deliverydistance.length() > 0) && (!deliverydistance.equals("null")))) {
-                        distancebetweencustomer_vendortext_widget.setText(deliverydistance+"Km");
+                    customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
+                    customerLongitutde = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
+                    if(((customerLongitutde.equals("null"))||(customerLongitutde.equals(null))||(customerLongitutde.equals(""))||(customerLongitutde.equals("0")))&&(((customerlatitude.equals("null"))||(customerlatitude.equals(null))||(customerlatitude.equals(""))||(customerlatitude.equals("0"))))){
 
-                    } else {
-                        try {
-                            CalculateDistanceviaApi(distancebetweencustomer_vendortext_widget);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        if (modal_manageOrders_pojo_class.getUseraddresskey() != null) {
+                            getUserAddressAndLat_LongFromAddressTable(modal_manageOrders_pojo_class.getUseraddresskey().toString());
+                        } else {
+                            Toast.makeText(Pos_OrderDetailsScreen.this, "Userkey cnanot be found", Toast.LENGTH_LONG).show();
+
                         }
-
                     }
+                    else{
+
+                        getGoogleAddressUsingMapApi(customerlatitude,customerLongitutde);
+                    }
+
+
                 }
 
         orderIdtext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
@@ -130,6 +162,18 @@ Button changeDeliveryPartner;
         delivery_type_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getDeliverytype()));
         slotTime_Range_textwidget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlottimerange()));
         mobileNotext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getUsermobile()));
+        try{
+            if(modal_manageOrders_pojo_class.getNotes()!=null){
+                notes_textwidget.setText(modal_manageOrders_pojo_class.getNotes().toUpperCase());
+            }else{
+                notes_textwidget.setText("");
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
         String order_status = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
         String order_type =modal_manageOrders_pojo_class.getOrderType().toUpperCase();
         ordertypetext_widget.setText(order_type);
@@ -176,6 +220,16 @@ Button changeDeliveryPartner;
         else {
             coupondiscountAmount = "0.00";
             discounttext_widget.setText(coupondiscountAmount);
+
+        }
+        if(modal_manageOrders_pojo_class.getDeliveryamount()!=null){
+            deliveryCharges = String.valueOf(modal_manageOrders_pojo_class.getDeliveryamount());
+            deliveryCharges_text_widget.setText(deliveryCharges+".00");
+
+        }
+        else {
+            deliveryCharges = "0.00";
+            deliveryCharges_text_widget.setText(deliveryCharges);
 
         }
         if(modal_manageOrders_pojo_class.getOrderdeliveredtime()!=null){
@@ -228,16 +282,54 @@ Button changeDeliveryPartner;
             delivery_type_widget.setVisibility(View.GONE);
 
         }
+        if(order_status.equals(Constants.DELIVERED_ORDER_STATUS)){
 
-            parentScrollView.fullScroll(View.FOCUS_UP);
+                    changeDeliveryPartner.setVisibility(View.GONE);
+
+        }
+
+
+                parentScrollView.fullScroll(View.FOCUS_UP);
 
         }
         catch (Exception e){
             e.printStackTrace();
         }
 
+        refresh_googleAddress_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refresh_googleAddress_loadinganim_layout.setVisibility(View.VISIBLE);
+                refresh_googleAddress_image_layout.setVisibility(View.GONE);
+                customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
+                customerLongitutde = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
+                if(((customerLongitutde.equals("null"))||(customerLongitutde.equals(null))||(customerLongitutde.equals(""))||(customerLongitutde.equals("0")))&&(((customerlatitude.equals("null"))||(customerlatitude.equals(null))||(customerlatitude.equals(""))||(customerlatitude.equals("0"))))){
+
+                    if (modal_manageOrders_pojo_class.getUseraddresskey() != null) {
+                        getUserAddressAndLat_LongFromAddressTable(modal_manageOrders_pojo_class.getUseraddresskey().toString());
+                    } else {
+                        Toast.makeText(Pos_OrderDetailsScreen.this, "Userkey cnanot be found", Toast.LENGTH_LONG).show();
+
+                    }
+                }
+                else{
+
+                    getGoogleAddressUsingMapApi(customerlatitude,customerLongitutde);
+                }
 
 
+            }
+        });
+
+        refresh_paymentmode_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refreshpaymentmode__loadinganim_layout.setVisibility(View.VISIBLE);
+                refreshpaymentmode_image_layout.setVisibility(View.GONE);
+                String orderidtoFetchPaymentmode = String.valueOf(modal_manageOrders_pojo_class.getOrderid());
+                getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode);
+            }
+        });
 
         changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -307,6 +399,428 @@ Button changeDeliveryPartner;
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
 
     }
+    private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode) {
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid+orderidtoFetchPaymentmode ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
+
+                            try {
+
+                                String ordertype="#";
+
+                                //converting jsonSTRING into array
+                                JSONArray JArray  = response.getJSONArray("content");
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                if(arrayLength>1){
+                                    Toast.makeText(Pos_OrderDetailsScreen.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+
+                                }
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        String PaymentMode = json.getString("paymentmode");
+                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+                                        refreshpaymentmode__loadinganim_layout.setVisibility(View.GONE);
+                                        refreshpaymentmode_image_layout.setVisibility(View.VISIBLE);
+                                        paymentTypetext_widget.setText(PaymentMode);
+
+
+                                        Toast.makeText(Pos_OrderDetailsScreen.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
+
+                                        if(fromActivityName.equals("MobileManageOrders")) {
+                                            if(Pos_ManageOrderFragment.sorted_OrdersList.size()>0){
+                                                for(int i =0; i<Pos_ManageOrderFragment.sorted_OrdersList.size();i++){
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Pos_ManageOrderFragment.sorted_OrdersList.get(i);
+                                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                    if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                                        Pos_ManageOrderFragment.manageOrdersListViewAdapter.notifyDataSetChanged();
+                                                    }
+                                                }
+                                            }
+
+                                            if(Pos_ManageOrderFragment.ordersList.size()>0){
+                                                for(int i =0; i<Pos_ManageOrderFragment.ordersList.size();i++){
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Pos_ManageOrderFragment.ordersList.get(i);
+                                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                    if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                                        Pos_ManageOrderFragment.manageOrdersListViewAdapter.notifyDataSetChanged();
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+
+
+                                        if(fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder")) {
+                                            try {
+                                                if (GetDeliverypartnersAssignedOrders.ordersList.size() > 0) {
+                                                    for (int i = 0; i < GetDeliverypartnersAssignedOrders.ordersList.size(); i++) {
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = GetDeliverypartnersAssignedOrders.ordersList.get(i);
+
+                                                        String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
+                                                            modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+                                                            try {
+                                                                GetDeliverypartnersAssignedOrders.adapter_mobile_getDeliveryPartnersAssignedOrders.notifyDataSetChanged();
+
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+
+
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            catch(Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                            try{
+
+                                                if(DeliveryPartnerSettlementReport.result_JArray.length()>0){
+
+                                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                                    int i11 = 0;
+                                                    int arrayLength1 = DeliveryPartnerSettlementReport.result_JArray.length();
+                                                    //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                                    Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+                                                    if(arrayLength1>0) {
+
+                                                        for (; i11 < (arrayLength1); i11++) {
+
+                                                            try {
+                                                                JSONObject jsonv = DeliveryPartnerSettlementReport.result_JArray.getJSONObject(i11);
+                                                                String orderidd= jsonv.getString("orderid");
+
+                                                                if(orderidd.equals(orderidtoFetchPaymentmode)) {
+                                                                    jsonv.put("paymentmode", PaymentMode);
+
+
+                                                                }
+                                                            }
+                                                            catch (Exception e){
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+
+                                        }
+
+
+
+                                        if(fromActivityName.equals("AppOrdersList")) {
+
+                                            if(searchOrdersUsingMobileNumber.sorted_OrdersList.size()>0){
+                                                for(int i =0; i<searchOrdersUsingMobileNumber.sorted_OrdersList.size();i++){
+
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
+                                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                    if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+
+
+                                                        try {
+                                                            searchOrdersUsingMobileNumber.adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+
+
+
+                                                    }
+                                                }
+                                            }
+
+
+                                            if(searchOrdersUsingMobileNumber.ordersList.size()>0){
+                                                for(int i =0; i<searchOrdersUsingMobileNumber.ordersList.size();i++){
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =searchOrdersUsingMobileNumber.ordersList.get(i);
+
+                                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                    if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+                                                        try {
+                                                            searchOrdersUsingMobileNumber.adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }                                                        }
+                                                }
+                                            }
+
+
+                                        }
+                                        else{
+
+
+                                            Toast.makeText(Pos_OrderDetailsScreen.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+
+                                        }
+
+
+
+
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                refreshpaymentmode__loadinganim_layout.setVisibility(View.GONE);
+                                refreshpaymentmode_image_layout.setVisibility(View.VISIBLE);
+
+                            }
+
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            refreshpaymentmode__loadinganim_layout.setVisibility(View.GONE);
+                            refreshpaymentmode_image_layout.setVisibility(View.VISIBLE);
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(Pos_OrderDetailsScreen.this, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
+
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+
+
+
+    private void getUserAddressAndLat_LongFromAddressTable(String useraddresskeyy) {
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetAddressUsingUserKey + useraddresskeyy,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
+
+                            try {
+
+                                JSONObject result  = response.getJSONObject("content");
+                                JSONObject result2  = result.getJSONObject("Item");
+                                customerLongitutde = result2.getString("locationlong");
+
+                                customerlatitude = result2.getString("locationlat");
+                                modal_manageOrders_pojo_class.setUseraddresslat(customerlatitude);
+                                modal_manageOrders_pojo_class.setUseraddresslon(customerLongitutde);
+                                if ((deliverydistance.equals("0") ||(deliverydistance.equals("")) && (deliverydistance.equals("null")))) {
+                                    try {
+                                        deliverydistance = result2.getString("deliverydistance");
+                                        distancebetweencustomer_vendortext_widget.setText(deliverydistance+" Km");
+                                        if ((deliverydistance.equals("0") || (deliverydistance.equals("")) && (deliverydistance.equals("null")))) {
+                                            try {
+                                                CalculateDistanceviaApi(distancebetweencustomer_vendortext_widget);
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                getGoogleAddressUsingMapApi(customerlatitude,customerLongitutde);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+
+                            }
+
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(Pos_OrderDetailsScreen.this, "Location cnanot be found", Toast.LENGTH_LONG).show();
+
+
+
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+    private void getGoogleAddressUsingMapApi(String customerlatitude, String customerLongitutde) {
+        double Latitude = Double.parseDouble(customerlatitude);
+        double Longitude = Double.parseDouble(customerLongitutde);
+
+        Location location = new Location("providerNA");
+        location.setLatitude(Latitude);
+        location.setLongitude(Longitude);
+
+
+        Log.i("tagCustomer", "Location  " + location);
+
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+
+        intent.putExtra(Constants.RECEIVER, resultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, location);
+        startService(intent);
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
 
     private void CalculateDistanceviaApi(TextView distancebetweencustomer_vendortext_widget) throws JSONException {
         //Log.i("Tag", "Latlangcal");
@@ -444,6 +958,15 @@ Button changeDeliveryPartner;
            e.printStackTrace();
        }
         new_to_pay_Amount = new_to_pay_Amount-couponDiscount;
+        double deliveryCharges_double=0;
+        try {
+            deliveryCharges_double = Double.parseDouble(deliveryCharges);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
+
         int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
 
         total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
@@ -454,13 +977,64 @@ Button changeDeliveryPartner;
 
     }
 
+    private class AddressResultReceiver extends ResultReceiver {
+
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            super.onReceiveResult(resultCode, resultData);
+            if (resultCode == Constants.SUCCESS_RESULT) {
+
+                Log.i("tagCustomer", "Address  " + resultData.getString(Constants.TotalLocationResult));
+                Log.i("tagCustomer", "AreaName  " + resultData.getString(Constants.AreaNameOfLocation));
+
+                //  Toast.makeText(MapActivity.this, "My Location Result :  " + resultData.getString(Constant.TotalLocationResult), Toast.LENGTH_LONG).show();
+                //  AreaName.setText(resultData.getString(Constants.AreaNameOfLocation));
+                googleAddress_textwidget.setText(resultData.getString(Constants.TotalLocationResult));
+                refresh_googleAddress_loadinganim_layout.setVisibility(View.GONE);
+                refresh_googleAddress_image_layout.setVisibility(View.VISIBLE);
+            } else {
+                Toast.makeText(Pos_OrderDetailsScreen.this, resultData.getString(Constants.TotalLocationResult), Toast.LENGTH_LONG).show();
+                googleAddress_textwidget.setText("Can't get Address");
+                refresh_googleAddress_loadinganim_layout.setVisibility(View.GONE);
+                refresh_googleAddress_image_layout.setVisibility(View.VISIBLE);
+
+            }
+        }
+    }
+
+
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
 
-        Intent i = new Intent(this, Pos_Dashboard_Screen.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
+        if(fromActivityName.equals("PosSearchOrders")) {
+            Intent i = new Intent(this, Pos_Orders_List.class);
+
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+
+        if(fromActivityName.equals("AppSearchOrders")) {
+            Intent i = new Intent(this, searchOrdersUsingMobileNumber.class);
+
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+
+
+        if(fromActivityName.equals("PosManageOrders")) {
+            Intent i = new Intent(this, Pos_Dashboard_Screen.class);
+
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+        else{
+            super.onBackPressed();
+
+        }
     }
 }
 

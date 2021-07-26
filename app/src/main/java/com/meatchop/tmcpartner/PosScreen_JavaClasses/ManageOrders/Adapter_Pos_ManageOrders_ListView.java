@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
+import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -315,7 +316,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 slotDate_linearLayout.setVisibility(View.GONE);
                 other_print_button_widget.setVisibility(View.VISIBLE);
-                    changeDeliveryPartner.setVisibility(View.GONE);
+                //    changeDeliveryPartner.setVisibility(View.GONE);
           //      generateTokenNo_text_widget.setVisibility(View.GONE);
             //    readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
             } else {
@@ -324,11 +325,13 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 slotDate_linearLayout.setVisibility(View.VISIBLE);
               //  generateTokenNo_text_widget.setVisibility(View.GONE);
                 //readyorder_generateTokenNo_button_widget.setVisibility(View.GONE);
-                    changeDeliveryPartner.setVisibility(View.VISIBLE);
+               //     changeDeliveryPartner.setVisibility(View.VISIBLE);
                     other_print_button_widget.setVisibility(View.VISIBLE);
 
                 }
-        }
+                changeDeliveryPartner.setVisibility(View.GONE);
+
+            }
         }
         catch (Exception e){
             e.printStackTrace();
@@ -479,6 +482,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     Intent intent = new Intent(mContext, Pos_OrderDetailsScreen.class);
                     Bundle bundle = new Bundle();
                     bundle.putParcelable("data", modal_manageOrders_pojo_class);
+                     bundle.putString("From","PosManageOrders");
+
+
                     intent.putExtras(bundle);
 
                     mContext.startActivity(intent);
@@ -523,7 +529,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
-
+                selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
                 selectedBillDetails.add(selectedOrder);
               //  OrderdItems_desp.clear();
                 generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails);
@@ -683,6 +689,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
+                selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -741,6 +748,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
+                selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -800,8 +808,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
-
+                selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
+
+
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -994,13 +1004,17 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.ordersList.get(i);
                     String Orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                     if(orderDetailsKey.equals(Orderdetailskey)){
-                       /*String usermobile = modal_manageOrders_pojo_class.getUsermobile();
-                        String ordertype = modal_manageOrders_pojo_class.getOrdertype().toUpperCase();
-                       if ((ordertype.equals(Constants.APPORDER))&&((!tokenNo.equals(""))||(!tokenNo.equals("null"))||(tokenNo.length()>0))) {
-                       //     SendTextMessagetoUserUsingApi(usermobile,tokenNo);
+                        try {
+                        //    String usermobile = modal_manageOrders_pojo_class.getUsermobile();
+                        //    String ordertype = modal_manageOrders_pojo_class.getOrderType().toUpperCase();
+                        //    if ((ordertype.equals(Constants.APPORDER)) && ((!tokenNo.equals("")) || (!tokenNo.equals("null")) || (tokenNo.length() > 0))) {
+                       //         SendTextMessagetoUserUsingApi(usermobile, tokenNo);
+                      //      }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
                         }
 
-                      */
                         modal_manageOrders_pojo_class.setTokenno(tokenNo);
                         pos_manageOrderFragment.showProgressBar(false);
                         notifyDataSetChanged();
@@ -1213,6 +1227,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         String SlotDate = "";
         String SlotTimeInRange ="";
         String DeliveryDistance ="";
+        String DeliveryAmount ="";
+        double totalSubtotalItem=0;
+        double totalSubtotalItemwithdiscount=0;
+        double totalSubtotalItemwithdiscountwithdeliverycharge=0;
+        double deliveryamount_double=0;
+
         try {
             payment_mode = manageOrders_pojo_class.getPaymentmode();
 
@@ -1232,6 +1252,15 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         }catch (Exception e ){
             e.printStackTrace();
         }
+
+
+        try {
+            DeliveryAmount = manageOrders_pojo_class.getDeliveryamount();
+
+        }catch (Exception e ){
+            e.printStackTrace();
+        }
+
 
        try{
            SlotDate = manageOrders_pojo_class.getSlotdate();
@@ -1344,6 +1373,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         marinades_manageOrders_pojo_class.ItemFinalPrice = " ";
 
                     }
+
 
 
 
@@ -1531,7 +1561,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         fullitemName = fullitemName.substring(0, 21);
                         fullitemName = fullitemName + "...";
                     }
-                    if (fullitemName.length() < 21) {
+                    if (fullitemName.length() <= 21) {
                         itemName = fullitemName;
 
                         fullitemName = fullitemName;
@@ -1547,7 +1577,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         itemName = fullitemName.substring(0, 21);
                         itemName = itemName + "...";
                     }
-                    if (fullitemName.length() < 21) {
+                    if (fullitemName.length() <= 21) {
                         itemName = fullitemName;
 
                     }
@@ -1677,7 +1707,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "+914445568499" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "4445568499" + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
@@ -1834,9 +1864,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, itemrate + subtotal + "\n\n");
         }
 
+
+
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
 
         String totalRate = "Rs." + Printer_POJO_ClassArraytotal.getTotalRate();
         String totalGst = "Rs." + Printer_POJO_ClassArraytotal.getTotalGST();
@@ -2044,6 +2079,89 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         double netTotalDouble =Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal());
         double CouponDiscount_doublee = Double.parseDouble(Printer_POJO_ClassArraytotal.getCouponDiscount());
         netTotalDouble = netTotalDouble-CouponDiscount_doublee;
+
+     try{
+         deliveryamount_double = Double.parseDouble(DeliveryAmount);
+     }
+     catch(Exception e){
+         e.printStackTrace();
+         deliveryamount_double =0;
+     }
+
+        if(deliveryamount_double>0) {
+            try{
+                netTotalDouble = netTotalDouble+deliveryamount_double;
+
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+
+
+            DeliveryAmount = "Rs."+DeliveryAmount;
+
+
+            if (DeliveryAmount.length() == 3) {
+                //26spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount                     " + DeliveryAmount;
+            }
+
+            if (DeliveryAmount.length() == 4) {
+                //25spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount                    " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 5) {
+                //25spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount                   " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 6) {
+                //23spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount                  " + DeliveryAmount;
+            }
+
+            if (DeliveryAmount.length() == 7) {
+                //22spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount                 " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 8) {
+                //21spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount                " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 9) {
+                //20spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount               " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 10) {
+                //19spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount              " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 11) {
+                //18spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount             " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 12) {
+                //17spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "  Delivery Amount            " + DeliveryAmount;
+            }
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, DeliveryAmount + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+        }
         String NetTotal ="Rs."+String.valueOf(netTotalDouble);
         if(NetTotal.length()==4){
             //27spaces
@@ -2131,11 +2249,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
             PrinterFunctions.SetLineSpacing(portName,portSettings,100);
             PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
-            PrinterFunctions. PrintText(portName,portSettings,0, 0,1,0,0, 0,30,0,"Notes : ");
+            PrinterFunctions. PrintText(portName,portSettings,0, 0,1,0,1, 0,30,0,"Notes : ");
 
 
             PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
-            PrinterFunctions. PrintText(portName,portSettings,0, 0,0,0,0, 0,0,0,notes+"  "+"\n");
+            PrinterFunctions. PrintText(portName,portSettings,0, 0,1,0,1, 0,0,0,notes+"  "+"\n\n");
 
 
             PrinterFunctions.SetLineSpacing(portName,portSettings,100);
