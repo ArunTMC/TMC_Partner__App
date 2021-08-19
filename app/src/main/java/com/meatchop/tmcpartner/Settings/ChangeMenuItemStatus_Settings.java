@@ -29,6 +29,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -81,6 +82,8 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.change_menu_item_status__settings_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
         subCtgyItem_spinner = findViewById(R.id.subCtgyItem);
@@ -91,7 +94,7 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
         itemAvailabilityCount_textWidget = findViewById(R.id.itemAvailabilityCount_textWidget);
         Adjusting_Widgets_Visibility(true);
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-        vendorkey = (shared.getString("VendorKey", "vendor_1"));
+        vendorkey = (shared.getString("VendorKey", ""));
         UserPhoneNumber =  (shared.getString("UserPhoneNumber", ""));
         getMenuItemArrayFromSharedPreferences();
 

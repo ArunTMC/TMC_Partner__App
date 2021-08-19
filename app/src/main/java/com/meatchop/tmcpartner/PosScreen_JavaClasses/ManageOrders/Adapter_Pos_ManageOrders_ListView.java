@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
@@ -62,6 +64,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     String deliverytype="",changestatusto,orderStatus,OrderKey,orderStatusfromArray,tokenNO;
     String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay;
     public Pos_ManageOrderFragment pos_manageOrderFragment;
+
+
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
+
+
     public Adapter_Pos_ManageOrders_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_ManageOrderFragment pos_manageOrderFragment, String orderStatus) {
         super(mContext, R.layout.pos_manageorders_listview_child, ordersList);
         this.pos_manageOrderFragment=pos_manageOrderFragment;
@@ -142,8 +152,13 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         final TextView ready_for_pickup_delivered_button_widget =listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
 
         final TextView changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
 
+        StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (shared.getString("VendorPincode", ""));
+        StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
         //Log.i("Tag","Order Pos:   "+ Pos_ManageOrderFragment.sorted_OrdersList.get(pos));
@@ -389,6 +404,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
             String itemDesp="";
+            String subCtgyKey ="";
 
             for(int i=0; i < array.length(); i++) {
                 JSONObject json = array.getJSONObject(i);
@@ -398,12 +414,50 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     String marinadeitemName = String.valueOf(marinadesObject.get("itemname"));
 
 
-
+                    try {
+                        if(marinadesObject.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(marinadesObject.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
                     itemName = itemName + " Marinade Box ";
                     if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+ "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+"Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
+
+                        }
+                    } else {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName, quantity);
+
+                        }
+
+                    }
+                  /*  if (itemDesp.length()>0) {
 
                         itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
                     } else {
@@ -411,19 +465,62 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                     }
 
+                   */
+
 
                 } else {
 
                     //Log.i("tag", "array.lengrh(i" + json.length());
-
+                    try {
+                        if(json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
-                    if (itemDesp.length()>0) {
+                  /*  if (itemDesp.length()>0) {
 
                         itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
                     } else {
                         itemDesp = String.format("%s * %s", itemName, quantity);
+
+                    }
+
+                   */
+
+                    if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+
+                        }
+                    } else {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s * %s",  "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s * %s", itemName, quantity);
+
+                        }
 
                     }
                     //Log.i("tag", "array.lengrh(i" + json.length());
@@ -1652,11 +1749,28 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Orderid : "+orderid + "\n");
 
+            if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                fullitemName = "Grill House "+fullitemName;
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
 
+            }
+            else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                fullitemName = "Ready to Cook "+fullitemName;
+
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName  + "\n");
+
+            }
+            else  {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
+
+            }
             PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Grossweight : "+ grossweight + "\n");
@@ -1672,7 +1786,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
@@ -1692,22 +1806,22 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "4445568499" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
@@ -1857,7 +1971,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             }
 
 
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+
+
+
+
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);

@@ -179,9 +179,61 @@
                     android:fontFamily="@font/open_sans_semibold"
                     android:gravity="center_vertical"
                     android:layout_marginStart="13dp"
-                    android:text="Items Report" />
+                    android:text="Items Report :-  " />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical"
+                    android:text=" ( " />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="16sp"
+                    android:id="@+id/noofOrders"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:gravity="center_vertical"
+                    android:text="0" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical"
+                    android:text=" - Orders )," />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical"
+                    android:text=" ( " />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="16sp"
+                    android:id="@+id/noofPacks"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:gravity="center_vertical"
+                    android:text="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical"
+                    android:text=" - Packs )." />
             </LinearLayout>
             <ScrollView
                 android:layout_width="match_parent"

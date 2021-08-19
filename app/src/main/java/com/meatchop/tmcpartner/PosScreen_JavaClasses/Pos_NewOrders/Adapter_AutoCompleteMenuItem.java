@@ -317,6 +317,7 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
     private void    convertMenuStringtoJson(String menulist) {
         try {
             //converting jsonSTRING into array
+            String tmcsubctgykey="";;
             JSONObject jsonObject = new JSONObject(menulist);
             JSONArray JArray  = jsonObject.getJSONArray("content");
             //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
@@ -330,7 +331,45 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                 try {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
-                    newOrdersPojoClass.itemname =String.valueOf(json.get("itemname"));
+                    if(json.has("tmcsubctgykey")){
+                        newOrdersPojoClass.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
+                        tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
+                    }
+                    else{
+                        newOrdersPojoClass.tmcsubctgykey = "0";
+                        tmcsubctgykey = "0";
+                        //Log.i("Tag", "TMC tmcsubctgykey Json is Missing"+ String.valueOf(newOrdersPojoClass.getTmcsubctgykey()));
+                        Toast.makeText(context,"TMC tmcsubctgykey Json is Missing",Toast.LENGTH_LONG).show();
+
+                    }
+
+                    if(json.has("itemname")){
+
+                        if(tmcsubctgykey.equals("tmcsubctgy_16")){
+                           // ItemName =  "Grill House "+String.valueOf(json.get("itemname"));
+
+                            newOrdersPojoClass.itemname = "Grill House "+String.valueOf(json.get("itemname"));
+                        }
+                        else if(tmcsubctgykey.equals("tmcsubctgy_15")){
+                          //  ItemName =  "Ready to Cook "+String.valueOf(json.get("itemname"));
+
+                            newOrdersPojoClass.itemname = "Ready to Cook "+String.valueOf(json.get("itemname"));
+                        }
+                        else{
+                           // ItemName =  String.valueOf(json.get("itemname"));
+
+                            newOrdersPojoClass.itemname = String.valueOf(json.get("itemname"));
+
+                        }
+
+                    }
+                    else{
+                        newOrdersPojoClass.itemname = "Item Name is Missing";
+                        Toast.makeText(context,"TMC itemname Json is Missing",Toast.LENGTH_LONG).show();
+
+                    }
+
+                  //  newOrdersPojoClass.itemname =String.valueOf(json.get("itemname"));
                     newOrdersPojoClass.tmcpriceperkg =String.valueOf(json.get("tmcpriceperkg"));
                     newOrdersPojoClass.grossweight =String.valueOf(json.get("grossweight"));
                     newOrdersPojoClass.netweight =String.valueOf(json.get("netweight"));
@@ -341,15 +380,9 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                     newOrdersPojoClass.itemuniquecode =String.valueOf(json.get("itemuniquecode"));
                     newOrdersPojoClass.menuItemId =String.valueOf(json.get("key"));
                     newOrdersPojoClass.discountpercentage ="0";
-                    if(json.has("tmcsubctgykey")){
-                        newOrdersPojoClass.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
 
-                    }
-                    else{
-                        newOrdersPojoClass.tmcsubctgykey = "0";
-                        Toast.makeText(context,"TMC tmcsubctgykey Json is Missing",Toast.LENGTH_LONG).show();
 
-                    }
+
                     //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                     menuListFull.add(newOrdersPojoClass);
 

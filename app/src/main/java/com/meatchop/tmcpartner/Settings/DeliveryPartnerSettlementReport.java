@@ -43,6 +43,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.R;
@@ -137,6 +138,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.delivery_partner_settlement_report_activity);
+
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         deliveryPartnerSelectionSpinner = findViewById(R.id.deliveryPartnerSelectionSpinner);
         deliveryPartner_arrayList=new ArrayList<>();
 
@@ -217,7 +221,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 MODE_PRIVATE);
 
 
-        vendorKey = sh.getString("VendorKey","vendor_1");
+        vendorKey = sh.getString("VendorKey","");
 
         getVendorwiseDeliveryPartner();
         try {
@@ -677,7 +681,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;
@@ -2729,10 +2733,11 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     private void addFinalPaymentAmountDetails(List<String> paymentModeArray, HashMap<String, Modal_OrderDetails> paymentModeHashmap, List<String> OrderIdCount) {
         FinalBill_hashmap.clear();
         finalBillDetails.clear();
-        if(paymentModeArray.size()<=0){
+        if(paymentModeArray.size()<=0&&preorder_paymentModeArray.size()<=0){
             delivered_OrderIdCount.clear();
             OrderIdCount.clear();
         }
+
         totalOrdersCount.setText(String.valueOf(OrderIdCount.size()));
         totaldeliveredOrdersCount.setText(String.valueOf(delivered_OrderIdCount.size()));
         DecimalFormat decimalFormat = new DecimalFormat("0.00");

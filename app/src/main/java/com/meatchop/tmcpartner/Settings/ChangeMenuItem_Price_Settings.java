@@ -24,6 +24,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONException;
@@ -64,7 +65,8 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.change_menu_item__price__settings_activity);
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         saveDetails = findViewById(R.id.saveDetails);
         selling_price_text_widget = findViewById(R.id.selling_price_text_widget);

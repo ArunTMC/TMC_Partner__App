@@ -45,6 +45,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
@@ -121,6 +122,8 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.generate_order_details_dump_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         switchfor_singleDayDump = findViewById(R.id.switchfor_singleDayDump);
         daysCountSpinner = (Spinner) findViewById(R.id.daysCountSpinner);
@@ -169,7 +172,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         }
         try{
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-            vendorKey = (shared.getString("VendorKey", "vendor_1"));
+            vendorKey = (shared.getString("VendorKey", ""));
             vendorname = (shared.getString("VendorName", ""));
             DisplayMetrics dm = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(dm);

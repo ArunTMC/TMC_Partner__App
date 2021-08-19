@@ -45,6 +45,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
@@ -78,8 +79,8 @@ import java.util.Objects;
 public class PosSalesReport extends AppCompatActivity {
     LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView dunzoSales,swiggySales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorKey;
+    TextView vendorName,dunzoSales,swiggySales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String vendorKey,vendorname;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
@@ -143,12 +144,18 @@ public class PosSalesReport extends AppCompatActivity {
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
-
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pos_sales_report);
         getMenuItemArrayFromSharedPreferences();
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
+        vendorName = findViewById(R.id.vendorName);
 
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
@@ -218,12 +225,20 @@ public class PosSalesReport extends AppCompatActivity {
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
 
-        vendorKey = sharedPreferences.getString("VendorKey", "vendor_1");
+        vendorKey = sharedPreferences.getString("VendorKey", "");
+        vendorname = sharedPreferences.getString("VendorName", "");
+
+        StoreAddressLine1 = (sharedPreferences.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (sharedPreferences.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
+        StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
+
+
         CurrentDate = getDate();
         DateString= getDate();
 
         dateSelector_text.setText(CurrentDate);
-
+        vendorName.setText(vendorname);
 
         getOrderForSelectedDate(CurrentDate, vendorKey);
         getTmcSubCtgyList(vendorKey);
@@ -367,25 +382,25 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
             //Log.i("tag", "The Meat Chop");
 
-
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
-
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
+
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
@@ -1095,7 +1110,6 @@ public class PosSalesReport extends AppCompatActivity {
         tmcSubCtgywise_sorted_hashmap.clear();
         phoneOrderpaymentModeArray.clear();
         phoneOrderpaymentModeHashmap.clear();
-
         paymentMode_DiscountHashmap.clear();
         paymentMode_DiscountOrderid.clear();
         phoneOrderpaymentMode_DiscountOrderid.clear();
@@ -1155,10 +1169,7 @@ public class PosSalesReport extends AppCompatActivity {
                                     }
                                     else
                                     {
-
-                                        //Log.d(Constants.TAG, "There is no itemdesp: " );
-
-
+                                      //Log.d(Constants.TAG, "There is no itemdesp: " );
                                     }
 
                                     if(json.has("orderid")) {
@@ -1230,7 +1241,8 @@ public class PosSalesReport extends AppCompatActivity {
                                     }
 
 
-                                    if((ordertype.equals(Constants.POSORDER))){
+                                    if((ordertype.equals(Constants.POSORDER)))
+                                    {
                                         try{
                                             if (json.has("coupondiscount")) {
 
@@ -1814,7 +1826,7 @@ public class PosSalesReport extends AppCompatActivity {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
 
                 return params;
             }
@@ -2380,7 +2392,7 @@ public class PosSalesReport extends AppCompatActivity {
                             if (menuItemId.equals(menuitemidd)) {
                                 isItemFoundinMenu =true;
 
-                                if ((!reportname.equals(""))&&(!reportname.equals("null"))) {
+                                if ((!reportname.equals(""))&&(!reportname.equals("null"))&&(!reportname.equals("\r"))) {
                                     modal_orderDetails_ItemDesp.itemname = String.valueOf(reportname);
                                   //  itemname = String.valueOf(reportname);
                                 }

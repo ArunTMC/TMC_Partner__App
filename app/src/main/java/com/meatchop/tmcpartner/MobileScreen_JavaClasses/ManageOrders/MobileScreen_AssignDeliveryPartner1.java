@@ -16,6 +16,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.R;
 
@@ -37,6 +38,8 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_screen__assign_delivery_partner1);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         deliveryPartners_list_widget = findViewById(R.id.deliveryPartners_list_widget);
         deliveryPartnerList = new ArrayList<>();
         orderKey = getIntent().getStringExtra("TrackingTableKey");
@@ -171,7 +174,7 @@ public class MobileScreen_AssignDeliveryPartner1 extends AppCompatActivity {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 //params.put("orderplacedtime", "12/26/2020");
 
                 return params;

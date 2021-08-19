@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 
 import java.text.MessageFormat;
@@ -35,6 +36,8 @@ ArrayList<String> tokenNo;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.token_no_showing_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         itemname = findViewById(R.id.itemname);
         tokennoListview = findViewById(R.id.tokennoListview);
         itemquantity = findViewById(R.id.itemquantity);

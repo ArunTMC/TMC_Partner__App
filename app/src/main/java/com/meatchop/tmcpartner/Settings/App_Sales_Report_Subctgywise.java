@@ -43,6 +43,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
@@ -77,12 +78,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     LinearLayout PrintReport_Layout, generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
     TextView deliveryChargeAmount_textwidget,totalSales_headingText, cashSales, cardSales, upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorKey;
+    String vendorKey,vendorname;
     String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf, finalPaytmAmount_pdf;
     String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf;
     Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
     TextView Phonepe, Razorpay, Paytm, cashOnDelivery;
-    TextView appOrdersCount_textwidget, preorder_cashOnDelivery, preorder_Phonepe, preorder_Razorpay, preorder_paytmSales;
+    TextView vendorName,appOrdersCount_textwidget, preorder_cashOnDelivery, preorder_Phonepe, preorder_Razorpay, preorder_paytmSales;
 
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
@@ -148,12 +149,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     ScrollView scrollView;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
-
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app__sales__report__subctgywise);
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
+        vendorName = findViewById(R.id.vendorName);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         posSalesReport_Listview = findViewById(R.id.posSalesReport_Listview);
@@ -211,11 +217,18 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
 
-        vendorKey = sharedPreferences.getString("VendorKey", "vendor_1");
+        vendorKey = sharedPreferences.getString("VendorKey", "");
+        vendorname = sharedPreferences.getString("VendorName", "");
+        StoreAddressLine1 = (sharedPreferences.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (sharedPreferences.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
+        StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
+
         CurrentDate = getDate();
         DateString = getDate();
 
         dateSelector_text.setText(CurrentDate);
+        vendorName.setText(vendorname);
 
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
@@ -387,25 +400,24 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
                 //Log.i("tag", "The Meat Chop");
 
-
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
-
-
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "9698137713" + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
 
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
@@ -1076,7 +1088,12 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             try {
                                                 modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                                 slotname = String.valueOf(json.get("slotname")).toUpperCase();
-                                                //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
+
+                                                if(slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME)){
+                                                    Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("slotname")));
+
+                                                }
+
 
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -1091,7 +1108,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                                         }
 
-                                        if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME) )) {
+                                        if ((ordertype.equals(Constants.APPORDER)) && ((slotname.equals(Constants.PREORDER_SLOTNAME) )|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME)))) {
                                             if (json.has("paymentmode")) {
 
                                                 try {
@@ -1355,9 +1372,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                                                 try {
-
-
-                                                    if ((ordertype.equals(Constants.APPORDER)) && (slotname.equals(Constants.PREORDER_SLOTNAME)) ) {
+                                                    if ((ordertype.equals(Constants.APPORDER)) && ((slotname.equals(Constants.PREORDER_SLOTNAME) )|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME)))) {
                                                         getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
                                                     } else {
                                                         //Log.d(Constants.TAG, "This order is not an Apporder e: ");
@@ -2031,7 +2046,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         }
 
                         else{
-                            Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                            Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Express Delivery On this Date ", Toast.LENGTH_LONG).show();
                             Adjusting_Widgets_Visibility(false);
                             Order_Item_List.clear();
                             OrderItem_hashmap.clear();
@@ -2067,7 +2082,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Express Delivery On this Date  ", Toast.LENGTH_LONG).show();
                 Adjusting_Widgets_Visibility(false);
                 Adjusting_Widgets_Visibility(false);
 
@@ -2092,7 +2107,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 }
 
                 else{
-                    Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(App_Sales_Report_Subctgywise.this, "There is no Express Delivery On this Date ", Toast.LENGTH_LONG).show();
                     Adjusting_Widgets_Visibility(false);
                     Order_Item_List.clear();
                     OrderItem_hashmap.clear();
@@ -3314,7 +3329,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-                        if(slotname.equals(Constants.PREORDER_SLOTNAME)){
+                        if ((slotname.equals(Constants.PREORDER_SLOTNAME) )|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME))) {
                             if(paymentMode.equals(Constants.PAYTM)){
                                 double payment_tmcprice=0,payment_gstamount=0;
                                 if(!preorder_paymentModeArray.contains(paymentMode)) {
@@ -3846,7 +3861,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
-                    if(slotname.equals(Constants.PREORDER_SLOTNAME)) {
+                    if ((slotname.equals(Constants.PREORDER_SLOTNAME) )|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME))) {
 
 
                         if (paymentMode.equals(Constants.PAYTM)) {

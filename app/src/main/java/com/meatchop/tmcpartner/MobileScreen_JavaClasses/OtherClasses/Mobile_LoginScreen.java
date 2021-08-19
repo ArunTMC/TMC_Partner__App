@@ -21,6 +21,7 @@ import com.amazonaws.mobile.client.results.SignInResult;
 import com.amazonaws.mobile.client.results.SignUpResult;
 import com.amazonaws.mobile.client.results.UserCodeDeliveryDetails;
 import com.meatchop.tmcpartner.AlertDialogClass;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -38,7 +39,8 @@ public class Mobile_LoginScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mobile__login_screen_activity);
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         findViewById(R.id.sendOtp_button);
         Button sendOtp_button;
         login_mobileNo_Text = findViewById(R.id.login_mobileNo_Text);

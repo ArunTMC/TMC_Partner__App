@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="560dp"
+
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_bold"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:textSize="19sp"
+            android:text="Orderid :" />
+
+        <TextView
+            android:id="@+id/orderid_text_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Orange"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textSize="19sp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:text="TextView" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_bold"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:textSize="19sp"
+            android:text="Payment Mode : " />
+
+        <TextView
+            android:id="@+id/paymentMode_textwidget"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Orange"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textSize="19sp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:text="TextView" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_bold"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:textSize="19sp"
+            android:text="Bill Amount : (Rs)" />
+
+        <TextView
+            android:id="@+id/totalAmount_textwidget"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Orange"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textSize="19sp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:text="TextView" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginTop="5dp"
+
+        android:background="@drawable/border_line" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_bold"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="6"
+
+            android:textSize="22sp"
+            android:text="Uploaded Image : " />
+        <Button
+            android:id="@+id/rotateImage_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="15dp"
+            android:backgroundTint="@color/TMC_Orange"
+            android:text="Rotate Image" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/display_uploadedscreenshot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="40dp"
+        tools:srcCompat="@tools:sample/avatars" />
+
+
+</LinearLayout>

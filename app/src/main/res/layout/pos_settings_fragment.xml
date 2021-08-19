@@ -337,7 +337,25 @@
                 </LinearLayout>
 
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/slotwiseAppOrderList"
+                    android:visibility="visible"
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/slotAppOrdersList"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -591,25 +609,7 @@
 
                         />
                 </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:gravity="center_vertical"
-                    android:id="@+id/slotwiseAppOrderList"
-                    android:visibility="visible"
-                    android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:text="@string/slotAppOrdersList"
-                        android:textSize="16sp"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:fontFamily="@font/open_sans_semibold"
-
-                        />
-                </LinearLayout>
 
 
 
@@ -923,7 +923,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-
+                    android:id="@+id/mobilePrinterConnectLayout"
                     android:gravity="center_vertical"
                     >
 

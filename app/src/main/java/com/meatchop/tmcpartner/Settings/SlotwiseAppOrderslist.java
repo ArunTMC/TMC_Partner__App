@@ -28,6 +28,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
@@ -90,6 +91,8 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_slotwise_app_orderslist);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         appOrdersPacksCount_textwidget = findViewById(R.id.appOrdersPacksCount_textwidget);
@@ -169,7 +172,7 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                     = getSharedPreferences("VendorLoginData",
                     MODE_PRIVATE);
 
-            vendorKey = sharedPreferences.getString("VendorKey", "vendor_1");
+            vendorKey = sharedPreferences.getString("VendorKey", "");
 
         }
         catch (Exception e ){
@@ -347,7 +350,7 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                 @Override
                 public Map<String, String> getParams() throws AuthFailureError {
                     final Map<String, String> params = new HashMap<>();
-                    params.put("vendorkey", "vendor_1");
+                    params.put("vendorkey", vendorKey);
                     params.put("orderplacedtime", "11 Jan 2021");
 
                     return params;
@@ -527,17 +530,6 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                     JSONObject itemdespjson = jsonArray.getJSONObject(i);
                                     String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "",weight="";
                                     try {
-                                        if (itemdespjson.has("itemname")) {
-                                            itemName = itemdespjson.getString("itemname");
-                                        } else {
-                                            itemName = "";
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        itemName = "";
-                                    }
-
-                                    try {
 
                                         if (itemdespjson.has("tmcsubctgykey")) {
                                             tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
@@ -548,6 +540,31 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                         e.printStackTrace();
                                         tmcSubCtgyKey = "";
                                     }
+                                    try {
+                                        if (itemdespjson.has("itemname")) {
+                                            if(tmcSubCtgyKey.equals("tmcsubctgy_16")){
+                                                //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                               itemName = "Grill House "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                            }
+                                            else  if(tmcSubCtgyKey.equals("tmcsubctgy_15")){
+                                                // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                                itemName = "Ready to Cook "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                            }
+                                            else{
+                                                itemName = itemdespjson.getString("itemname");
+
+                                            }
+                                        } else {
+                                            itemName = "";
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        itemName = "";
+                                    }
+
+
                                     try {
 
                                         if (itemdespjson.has("quantity")) {
@@ -911,8 +928,32 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                         JSONObject itemdespjson = jsonArray.getJSONObject(i);
                                         String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "", weight = "";
                                         try {
+
+                                            if (itemdespjson.has("tmcsubctgykey")) {
+                                                tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                            } else {
+                                                tmcSubCtgyKey = "";
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            tmcSubCtgyKey = "";
+                                        }
+                                        try {
                                             if (itemdespjson.has("itemname")) {
-                                                itemName = itemdespjson.getString("itemname");
+                                                if(tmcSubCtgyKey.equals("tmcsubctgy_16")){
+                                                    //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                                    itemName = "Grill House "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                                }
+                                                else  if(tmcSubCtgyKey.equals("tmcsubctgy_15")){
+                                                    // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                                    itemName = "Ready to Cook "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                                }
+                                                else{
+                                                    itemName = itemdespjson.getString("itemname");
+
+                                                }
                                             } else {
                                                 itemName = "";
                                             }

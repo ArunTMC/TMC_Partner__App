@@ -151,6 +151,24 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
                             newOrders_menuItem_fragment.add_amount_ForBillDetails();
                            try {
+                               if(recylerviewPojoClass.getGrossweight().equals("")){
+                                   if (recylerviewPojoClass.getNetweight().equals("")) {
+
+                                       holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getPortionsize()));
+
+                                   }
+                                   else{
+                                       holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getNetweight()));
+
+                                   }
+                               }
+                               else{
+                                   holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
+
+                               }
+
+
+                               /*
                                if (recylerviewPojoClass.getPortionsize().equals("")) {
                                    if (recylerviewPojoClass.getNetweight().equals("")) {
                                        holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
@@ -163,10 +181,12 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                } else {
                                    holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getPortionsize()));
                                }
+
+                                */
                            }
                            catch (Exception e){
                                //Log.e("TAG", "Cant set itemweight/portionsize in recycler adapter");
-
+                                e.printStackTrace();
                            }
 
                         } else if (pricetype_of_pos.equals("tmcpriceperkg")) {

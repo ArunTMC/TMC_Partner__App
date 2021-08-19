@@ -20,6 +20,7 @@ import com.amazonaws.mobile.client.Callback;
 import com.amazonaws.mobile.client.UserStateDetails;
 import com.amazonaws.mobile.client.results.SignInResult;
 import com.meatchop.tmcpartner.AlertDialogClass;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -39,6 +40,8 @@ public class MobileScreen_OtpVerificationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mobile_screen__otp_verification_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         edOtp1 = findViewById(R.id.otp_first_et);
         edOtp2 = findViewById(R.id.otp_second_et);
         edOtp3 = findViewById(R.id.otp_third_et);

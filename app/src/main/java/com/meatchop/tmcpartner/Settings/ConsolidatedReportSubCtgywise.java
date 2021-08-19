@@ -45,6 +45,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
@@ -78,8 +79,8 @@ import java.util.Objects;
 public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     LinearLayout generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView deliveryChargeAmount_textwidget,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorKey, ordertype, slotname, DateString;
+    TextView noofOrders,noofPacks,vendorName, deliveryChargeAmount_textwidget,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String vendorKey, vendorname,ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     double screenInches;
@@ -123,7 +124,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     boolean isgetPreOrderForSelectedDateCalled = false;
     boolean isgetOrderForSelectedDateCalled = false;
 
-
+    int no_of_orders=0;
+    int no_of_ItemCount=0;
     ScrollView scrollView;
     double itemDespTotalAmount = 0;
     String CurrentDate, CouponDiscout, pos_CouponDiscount,Swiggy_CouponDiscount,Dunzo_CouponDiscount,PhoneOrder_CouponDiscount, PreviousDateString,deliveryamount;
@@ -131,13 +133,18 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
-
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consolidated_report_sub_ctgywise);
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         getMenuItemArrayFromSharedPreferences();
+        vendorName = findViewById(R.id.vendorName);
 
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
@@ -155,6 +162,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         dunzoSales = findViewById(R.id.dunzoSales);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
         scrollView = findViewById(R.id.scrollView);
+        noofPacks = findViewById(R.id.noofPacks);
+        noofOrders = findViewById(R.id.noofOrders);
         deliveryChargeAmount_textwidget = findViewById(R.id.deliveryChargeAmount_textwidget);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
@@ -192,6 +201,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
         tmcSubCtgykey.clear();
+        no_of_ItemCount=0;
+        no_of_orders=0;
+
+
+
+
+
+
+
+        
+
 
         CurrentDate = getDate_and_time();
         dateSelector_text.setText(CurrentDate);
@@ -206,6 +226,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 MODE_PRIVATE);
 
         vendorKey = sharedPreferences.getString("VendorKey", "");
+        vendorname = sharedPreferences.getString("VendorName", "");
+
+        StoreAddressLine1 = (sharedPreferences.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (sharedPreferences.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
+        StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
+
+        vendorName.setText(vendorname);
+
         DateString = getDate_and_time();
         PreviousDateString = getDatewithNameofthePreviousDay();
 
@@ -233,6 +262,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             tmcSubCtgykey.clear();
             deliveryCharge_hashmap.clear();
             deliveryChargeOrderidArray.clear();
+            no_of_ItemCount=0;
+            no_of_orders=0;
             getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
         } catch (Exception e) {
@@ -347,7 +378,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         deliveryCharge_hashmap.clear();
         deliveryChargeOrderidArray.clear();
         dataList.clear();
-
+        no_of_ItemCount=0;
+        no_of_orders=0;
         final Calendar cldr = Calendar.getInstance();
         int day = cldr.get(Calendar.DAY_OF_MONTH);
         int month = cldr.get(Calendar.MONTH);
@@ -383,6 +415,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             dunzoOrders_couponDiscountOrderidArray.clear();
                             deliveryCharge_hashmap.clear();
                             deliveryChargeOrderidArray.clear();
+                            no_of_ItemCount=0;
+                            no_of_orders=0;
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear + 1);
                             String datestring = String.valueOf(dayOfMonth);
@@ -490,7 +524,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                             modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                             orderid =  String.valueOf(json.get("orderid"));
                                             //Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
-
+                                            no_of_orders++;
                                         }catch (Exception e){
                                             e.printStackTrace();
 
@@ -643,7 +677,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                             }
 
 
-                                            if ((slotname.equals(Constants.PREORDER_SLOTNAME))||slotname.equals("")) {
+                                            if ((slotname.equals(Constants.PREORDER_SLOTNAME))|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME))) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -679,7 +713,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                             }
 
-                                            else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
+                                            else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) ||slotname.equals("") || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -957,6 +991,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             tmcSubCtgykey.clear();
                             deliveryCharge_hashmap.clear();
                             deliveryChargeOrderidArray.clear();
+                            no_of_ItemCount=0;
+                            no_of_orders=0;
                             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -1028,7 +1064,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     SubCtgywiseTotalHashmap.clear();
                     dataList.clear();
                     tmcSubCtgykey.clear();
-
+                    no_of_ItemCount=0;
+                    no_of_orders=0;
                     deliveryCharge_hashmap.clear();
                     deliveryChargeOrderidArray.clear();
                     ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
@@ -1103,7 +1140,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                 if (json.has("menuitemid")) {
                     menuitemidd = String.valueOf(json.get("menuitemid"));
-
+                    no_of_ItemCount++;
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
                     try {
                         try {
@@ -1115,7 +1152,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                 if (menuItemId.equals(menuitemidd)) {
                                     isItemFoundinMenu =true;
 
-                                    if ((!reportname.equals(""))&&(!reportname.equals("null"))) {
+                                    if ((!reportname.equals(""))&&(!reportname.equals("null"))&&(!reportname.equals("\r"))) {
                                         modal_orderDetails_ItemDesp.itemname = String.valueOf(reportname);
                                         itemname = String.valueOf(reportname);
                                     }
@@ -1202,6 +1239,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                         try {
                             quantity = Integer.parseInt(String.valueOf(json.get("quantity")));
+                            if(quantity>1){
+                                no_of_ItemCount = (no_of_ItemCount-1);
+                                no_of_ItemCount = (no_of_ItemCount+quantity);
+                            }
                             quantityString =String.valueOf(json.get("quantity"));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -1222,6 +1263,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     if (json.has("marinadeitemdesp")) {
                         //Log.i(Constants.TAG, "There is  Marinade ItemDesp  ");
                         Modal_OrderDetails marinade_modal_orderDetails_ItemDesp = new Modal_OrderDetails();
+                        no_of_ItemCount++;
 
                         double marinadesObjectquantity = 1, marinadesObjectgstAmount = 0, marinadesObjectpayableAmount = 0;
                         JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
@@ -1245,8 +1287,19 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         }
                         if (marinadesObject.has("quantity")) {
                             try {
+                                int marinadequantityInt=0;
                                 marinadesObjectquantity = Double.parseDouble(String.valueOf(json.get("quantity")));
-
+                                try{
+                                    marinadequantityInt = Integer.parseInt(String.valueOf(json.get("quantity")));
+                                }
+                                catch (Exception e){
+                                    marinadequantityInt = Integer.parseInt(String.valueOf((int)marinadesObjectquantity));
+                                    e.printStackTrace();
+                                }
+                                if(marinadesObjectquantity>1){
+                                    no_of_ItemCount = (no_of_ItemCount-1);
+                                    no_of_ItemCount = (no_of_ItemCount+marinadequantityInt);
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -2347,7 +2400,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                 }
             }
-
+            noofOrders.setText(String.valueOf(no_of_orders));
+            noofPacks.setText(String.valueOf(no_of_ItemCount));
 
 
 /*

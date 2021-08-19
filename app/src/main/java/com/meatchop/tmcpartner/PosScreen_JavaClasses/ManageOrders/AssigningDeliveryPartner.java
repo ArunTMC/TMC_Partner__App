@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
@@ -30,13 +32,15 @@ import java.util.Map;
 public class AssigningDeliveryPartner extends AppCompatActivity {
 ListView deliveryPartners_list_widget;
 List<AssignDeliveryPartner_PojoClass>deliveryPartnerList;
-String vendorKey="vendor_1",orderKey;
+String vendorKey,orderKey,vendorname;
 private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItemWisereport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.assigning_delivery_partner_activity1);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         loadingPanel_dailyItemWisereport = findViewById(R.id.loadingPanel_dailyItemWisereport);
         loadingpanelmask_dailyItemWisereport = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
@@ -44,6 +48,9 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
 
         deliveryPartners_list_widget=findViewById(R.id.deliveryPartners_list_widget);
         deliveryPartnerList = new ArrayList<>();
+        SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        vendorKey = (shared.getString("VendorKey", ""));
+        vendorname = (shared.getString("VendorName", ""));
         orderKey = getIntent().getStringExtra("TrackingTableKey");
         getDeliveryPartnerList();
     }
@@ -123,7 +130,7 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey",  vendorKey);
                 //params.put("orderplacedtime", "12/26/2020");
 
                 return params;

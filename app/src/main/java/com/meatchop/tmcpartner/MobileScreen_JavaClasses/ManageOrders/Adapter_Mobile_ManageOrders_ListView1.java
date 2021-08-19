@@ -428,7 +428,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
             String itemDesp="";
-
+            String subCtgyKey ="";
 
             for(int i=0; i < array.length(); i++) {
                 JSONObject json = array.getJSONObject(i);
@@ -437,18 +437,47 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                     JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
 
                     String marinadeitemName = String.valueOf(marinadesObject.get("itemname"));
-
-
-
+                    try {
+                        if(marinadesObject.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(marinadesObject.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
                     itemName = itemName + " Marinade Box ";
                     if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+ "Grill House "+ itemName, quantity);
 
-                        itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+"Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
+
+                        }
                     } else {
-                        itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName, quantity);
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName, quantity);
+
+                        }
 
                     }
 
@@ -457,10 +486,49 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 } else {
 
                     //Log.i("tag", "array.lengrh(i" + json.length());
-
+                    try {
+                        if(json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
+                    if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+
+                        }
+                    } else {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s * %s",  "Grill House "+ itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+ itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s * %s", itemName, quantity);
+
+                        }
+
+                    }
+                    /*
                     if (itemDesp.length()>0) {
 
                         itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
@@ -468,6 +536,9 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                         itemDesp = String.format("%s * %s", itemName, quantity);
 
                     }
+
+                     */
+
 
             //        orderDetails_text_widget.setText(String.format(itemDesp));
                     //Log.i("tag", "array.lengrh(i" + json.length());

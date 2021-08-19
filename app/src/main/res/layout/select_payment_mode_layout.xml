@@ -2,13 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="100dp"
+    android:padding="10dp"
 
     android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="90dp"
 
+        android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:padding="90dp"
+
+        android:id="@+id/paymentMode_selectionLayout"
+        android:orientation="vertical">
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+
         >
 
         <LinearLayout
@@ -60,4 +74,191 @@
                 android:text="Paid Via Upi" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="680dp"
+        android:layout_height="match_parent"
+        android:id="@+id/balanceAmountCalculate_Layout"
+        android:padding="40dp"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+
+            android:orientation="horizontal">
+
+            <TextView
+            android:layout_width="350dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:layout_marginEnd="15dp"
+            android:gravity="center_vertical"
+               android:fontFamily="@font/open_sans_bold"
+                android:textSize="22sp"
+            android:text="Total Billing Amount"/>
+
+            <TextView
+                android:id="@+id/totalbillAmount"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:layout_marginEnd="6dp"
+                android:fontFamily="@font/open_sans_bold"
+                android:textSize="22sp"
+                android:gravity="center"
+            android:text="0"/>
+
+
+            <TextView
+            android:layout_width="wrap_content"
+                android:gravity="center_vertical"
+            android:layout_height="match_parent"
+                android:fontFamily="@font/open_sans_semibold"
+                android:textSize="22sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:text="rs"/>
+    </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="350dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:layout_marginEnd="15dp"
+                android:fontFamily="@font/open_sans_bold"
+                android:textSize="22sp"
+                android:gravity="center_vertical"
+                android:text="Amount Given by Customer"/>
+
+
+            <EditText
+                android:id="@+id/amount_Recieved_EditText"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="6dp"
+                android:fontFamily="@font/open_sans_bold"
+                android:gravity="center"
+                android:hint="0"
+                android:inputType="number"
+                android:text=""
+                android:digits="0123456789"
+
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="22sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/open_sans_bold"
+                android:textSize="18sp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:text="rs"/>
+
+
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="  Calculate Balance Amount  "
+            android:id="@+id/CalculateBalanceAmount"
+            android:textAllCaps="false"
+            android:textSize="22sp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textColor="@color/TMC_White"
+            android:background="@drawable/orange_selected_button_background"
+            />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="350dp"
+                android:layout_height="match_parent"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:layout_marginEnd="15dp"
+                android:fontFamily="@font/open_sans_bold"
+                android:textSize="25sp"
+                android:gravity="center_vertical"
+                android:text="Balance Amount "/>
+
+            <TextView
+                android:layout_width="100dp"
+                android:id="@+id/balance_Amount"
+                android:layout_height="match_parent"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:layout_marginEnd="6dp"
+                android:gravity="center"
+                android:fontFamily="@font/open_sans_bold"
+                android:textSize="25sp"
+                android:text="0"/>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/open_sans_bold"
+                android:textSize="22sp"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:text="rs"/>
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text=" Check Out "
+                android:id="@+id/checkOut"
+                android:textAllCaps="false"
+                android:textSize="22sp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textColor="@color/TMC_White"
+                android:background="@drawable/normal_state_button_background"
+                />
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+
+    </LinearLayout>
 </LinearLayout>

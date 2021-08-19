@@ -31,6 +31,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_AutoCompleteManageOrdersItem;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -114,10 +115,11 @@ public class Pos_Orders_List extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pos__orders__list);
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         try{
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-            vendorKey = (shared.getString("VendorKey", "vendor_1"));
+            vendorKey = (shared.getString("VendorKey", ""));
             vendorname = (shared.getString("VendorName", ""));
 
 
@@ -648,7 +650,7 @@ public class Pos_Orders_List extends AppCompatActivity {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;
@@ -716,7 +718,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                         manageOrdersPojoClass.orderType ="";
                     }
 
-                    if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
+                    if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
 
 
                         if(json.has("orderid")){
@@ -966,7 +968,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                     }
 
                     try {
-                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
+                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
                             if (json.has("useraddress")) {
 
                                 String addresss =  String.valueOf(json.get("useraddress"));
@@ -992,7 +994,7 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
 
-                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
+                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
 
                         ordersList.add(manageOrdersPojoClass);
                     }

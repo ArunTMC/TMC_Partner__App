@@ -24,6 +24,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
@@ -66,6 +67,8 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_availability_status_transaction);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         newOrdersSync_Layout = findViewById(R.id.newOrdersSync_Layout);
 
         dateSelector_text = findViewById(R.id.dateSelector_text);
@@ -122,7 +125,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
         try {
 
             SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-            vendorkey = (shared.getString("VendorKey", "vendor_1"));
+            vendorkey = (shared.getString("VendorKey", ""));
 
         }
         catch (Exception e ){

@@ -625,6 +625,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginStart="5dp"
                                 android:layout_marginEnd="5dp"
+                                android:visibility="gone"
 
                                 android:fontFamily="@font/open_sans_bold"
                                 android:textAllCaps="false"
@@ -639,7 +640,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginStart="5dp"
                                 android:layout_marginEnd="5dp"
-                                android:visibility="visible"
+                                android:visibility="gone"
 
                                 android:fontFamily="@font/open_sans_bold"
                                 android:textAllCaps="false"
@@ -650,7 +651,22 @@
                                 android:text="@string/Generate_Token_No_text" />
                             </RelativeLayout>
                         </LinearLayout>
+                        <Button
+                            android:id="@+id/show_paymentTransactionImage_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="5dp"
+                            android:layout_marginEnd="5dp"
+                            android:visibility="gone"
 
+                            android:fontFamily="@font/open_sans_bold"
+                            android:textAllCaps="false"
+                            android:textSize="13sp"
+
+                            android:textColor="@color/TMC_White"
+                            android:background="@drawable/button_background"
+                            android:text="@string/showscreenshot" />
 
                     </RelativeLayout>
                 </LinearLayout>

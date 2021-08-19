@@ -24,6 +24,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
@@ -57,6 +58,8 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.change_delivery__slot__availability__status);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         expressDeliveryAvailabiltySwitch =findViewById(R.id.vendorSlotAvailabiltySwitch);
         todaysDeliverySlotListview = findViewById(R.id.todaysDeliverySlotList);
         tomorrowsDeliverySlotListview = findViewById(R.id.tomorrowsDeliverySlotList);
@@ -68,8 +71,8 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         double x = Math.pow(dm.widthPixels/dm.xdpi,2);
         double y = Math.pow(dm.heightPixels/dm.ydpi,2);
         screenInches = Math.sqrt(x+y);
-        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginStatus", MODE_PRIVATE);
-        vendorkey = (shared.getString("VendorKey", "vendor_1"));
+        SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        vendorkey = (shared.getString("VendorKey", ""));
         TodaysPreOrdersSlotList = new ArrayList<>();
         TomorrowsPreOrdersSlotList = new ArrayList<>();
         checkforDeliverySlotDetails();

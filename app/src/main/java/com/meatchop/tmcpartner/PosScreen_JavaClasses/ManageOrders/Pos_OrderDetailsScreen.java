@@ -31,6 +31,7 @@ import com.meatchop.tmcpartner.FetchAddressIntentService;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.DeliveryPartnerSettlementReport;
@@ -62,7 +63,7 @@ Button changeDeliveryPartner;
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
-    String ordertype,coupondiscountAmount,deliveryCharges,useraddreskey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,deliverydistance,fromActivityName;
+    String ordertype,coupondiscountAmount,deliveryCharges,useraddreskey,vendorkey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,deliverydistance,fromActivityName;
     ScrollView parentScrollView;
     ResultReceiver resultReceiver;
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
@@ -71,6 +72,8 @@ Button changeDeliveryPartner;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pos__order_details_screen_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         orderIdtext_widget = findViewById(R.id.orderIdtext_widget);
         orderStatustext_widget = findViewById(R.id.orderStatustext_widget);
         itemDesp_listview = findViewById(R.id.itemDesp_listview);
@@ -111,10 +114,10 @@ Button changeDeliveryPartner;
         refresh_googleAddress_image_layout = findViewById(R.id.refresh_googleAddress_image_layout);
         refresh_googleAddress_layout = findViewById(R.id.refresh_googleAddress_layout);
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        vendorkey = (shared.getString("VendorKey", ""));
 
-
-        vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
-        vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
+        vendorLatitude = (shared.getString("VendorLatitude", ""));
+        vendorLongitude = (shared.getString("VendorLongitute", ""));
 
 
         OrderdItems_desp = new ArrayList<>();
@@ -346,13 +349,41 @@ Button changeDeliveryPartner;
 
         String itemDespString = modal_manageOrders_pojo_class.getItemdesp_string();
         try {
+            String subCtgyKey ="";
             JSONArray jsonArray = new JSONArray(itemDespString);
             for(int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
                 if(json.has("marinadeitemdesp")) {
                     JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
                     Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                    marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
+                    try {
+                        if(marinadesObject.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                          //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                            marinades_manageOrders_pojo_class.itemName=" Grill House  "+marinadesObject.getString("itemname");
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                           // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                            marinades_manageOrders_pojo_class.itemName="Ready to Cook  "+marinadesObject.getString("itemname");
+
+                        }
+                        else{
+                            marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
+
+                        }
+
+
                     marinades_manageOrders_pojo_class.ItemFinalPrice= marinadesObject.getString("tmcprice");
                     marinades_manageOrders_pojo_class.quantity =String.valueOf(json.get("quantity"));
                     marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");
@@ -378,7 +409,33 @@ Button changeDeliveryPartner;
 
                 }
 
-                manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+                try {
+                    if(json.has("tmcsubctgykey")) {
+                        subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                    }
+                    else {
+                        subCtgyKey = " ";
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                if(subCtgyKey.equals("tmcsubctgy_16")){
+                    //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                   // marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname")+(" ( Grill House ) ");
+                    manageOrders_pojo_class.itemName = "Grill House "+String.valueOf(json.get("itemname"));
+                }
+                else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                    // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                 //  marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname")+(" ( Ready to Cook ) ");
+                    manageOrders_pojo_class.itemName = "Ready to Cook "+String.valueOf(json.get("itemname"));
+
+                }
+                else{
+                    manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+
+                }
                 manageOrders_pojo_class.ItemFinalPrice= String.valueOf(json.get("tmcprice"));
                 manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
                 manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
@@ -644,7 +701,7 @@ Button changeDeliveryPartner;
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorkey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;
@@ -756,7 +813,7 @@ Button changeDeliveryPartner;
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorkey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;

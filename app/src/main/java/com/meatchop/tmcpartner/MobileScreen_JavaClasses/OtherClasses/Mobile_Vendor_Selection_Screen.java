@@ -28,6 +28,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -63,6 +64,8 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mobile__vendor__selection__screen_activity);
 
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         mobile_vendor_selecting_spinner = findViewById(R.id.pos_vendor_selection_widget);
         VendorName_arrayList = new ArrayList<String>();
         loadingPanel_dailyItemWisereport = findViewById(R.id.loadingPanel_dailyItemWisereport);

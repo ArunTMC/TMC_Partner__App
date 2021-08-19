@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_ManageOrders_ListView1;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
@@ -33,6 +34,8 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.get_deliverypartners_assigned_orders_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         ordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         assignedOrdersListview = findViewById(R.id.assignedOrdersListview);
         deliveryUserMobileno_textWidget = findViewById(R.id.deliveryUserMobileno_textWidget);
@@ -151,8 +154,8 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
                     }
 
 
-                    if (json.has("orderdeliveredtime")) {
-                        manageOrdersPojoClass.orderdeliveredtime = String.valueOf(json.get("orderdeliveredtime"));
+                    if (json.has("orderdeliverytime")) {
+                        manageOrdersPojoClass.orderdeliveredtime = String.valueOf(json.get("orderdeliverytime"));
 
                     } else {
                         manageOrdersPojoClass.orderdeliveredtime = "";
@@ -248,6 +251,12 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
 
                     } else {
                         manageOrdersPojoClass.useraddresslat = "";
+                    }
+                    if (json.has("paymenttranscationimageurl")) {
+                        manageOrdersPojoClass.paymenttranscationimageurl = String.valueOf(json.get("paymenttranscationimageurl"));
+
+                    } else {
+                        manageOrdersPojoClass.paymenttranscationimageurl = "";
                     }
 
 

@@ -46,6 +46,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
@@ -87,8 +88,8 @@ import java.util.Objects;
 public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     LinearLayout getData,endDateSelectorLayout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker,enddatepicker;
-    TextView deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String deliveryamount,vendorKey, ordertype, slotname, DateString;
+    TextView vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String vendorname,deliveryamount,vendorKey, ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     double screenInches;
@@ -150,11 +151,17 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
     String selectedStartDate = "";
     String selectedEndDate = "";
-
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consolidated_sales_report_weekwise);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
+        vendorName = findViewById(R.id.vendorName);
 
         deliveryChargeAmount_textwidget = findViewById(R.id.deliveryChargeAmount_textwidget);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
@@ -229,12 +236,22 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                 MODE_PRIVATE);
 
         vendorKey = sharedPreferences.getString("VendorKey", "");
+
+        StoreAddressLine1 = (sharedPreferences.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (sharedPreferences.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
+        StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
+        vendorname = sharedPreferences.getString("VendorName", "");
+
+
         DateString = getDate_and_time();
         PreviousDateString = getDatewithNameofthePreviousDay();
         todatestring = DateString;
         fromdatestring = DateString;
         dateSelector_text.setText(DateString);
         endDateSelector_text.setText(DateString);
+        vendorName.setText(vendorname);
+
         getMenuItemArrayFromSharedPreferences();
 
         try {
@@ -538,10 +555,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         try {
             if (!isEndDateisAfterCurrentDate) {
 
-                MaxDate = getMillisecondsFromDate(selectedEndDate);
+                MaxDate = getMillisecondsFromDate("Sun, 15 Aug 2021");
 
             } else {
-                MaxDate = getMillisecondsFromDate(todayDate);
+                MaxDate = getMillisecondsFromDate("Sun, 15 Aug 2021");
 
             }
             MinDate = getMillisecondsFromDate(selectedStartDate);
@@ -806,7 +823,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                                         try{
                                             modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                             orderid =  String.valueOf(json.get("orderid"));
-                                            //Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
+                                            Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
 
                                         }catch (Exception e){
                                             e.printStackTrace();
@@ -964,7 +981,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                                             }
 
 
-                                            if ((slotname.equals(Constants.PREORDER_SLOTNAME))||slotname.equals("")) {
+                                            if ((slotname.equals(Constants.PREORDER_SLOTNAME))|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME))) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -1000,7 +1017,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
                                             }
 
-                                            else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
+                                            else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)||slotname.equals("") || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -1429,7 +1446,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                                    isItemFoundinMenu =true;
                                    pricetypeoftheItem = String.valueOf(modal_menuItemSettings.getPricetypeforpos());
                                    modal_orderDetails_ItemDesp.pricetypeforpos = String.valueOf(pricetypeoftheItem);
-                                   if ((!reportname.equals(""))&&(!reportname.equals("null"))) {
+                                   if ((!reportname.equals(""))&&(!reportname.equals("null"))&&(!reportname.equals("\r"))) {
                                        modal_orderDetails_ItemDesp.itemname = String.valueOf(reportname);
                                        itemname = String.valueOf(reportname);
                                    }
@@ -1447,6 +1464,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
                                    modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
                                    itemname = String.valueOf(json.get("itemname"));
+
 
                            }
                        }
@@ -1830,7 +1848,10 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                         marinade_modal_orderDetails_ItemDesp.quantity = String.valueOf(json.get("quantity"));
                         marinade_modal_orderDetails_ItemDesp.itemFinalWeight = String.valueOf(marinadesobjectWeight_double);
                         marinade_modal_orderDetails_ItemDesp.itemname = marinadeitemName+" - Marinade ";
-                        try {
+                        marinade_modal_orderDetails_ItemDesp.pricetypeforpos = String.valueOf("tmcprice");
+
+
+                            try {
                             if(SubCtgywiseTotalArray.contains(marinadesubCtgyKey)) {
                                 boolean isAlreadyAvailabe = false;
 
@@ -2113,7 +2134,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
 
                     try {
-                        if ((subCtgyKey.equals("tmcsubctgy_13")) || (subCtgyKey.equals("tmcsubctgy_4")) || (subCtgyKey.equals("tmcsubctgy_5")) || (subCtgyKey.equals("tmcsubctgy_7")) || (subCtgyKey.equals("tmcsubctgy_11"))|| (subCtgyKey.equals("tmcsubctgy_8"))|| (subCtgyKey.equals("tmcsubctgy_9"))) {
+                        if ((subCtgyKey.equals("tmcsubctgy_13")) || (subCtgyKey.equals("tmcsubctgy_4")) || (subCtgyKey.equals("tmcsubctgy_5")) || (subCtgyKey.equals("tmcsubctgy_7")) || (subCtgyKey.equals("tmcsubctgy_11"))|| (subCtgyKey.equals("tmcsubctgy_8"))|| (subCtgyKey.equals("tmcsubctgy_16")) || (subCtgyKey.equals("tmcsubctgy_9"))) {
 
 
                             tmcprice = tmcprice + gstAmount;
@@ -2843,28 +2864,26 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
 
                           //  if ((SubCtgykey.equals("tmcsubctgy_13")) || (SubCtgykey.equals("tmcsubctgy_4")) || (SubCtgykey.equals("tmcsubctgy_5")) || (SubCtgykey.equals("tmcsubctgy_7")) || (SubCtgykey.equals("tmcsubctgy_11"))|| (SubCtgykey.equals("tmcsubctgy_9"))|| (SubCtgykey.equals("tmcsubctgy_8"))) {
-                            if(itemDetailsfromHashmap.getPricetypeforpos().toString().equals("tmcprice")){
-                                String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
+                            try {
+                                if (itemDetailsfromHashmap.getPricetypeforpos().toString().equals("tmcprice")) {
+                                    String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
 
-                                ListItem listItem = new ListItem();
+                                    ListItem listItem = new ListItem();
 
 
-
-                                listItem.setMessage(itemDetailsfromHashmap.getItemname() + " ( " + itemDetailsfromHashmap.getQuantity() + " ) ");
+                                    listItem.setMessage(itemDetailsfromHashmap.getItemname() + " ( " + itemDetailsfromHashmap.getQuantity() + " ) ");
                                     try {
                                         listItem.setMessageLine2(String.valueOf(decimalFormat.format(Double.parseDouble(itemDetailsfromHashmap.getTmcprice()))));
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
 
                                         e.printStackTrace();
                                     }
                                     dataList.add(listItem);
 
-                            }
-                            else{
+                                } else {
 
 
-                            double weightinGrams = 0;
+                                    double weightinGrams = 0;
                            /* try{
                                double itemAmountfromHashmap = Double.parseDouble(Objects.requireNonNull(itemDetailsfromHashmap).getTmcprice());
                             //    subCtgyTotal = subCtgyTotal+itemAmountfromHashmap;
@@ -2875,36 +2894,48 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                             }
 
                             */
-                            try {
-                                if ((!(itemDetailsfromHashmap.getItemFinalWeight().equals(""))) && ((itemDetailsfromHashmap.getItemFinalWeight() != (null)))) {
-                                    weightinGrams = Double.parseDouble(Objects.requireNonNull(itemDetailsfromHashmap).getItemFinalWeight());
+                                    try {
+                                        if ((!(itemDetailsfromHashmap.getItemFinalWeight().equals(""))) && ((itemDetailsfromHashmap.getItemFinalWeight() != (null)))) {
+                                            weightinGrams = Double.parseDouble(Objects.requireNonNull(itemDetailsfromHashmap).getItemFinalWeight());
 
+                                        }
+
+                                    } catch (Exception e) {
+                                        weightinGrams = 0;
+                                    }
+                                    String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
+
+                                    if (itemname.equals("Fresh Goat Meat - Curry Cut")) {
+                                        Log.i("TAG", "Key : " + String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
+                                    }
+                                    double kilogram = weightinGrams * 0.001;
+                                    String KilogramString = String.valueOf(decimalFormat.format(kilogram) + "Kg");
+
+                                    ListItem listItem = new ListItem();
+                                    if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg")))) {
+                                        listItem.setMessage(itemDetailsfromHashmap.getItemname() + "  - " + KilogramString + "  ( " + itemDetailsfromHashmap.getQuantity() + " ) ");
+                                        listItem.setMessageLine2(String.valueOf(decimalFormat.format(Double.parseDouble(itemDetailsfromHashmap.getTmcprice()))));
+                                        dataList.add(listItem);
+                                    } else {
+                                        listItem.setMessage(itemDetailsfromHashmap.getItemname() + " ( " + itemDetailsfromHashmap.getQuantity() + " ) ");
+
+                                        listItem.setMessageLine2(String.valueOf(decimalFormat.format(Double.parseDouble(itemDetailsfromHashmap.getTmcprice()))));
+                                        dataList.add(listItem);
+                                    }
                                 }
-
-                            } catch (Exception e) {
-                                weightinGrams = 0;
                             }
-                            String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
+                           catch(Exception e){
+                                Log.d(Constants.TAG, "SubCtgykey  " + itemDetailsfromHashmap.getOrderid() );
+                                Log.d(Constants.TAG, "SubCtgykey  " + itemDetailsfromHashmap.getTmcsubctgykey() );
+                                Log.d(Constants.TAG, "SubCtgykey  " + itemDetailsfromHashmap.getUsermobile() );
+                                Log.d(Constants.TAG, "SubCtgykey  " + itemDetailsfromHashmap.getItemname() );
+                                Log.d(Constants.TAG, "SubCtgykey  " + itemDetailsfromHashmap.getFinalAmount() );
 
-                            if (itemname.equals("Fresh Goat Meat - Curry Cut")) {
-                                Log.i("TAG", "Key : " + String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
+                                e.printStackTrace();
                             }
-                            double kilogram = weightinGrams * 0.001;
-                            String KilogramString = String.valueOf(decimalFormat.format(kilogram) + "Kg");
 
-                            ListItem listItem = new ListItem();
-                            if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg")))) {
-                                listItem.setMessage(itemDetailsfromHashmap.getItemname() + "  - " + KilogramString+ "  ( " + itemDetailsfromHashmap.getQuantity() + " ) ");
-                                listItem.setMessageLine2(String.valueOf(decimalFormat.format(Double.parseDouble(itemDetailsfromHashmap.getTmcprice()))));
-                                dataList.add(listItem);
-                            } else {
-                                listItem.setMessage(itemDetailsfromHashmap.getItemname() + " ( " + itemDetailsfromHashmap.getQuantity() + " ) ");
-
-                                listItem.setMessageLine2(String.valueOf(decimalFormat.format(Double.parseDouble(itemDetailsfromHashmap.getTmcprice()))));
-                                dataList.add(listItem);
-                            }
                         }
-                        }
+
                     }
                     if (i_value == 0) {
                         i_value = 1;

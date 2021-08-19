@@ -33,6 +33,7 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mob
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -96,6 +97,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit__or__cancel_order__order_details__screen_activity);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         changeDeliveryPartner = findViewById(R.id.changeDeliveryPartner);
         orderIdtext_widget = findViewById(R.id.orderIdtext_widget);
         orderStatustext_widget = findViewById(R.id.orderStatustext_widget);
@@ -458,7 +461,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 JSONArray jsonArray = new JSONArray(itemDespString);
                 for(int i=0; i < jsonArray.length(); i++) {
                     JSONObject json = jsonArray.getJSONObject(i);
-
+                    String subCtgyKey ="";
                     Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
                     if (json.has("netweight")) {
                         manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
@@ -469,7 +472,33 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
                     }
 
-                    manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+                    try {
+                        if(json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+                    if(subCtgyKey.equals("tmcsubctgy_16")){
+                        //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                        manageOrders_pojo_class.itemName = "Grill House  "+String.valueOf(json.get("itemname"));
+
+                    }
+                    else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                        // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                        manageOrders_pojo_class.itemName = "Ready to Cook "+String.valueOf(json.get("itemname"));
+
+                    }
+                    else{
+                        manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+
+                    }
                     manageOrders_pojo_class.ItemFinalPrice= String.valueOf(json.get("tmcprice"));
                     manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
                     manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
@@ -479,7 +508,31 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                     if(json.has("marinadeitemdesp")) {
                         JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
                         Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                        marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
+                        try {
+                            if(json.has("tmcsubctgykey")) {
+                                subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                            }
+                            else {
+                                subCtgyKey = " ";
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                            marinades_manageOrders_pojo_class.itemName=" Grill House  "+marinadesObject.getString("itemname");
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                            marinades_manageOrders_pojo_class.itemName=" Ready to Cook "+marinadesObject.getString("itemname");
+
+                        }
+                        else{
+                            marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
+
+                        }
                         marinades_manageOrders_pojo_class.ItemFinalPrice= marinadesObject.getString("tmcprice");
                         marinades_manageOrders_pojo_class.quantity =String.valueOf(json.get("quantity"));//using same marinade quantity for the meat item also
                         marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");

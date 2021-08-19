@@ -32,6 +32,7 @@ import com.google.gson.JsonArray;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.FetchAddressIntentService;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -40,6 +41,7 @@ import com.meatchop.tmcpartner.Settings.GetDeliverypartnersAssignedOrders;
 import com.meatchop.tmcpartner.Settings.Helper;
 import com.meatchop.tmcpartner.Settings.ModalOrderItemDetails;
 import com.meatchop.tmcpartner.Settings.Modal_OrderDetails;
+import com.meatchop.tmcpartner.Settings.Pos_Orders_List;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONArray;
@@ -79,6 +81,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_screen__order_details1);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         orderIdtext_widget = findViewById(R.id.orderIdtext_widget);
         orderStatustext_widget = findViewById(R.id.orderStatustext_widget);
         itemDesp_listview = findViewById(R.id.itemDesp_listview);
@@ -126,8 +130,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
 
-            vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
-            vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
+            vendorLatitude = (shared.getString("VendorLatitude", ""));
+            vendorLongitude = (shared.getString("VendorLongitute", ""));
         }
         catch (Exception e){
             e.printStackTrace();
@@ -218,7 +222,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
                 customerLongitutde = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
                 // getUserAddressFromAddress(modal_manageOrders_pojo_class.getUseraddresskey().toString());
-                if(((customerLongitutde.equals("null"))||(customerLongitutde.equals(null))||(customerLongitutde.equals(""))||(customerLongitutde.equals("0")))&&(((customerlatitude.equals("null"))||(customerlatitude.equals(null))||(customerlatitude.equals(""))||(customerlatitude.equals("0"))))){
+                if(((customerLongitutde.equals("null"))||(customerLongitutde.equals(null))||(customerLongitutde.equals(""))||(customerLongitutde.equals("0")))&&(((customerlatitude.equals("null"))||(customerlatitude.equals(null))||(customerlatitude.equals(""))||(customerlatitude.equals("0")))))
+                {
                     Location_loadinganim_layout.setVisibility(View.VISIBLE);
                     deliveryPartnerAssignLayout.setVisibility(View.VISIBLE);
                     if (modal_manageOrders_pojo_class.getUseraddresskey() != null) {
@@ -312,6 +317,13 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             orderpickeduptime_textwidget.setText("");
 
         }
+            if(modal_manageOrders_pojo_class.getOrderdeliveredtime()!=null){
+                orderDeliveredtime_textwidget.setText(String.valueOf(modal_manageOrders_pojo_class.getOrderdeliveredtime()));
+            }
+            else{
+                orderDeliveredtime_textwidget.setText("");
+
+            }
 
         if(modal_manageOrders_pojo_class.getDeliveryamount()!=null){
             deliveryCharges = String.valueOf(modal_manageOrders_pojo_class.getDeliveryamount());
@@ -333,12 +345,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             coupondiscountAmount = "0.00";
             discounttext_widget.setText(coupondiscountAmount);
         }
-        if(modal_manageOrders_pojo_class.getOrderdeliveredtime()!=null){
-            orderDeliveredtime_textwidget.setText(String.valueOf(modal_manageOrders_pojo_class.getOrderdeliveredtime()));
-        }
-        else{
-            orderDeliveredtime_textwidget.setText("");
-        }
+
 
 
 
@@ -376,7 +383,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         catch (Exception e){
         e.printStackTrace();
     }
-        if((!modal_manageOrders_pojo_class.getOrderstatus().equals(Constants.NEW_ORDER_STATUS))||(!fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder"))) {
+        if((!modal_manageOrders_pojo_class.getOrderstatus().equals(Constants.NEW_ORDER_STATUS))||(fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder"))) {
 
 
             if(!deliveryPartnerNumber.equals("null")){
@@ -477,7 +484,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             JSONArray jsonArray = new JSONArray(itemDespString);
             for(int i=0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-
+                String subCtgyKey ="";
                 Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
                 if (json.has("netweight")) {
                     manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
@@ -487,8 +494,36 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                     manageOrders_pojo_class.ItemFinalWeight = "";
 
                 }
+                try {
+                    if(json.has("tmcsubctgykey")) {
+                        subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                    }
+                    else {
+                        subCtgyKey = " ";
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
-                manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+
+                if(subCtgyKey.equals("tmcsubctgy_16")){
+                    //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                    manageOrders_pojo_class.itemName = "Grill House "+String.valueOf(json.get("itemname"));
+
+                }
+                else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                    // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                    manageOrders_pojo_class.itemName = "Ready to Cook "+String.valueOf(json.get("itemname"));
+
+                }
+                else{
+                    manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+
+                }
+
+
+
                 manageOrders_pojo_class.ItemFinalPrice= String.valueOf(json.get("tmcprice"));
                 manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
                 manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
@@ -498,7 +533,32 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 if(json.has("marinadeitemdesp")) {
                     JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
                     Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                    marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
+                    try {
+                        if(json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    if(subCtgyKey.equals("tmcsubctgy_16")){
+                        //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                        marinades_manageOrders_pojo_class.itemName=" Grill House  "+marinadesObject.getString("itemname");
+
+                    }
+                    else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                        // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                        marinades_manageOrders_pojo_class.itemName=" Ready to Cook "+marinadesObject.getString("itemname");
+
+                    }
+                    else{
+                        marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
+
+                    }
+                   // marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname");
                     marinades_manageOrders_pojo_class.ItemFinalPrice= marinadesObject.getString("tmcprice");
                     marinades_manageOrders_pojo_class.quantity =String.valueOf(json.get("quantity"));//using same marinade quantity for the meat item also
                     marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");
@@ -1266,6 +1326,13 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
         if(fromActivityName.equals("AppOrdersList")) {
             Intent i = new Intent(this, searchOrdersUsingMobileNumber.class);
+
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+
+        if(fromActivityName.equals("PosOrdersList")) {
+            Intent i = new Intent(this, Pos_Orders_List.class);
 
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);

@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -38,6 +39,7 @@ import com.android.volley.toolbox.Volley;
 import com.itextpdf.kernel.geom.Line;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
@@ -118,8 +120,15 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     private  boolean isPaymentDetailsMethodCalled =false;
     boolean isproceedtoPay_Clicked =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false;
     Spinner orderTypeSpinner;
-   
 
+    String balanceAmount_String,amountRecieved_String;
+    double balanceAmount_double =0,amountRecieved_double =0;
+
+
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
     public NewOrders_MenuItem_Fragment() {
         // Required empty public constructor
     }
@@ -157,7 +166,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         cart_Item_List.clear();
         cartItem_hashmap.clear();
 
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         //Log.d(TAG, "starting: ");
     }
 
@@ -185,8 +195,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         discountAmountLayout = view.findViewById(R.id.discountAmountLayout);
         try{
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-            vendorKey = shared.getString("VendorKey","vendor_1");
+            vendorKey = shared.getString("VendorKey","");
 
+
+            StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
+            StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
+            StoreAddressLine3 = (shared.getString("VendorPincode", ""));
+            StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
         }
         catch(Exception e){
@@ -838,17 +853,100 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                             Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
                                             Button via_card = (Button) dialog.findViewById(R.id.via_card);
                                             Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
-
+                                            TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                            TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                            EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                            Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                            Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                            LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                            LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                            paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                            balanceAmountCalculate_Layout.setVisibility(View.GONE);
                                             //Log.d(TAG, "Currenttime: " + Currenttime);
 
                                             //Log.i(TAG, "date and time " + sTime);
-
+                                            String totalAmount_String  =  total_Rs_to_Pay_text_widget.getText().toString();
+                                            double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                            totalbillAmount .setText(totalAmount_String);
 
                                             if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
                                                 Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
 
                                             }
 
+                                            calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    balanceAmount_String="0";amountRecieved_String="0";
+                                                     balanceAmount_double =0;amountRecieved_double =0;
+                                                     try {
+                                                         amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                     }
+                                                     catch (Exception e){
+                                                         e.printStackTrace();
+                                                         Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                     }
+                                                     try {
+                                                         amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                     }
+                                                     catch(Exception e){
+                                                         Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+
+                                                         e.printStackTrace();
+                                                     }
+                                                     try {
+                                                         balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                     }
+                                                     catch(Exception e) {
+                                                         Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                         e.printStackTrace();
+                                                     }
+                                                     try {
+                                                         balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                     }
+                                                     catch (Exception e){
+                                                         Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                         e.printStackTrace();
+                                                     }
+                                                     try {
+                                                         if (balanceAmount_double < 0) {
+                                                             balance_Amount.setTextColor(Color.RED);
+                                                         } else {
+                                                             balance_Amount.setTextColor(Color.BLACK);
+
+                                                         }
+                                                     }
+                                                     catch (Exception e){
+                                                         e.printStackTrace();
+                                                         Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                     }
+                                                     try {
+                                                         balance_Amount.setText(balanceAmount_String);
+                                                     }
+                                                     catch(Exception e){
+                                                         e.printStackTrace();
+                                                         Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                     }
+                                                }
+                                            });
+                                                checkOut.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        if(balanceAmount_double<0) {
+                                                            Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+
+                                                        }
+                                                        else {
+                                                            dialog.dismiss();
+
+                                                           PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                        }
+                                                    }
+                                                });
 
                                             via_card.setOnClickListener(new View.OnClickListener() {
                                                 @Override
@@ -865,9 +963,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                             via_cash.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
-                                                    dialog.dismiss();
+                                                  //  dialog.dismiss();
 
-                                                    PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                    paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                    balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                    //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
 
 
                                                 }
@@ -1191,7 +1291,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             if(isProceedtoCheckoutinRedeemdialogClicked){
                 if((!redeemPoints_String.equals(""))&&(!redeemPoints_String.equals("0"))){
                     String transactiontime = getDate_and_time();
-                    double totalredeempointsusergetfromorder=0;
+                    double totalredeempointsusergetfromorderr=0;
                     double redeempointsuserapplied=Double.parseDouble(redeemPoints_String);
                     double finalamountwithredeempointsint = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
                     double totalpointredeembyuserint =  Double.parseDouble(totalpointsredeemedalreadybyuser);
@@ -1201,27 +1301,118 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                     double finalamountwithredeempointsdouble = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
                     double pointsfor100rs_double = Double.parseDouble(pointsfor100rs_String);
 
+                    try {
+                        totalordervalue_tillnowint = totalordervalue_tillnowint + finalamountwithredeempointsint;
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
 
-                    totalordervalue_tillnowint = totalordervalue_tillnowint+finalamountwithredeempointsint;
-                    totalordervalue_tillnow = String.valueOf(totalordervalue_tillnowint);
-
-
-                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
-                    totalredeempointsuserhaveint = totalredeempointsuserhaveint+totalredeempointsusergetfromorder;
-                    totalredeempointsuserhave = String.valueOf(totalredeempointsuserhaveint);
-
-                    totalpointredeembyuserint = totalpointredeembyuserint+redeempointsuserapplied;
-                    totalpointsredeemedalreadybyuser=String.valueOf(totalpointredeembyuserint);
+                        totalordervalue_tillnow = String.valueOf(totalordervalue_tillnowint);
 
 
-                    updateRedeemPointsDetailsInDBWithkey(redeemKey,totalpointredeembyuserint,totalordervalue_tillnowint,totalredeempointsuserhaveint);
-                    addDatatoCouponTransactioninDB(redeemPoints_String,"REDEEM",mobileno_redeemKey,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        totalredeempointsusergetfromorderr =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        totalredeempointsuserhaveint = totalredeempointsuserhaveint+totalredeempointsusergetfromorderr;
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        totalredeempointsuserhave = String.valueOf(totalredeempointsuserhaveint);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        totalpointredeembyuserint = totalpointredeembyuserint+redeempointsuserapplied;
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        totalpointsredeemedalreadybyuser=String.valueOf(totalpointredeembyuserint);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        updateRedeemPointsDetailsInDBWithkey(redeemKey,totalpointredeembyuserint,totalordervalue_tillnowint,totalredeempointsuserhaveint);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        addDatatoCouponTransactioninDB(redeemPoints_String,"REDEEM",mobileno_redeemKey,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+
+
+
                 }
             }
             else{
 
+                try{
+                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
 
-                totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
                 String UserMobile = "+91" + mobileNo_Edit_widget.getText().toString();
 
               //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
@@ -1292,22 +1483,22 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "+914445568499" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
@@ -1642,6 +1833,79 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 }
             }
 
+
+
+
+            String redeemPoints_String_print="";
+            if (!redeemPoints_String.equals("0")) {
+                redeemPoints_String_print = "Rs. " + redeemPoints_String + ".00";
+
+                if ((!redeemPoints_String_print.equals("Rs.0.0")) && (!redeemPoints_String_print.equals("Rs.0")) && (!redeemPoints_String_print.equals("Rs.0.00")) && (redeemPoints_String_print != (null)) && (!redeemPoints_String_print.equals("")) && (!redeemPoints_String_print.equals("Rs. .00")) && (!redeemPoints_String_print.equals("Rs..00"))) {
+
+                    if (redeemPoints_String_print.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        redeemPoints_String_print = "Points Redeemed                    " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        redeemPoints_String_print = "Points Redeemed                  " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        redeemPoints_String_print = "Points Redeemed                 " + redeemPoints_String_print;
+                    }
+
+                    if (redeemPoints_String_print.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        redeemPoints_String_print = "Points Redeemed                " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        redeemPoints_String_print = "Points Redeemed               " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed               " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed             " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print =" Points Redeemed             " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed            " + redeemPoints_String_print;
+                    }
+
+                    if (redeemPoints_String_print.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed            " + redeemPoints_String_print;
+
+                    }
+
+
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, redeemPoints_String_print + "\n");
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                }}
+
             PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             String NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
@@ -1711,7 +1975,40 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+            try {
+                if (payment_mode.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) {
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Amount Given by Customer : ");
 
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, amountRecieved_String + " Rs " + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Balance Amount given to Customer : ");
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, balanceAmount_String + " Rs" + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                }
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -1749,6 +2046,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 0, userMobile + "           " + "\n");
+
+
 /*
             PrinterFunctions.SetLineSpacing(portName, portSettings, 120);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -2353,7 +2652,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     private List<Modal_NewOrderItems> getMenuItemfromString(String menulist) {
         List<Modal_NewOrderItems>MenuList=new ArrayList<>();
-        String ItemName = "";
+        String ItemName = "",tmcsubctgykey="";
         if(!menulist.isEmpty()) {
 
             try {
@@ -2371,10 +2670,35 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                     try {
                         JSONObject json = JArray.getJSONObject(i1);
                         Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
-                        if(json.has("itemname")){
-                            ItemName =  String.valueOf(json.get("itemname"));
+                        if(json.has("tmcsubctgykey")){
+                            newOrdersPojoClass.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
+                            tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else{
+                            newOrdersPojoClass.tmcsubctgykey = "0";
+                            tmcsubctgykey = "0";
+                            Toast.makeText(mContext,"TMC tmcsubctgykey Json is Missing",Toast.LENGTH_LONG).show();
+                            //Log.i("Tag", "TMC tmcsubctgykey Json is Missing"+ String.valueOf(newOrdersPojoClass.getTmcsubctgykey()));
 
-                            newOrdersPojoClass.itemname = String.valueOf(json.get("itemname"));
+                        }
+                        if(json.has("itemname")){
+
+                            if(tmcsubctgykey.equals("tmcsubctgy_16")){
+                                ItemName =  "Grill House "+String.valueOf(json.get("itemname"));
+
+                                newOrdersPojoClass.itemname = "Grill House "+String.valueOf(json.get("itemname"));
+                            }
+                            else if(tmcsubctgykey.equals("tmcsubctgy_15")){
+                                ItemName =  "Ready to Cook "+String.valueOf(json.get("itemname"));
+
+                                newOrdersPojoClass.itemname = "Ready to Cook "+String.valueOf(json.get("itemname"));
+                            }
+                            else{
+                                ItemName =  String.valueOf(json.get("itemname"));
+
+                                newOrdersPojoClass.itemname = String.valueOf(json.get("itemname"));
+
+                            }
 
                         }
                         else{
@@ -2505,16 +2829,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             Toast.makeText(mContext,"TMC applieddiscountpercentage Json is Missing",Toast.LENGTH_LONG).show();
 
                         }
-                        if(json.has("tmcsubctgykey")){
-                            newOrdersPojoClass.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
 
-                        }
-                        else{
-                            newOrdersPojoClass.tmcsubctgykey = "0";
-                            Toast.makeText(mContext,"TMC tmcsubctgykey Json is Missing",Toast.LENGTH_LONG).show();
-                            //Log.i("Tag", "TMC tmcsubctgykey Json is Missing"+ String.valueOf(newOrdersPojoClass.getTmcsubctgykey()));
-
-                        }
                         newOrdersPojoClass.quantity = "";
                         //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                         MenuList.add(newOrdersPojoClass);
@@ -2808,8 +3123,8 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
             String slottimerange = "";
             String UserMobile = "+91" + mobileNo_Edit_widget.getText().toString();
-            String vendorkey = sh.getString("VendorKey", "vendor_1");
-            String vendorName = sh.getString("VendorName", "TMCHasthinapuram");
+            String vendorkey = sh.getString("VendorKey", "");
+            String vendorName = sh.getString("VendorName", "");
             String itemTotalwithoutGst = total_item_Rs_text_widget.getText().toString();
             String payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
           try {
@@ -2829,7 +3144,8 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                               Button printAgain = (Button) dialog.findViewById(R.id.printAgain);
                               printAgain.setText("OK");
-
+                              TextView title = (TextView) dialog.findViewById(R.id.title);
+                              title.setText("Last Order is Not Placed .Please Try Again !!!! ");
                               printAgain.setOnClickListener(new View.OnClickListener() {
                                   @Override
                                   public void onClick(View view) {
@@ -2919,6 +3235,16 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                 Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
                 String itemName =
                         String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+
+                if(itemName.contains("Grill House")){
+                    itemName =  itemName.replace("Grill House ","");
+                }
+                else if(itemName.contains("Ready to Cook")){
+                    itemName =  itemName.replace("Ready to Cook","");
+                }
+                else{
+                    itemName=itemName;
+                }
                 String price = "";
                         if( modal_newOrderItems.getItemPrice_quantityBased()!=null){
                             price =  modal_newOrderItems.getItemPrice_quantityBased();
@@ -3391,7 +3717,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         SharedPreferences sh
                 = mContext.getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
-        String vendorkey = sh.getString("VendorKey","vendor_1");
+        String vendorkey = sh.getString("VendorKey","");
 
         JSONObject  orderTrackingTablejsonObject = new JSONObject();
         try {

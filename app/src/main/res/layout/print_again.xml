@@ -6,6 +6,17 @@
     android:orientation="vertical">
 
 
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:fontFamily="@font/open_sans_semibold"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="" />
+
     <Button
         android:id="@+id/printAgain"
         android:layout_width="450dp"

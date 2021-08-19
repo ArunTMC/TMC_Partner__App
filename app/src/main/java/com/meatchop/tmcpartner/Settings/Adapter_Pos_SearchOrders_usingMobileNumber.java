@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
+import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -368,13 +369,23 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             ////Log.i("tag","array.length()"+ array.length());
             String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
-            String itemDesp="";
+            String itemDesp="",subCtgyKey="";
 
             for(int i=0; i < array.length(); i++) {
                 JSONObject json = array.getJSONObject(i);
                 if (json.has("marinadeitemdesp")) {
                     JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
-
+                    try {
+                        if(marinadesObject.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String marinadeitemName = String.valueOf(marinadesObject.get("itemname"));
 
 
@@ -383,7 +394,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     String price = String.valueOf(marinadesObject.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
                     itemName = itemName + " Marinade Box ";
-                    if (itemDesp.length()>0) {
+                    /*if (itemDesp.length()>0) {
 
                         itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
                     } else {
@@ -391,20 +402,94 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                     }
 
+                     */
+
+                    if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+ "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+"Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
+
+                        }
+                    } else {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName, quantity);
+
+                        }
+
+                    }
+
+
                     //     orderDetails_text_widget.setText(String.format(itemDesp));
 
                 } else {
 
                     ////Log.i("tag", "array.lengrh(i" + json.length());
-
+                    try {
+                        if(json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
-                    if (itemDesp.length()>0) {
+                   /* if (itemDesp.length()>0) {
 
                         itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
                     } else {
                         itemDesp = String.format("%s * %s", itemName, quantity);
+
+                    }
+
+                    */
+
+
+                    if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+
+                        }
+                    } else {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s * %s",  "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s * %s", itemName, quantity);
+
+                        }
 
                     }
                     //      orderDetails_text_widget.setText(String.format(itemDesp));
@@ -742,7 +827,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
-                if (ordertype.equals(Constants.POSORDER)) {
+                if ((ordertype.equals(Constants.POSORDER))||(ordertype.equals(Constants.SwiggyOrder))||(ordertype.equals(Constants.DunzoOrder))) {
                     try {
                         Thread t = new Thread() {
                             public void run() {
@@ -1114,7 +1199,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
             new_to_pay_Amount =  (old_total_Amount + old_taxes_and_charges_Amount);
-            int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+            int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
             setOrderAmountDetails.setTotalAmountWithGst(String.valueOf(decimalFormat.format(new_totalAmount_withGst)));
 
@@ -1142,7 +1227,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         String orderid = manageOrders_pojo_class.getOrderid();
         double total_subtotal_double = Double.parseDouble(String.valueOf(manageOrders_pojo_class.getPayableamount()));
 
-        int total_subtotalint = (int) Math.ceil(total_subtotal_double);
+        int total_subtotalint = (int) Math.round(total_subtotal_double);
         double total_subtotal = 0;
         String payment_mode = "";
         String userMobile = "";
@@ -1156,6 +1241,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         String deliverydistance= "";
         String notes ="";
         String DeliveryAmount ="";
+        String subCtgyKey ="";
         double totalSubtotalItem=0;
         double totalSubtotalItemwithdiscount=0;
         double totalSubtotalItemwithdiscountwithdeliverycharge=0;
@@ -1537,11 +1623,26 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Orderid : "+orderid + "\n");
+            if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, "Grill House "+fullitemName + "\n");
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
+            }
+            else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, "Ready to Cook "+fullitemName + "\n");
+
+            }
+            else  {
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
+
+            }
+
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -1558,11 +1659,11 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
-        int new_total_subtotal = (int) Math.ceil(total_subtotal);
+        int new_total_subtotal = (int) Math.round(total_subtotal);
 
         String couponDiscount_string = String.valueOf(couponDiscount_double);
         String totalSubtotal_string = String.valueOf(new_total_subtotal);
@@ -2308,8 +2409,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                for(int i = 0; i< searchOrdersUsingMobileNumber.ordersList.size(); i++){
-                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= searchOrdersUsingMobileNumber.ordersList.get(i);
+                for(int i = 0; i< com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.ordersList.size(); i++){
+                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.ordersList.get(i);
                     String OrderId = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
                     if(OrderKey.equals(OrderId)){
                         modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
@@ -2330,6 +2431,33 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                        */
                     }
                 }
+
+
+                for(int i = 0; i< com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++){
+                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
+                    String OrderId = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
+                    if(OrderKey.equals(OrderId)){
+                        modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+                        if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)){
+                            modal_manageOrders_pojo_class.setOrderconfirmedtime(currenttime);
+                        }
+                        if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
+                            modal_manageOrders_pojo_class.setOrderreadytime(currenttime);
+                        }
+
+                        notifyDataSetChanged();
+                      /*  if(changestatusto.equals("CONFIRMED")){
+                            Intent intent = new Intent(mContext,AssigningDeliveryPartner.class);
+                            intent.putExtra("TrackingTableKey",OrderId);
+                            mContext.startActivity(intent);
+                        }
+
+                       */
+                    }
+                }
+
+
+
                 ////Log.d(Constants.TAG, "Responsewwwww: " + response);
                 searchOrdersUsingMobileNumber.showProgressBar(false);
 

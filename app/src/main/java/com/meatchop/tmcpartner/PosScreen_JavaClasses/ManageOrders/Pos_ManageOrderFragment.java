@@ -42,6 +42,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -134,7 +135,8 @@ public class Pos_ManageOrderFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = this.getActivity().getWindow().getContext();
         //getMenuItemusingStoreId();
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
 
 
 
@@ -179,8 +181,8 @@ public class Pos_ManageOrderFragment extends Fragment {
         newOrdersSync_Layout = view.findViewById(R.id.newOrdersSync_Layout);
 
         SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-        vendorKey = (shared.getString("VendorKey", "vendor_1"));
-        vendorname = (shared.getString("VendorName", "TMC"));
+        vendorKey = (shared.getString("VendorKey", ""));
+        vendorname = (shared.getString("VendorName", ""));
         nameofFacility_Textview.setText(vendorname);
         SharedPreferences shared2 = requireContext().getSharedPreferences("CurrentSelectedStatus", MODE_PRIVATE);
         orderStatus = (shared2.getString("currentstatus", ""));
@@ -658,7 +660,7 @@ public class Pos_ManageOrderFragment extends Fragment {
       //  setDataForSpinner();
 
         SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-        vendorKey = (shared.getString("VendorKey", "vendor_1"));
+        vendorKey = (shared.getString("VendorKey", ""));
 
         SharedPreferences shared2 = requireContext().getSharedPreferences("CurrentSelectedStatus", MODE_PRIVATE);
         orderStatus = (shared2.getString("currentstatus", ""));
@@ -764,7 +766,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;
@@ -840,7 +842,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;
@@ -1558,10 +1560,13 @@ public class Pos_ManageOrderFragment extends Fragment {
                     modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                     modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
                     modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
-                    if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+                   /* if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
                         sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
                     }
+
+                    */
+                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
                 }
 
@@ -1621,10 +1626,8 @@ public class Pos_ManageOrderFragment extends Fragment {
                     modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
 
                     modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
-                    if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
-                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
-                    }
                 }
 
             }
@@ -1677,10 +1680,8 @@ public class Pos_ManageOrderFragment extends Fragment {
                     modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                     modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
                     modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
-                    if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
 
-                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
-                    }
                 }
 
             }

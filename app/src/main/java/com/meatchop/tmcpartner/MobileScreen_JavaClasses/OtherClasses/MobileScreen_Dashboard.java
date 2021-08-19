@@ -6,9 +6,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,13 +20,20 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -30,7 +41,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.Settings.SettingsFragment;
 import com.meatchop.tmcpartner.R;
@@ -62,10 +75,13 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     boolean isMenuListSavedLocally = false;
     String MenuItemKey,vendorKey,tmcSubctgykey,tmcSubctgyname,tmcctgyname;
 
-    public static String completemenuItem="";
+    public static String completemenuItem="",completeMarinademenuItem="";
     String UserRole;
 
-
+    String errorCode = "0";
+    Dialog dialog ;
+    Button restartAgain;
+    TextView title;
 
 
     @Override
@@ -74,7 +90,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         setContentView(R.layout.activity_mobile_screen__dashboard);
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
         bottomNavigationView = findViewById(R.id.bottomnav);
@@ -87,8 +104,17 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             public void run() {
                 try {
                     SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-                    vendorKey = (shared.getString("VendorKey", "vendor_1"));
+                    vendorKey = (shared.getString("VendorKey", ""));
                     UserRole = shared.getString("userrole", "");
+                    dialog = new Dialog(MobileScreen_Dashboard.this);
+
+                    dialog.setContentView(R.layout.print_again);
+                    dialog.setTitle("Poor Internet Connection . Please Try Again !!!! ");
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setCancelable(false);
+
+                    restartAgain = (Button) dialog.findViewById(R.id.printAgain);
+                    title = (TextView) dialog.findViewById(R.id.title);
 
                     if(UserRole.equals(Constants.REPORTSVIEWER_ROLENAME)){
                         loadMyFragment(new SettingsFragment());
@@ -105,12 +131,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     Log.d(TAG, "tmcSubctgyname "+tmcSubctgyname);
                     Log.d(TAG, "tmcctgyname "+tmcctgyname);
 
+                    checkForInternetConnectionAndGetMenuItemAndMobileAppData();
 
-                    completemenuItem = getMenuItemusingStoreId(vendorKey);
-                    getDatafromMobileApp();
-                  //  ConnectPrinter();
-                    getDeliveryPartnerList();
-                    getMarinadeMenuItemusingStoreId(vendorKey);
+
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -222,6 +245,71 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         super.onResume();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
+
+    }
+    public boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
+    }
+
+    private void checkForInternetConnectionAndGetMenuItemAndMobileAppData() {
+        try {
+            if (isConnected()) {
+                //Toast.makeText(getApplicationContext(), "Internet Connected", Toast.LENGTH_SHORT).show();
+                completemenuItem = getMenuItemusingStoreId(vendorKey);
+                getDatafromMobileApp();
+                //  ConnectPrinter();
+                getDeliveryPartnerList();
+                completeMarinademenuItem =  getMarinadeMenuItemusingStoreId(vendorKey);
+            } else {
+                Toast.makeText(getApplicationContext(), "No Internet Connection", Toast.LENGTH_SHORT).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText("Poor Internet Connection .Please Try Again !!!! ");
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        dialog.cancel();
+
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
 
     }
 
@@ -348,9 +436,61 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             public void onErrorResponse(@NonNull VolleyError error) {
                 Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
 
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+                SharedPreferences preferences =getSharedPreferences("RedeemData",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                SharedPreferences preferencess =getSharedPreferences("PartnerAppAccessDetails",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editorr = preferencess.edit();
+                editorr.clear();
+                editorr.apply();
+
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(MobileScreen_Dashboard.this,"Error in General App Data code :  "+errorCode,Toast.LENGTH_LONG).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        dialog.cancel();
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
 
                 error.printStackTrace();
             }
@@ -388,7 +528,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
     private void getDeliveryPartnerList() {
-
+        SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorKey, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
@@ -422,9 +565,56 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
-                Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+                SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(MobileScreen_Dashboard.this,"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        dialog.cancel();
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
                 error.printStackTrace();
             }
@@ -432,7 +622,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 //params.put("orderplacedtime", "12/26/2020");
 
                 return params;
@@ -460,11 +650,27 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     private String getMenuItemusingStoreId(String vendorKey) {
         Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
-
+        completemenuItem="";
+        MenuList.clear();
+        SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems+"?storeid="+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
+                try{
+                    completemenuItem="";
+                    MenuList.clear();
+                    SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.clear();
+                    editor.apply();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
                 try{
                     Log.d(TAG, "starting:onResponse ");
 
@@ -786,7 +992,64 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 Log.d(TAG, "Error: " + error.getLocalizedMessage());
                 Log.d(TAG, "Error: " + error.getMessage());
                 Log.d(TAG, "Error: " + error.toString());
-              Toast.makeText(MobileScreen_Dashboard.this,"Error in Getting Menu Item ",Toast.LENGTH_LONG).show();
+                completemenuItem="";
+                MenuList.clear();
+                SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+
+                if (error instanceof TimeoutError) {
+                    errorCode = "Timeout Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(MobileScreen_Dashboard.this,"Error in Getting  Menu Item error code :  "+errorCode,Toast.LENGTH_LONG).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = preferences.edit();
+                                        editor.clear();
+                                        editor.apply();
+
+
+                                        dialog.cancel();
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
                 error.printStackTrace();
             }
@@ -817,13 +1080,29 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-    private void getMarinadeMenuItemusingStoreId(String vendorKey) {
+    private String getMarinadeMenuItemusingStoreId(String vendorKey) {
         Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
-
+        completeMarinademenuItem="";
+        MarinadeMenuList.clear();
+        SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMarinadeMenuItems+"?storeid="+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
+                try{
+                    completeMarinademenuItem="";
+                    MarinadeMenuList.clear();
+                    SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.clear();
+                    editor.apply();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
                 try{
                     Log.d(TAG, "starting:onResponse ");
 
@@ -1106,8 +1385,57 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 Log.d(TAG, "Error: " + error.getLocalizedMessage());
                 Log.d(TAG, "Error: " + error.getMessage());
                 Log.d(TAG, "Error: " + error.toString());
-                Toast.makeText(MobileScreen_Dashboard.this,"Error in Getting Marinade Menu Item ",Toast.LENGTH_LONG).show();
+                completeMarinademenuItem="";
+                MarinadeMenuList.clear();
+                SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                if (error instanceof TimeoutError) {
+                    errorCode = "Timeout Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
 
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(MobileScreen_Dashboard.this,"Error in Getting Marinade Menu Item error code :  "+errorCode,Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), "No Internet Connection", Toast.LENGTH_SHORT).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        dialog.cancel();
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
                 error.printStackTrace();
             }
         }) {
@@ -1129,6 +1457,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         // Make the request
         Volley.newRequestQueue(MobileScreen_Dashboard.this).add(jsonObjectRequest);
 
+        return "";
     }
 
 

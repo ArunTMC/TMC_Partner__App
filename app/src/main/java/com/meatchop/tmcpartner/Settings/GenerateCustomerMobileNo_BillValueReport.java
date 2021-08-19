@@ -45,6 +45,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
@@ -109,7 +110,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     static boolean isSwitchisOn = false;
     Workbook wb;
     Sheet sheet = null;
-    private static String[] columns = {"S.No ","User Mobile","Payable Amount","Ordertype"};
+    private static String[] columns = {"S.No ","Customer Mobile No","Value of Bill","Ordertype"};
     int spinnerselecteditem=1;
     int spinnerselecteditem_Count =1;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -121,6 +122,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_customer_mobile_no__bill_value_report);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         switchfor_singleDayDump = findViewById(R.id.switchfor_singleDayDump);
         daysCountSpinner = (Spinner) findViewById(R.id.daysCountSpinner);

@@ -27,6 +27,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_CartItem_Recyclerview;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
@@ -76,13 +77,18 @@ public class AddSwiggyOrders extends AppCompatActivity {
     private  boolean isOrderTrackingDetailsMethodCalled =false;
     private  boolean isPaymentDetailsMethodCalled =false;
     boolean isproceedtoPay_Clicked =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false;
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_swiggy_orders_activity);
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
-
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         procced_to_pay_widget = findViewById(R.id.procced_to_pay_widget);
         swiggyOrdersCustomermobileno  = findViewById(R.id.editTextPhone);
         total_item_Rs_text_widget = findViewById(R.id.total_amount_text_widget);
@@ -93,8 +99,12 @@ public class AddSwiggyOrders extends AppCompatActivity {
 
         try{
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-            vendorKey = shared.getString("VendorKey","vendor_1");
+            vendorKey = shared.getString("VendorKey","");
 
+            StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
+            StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
+            StoreAddressLine3 = (shared.getString("VendorPincode", ""));
+            StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
         }
         catch(Exception e){
@@ -1280,25 +1290,24 @@ public class AddSwiggyOrders extends AppCompatActivity {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
-
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
-
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "+914445568499" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);

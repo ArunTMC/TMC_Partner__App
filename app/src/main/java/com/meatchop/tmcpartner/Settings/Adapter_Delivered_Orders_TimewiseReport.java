@@ -251,12 +251,22 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
 
             for(int i=0; i < array.length(); i++) {
                 JSONObject json = array.getJSONObject(i);
-
+                String subCtgyKey = "";
                 if (json.has("marinadeitemdesp")) {
                     JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
 
                     String marinadeitemName = String.valueOf(marinadesObject.get("itemname"));
-
+                    try {
+                        if(marinadesObject.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
 
 
                     String itemName = String.valueOf(json.get("itemname"));
@@ -264,10 +274,31 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
                     String quantity = String.valueOf(json.get("quantity"));
                     itemName = itemName + " Marinade Box ";
                     if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+ "Grill House "+itemName, quantity);
 
-                        itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+"Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s  ,\n%s * %s", itemDesp, marinadeitemName + "  with "+itemName, quantity);
+
+                        }
                     } else {
-                        itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName, quantity);
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", "Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName, quantity);
+
+                        }
 
                     }
 
@@ -280,11 +311,45 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
-                    if (itemDesp.length()>0) {
+                    try {
+                        if(json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        }
+                        else {
+                            subCtgyKey = " ";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
 
-                        itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+
+                    if (itemDesp.length()>0) {
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+
+                        }
                     } else {
-                        itemDesp = String.format("%s * %s", itemName, quantity);
+                        if(subCtgyKey.equals("tmcsubctgy_16")){
+                            itemDesp = String.format("%s * %s",  "Grill House "+itemName, quantity);
+
+                        }
+                        else  if(subCtgyKey.equals("tmcsubctgy_15")){
+                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+itemName, quantity);
+
+                        }
+                        else{
+                            itemDesp = String.format("%s * %s", itemName, quantity);
+
+                        }
 
                     }
 

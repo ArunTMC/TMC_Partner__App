@@ -42,6 +42,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -176,26 +177,35 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     String printerNamefromSP = "";
     String printerStatusfromSP= "";
     String deliveryTimeForExpr_Delivery;
-    double totalAmountFromAddingSubtotal=0;
-    double couponDiscount_double=0;
-    double deliveryAmount_double=0;
-    double totalAmountFromAddingSubtotalWithDiscount =0;
-    double totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt =0;
-    String DeliveryAmount =  "";
+
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_orders_using_mobile_number);
+
+
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         deliveryPartnerList = new ArrayList<>();
         printerConnectionStatus_Textwidget = findViewById(R.id.printerConnectionStatus_Textwidget);
 
         try{
            SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-           vendorKey = (shared.getString("VendorKey", "vendor_1"));
+           vendorKey = (shared.getString("VendorKey", ""));
            vendorname = (shared.getString("VendorName", ""));
+            StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
+            StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
+            StoreAddressLine3 = (shared.getString("VendorPincode", ""));
+            StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
-           SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
+            SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
            DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
 
            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
@@ -708,10 +718,12 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         }
 
         String Title = "The Meat Chop";
-         String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+     /*    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
         String StoreAddressLine2 = "Hasthinapuram Chromepet";
         String StoreAddressLine3 = "Chennai - 600044";
         String StoreLanLine = "PH No :4445568499";
+
+      */
         String GSTIN = "GSTIN :33AAJCC0055D1Z9";
         String CurrentTime =getDate_and_time();
 
@@ -731,7 +743,12 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         String DeliveryType ="";
         String DistanceFromStore ="";
         String Address =  "";
-
+        double totalAmountFromAddingSubtotal=0;
+        double couponDiscount_double=0;
+        double deliveryAmount_double=0;
+        double totalAmountFromAddingSubtotalWithDiscount =0;
+        double totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt =0;
+        String DeliveryAmount =  "";
 
         try {
             OrderPlacedtime= modal_manageOrders_pojo_class.getOrderplacedtime();
@@ -984,16 +1001,36 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                             e.printStackTrace();
                         }
-                        BluetoothPrintDriver.Begin();
-                        BluetoothPrintDriver.SetAlignMode((byte) 0);
-                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
-                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
-                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
-                        BluetoothPrintDriver.SetLineSpacing((byte) 100);
-                        BluetoothPrintDriver.printString(fullitemName);
-                        BluetoothPrintDriver.BT_Write("\r");
-                        BluetoothPrintDriver.LF();
-
+                        if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                            BluetoothPrintDriver.printString(" Grill House  "+fullitemName );
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
+                        else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                            BluetoothPrintDriver.printString("Ready to Cook "+fullitemName);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
+                        else  {
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                            BluetoothPrintDriver.printString(fullitemName);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
                         try {
                             finalitemNetweight = marinadesObject.getString("netweight");
                             //Log.i("tag","grossweight Log    "+                grossweight);
@@ -1182,15 +1219,36 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
                     BluetoothPrintDriver.Begin();
 
-
-                    BluetoothPrintDriver.SetAlignMode((byte) 0);
-                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
-                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
-                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
-                    BluetoothPrintDriver.SetLineSpacing((byte) 100);
-                    BluetoothPrintDriver.printString(fullitemName);
-                    BluetoothPrintDriver.BT_Write("\r");
-                    BluetoothPrintDriver.LF();
+                    if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                        BluetoothPrintDriver.printString(" Grill House  "+fullitemName );
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
+                    else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                        BluetoothPrintDriver.printString("Ready to Cook "+fullitemName);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
+                    else  {
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                        BluetoothPrintDriver.printString(fullitemName);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
 
                     try {
                         finalitemNetweight = json.getString("netweight");
@@ -1498,15 +1556,41 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                             e.printStackTrace();
                         }
+                        if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                            itemDespName_Weight_quantity = String.valueOf("Grill House  "+fullitemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
+                        else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
 
-                        itemDespName_Weight_quantity = String.valueOf(itemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
-                        BluetoothPrintDriver.Begin();
-                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
-                        BluetoothPrintDriver.SetAlignMode((byte) 0);
-                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
-                        BluetoothPrintDriver.BT_Write("\r");
-                        BluetoothPrintDriver.LF();
+                            itemDespName_Weight_quantity = String.valueOf("Ready to Cook "+fullitemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                        }
+                        else  {
+                            itemDespName_Weight_quantity = String.valueOf(fullitemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                        }
+
+
 
 
                         itemwise_price = marinadesObject.getString("tmcprice");
@@ -1754,14 +1838,42 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    itemDespName_Weight_quantity = String.valueOf(itemName) + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
-                    BluetoothPrintDriver.Begin();
-                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
-                    BluetoothPrintDriver.SetAlignMode((byte) 0);
-                    BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                    BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
-                    BluetoothPrintDriver.BT_Write("\r");
-                    BluetoothPrintDriver.LF();
+
+                    if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                        itemDespName_Weight_quantity = String.valueOf("Grill House  "+fullitemName)  + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
+                    else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+
+                        itemDespName_Weight_quantity = String.valueOf("Ready to Cook "+fullitemName)  + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
+                    else  {
+                        itemDespName_Weight_quantity = String.valueOf(fullitemName) + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                    }
+
+
+
 
 
                     itemwise_price = json.getString("tmcprice");
@@ -2143,18 +2255,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 BluetoothPrintDriver.BT_Write("\r");
                 BluetoothPrintDriver.LF();
 
-                try{
-                    totalAmountFromAddingSubtotalWithDiscount =  totalAmountFromAddingSubtotal - couponDiscount_double ;
-
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-
 
 
 
             }
+            try{
+                totalAmountFromAddingSubtotalWithDiscount =  totalAmountFromAddingSubtotal - couponDiscount_double ;
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
 
 
 
@@ -3067,7 +3179,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;

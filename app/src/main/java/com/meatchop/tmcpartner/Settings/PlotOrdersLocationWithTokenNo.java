@@ -47,6 +47,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
 
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -120,16 +121,18 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plot_orders_location_with_token_no);
+        new NukeSSLCerts();
+        NukeSSLCerts.nuke();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapView);
         Objects.requireNonNull(mapFragment).getMapAsync(PlotOrdersLocationWithTokenNo.this);
 
         try{
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-            vendorKey = (shared.getString("VendorKey", "vendor_1"));
+            vendorKey = (shared.getString("VendorKey", ""));
             vendorname = (shared.getString("VendorName", ""));
-            vendorLatitude  = Double.parseDouble(shared.getString("VendorLatitude", "12.9406"));
-            vendorLongitude  = Double.parseDouble(shared.getString("VendorLongitute", "80.1496"));
+            vendorLatitude  = Double.parseDouble(shared.getString("VendorLatitude", ""));
+            vendorLongitude  = Double.parseDouble(shared.getString("VendorLongitute", ""));
 
             DisplayMetrics dm = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -990,7 +993,7 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
+                params.put("vendorkey", vendorKey);
                 params.put("orderplacedtime", "11 Jan 2021");
 
                 return params;
