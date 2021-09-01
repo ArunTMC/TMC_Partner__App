@@ -1,12 +1,13 @@
 package com.meatchop.tmcpartner;
 
 public class Printer_POJO_Class {
-    String orderID; String itemName; String itemWeight; String itemRate; String discount;String GST; String subTotal;String quantity;
+    String orderID; String itemName; String itemWeight; String itemRate; String discount;String GST; String subTotal;String quantity;String grossWeight;
     String SlotDate,SlotName,SlotTimeInRange,totalRate,couponDiscount,totaldiscount,totalGST,totalsubtotal;
     double oldSavedAmount;
     String useraddress,SubCtgyName ,itemname_report,tmcprice_report;
-    public Printer_POJO_Class(String quantity, String orderID, String itemName, String itemWeight, String itemRate, String discount, String GST, String subTotal) {
-       this.quantity =quantity;
+    public Printer_POJO_Class(String grossweight, String quantity, String orderID, String itemName, String itemWeight, String itemRate, String discount, String GST, String subTotal) {
+        this.grossWeight =grossweight;
+        this.quantity =quantity;
         this.orderID=orderID;
         this.itemName=itemName;
         this.itemWeight=itemWeight;
@@ -15,6 +16,38 @@ public class Printer_POJO_Class {
         this.GST=GST;
         this.subTotal=subTotal;
 
+    }
+
+    public String getGrossWeight() {
+        return grossWeight;
+    }
+
+    public void setGrossWeight(String grossWeight) {
+        this.grossWeight = grossWeight;
+    }
+
+    public String getSlotDate() {
+        return SlotDate;
+    }
+
+    public void setSlotDate(String slotDate) {
+        SlotDate = slotDate;
+    }
+
+    public String getSlotName() {
+        return SlotName;
+    }
+
+    public void setSlotName(String slotName) {
+        SlotName = slotName;
+    }
+
+    public String getSlotTimeInRange() {
+        return SlotTimeInRange;
+    }
+
+    public void setSlotTimeInRange(String slotTimeInRange) {
+        SlotTimeInRange = slotTimeInRange;
     }
 
     public Printer_POJO_Class(String subCtgyName) {

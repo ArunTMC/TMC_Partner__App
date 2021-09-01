@@ -114,7 +114,7 @@ public class slotwiseitem_RecyclerviewAdapter extends RecyclerView.Adapter<slotw
         private TextView textView;
         public ViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.textview);
+            textView = itemView.findViewById(R.id.textviewllllllllllllll);
         }
     }
 }

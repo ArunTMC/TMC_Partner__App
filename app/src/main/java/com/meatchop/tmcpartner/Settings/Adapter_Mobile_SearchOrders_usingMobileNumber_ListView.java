@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,7 +62,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
     public static  BottomSheetDialog bottomSheetDialog;
     String deliverypartnerName,orderType,CalledFrom;
     BluetoothAdapter mBluetoothAdapter =null;
-
+    String orderPlacedTime ="";
+    boolean isOrderPlacedlessThan3MinsBefore = true;
 
     public Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber, String orderStatus) {
         super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
@@ -152,6 +156,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         final Button generateTokenNo_button_widget = listViewItem.findViewById(R.id.generateTokenNo_button_widget);
 
 
+        final RelativeLayout totalButtonLayout =listViewItem.findViewById(R.id.buttonsRelativeLayout);
+
+        final LinearLayout ordercancellationtimeRefresh_Layout =listViewItem.findViewById(R.id.ordercancellationtimeRefresh_Layout);
+        final LinearLayout refreshordercancelationtime_image_layout =listViewItem.findViewById(R.id.refreshordercancelationtime_image_layout);
+
+
      //   final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
 
 
@@ -198,6 +208,42 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             e.printStackTrace();
             deliveryPersonName="";
         }
+
+
+
+        orderPlacedTime ="";
+        isOrderPlacedlessThan3MinsBefore = true;
+        try {
+            orderPlacedTime =  modal_manageOrders_pojo_class.getOrderplacedtime();
+
+            isOrderPlacedlessThan3MinsBefore = CheckWeathertheOrderisPlacedLessThan3Mins(orderPlacedTime);
+            Log.d(Constants.TAG, "log isOrderPlacedlessThan3MinsBefore : " + isOrderPlacedlessThan3MinsBefore);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        if(!isOrderPlacedlessThan3MinsBefore)
+        {
+            totalButtonLayout.setVisibility(View.VISIBLE);
+            ordercancellationtimeRefresh_Layout.setVisibility(View.GONE);
+        }
+        else{
+            totalButtonLayout.setVisibility(View.GONE);
+            ordercancellationtimeRefresh_Layout.setVisibility(View.VISIBLE);
+
+        }
+        refreshordercancelationtime_image_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
+
+                notifyDataSetChanged();
+                searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+            }
+        });
+
 
 
 
@@ -1510,6 +1556,153 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
     }
+
+
+
+
+
+
+
+
+
+
+    private boolean CheckWeathertheOrderisPlacedLessThan3Mins(String orderPlacedTime) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+        Date date = null;
+        try {
+            date = dateFormat.parse(orderPlacedTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        ////Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        Log.d(Constants.TAG, "log orderPlacedTime : " + orderPlacedTime);
+
+
+        calendar.add(Calendar.MINUTE, 3);
+
+
+
+        Date c1 = calendar.getTime();
+        SimpleDateFormat df1 = new SimpleDateFormat("EEE");
+        String predictedday = df1.format(c1);
+
+
+
+        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy");
+        String  predicteddate = df2.format(c1);
+        String predicteddateandday = predictedday+", "+predicteddate;
+
+
+        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss");
+        String  predictedtime = df3.format(c1);
+        String predicteddateanddayandtime = predictedday+", "+predicteddate+" "+predictedtime;
+
+        Log.d(Constants.TAG, "log predicteddateanddayandtime : " + predicteddateanddayandtime);
+
+        long predictedLongForDate = getLongValuefortheDate(predicteddateanddayandtime);
+        String  currentTime = getDate_and_time();
+        Log.d(Constants.TAG, "log currentTime : " +currentTime);
+
+        long currentTimeLong = getLongValuefortheDate(currentTime);
+        if(currentTimeLong>=predictedLongForDate){//current time is greater or equals order placed time + 3 minutes
+            Log.d(Constants.TAG, "log currentTimeLong : " +currentTimeLong);
+            Log.d(Constants.TAG, "log predictedLongForDate : " +predictedLongForDate);
+
+            return false;
+
+        }
+        else{
+
+            Log.d(Constants.TAG, "log currentTimeLong : " +currentTimeLong);
+            Log.d(Constants.TAG, "log predictedLongForDate : " +predictedLongForDate);
+            return true;
+        }
+
+    }
+
+
+
+
+    private Long getLongValuefortheDate(String orderplacedtime) {
+        long time1long =  0;
+        String longvalue="";
+        try {
+            String time1 = orderplacedtime;
+            //   Log.d(TAG, "time1long  "+orderplacedtime);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            Date date = sdf.parse(time1);
+            time1long = date.getTime() / 1000;
+            longvalue = String.valueOf(time1long);
+          /*  String time2 = "Sat, 24 Apr 2021 07:50:28";
+            Date date2 = sdf.parse(time2);
+
+            long time2long =  date2.getTime() / 1000;
+            Log.d(TAG, "time1 "+time1long + " time2 "+time2long);
+
+           */
+            //   long differencetime = time2long - time1long;
+            //  Log.d(TAG, "   "+orderplacedtime);
+
+            //   Log.d(TAG, "time1long  "+time1long);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+                String time1 = orderplacedtime;
+                //     Log.d(TAG, "time1long  "+orderplacedtime);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                Date date = sdf.parse(time1);
+                time1long = date.getTime() / 1000;
+                longvalue = String.valueOf(time1long);
+
+                //   long differencetime = time2long - time1long;
+                //  Log.d(TAG, "   "+orderplacedtime);
+
+                //    Log.d(TAG, "time1long  "+time1long);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return time1long;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

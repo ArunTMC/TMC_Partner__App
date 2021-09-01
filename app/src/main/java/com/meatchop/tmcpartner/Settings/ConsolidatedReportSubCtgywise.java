@@ -46,7 +46,6 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
@@ -160,7 +159,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         swiggySales = findViewById(R.id.swiggySales);
         phoneOrderSales = findViewById(R.id.phoneOrderSales);
         dunzoSales = findViewById(R.id.dunzoSales);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         scrollView = findViewById(R.id.scrollView);
         noofPacks = findViewById(R.id.noofPacks);
         noofOrders = findViewById(R.id.noofOrders);

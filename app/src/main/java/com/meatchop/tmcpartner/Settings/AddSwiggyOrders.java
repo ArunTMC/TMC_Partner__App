@@ -28,11 +28,9 @@ import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_CartItem_Recyclerview;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
-import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.pos.printer.PrinterFunctions;
 
 import org.json.JSONArray;
@@ -1272,7 +1270,7 @@ public class AddSwiggyOrders extends AppCompatActivity {
                 String quantity = modal_newOrderItems.getQuantity();
                 String price = modal_newOrderItems.getItemFinalPrice();
                 String weight = modal_newOrderItems.getItemFinalWeight();
-                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
+                Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
 
             }
 

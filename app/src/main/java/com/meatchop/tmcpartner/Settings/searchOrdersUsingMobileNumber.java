@@ -1441,7 +1441,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             BluetoothPrintDriver.SetLineSpacing((byte) 120);
             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
             BluetoothPrintDriver.SetAlignMode((byte) 0);
-            BluetoothPrintDriver.printString("ItemName * Quantity ");
+            BluetoothPrintDriver.printString("ItemName  ");
             BluetoothPrintDriver.BT_Write("\r");
             BluetoothPrintDriver.LF();
 
@@ -1556,30 +1556,180 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                             e.printStackTrace();
                         }
+
+                        String  finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+
+
+
+
+
+                        try {
+                            finalgrossweight = marinadesObject.getString("grossweight");
+
+
+                            if ((finalgrossweight.equals(""))||(finalgrossweight.equals(null))||(finalgrossweight.equals(" - "))) {
+                                try {
+                                    finalgrossweight = marinadesObject.getString("grossweightingrams");
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                                //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            try {
+                                if (finalgrossweight.equals("")) {
+                                    finalgrossweight = marinadesObject.getString("grossweightingrams");
+                                    //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                                }
+                            }
+                            catch (Exception e1){
+                                e1.printStackTrace();
+                            }
+                            e.printStackTrace();
+                        }
+
+
+
+                        try {
+                            finalitemNetweight = marinadesObject.getString("netweight");
+
+
+                            if ((finalitemNetweight.equals(""))||(finalitemNetweight.equals(null))||(finalitemNetweight.equals(" - "))) {
+                                try {
+                                    finalitemNetweight = marinadesObject.getString("netweight");
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                                //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            try {
+                                if (finalitemNetweight.equals("")) {
+                                    finalitemNetweight = marinadesObject.getString("netweight");
+                                    //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                                }
+                            }
+                            catch (Exception e1){
+                                e1.printStackTrace();
+                            }
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+                            finalQuantity = json.getString("quantity");
+
+
+                            if ((finalQuantity.equals(""))||(finalQuantity.equals(null))||(finalQuantity.equals(" - "))) {
+                                try {
+                                    finalQuantity = json.getString("quantity");
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                                //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            try {
+                                if (finalQuantity.equals("")) {
+                                    finalQuantity = json.getString("quantity");
+                                    //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                                }
+                            }
+                            catch (Exception e1){
+                                e1.printStackTrace();
+                            }
+                            e.printStackTrace();
+                        }
+
+
+
+
+
                         if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
-                            itemDespName_Weight_quantity = String.valueOf("Grill House  "+fullitemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                            itemDespName_Weight_quantity = String.valueOf("Grill House  "+fullitemName);
                             BluetoothPrintDriver.Begin();
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
                             BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
+                            if(!finalgrossweight.equals("")) {
+
+
+                                itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                                BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            }
+                            itemDespName_Weight_quantity = String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")");
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
                         }
                         else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
 
-                            itemDespName_Weight_quantity = String.valueOf("Ready to Cook "+fullitemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                            itemDespName_Weight_quantity = String.valueOf("Ready to Cook "+fullitemName) ;
                             BluetoothPrintDriver.Begin();
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
                             BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            if(!finalgrossweight.equals("")) {
+
+
+                                itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                                BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            }
+                            itemDespName_Weight_quantity = String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")");
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
-
                         }
                         else  {
-                            itemDespName_Weight_quantity = String.valueOf(fullitemName) + " * " + String.valueOf(marinadesObject.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                            itemDespName_Weight_quantity = String.valueOf(fullitemName)  ;
                             BluetoothPrintDriver.Begin();
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
@@ -1588,6 +1738,25 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
 
+                            if(!finalgrossweight.equals("")) {
+
+
+                                itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                                BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            }
+                            itemDespName_Weight_quantity = String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")");
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
                         }
 
 
@@ -1839,37 +2008,235 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
 
 
+
+
+                    String  finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+
+
+                    try {
+                        finalQuantity = json.getString("quantity");
+
+
+                        if ((finalQuantity.equals(""))||(finalQuantity.equals(null))||(finalQuantity.equals(" - "))) {
+                            try {
+                                finalQuantity = json.getString("quantity");
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        try {
+                            if (finalQuantity.equals("")) {
+                                finalQuantity = json.getString("quantity");
+                                //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                            }
+                        }
+                        catch (Exception e1){
+                            e1.printStackTrace();
+                        }
+                        e.printStackTrace();
+                    }
+
+
+
+
+                    try {
+                        finalitemNetweight = json.getString("netweight");
+
+
+                        if ((finalitemNetweight.equals(""))||(finalitemNetweight.equals(null))||(finalitemNetweight.equals(" - "))) {
+                            try {
+                                finalitemNetweight = json.getString("netweight");
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        try {
+                            if (finalitemNetweight.equals("")) {
+                                finalitemNetweight = json.getString("netweight");
+                                //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                            }
+                        }
+                        catch (Exception e1){
+                            e1.printStackTrace();
+                        }
+                        e.printStackTrace();
+                    }
+
+
+
+                    try {
+                        finalitemNetweight = json.getString("netweight");
+
+
+                        if ((finalitemNetweight.equals(""))||(finalitemNetweight.equals(null))||(finalitemNetweight.equals(" - "))) {
+                            try {
+                                finalitemNetweight = json.getString("netweight");
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        try {
+                            if (finalitemNetweight.equals("")) {
+                                finalitemNetweight = json.getString("netweight");
+                                //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                            }
+                        }
+                        catch (Exception e1){
+                            e1.printStackTrace();
+                        }
+                        e.printStackTrace();
+                    }
+                    try {
+                        finalgrossweight = json.getString("grossweight");
+
+
+                        if ((finalgrossweight.equals(""))||(finalgrossweight.equals(null))||(finalgrossweight.equals(" - "))) {
+                            try {
+                                finalgrossweight = json.getString("grossweightingrams");
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        try {
+                            if (finalgrossweight.equals("")) {
+                                finalgrossweight = json.getString("grossweightingrams");
+                                //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                            }
+                        }
+                        catch (Exception e1){
+                            e1.printStackTrace();
+                        }
+                        e.printStackTrace();
+                    }
+
+
+
                     if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
-                        itemDespName_Weight_quantity = String.valueOf("Grill House  "+fullitemName)  + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+
+                        itemDespName_Weight_quantity = String.valueOf("Grill House  "+fullitemName);
                         BluetoothPrintDriver.Begin();
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
                         BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
+                        if(!finalgrossweight.equals("")) {
+
+                            itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        }
+                        itemDespName_Weight_quantity = String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
+
                     }
                     else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
 
-                        itemDespName_Weight_quantity = String.valueOf("Ready to Cook "+fullitemName)  + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                        itemDespName_Weight_quantity = String.valueOf("Ready to Cook  "+fullitemName);
                         BluetoothPrintDriver.Begin();
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
                         BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
+                        if(!finalgrossweight.equals("")) {
+
+                            itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        }
+                        itemDespName_Weight_quantity = String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
                     }
                     else  {
-                        itemDespName_Weight_quantity = String.valueOf(fullitemName) + " * " + String.valueOf(json.get("netweight") + "(" + String.valueOf(json.get("quantity")) + ")");
+                        itemDespName_Weight_quantity = String.valueOf(fullitemName)  ;
                         BluetoothPrintDriver.Begin();
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
                         BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        if(!finalgrossweight.equals("")) {
+
+                            itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        }
+                        itemDespName_Weight_quantity = String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")");
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
-
                     }
 
 
@@ -2032,8 +2399,17 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     BluetoothPrintDriver.SetAlignMode((byte) 0);
                     BluetoothPrintDriver.SetLineSpacing((byte) 80);
                     BluetoothPrintDriver.printString(itemwise_price + itemwise_Subtotal);
-                    BluetoothPrintDriver.BT_Write("\r");
+
                     BluetoothPrintDriver.LF();
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("                                               ");
+                    BluetoothPrintDriver.LF();
+
+
 
 
                 }

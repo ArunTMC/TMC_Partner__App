@@ -385,7 +385,7 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
             public void onClick(View view) {
                 Intent intent = new Intent (mContext, MobileScreen_OrderDetails1.class);
                 Bundle bundle = new Bundle();
-                bundle.putString("From","AppOrdersList");
+                bundle.putString("From","DeliveredOrdersTimeWiseReport");
 
                 bundle.putParcelable("data", modal_manageOrders_pojo_class);
                 intent.putExtras(bundle);

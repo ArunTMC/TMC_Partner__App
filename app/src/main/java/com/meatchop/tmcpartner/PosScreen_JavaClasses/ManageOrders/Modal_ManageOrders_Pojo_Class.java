@@ -1,18 +1,19 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.json.JSONArray;
 
 public class  Modal_ManageOrders_Pojo_Class implements Parcelable {
-public String paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
+public String couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
 public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
 public   String subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp;
     public int intTokenNo;
-public boolean isdelayed;
+public boolean isdelayed,isOrderPlacedlessThan3MinsBefore;
       String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
 
     public String getPaymenttranscationimageurl() {
@@ -77,6 +78,38 @@ public boolean isdelayed;
 
     public void setIsFromCancelledOrders(String isFromCancelledOrders) {
         this.isFromCancelledOrders = isFromCancelledOrders;
+    }
+
+    public String getCouponkey() {
+        return couponkey;
+    }
+
+    public void setCouponkey(String couponkey) {
+        this.couponkey = couponkey;
+    }
+
+    public String getOrderplaceddate() {
+        return orderplaceddate;
+    }
+
+    public void setOrderplaceddate(String orderplaceddate) {
+        this.orderplaceddate = orderplaceddate;
+    }
+
+    public String getUserkey() {
+        return userkey;
+    }
+
+    public void setUserkey(String userkey) {
+        this.userkey = userkey;
+    }
+
+    public boolean isOrderPlacedlessThan3MinsBefore() {
+        return isOrderPlacedlessThan3MinsBefore;
+    }
+
+    public void setOrderPlacedlessThan3MinsBefore(boolean orderPlacedlessThan3MinsBefore) {
+        isOrderPlacedlessThan3MinsBefore = orderPlacedlessThan3MinsBefore;
     }
 
     public String getIsFromEditOrders() {
@@ -416,6 +449,7 @@ public boolean isdelayed;
         isFromCancelledOrders= in.readString();
         deliveryamount = in.readString();
         paymenttranscationimageurl = in.readString();
+
     }
 
     public static final Creator<Modal_ManageOrders_Pojo_Class> CREATOR = new Creator<Modal_ManageOrders_Pojo_Class>() {

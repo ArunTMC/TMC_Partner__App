@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/order_item_list_parentLayout"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/order_item_list_parentLayout">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="4dp"
             android:orientation="vertical">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -32,7 +32,42 @@
                     android:layout_weight="2.5"
                     android:id="@+id/orderDetailsLayout"
                     android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:gravity="center"
+                        android:id="@+id/ordercancellationtimeRefresh_Layout"
+                        android:orientation="horizontal"
+                        >
 
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Does Order Cancelletion time is Over " />
+
+                        <LinearLayout
+                            android:id="@+id/refreshordercancelationtime_image_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+
+                                android:layout_height="20dp"
+                                app:srcCompat="@mipmap/neworders_sync_icon" />
+                        </LinearLayout>
+
+                    </LinearLayout>
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -387,6 +422,12 @@
 
 
 
+
+
+
+
+
+
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -396,14 +437,9 @@
                         android:layout_weight="3">
 
 
-
-
-
-
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:visibility="visible"
                             android:orientation="vertical"
                             >
 

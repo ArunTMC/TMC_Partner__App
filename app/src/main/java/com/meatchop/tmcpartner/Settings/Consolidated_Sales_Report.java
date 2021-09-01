@@ -118,7 +118,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         final_sales = findViewById(R.id.final_sales);
         appsales = findViewById(R.id.appSales);
         possales = findViewById(R.id.posSales);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         scrollView  = findViewById(R.id.scrollView);
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);

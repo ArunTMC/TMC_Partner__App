@@ -2,22 +2,17 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
@@ -44,8 +39,6 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
@@ -161,7 +154,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         cashSales = findViewById(R.id.cashSales);
         cardSales = findViewById(R.id.cardSales);
         upiSales  = findViewById(R.id.upiSales);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         totalOrdersCount = findViewById(R.id.totalOrdersCount);
         totaldeliveredOrdersCount = findViewById(R.id.totaldeliveredOrdersCount);
         cashOnDelivery = findViewById(R.id.cashOnDelivery);
@@ -176,7 +169,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         totalAmt_with_CouponDiscount = findViewById(R.id.totalAmt_with_CouponDiscount);
         totalGST_Amt = findViewById(R.id.totalGST_Amt);
         final_sales = findViewById(R.id.final_sales);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         deliveryChargeAmount_textwidget = findViewById(R.id.deliveryChargeAmount_textwidget);
 
 
@@ -2151,7 +2144,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                                 Modal_OrderDetails modal_orderDetails_itemDespfrom_hashMap = OrderItem_hashmap.get(marinadeitemmenuItemId);
                                 //Log.i("tag", "TMCPRICEFROMHashmap" + modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
-                                double tmcprice_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
+                                double tmcprice_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getTmcprice());
                                 int quantity_from_HashMap = Integer.parseInt(modal_orderDetails_itemDespfrom_hashMap.getQuantity());
                                 double gstAmount_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getGstamount());
                                 try {

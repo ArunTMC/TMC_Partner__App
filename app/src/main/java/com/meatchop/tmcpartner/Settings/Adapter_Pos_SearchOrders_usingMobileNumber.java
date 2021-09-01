@@ -4,12 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
-import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -47,8 +44,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
     Context mContext;
@@ -1659,7 +1654,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);

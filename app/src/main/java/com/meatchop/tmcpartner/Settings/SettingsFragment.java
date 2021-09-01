@@ -95,7 +95,7 @@ public class SettingsFragment extends Fragment {
     LinearLayout addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor, manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
+    LinearLayout orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -146,8 +146,12 @@ public class SettingsFragment extends Fragment {
     Button generateUserDetailsButton,generateOrderItemDetailsButton,connect_printer_button_widget;
     List<Modal_User> UserTableArray = new ArrayList<>();
     List<Modal_Address> AddressTableArray = new ArrayList<>();
-    List<ModalOrderItemDetails> OrderItemDetailsTableArray = new ArrayList<>();
+    List<Modal_User> FilteredUserTableArray = new ArrayList<>();
+    List<Modal_Address> FilteredAddressTableArray = new ArrayList<>();
+    List<String>AddedUserKey = new ArrayList<>();
 
+    List<ModalOrderItemDetails> OrderItemDetailsTableArray = new ArrayList<>();
+    String vendorkey_velachery = "vendor_1",vendorkey_usertable = "";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -245,6 +249,7 @@ public class SettingsFragment extends Fragment {
         addDunzoOrders_Placing_layout =  view.findViewById(R.id.addDunzoOrders_Placing_layout);
         menuItemAvailabiltyStatusReport  =  view.findViewById(R.id.menuItemAvailabiltyStatusReport);
         mobilePrinterConnectLayout = view.findViewById(R.id.mobilePrinterConnectLayout);
+        orderRating_report  =  view.findViewById(R.id.orderRating_report);
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -689,6 +694,17 @@ public class SettingsFragment extends Fragment {
         } else {
             // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
+
+        orderRating_report.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, DatewiseRatingreport_FirstScreen.class);
+                startActivity(intent);
+            }
+        });
+
+
+
         menuItemAvailabiltyStatusReport.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1637,6 +1653,12 @@ public class SettingsFragment extends Fragment {
                                     }
 
 
+                                if (json.has("vendorkey")) {
+                                    modalAddress.vendorkey = String.valueOf(json.get("vendorkey"));
+                                    vendorkey_usertable = String.valueOf(json.get("vendorkey"));
+                                } else {
+                                    modalAddress.vendorkey = "";
+                                }
 
 
                                     if (json.has("locationlong")) {
@@ -1795,8 +1817,7 @@ public class SettingsFragment extends Fragment {
 
             try {
                 if(whichsheetoGenerate.equals("UserDetailsSheet")){
-                    AddDatatoUserDetailsExcelSheet();
-
+                    FilterUserAndAddressArray() ;
                 }
                 else if(whichsheetoGenerate.equals("OrderItemDetailsSheet")){
                     AddDatatoOrderItemDetailsExcelSheet();
@@ -1804,6 +1825,36 @@ public class SettingsFragment extends Fragment {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void FilterUserAndAddressArray() {
+        AddedUserKey.clear();
+        FilteredUserTableArray.clear();
+        FilteredAddressTableArray.clear();
+        for(int i =0; i<AddressTableArray.size();i++) {
+            Modal_Address modal_address = AddressTableArray.get(i);
+            String vendorFromAddressArray = modal_address.getVendorkey().toString();
+            String userkeyFromAddressArray = modal_address.getUserkey().toString();
+            if(!AddedUserKey.contains(userkeyFromAddressArray)) {
+                if (vendorFromAddressArray.equals(vendorkey_velachery)) {
+                    for (int j = 0; j < UserTableArray.size(); j++) {
+                        Modal_User modal_user = UserTableArray.get(j);
+                        String userKeyFromUserArray = modal_user.getKey().toString();
+                        if (userkeyFromAddressArray.equals(userKeyFromUserArray)) {
+                            FilteredUserTableArray.add(modal_user);
+                            AddedUserKey.add(userKeyFromUserArray);
+
+                        }
+
+                    }
+                    FilteredAddressTableArray.add(modal_address);
+                }
+                if (i == (AddressTableArray.size() - 1)) {
+                    AddDatatoUserDetailsExcelSheet();
+
+                }
             }
         }
     }
@@ -1964,7 +2015,7 @@ public class SettingsFragment extends Fragment {
 
         boolean isFirstAddress = false;
         boolean isPrintedSecondtime = false;
-        for (int useriterator = 0; useriterator < UserTableArray.size(); useriterator++) {
+        for (int useriterator = 0; useriterator < FilteredUserTableArray.size(); useriterator++) {
             Row row = sheet.createRow(rowNum++);
             if(isPrintedSecondtime) {
                 row = sheet.createRow(rowNum++);
@@ -1972,7 +2023,7 @@ public class SettingsFragment extends Fragment {
                 isPrintedSecondtime =false;
             }
             isFirstAddress = false;
-            Modal_User modal_user = UserTableArray.get(useriterator);
+            Modal_User modal_user = FilteredUserTableArray.get(useriterator);
             String userkeyfromUserArray = modal_user.getKey();
 
             row.createCell(0).setCellValue(useriterator + 1);
@@ -1992,8 +2043,8 @@ public class SettingsFragment extends Fragment {
             row.createCell(8).setCellValue(modal_user.getUpdatedtime());
             row.createCell(9).setCellValue(modal_user.getFcmtoken());
 
-            for (int addressiterator = 0; addressiterator < AddressTableArray.size(); addressiterator++) {
-                Modal_Address modal_address = AddressTableArray.get(addressiterator);
+            for (int addressiterator = 0; addressiterator < FilteredAddressTableArray.size(); addressiterator++) {
+                Modal_Address modal_address = FilteredAddressTableArray.get(addressiterator);
                 String userkeyfromAddressArray = modal_address.getUserkey();
                 if (userkeyfromUserArray.equals(userkeyfromAddressArray)) {
                     if (!isFirstAddress) {
@@ -2066,7 +2117,7 @@ public class SettingsFragment extends Fragment {
             sheet.setColumnWidth(20, (10 * 400));
             sheet.setColumnWidth(21, (10 * 400));
 
-            int lastindex = UserTableArray.size() - 1;
+            int lastindex = FilteredUserTableArray.size() - 1;
             if (useriterator == lastindex) {
                 GenerateExcelSheet("User Detail Sheet");
 

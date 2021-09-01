@@ -1275,7 +1275,7 @@ public class AddDunzoOrders extends AppCompatActivity {
                 String quantity = modal_newOrderItems.getQuantity();
                 String price = modal_newOrderItems.getItemFinalPrice();
                 String weight = modal_newOrderItems.getItemFinalWeight();
-                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
+                Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
 
             }
 

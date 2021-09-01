@@ -173,7 +173,7 @@ public class PosSalesReport extends AppCompatActivity {
         dunzoSales = findViewById(R.id.dunzoSales);
         swiggySales = findViewById(R.id.swiggySales);
         scrollView  = findViewById(R.id.scrollView);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         phoneorderupiSales = findViewById(R.id.phoneorderupiSales);
         phoneordercashSales = findViewById(R.id.phoneordercashSales);
         phoneordercardSales = findViewById(R.id.phoneordercardSales);

@@ -1786,7 +1786,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight,quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
@@ -1845,7 +1845,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "ITEM NAME * QTY" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "ITEM NAME" + "\n");
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -1975,11 +1975,25 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
 
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "Grossweight : "+Printer_POJO_ClassArray[i].getGrossWeight()+"\n");
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "Netweight : "+Printer_POJO_ClassArray[i].getItemWeight()+" ,  Quantity : "+"(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+
+
+
 
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, itemrate + subtotal + "\n\n");
+
+
         }
 
 

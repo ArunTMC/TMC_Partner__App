@@ -59,7 +59,6 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -179,7 +178,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         swiggySales = findViewById(R.id.swiggySales);
         dunzoSales = findViewById(R.id.dunzoSales);
         phoneOrderSales = findViewById(R.id.phoneOrderSales);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         scrollView = findViewById(R.id.scrollView);
         endDateSelector_text = findViewById(R.id.endDateSelector_text);
       //  getdatainstruction = findViewById(R.id.getdatainstruction);
@@ -555,10 +554,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         try {
             if (!isEndDateisAfterCurrentDate) {
 
-                MaxDate = getMillisecondsFromDate("Sun, 15 Aug 2021");
+                MaxDate = getMillisecondsFromDate(selectedEndDate);
 
             } else {
-                MaxDate = getMillisecondsFromDate("Sun, 15 Aug 2021");
+                MaxDate = getMillisecondsFromDate(todayDate);
 
             }
             MinDate = getMillisecondsFromDate(selectedStartDate);

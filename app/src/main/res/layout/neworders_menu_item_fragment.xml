@@ -353,6 +353,16 @@
                                         android:textColorHint="@color/TMC_Hint_Color"
                                         android:textSize="25sp" />
 
+                                    <CheckBox
+                                        android:id="@+id/useStoreNumberCheckBox"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:layout_weight="1"
+                                        android:textSize="15sp"
+                                        android:fontFamily="@font/open_sans_bold"
+                                        android:layout_marginStart="15dp"
+                                        android:text="Use Store Number" />
+
                                 </LinearLayout>
 
                                 <LinearLayout

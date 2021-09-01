@@ -25,7 +25,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.MenuItemAvailabilityStatusReport"></activity>
+        <activity android:name=".Settings.DatewiseRatingreport_SecondScreen"></activity>
+        <activity android:name=".Settings.DatewiseRatingreport_FirstScreen" />
+        <activity android:name=".Settings.MenuItemAvailabilityStatusReport" />
         <activity
             android:name=".Settings.AddDunzoOrders"
             android:windowSoftInputMode="adjustPan" />

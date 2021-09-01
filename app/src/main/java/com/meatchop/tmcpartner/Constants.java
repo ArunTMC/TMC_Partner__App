@@ -17,6 +17,9 @@ public class Constants {
     public static final String CantApplyDiscountInstruction  =" Can't Apply discount when Cart is Empty";
     public static final String AddedRedeemPointsCancelledInstruction  ="Redeem Points Added in this Order is cancelled . So Kindly Add again";
 
+    public static final String RecievedAmountShouldBeGreaterthanZero  ="Recieved Amount Should be Greater than Zero";
+    public static final String RecievedAmountCantbeEmpty  ="Recieved Amount Column Can't Be Empty";
+    public static final String RecievedAmountShouldBeGreaterthanTotalAmount  ="Recieved Amount Should not be Less than total Amount";
 
 
     private static final String PACKAGE_NAME = "com.example.googlemap";
@@ -94,7 +97,8 @@ public class Constants {
     public static final String VIEWORDERSMODULE ="viewordersmodule";
     public static final String DATAANALYTICSMODULE ="dataanalyticsmodule";
     public static final String GENERALMODULE ="generalmodule";
-
+    public static final String PAYTM_SUCCESSSTATUS ="TXN_SUCCESS";
+    public static final String RAZORPAY_SUCCESSSTATUS ="paid";
 
 
     public static final String api_getListofSubCtgy = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=SubCategory";
@@ -119,11 +123,14 @@ public class Constants {
 
     public static final String api_GetAddressUsingUserKey= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/key?tablename=Address&key=";
 
+    public static final String api_GetTrackingOrderDetails_orderid ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetails?orderid=";
+
     public static final String api_GetTrackingOrderDetailswithDate_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackingorderdetailsusingdateforreport";
     public static final String api_GetTrackingOrderDetailsUsingSlotDate_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackorderdetailsusingslotdateforreport";
     public static final String api_GetTrackingOrderDetails_forReport_AppOrders_and_PosOrders ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackorderdetailsforposandapporders";
     public static final String api_GetOrderDetailsusingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetails?orderid=";
 
+    public static final String api_GetRatingDetailsUsingVendorid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/ratingorderdetailsforvendorid";
 
 
 
@@ -151,7 +158,7 @@ public class Constants {
     public static final String api_UpdateTokenNO_OrderDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/orderdetails?modulename=PlaceOrder";
     public static final String api_Update_DeliverySlotDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/deliveryslotdetails?modulename=VendorSlot";
     public static final String api_Update_DeliverySlots ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/deliveryslots?modulename=DeliverySlot";
-
+    public static final String api_updatePaymentTransactionTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/paymenttrans?modulename=Payment";
     public static final String api_Update_ChangeMenuItemAvailability_SubCtgywise ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/changemenuitemavailabilitystatussubctgywise";
     public static final String api_updatePaymentMode_OrderDetailsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/orderdetails?modulename=PlaceOrder";
 
@@ -165,7 +172,9 @@ public class Constants {
     public static final String api_getAllUserswithPagenation ="https://irahdrz4w2.execute-api.ap-south-1.amazonaws.com/stage/resource?modulename=user";
     public static final String api_getAllAddresswithPagenation ="https://irahdrz4w2.execute-api.ap-south-1.amazonaws.com/stage/resource?modulename=address";
     public static final String api_getAllOrderItemDetailswithPagenation ="https://irahdrz4w2.execute-api.ap-south-1.amazonaws.com/stage/resource?modulename=orderitems";
-
+    public static final String api_GetPaymentTransactionusingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getpaymenttransationfororderid?orderid=";
+    public static final String api_GetPaymentDetailsFromRazorpay= "https://us-central1-dosavillage-acc39.cloudfunctions.net/getrazorpayorderstatusfortmc?orderid=";
+    public static final String api_GetPaymentDetailsFromPaytm= "https://us-central1-dosavillage-acc39.cloudfunctions.net/getpaytmorderstatusfortmc?orderid=";
     public static final String  api_GetMobileAppData ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=Mobile";
             //"https://1gvpvgme35.execute-api.ap-south-1.amazonaws.com/stage/resource";
             public static final String  api_GetRedeemPointsDetailsFortheUser ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getredeempointdetailsforuser";

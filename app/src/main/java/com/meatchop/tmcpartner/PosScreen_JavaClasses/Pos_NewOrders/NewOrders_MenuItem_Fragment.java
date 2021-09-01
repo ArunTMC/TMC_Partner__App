@@ -22,6 +22,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -36,7 +38,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.itextpdf.kernel.geom.Line;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
@@ -123,7 +124,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     String balanceAmount_String,amountRecieved_String;
     double balanceAmount_double =0,amountRecieved_double =0;
-
+    CheckBox useStoreNumberCheckBox;
 
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
@@ -193,6 +194,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         check_redeemPoints_widget = view.findViewById(R.id.check_redeemPoints_widget);
         redeemPointsLayout = view.findViewById(R.id.redeemPointsLayout);
         discountAmountLayout = view.findViewById(R.id.discountAmountLayout);
+        useStoreNumberCheckBox = view.findViewById(R.id.useStoreNumberCheckBox);
         try{
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
@@ -228,7 +230,18 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         redeemPointsLayout.setVisibility(View.GONE);
         discountAmountLayout.setVisibility(View.VISIBLE);
         String dummytime = getDate_and_time();
+        useStoreNumberCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+                if(isChecked){
+                    mobileNo_Edit_widget.setText(StoreLanLine);
+                }
+                else{
+                    mobileNo_Edit_widget.setText("");
+                }
+            }
+        });
         try{
             if(maxpointsinaday_double==0||minordervalueforredeem_double==0||pointsfor100rs_double==0||(!isMobileAppDataFetchedinDashboard)){
 
@@ -877,73 +890,93 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                             calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {
-                                                    balanceAmount_String="0";amountRecieved_String="0";
-                                                     balanceAmount_double =0;amountRecieved_double =0;
-                                                     try {
-                                                         amountRecieved_String = amount_Recieved_EditText.getText().toString();
-                                                     }
-                                                     catch (Exception e){
-                                                         e.printStackTrace();
-                                                         Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
-                                                     }
-                                                     try {
-                                                         amountRecieved_double = Double.parseDouble(amountRecieved_String);
-                                                     }
-                                                     catch(Exception e){
-                                                         Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                    balanceAmount_String = "0";
+                                                    amountRecieved_String = "0";
+                                                    balanceAmount_double = 0;
+                                                    amountRecieved_double = 0;
+                                                    try {
+                                                        amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                    }
+                                                    if (amountRecieved_String.length() > 0) {
+                                                        try {
+                                                            amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                        } catch (Exception e) {
+                                                            Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
 
-                                                         e.printStackTrace();
-                                                     }
-                                                     try {
-                                                         balanceAmount_double = amountRecieved_double - totalAmount_double;
-                                                     }
-                                                     catch(Exception e) {
-                                                         Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+                                                            e.printStackTrace();
+                                                        }
+                                                        if (amountRecieved_double > 0) {
+                                                            try {
+                                                                balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                            } catch (Exception e) {
+                                                                Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
 
-                                                         e.printStackTrace();
-                                                     }
-                                                     try {
-                                                         balanceAmount_String = String.valueOf(balanceAmount_double);
-                                                     }
-                                                     catch (Exception e){
-                                                         Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+                                                                e.printStackTrace();
+                                                            }
+                                                            try {
+                                                                balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                            } catch (Exception e) {
+                                                                Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
 
-                                                         e.printStackTrace();
-                                                     }
-                                                     try {
-                                                         if (balanceAmount_double < 0) {
-                                                             balance_Amount.setTextColor(Color.RED);
-                                                         } else {
-                                                             balance_Amount.setTextColor(Color.BLACK);
+                                                                e.printStackTrace();
+                                                            }
+                                                            try {
+                                                                if (balanceAmount_double < 0) {
+                                                                    balance_Amount.setTextColor(Color.RED);
+                                                                } else {
+                                                                    balance_Amount.setTextColor(Color.BLACK);
 
-                                                         }
-                                                     }
-                                                     catch (Exception e){
-                                                         e.printStackTrace();
-                                                         Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                                Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
 
-                                                     }
-                                                     try {
-                                                         balance_Amount.setText(balanceAmount_String);
-                                                     }
-                                                     catch(Exception e){
-                                                         e.printStackTrace();
-                                                         Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+                                                            }
+                                                            try {
+                                                                balance_Amount.setText(balanceAmount_String);
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                                Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
 
-                                                     }
+                                                            }
+                                                        }
+                                                        else{
+                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                        }
+                                                    }
+                                                    else {
+                                                        AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty , 0);
+
+                                                    }
                                                 }
                                             });
                                                 checkOut.setOnClickListener(new View.OnClickListener() {
                                                     @Override
                                                     public void onClick(View v) {
-                                                        if(balanceAmount_double<0) {
-                                                            Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                        if (amountRecieved_String.length() > 0) {
+                                                            if (amountRecieved_double > 0) {
 
-                                                        }
-                                                        else {
-                                                            dialog.dismiss();
+                                                            if (balanceAmount_double < 0) {
+                                                              //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount , 0);
 
-                                                           PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                            } else {
+                                                                dialog.dismiss();
+
+                                                                PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                            }
+                                                            }
+                                                            else{
+                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                            }
+                                                        } else {
+                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
                                                         }
                                                     }
                                                 });
@@ -1462,7 +1495,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 String quantity = modal_newOrderItems.getQuantity();
                 String price = modal_newOrderItems.getItemFinalPrice();
                 String weight = modal_newOrderItems.getItemFinalWeight();
-                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
+                Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal);
 
             }
 
@@ -1977,33 +2010,34 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
             try {
                 if (payment_mode.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) {
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Amount Given by Customer : ");
+                    if((!amountRecieved_String.equals("null"))&&(!balanceAmount_String.equals("null"))) {
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Amount Given by Customer : ");
 
 
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, amountRecieved_String + " Rs " + "\n");
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, amountRecieved_String + " Rs " + "\n");
 
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Balance Amount given to Customer : ");
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, balanceAmount_String + " Rs" + "\n");
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Balance Amount given : ");
 
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, balanceAmount_String + " Rs" + "\n");
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                    }
                 }
             }
             catch(Exception e){

@@ -13,7 +13,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 2
-        versionName "1.7.1.6"
+        versionName "1.7.2"
         ndk {
             abiFilters 'armeabi','armeabi-v7a', 'x86'
         }
@@ -66,7 +66,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation fileTree(dir: 'C:\\Users\\aruna\\AndroidStudioProjects\\TMCPartnerApp\\app\\src\\main', include: ['*.aar', '*.jar'], exclude: [])
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
-
+    implementation  'com.google.code.gson:gson:2.2.4'
     testImplementation 'junit:junit:4.13.1'
     implementation'com.amazonaws:aws-android-sdk-mobile-client:2.16.13'
     implementation 'com.android.volley:volley:1.1.1'

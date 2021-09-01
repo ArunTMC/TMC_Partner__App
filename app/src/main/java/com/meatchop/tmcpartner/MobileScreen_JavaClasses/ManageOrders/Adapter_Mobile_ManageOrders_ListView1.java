@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,16 +32,15 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
-import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,6 +59,10 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
      static BottomSheetDialog bottomSheetDialog;
     String deliverypartnerName="";
     BluetoothAdapter mBluetoothAdapter =null;
+    String orderPlacedTime ="";
+    boolean isOrderPlacedlessThan3MinsBefore = true;
+     boolean isCancelledinsidefunctionboolean = false ;
+    boolean isOrderCancelled = false;
 
     public Adapter_Mobile_ManageOrders_ListView1(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Mobile_ManageOrders1 mobile_manageOrders1, String orderStatus) {
         super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
@@ -102,7 +106,10 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         final TextView slotdate_text_widget = listViewItem.findViewById(R.id.slotdate_text_widget);
         final TextView orderstatus_text_widget = listViewItem.findViewById(R.id.orderstatus_text_widget);
         final TextView deliveryType_text_widget = listViewItem.findViewById(R.id.deliveryType_text_widget);
+        final RelativeLayout totalButtonLayout =listViewItem.findViewById(R.id.buttonsRelativeLayout);
 
+       final LinearLayout ordercancellationtimeRefresh_Layout =listViewItem.findViewById(R.id.ordercancellationtimeRefresh_Layout);
+        final LinearLayout refreshordercancelationtime_image_layout =listViewItem.findViewById(R.id.refreshordercancelationtime_image_layout);
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
 
@@ -115,7 +122,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         final LinearLayout slotDateLayout =listViewItem.findViewById(R.id.slotDateoLayout);
         final LinearLayout slotTimeLayout =listViewItem.findViewById(R.id.slotTimeLayout);
         final LinearLayout deliveryTypeLayout =listViewItem.findViewById(R.id.deliveryTypeLayout);
-
 
 
 
@@ -195,14 +201,254 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             //  }
 
         }
+/*
+
+        try{
+            String orderid = modal_manageOrders_pojo_class.getOrderid().toString();
+
+            for(int i = 0; i< mobile_manageOrders1.ordersList.size(); i++) {
+                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_classd= mobile_manageOrders1.ordersList.get(i);
+                String orderidfromOrderList = modal_manageOrders_pojo_classd.getOrderid().toString();
+                if(orderid.equals(orderidfromOrderList)) {
+                    mobile_manageOrders1.ordersList.remove(i);
+                    for (int sortedarrayIterator = 0; sortedarrayIterator < Mobile_ManageOrders1.sorted_OrdersList.size(); sortedarrayIterator++) {
+                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList = Mobile_ManageOrders1.sorted_OrdersList.get(sortedarrayIterator);
+                        String sortedorderid = modal_manageOrders_pojo_class_sortedOrdersList.getOrderid().toString();
+                        if (orderid.equals(sortedorderid)) {
+
+                            Mobile_ManageOrders1.sorted_OrdersList.remove(sortedarrayIterator);
+
+                        }
 
 
+                    }
 
+                }
+
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+ */
 
 
         String orderStatusfromArray = modal_manageOrders_pojo_class.getOrderstatus();
        // //Log.i("tag","orderStatusFromArray"+ orderStatusfromArray);
       //  //Log.i("tag","orderStatus"+ orderStatus);
+
+
+
+        orderPlacedTime ="";
+         isOrderPlacedlessThan3MinsBefore = true;
+        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+        try {
+            orderPlacedTime =  modal_manageOrders_pojo_class.getOrderplacedtime();
+            Log.d(Constants.TAG, "log modal_manageOrders_pojo_class : " + modal_manageOrders_pojo_class);
+
+            isOrderPlacedlessThan3MinsBefore =modal_manageOrders_pojo_class.isOrderPlacedlessThan3MinsBefore();
+            Log.d(Constants.TAG, "log isOrderPlacedlessThan3MinsBeforegg : " + isOrderPlacedlessThan3MinsBefore);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        if(!isOrderPlacedlessThan3MinsBefore)
+        {
+            totalButtonLayout.setVisibility(View.VISIBLE);
+            ordercancellationtimeRefresh_Layout.setVisibility(View.GONE);
+        }
+        else{
+            totalButtonLayout.setVisibility(View.GONE);
+            ordercancellationtimeRefresh_Layout.setVisibility(View.VISIBLE);
+
+        }
+        refreshordercancelationtime_image_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
+                String orderid = ordersList.get(pos).getOrderid().toString();
+                        //checkStatusForTheOrder(orderid);
+
+
+
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,Constants.api_GetTrackingOrderDetails_orderid+orderid,
+                        null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+                        Log.d(Constants.TAG, "Status response: " + response);
+                        try {
+                            JSONArray jsonArray = response.getJSONArray("content");
+                            for(int i = 0 ;i<jsonArray.length();i++){
+                                JSONObject json = jsonArray.getJSONObject(i);
+
+                                String orderStatusS = json.getString("orderstatus");
+                                if(orderStatusS.toUpperCase().equals(Constants.CANCELLED_ORDER_STATUS)){
+                                    isOrderCancelled = true;
+                                    if(orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
+
+                                        int neworderCount = mobile_manageOrders1.newCount - 1;
+
+                                        if (neworderCount > 0) {
+                                            mobile_manageOrders1.mobile_new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, neworderCount));
+                                            mobile_manageOrders1.newCount = neworderCount;
+                                        } else {
+                                            mobile_manageOrders1.mobile_new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
+
+                                        }
+                                    }
+                                    if(orderStatus.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+
+                                        int ConfirmedorderCount = mobile_manageOrders1.confirmedCount+1;
+
+                                        if(ConfirmedorderCount>0) {
+                                            mobile_manageOrders1.mobile_confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, ConfirmedorderCount));
+                                            mobile_manageOrders1.confirmedCount=ConfirmedorderCount;
+
+                                        }
+                                        else{
+                                            mobile_manageOrders1.mobile_confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
+
+
+                                        }}
+                                }
+                                else{
+                                    isOrderCancelled = false;
+
+                                }
+                            }
+
+
+
+
+
+
+                            if(isOrderCancelled){
+                                for(int i = 0; i< mobile_manageOrders1.ordersList.size(); i++) {
+                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= mobile_manageOrders1.ordersList.get(i);
+                                    String orderidfromOrderList = modal_manageOrders_pojo_class.getOrderid().toString();
+                                    if(orderid.equals(orderidfromOrderList)) {
+                                        mobile_manageOrders1.ordersList.remove(i);
+                                        for (int sortedarrayIterator = 0; sortedarrayIterator < Mobile_ManageOrders1.sorted_OrdersList.size(); sortedarrayIterator++) {
+                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList = Mobile_ManageOrders1.sorted_OrdersList.get(sortedarrayIterator);
+                                            String sortedorderid = modal_manageOrders_pojo_class_sortedOrdersList.getOrderid().toString();
+                                            if (orderid.equals(sortedorderid)) {
+
+                                                Mobile_ManageOrders1.sorted_OrdersList.remove(sortedarrayIterator);
+
+                                            }
+
+
+                                        }
+
+                                    }
+
+
+                                }
+
+                            }
+                            else{
+                                orderPlacedTime =  ordersList.get(pos).getOrderplacedtime();
+
+                                boolean isOrderPlacedlessThan3MinsBefore =   mobile_manageOrders1.CheckWeathertheOrderisPlacedLessThan3Mins(orderPlacedTime);
+
+                                if(!isOrderPlacedlessThan3MinsBefore)
+                                {
+                                    totalButtonLayout.setVisibility(View.VISIBLE);
+                                    ordercancellationtimeRefresh_Layout.setVisibility(View.GONE);
+
+                                    for(int i = 0; i< mobile_manageOrders1.ordersList.size(); i++) {
+                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= mobile_manageOrders1.ordersList.get(i);
+                                        String orderidfromOrderList = modal_manageOrders_pojo_class.getOrderid().toString();
+                                        if(orderid.equals(orderidfromOrderList)) {
+                                            mobile_manageOrders1.ordersList.get(i).setOrderPlacedlessThan3MinsBefore(isOrderPlacedlessThan3MinsBefore);
+                                            for (int sortedarrayIterator = 0; sortedarrayIterator < Mobile_ManageOrders1.sorted_OrdersList.size(); sortedarrayIterator++) {
+                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList = Mobile_ManageOrders1.sorted_OrdersList.get(sortedarrayIterator);
+                                                String sortedorderid = modal_manageOrders_pojo_class_sortedOrdersList.getOrderid().toString();
+                                                if (orderid.equals(sortedorderid)) {
+
+                                                    mobile_manageOrders1.sorted_OrdersList.get(sortedarrayIterator).setOrderPlacedlessThan3MinsBefore(isOrderPlacedlessThan3MinsBefore);
+
+                                                }
+
+
+                                            }
+
+                                        }
+
+
+                                    }
+                                }
+                                else{
+                                    totalButtonLayout.setVisibility(View.GONE);
+                                    ordercancellationtimeRefresh_Layout.setVisibility(View.VISIBLE);
+
+                                }
+                            }
+
+
+
+                            notifyDataSetChanged();
+                            mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull VolleyError error) {
+                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Error_Instruction,
+                                R.string.OK_Text,R.string.Empty_Text,
+                                new TMCAlertDialogClass.AlertListener() {
+                                    @Override
+                                    public void onYes() {
+                                        Toast.makeText(mContext,"Can't Refresh !!! Please Refresh Again",Toast.LENGTH_SHORT).show();
+                                    }
+
+                                    @Override
+                                    public void onNo() {
+
+                                    }
+                                });
+                        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                        error.printStackTrace();
+                    }
+                }) {
+                    @NonNull
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        final Map<String, String> params = new HashMap<>();
+                        params.put("Content-Type", "application/json");
+                        return params;
+                    }
+                };
+                jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+                // Make the request
+                Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+                Log.d(Constants.TAG, "log clicked : " + isOrderPlacedlessThan3MinsBefore);
+
+
+            }
+        });
+
 
 
 
@@ -1108,6 +1354,82 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         return  listViewItem ;
 
     }
+
+    private boolean checkStatusForTheOrder(String orderid) {
+        isCancelledinsidefunctionboolean = false;
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,Constants.api_GetTrackingOrderDetails_orderid+orderid,
+                null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                Log.d(Constants.TAG, "Status response: " + response);
+                try {
+                    JSONArray jsonArray = response.getJSONArray("content");
+                    for(int i = 0 ;i<jsonArray.length();i++){
+                        JSONObject json = jsonArray.getJSONObject(i);
+
+                        String orderStatus = json.getString("orderstatus");
+                        if(orderStatus.toUpperCase().equals(Constants.CANCELLED_ORDER_STATUS)){
+                            isCancelledinsidefunctionboolean = true;
+
+                        }
+                        else{
+                            isCancelledinsidefunctionboolean = false;
+
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Error_Instruction,
+                        R.string.OK_Text,R.string.Empty_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                                Toast.makeText(mContext,"Can't Refresh !!! Please Refresh Again",Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onNo() {
+
+                            }
+                        });
+                mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+        return isCancelledinsidefunctionboolean;
+
+
+    }
+
 
     private void showBottomSheetDialog(String orderkey, String deliveryPartnerName) {
         try {

@@ -4,7 +4,7 @@
     android:padding=".5dp">
 
     <TextView
-        android:id="@+id/textview"
+        android:id="@+id/textviewllllllllllllll"
         android:layout_width="match_parent"
         android:layout_height="43dp"
         android:layout_centerHorizontal="true"

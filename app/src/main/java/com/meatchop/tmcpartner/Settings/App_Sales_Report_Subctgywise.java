@@ -171,7 +171,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         totalGST_Amt = findViewById(R.id.totalGST_Amt);
         final_sales = findViewById(R.id.final_sales);
         final_sales = findViewById(R.id.final_sales);
-        totalSales_headingText = findViewById(R.id.totalSales_headingText);
+        totalSales_headingText = findViewById(R.id.totalRating_headingText);
         cashOnDelivery = findViewById(R.id.cashOnDelivery);
         Razorpay = findViewById(R.id.Razorpay);
         Paytm = findViewById(R.id.paytmSales);
