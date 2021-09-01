@@ -3691,7 +3691,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         if (Order_Item_List.contains(marinadeitemmenuItemId)) {
                             double payableAmount_marinade=0,quantity_marinade=0,gstAmount_marinade=0;
                             Modal_OrderDetails modal_orderDetails_itemDespfrom_hashMap = OrderItem_hashmap.get(marinadeitemmenuItemId);
-                            double tmcprice_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getFinalAmount());
+                            double tmcprice_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getTmcprice());
                             int quantity_from_HashMap = Integer.parseInt(modal_orderDetails_itemDespfrom_hashMap.getQuantity());
                             double gstAmount_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getGstamount());
                             try {
@@ -3703,7 +3703,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             modal_orderDetails_itemDespfrom_hashMap.setQuantity(String.valueOf((quantity_marinade)));
-                            modal_orderDetails_itemDespfrom_hashMap.setFinalAmount(String.valueOf((payableAmount_marinade)));
+                            modal_orderDetails_itemDespfrom_hashMap.setTmcprice(String.valueOf((payableAmount_marinade)));
                             modal_orderDetails_itemDespfrom_hashMap.setGstamount(String.valueOf((gstAmount_marinade)));
 
 

@@ -221,7 +221,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.7.2 </string>
+    <string name="Version_No">Version No : 1.7.3 </string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

@@ -239,12 +239,12 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         String orderStatusfromArray = modal_manageOrders_pojo_class.getOrderstatus();
        // //Log.i("tag","orderStatusFromArray"+ orderStatusfromArray);
       //  //Log.i("tag","orderStatus"+ orderStatus);
+        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
 
-
+/*
 
         orderPlacedTime ="";
          isOrderPlacedlessThan3MinsBefore = true;
-        mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
 
         try {
             orderPlacedTime =  modal_manageOrders_pojo_class.getOrderplacedtime();
@@ -270,6 +270,12 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             ordercancellationtimeRefresh_Layout.setVisibility(View.VISIBLE);
 
         }
+
+
+ */
+        totalButtonLayout.setVisibility(View.VISIBLE);
+        ordercancellationtimeRefresh_Layout.setVisibility(View.GONE);
+
         refreshordercancelationtime_image_layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

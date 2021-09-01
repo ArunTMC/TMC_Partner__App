@@ -2155,7 +2155,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                     e.printStackTrace();
                                 }
                                 modal_orderDetails_itemDespfrom_hashMap.setQuantity(String.valueOf((quantity_marinade)));
-                                modal_orderDetails_itemDespfrom_hashMap.setFinalAmount(String.valueOf((payableAmount_marinade)));
+                                modal_orderDetails_itemDespfrom_hashMap.setTmcprice(String.valueOf((payableAmount_marinade)));
                                 modal_orderDetails_itemDespfrom_hashMap.setGstamount(String.valueOf((gstAmount_marinade)));
 
                             }

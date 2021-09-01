@@ -210,7 +210,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         }
 
 
-
+/*
         orderPlacedTime ="";
         isOrderPlacedlessThan3MinsBefore = true;
         try {
@@ -246,6 +246,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
 
+ */
+        searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+        totalButtonLayout.setVisibility(View.VISIBLE);
+        ordercancellationtimeRefresh_Layout.setVisibility(View.GONE);
 
         if(orderStatus.equals(Constants.NEW_ORDER_STATUS)){
             ordertype_text_widget.setVisibility(View.VISIBLE);
