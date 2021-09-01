@@ -89,7 +89,7 @@ public class AppSales_Report extends AppCompatActivity {
     public static HashMap<String, Modal_OrderDetails>  paymentModeHashmap  = new HashMap();;
 
     public static List<String> preorder_paymentModeArray;
-    public static HashMap<String, Modal_OrderDetails>  preorder_paymentModeHashmap  = new HashMap();;
+    public static HashMap<String, Modal_OrderDetails>  preorder_paymentModeHashmap  = new HashMap();
 
 
     public static List<String> preorderpaymentMode_DiscountOrderid;
