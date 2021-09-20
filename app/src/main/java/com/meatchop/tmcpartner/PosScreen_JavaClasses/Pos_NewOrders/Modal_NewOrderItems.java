@@ -1,10 +1,20 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders;
 
-public class Modal_NewOrderItems extends Throwable {
-   public String istmcpriceperkgitemedited,dunzoAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
+import java.io.Serializable;
+
+public class Modal_NewOrderItems extends Throwable implements Serializable {
+   public String istmcpriceperkgitemedited,dunzoAmount,bigbasketAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
     private String editTextValue;
+
+    public String getBigbasketAmount() {
+        return bigbasketAmount;
+    }
+
+    public void setBigbasketAmount(String bigbasketAmount) {
+        this.bigbasketAmount = bigbasketAmount;
+    }
 
     public String getDunzoAmount() {
         return dunzoAmount;

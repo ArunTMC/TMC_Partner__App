@@ -161,6 +161,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
          modal_manageOrders_pojo_class = bundle.getParcelable("data");
         fromActivityName = bundle.getString("From");
+
         try{
             deliveryPartnerNumber=getIntent().getStringExtra("deliveryusermobileno");
             deliverypartnerName=getIntent().getStringExtra("deliveryusername");
@@ -200,14 +201,41 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 e1.printStackTrace();
             }
         }
-
-
         try{
             ordertype = String.valueOf(modal_manageOrders_pojo_class.getOrderType().toUpperCase());
         }
         catch (Exception e){
             e.printStackTrace();
         }
+
+
+        try{
+          String  paymentmode  = (String.valueOf(modal_manageOrders_pojo_class.getPaymentmode()).toUpperCase());
+            try {
+                String orderidtoFetchPaymentmode = (String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
+                if (ordertype.toUpperCase().equals(Constants.APPORDER)){
+                    if ((paymentmode.equals(Constants.CASH_ON_DELIVERY)) || paymentmode.equals("cash")) {
+                        showProgressBar(true);
+                        orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
+
+                        getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode, orderdetailskey);
+                    }
+            }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+
+
+
 
 
         try{
@@ -617,6 +645,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
     }
 
+
+
     private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode, String orderdetailskey) {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid+orderidtoFetchPaymentmode ,null,
@@ -653,7 +683,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                             paymentTypetext_widget.setText(PaymentMode);
 
 
-                                            Toast.makeText(MobileScreen_OrderDetails1.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
+                                            //Toast.makeText(MobileScreen_OrderDetails1.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
 
                                             if(fromActivityName.equals("MobileManageOrders")) {
                                                 if(Mobile_ManageOrders1.sorted_OrdersList.size()>0){
@@ -802,7 +832,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                             else{
 
 
-                                                Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+                                             //   Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
 
                                             }
                                             try {
@@ -1421,7 +1451,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
 
 
-                    Toast.makeText(MobileScreen_OrderDetails1.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
+                 //   Toast.makeText(MobileScreen_OrderDetails1.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
 
                     if(fromActivityName.equals("MobileManageOrders")) {
                         if(Mobile_ManageOrders1.sorted_OrdersList.size()>0){
@@ -1570,7 +1600,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                     else{
 
 
-                        Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+                     //   Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
 
                     }
 

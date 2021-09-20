@@ -10,7 +10,10 @@
     <color name="TMC_Hint_Color">#CCCCCC</color>
     <color name="TMC_Orange">#FF5F22</color>
     <color name="TMC_White">#FFFFFFFF</color>
-        <color name="EditTextBorderColor">#BBBBBB</color>
+    <color name="TMC_Grey">#f2f2f2</color>
+
+
+    <color name="EditTextBorderColor">#BBBBBB</color>
 
         <color name="TMC_ProgressBar_Color">#333333</color>
 

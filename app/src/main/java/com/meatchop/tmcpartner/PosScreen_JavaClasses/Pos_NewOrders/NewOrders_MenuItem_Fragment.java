@@ -235,7 +235,19 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                 if(isChecked){
-                    mobileNo_Edit_widget.setText(StoreLanLine);
+                    if(vendorKey.equals("vendor_1")){
+                        Objects.requireNonNull(mobileNo_Edit_widget).setText("8939189102");
+
+                    }
+                    else if(vendorKey.equals("vendor_2")){
+                        Objects.requireNonNull(mobileNo_Edit_widget).setText("9597580128");
+
+                    }
+                    else{
+                        Objects.requireNonNull(mobileNo_Edit_widget).setText(StoreLanLine);
+
+                    }
+                  //  mobileNo_Edit_widget.setText(StoreLanLine);
                 }
                 else{
                     mobileNo_Edit_widget.setText("");
@@ -2595,38 +2607,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         }
 
 
-      /*  new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Exit_Instruction,
-                R.string.Yes_Text, R.string.No_Text,
-                new TMCAlertDialogClass.AlertListener() {
-                    @Override
-                    public void onYes() {
-                        printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode);
-
-                    }
-
-                    @Override
-                    public void onNo() {
-                        cart_Item_List.clear();
-                        cartItem_hashmap.clear();
-
-                        new_to_pay_Amount = 0;
-                        old_taxes_and_charges_Amount = 0;
-                        old_total_Amount = 0;
-                        createEmptyRowInListView("empty");
-                        isproceedtoPay_Clicked = false;
-                        ispaymentMode_Clicked = false;
-                        CallAdapter();
-
-                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-
-                        mobileNo_Edit_widget.setText("");
-                    }
-                });
-
-       */
-
 
     void CallAdapter() {
         //Log.e(TAG, "AdapterCalled  ");
@@ -4537,3 +4517,38 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
  */
+
+
+
+   /*  new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Exit_Instruction,
+                R.string.Yes_Text, R.string.No_Text,
+                new TMCAlertDialogClass.AlertListener() {
+                    @Override
+                    public void onYes() {
+                        printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode);
+
+                    }
+
+                    @Override
+                    public void onNo() {
+                        cart_Item_List.clear();
+                        cartItem_hashmap.clear();
+
+                        new_to_pay_Amount = 0;
+                        old_taxes_and_charges_Amount = 0;
+                        old_total_Amount = 0;
+                        createEmptyRowInListView("empty");
+                        isproceedtoPay_Clicked = false;
+                        ispaymentMode_Clicked = false;
+                        CallAdapter();
+
+                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                        mobileNo_Edit_widget.setText("");
+                    }
+                });
+
+       */
+

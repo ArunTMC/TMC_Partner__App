@@ -483,6 +483,10 @@ catch (Exception e){
                                if(String.valueOf(json.get("swiggyprice")).equals("")){
                                    modal_menuItem.swiggyprice = "0";
 
+                               }else  if(String.valueOf(json.get("swiggyprice")).equals("\r")) {
+
+                                   modal_menuItem.dunzoprice = "0";
+
                                }
 
                            }
@@ -494,12 +498,36 @@ catch (Exception e){
                            }
 
 
+                           if(json.has("bigbasketprice")){
+                               modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice"));
+                               if(String.valueOf(json.get("bigbasketprice")).equals("")){
+                                   modal_menuItem.bigbasketprice = "0";
+
+                               }else  if(String.valueOf(json.get("bigbasketprice")).equals("\r")) {
+
+                                   modal_menuItem.dunzoprice = "0";
+
+                               }
+
+                           }
+                           else{
+                               modal_menuItem.bigbasketprice = "0";
+                               Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " +MenuItemKey );
+
+
+                           }
+
+
                            if(json.has("dunzoprice")){
                                modal_menuItem.dunzoprice= String.valueOf(json.get("dunzoprice"));
-                                if(String.valueOf(json.get("dunzoprice")).equals("")){
-                                    modal_menuItem.dunzoprice = "0";
+                               if(String.valueOf(json.get("dunzoprice")).equals("")){
+                                   modal_menuItem.dunzoprice = "0";
 
-                                }
+                               }else  if(String.valueOf(json.get("dunzoprice")).equals("\r")) {
+
+                                   modal_menuItem.dunzoprice = "0";
+
+                               }
                            }
                            else{
                                modal_menuItem.dunzoprice = "0";
@@ -507,6 +535,7 @@ catch (Exception e){
 
 
                            }
+
 
 
 

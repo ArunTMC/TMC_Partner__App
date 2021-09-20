@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_weight="1.4"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/TMC_Orange"
+            android:textSize="13sp"
+            android:paddingEnd="20dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/open_sans"
+            android:text="Enter Customer Mobile Number :" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="45sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="16sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:id="@+id/customermobileno_editwidget"
+            android:gravity="center_vertical"
+            android:inputType="phone"
+            android:maxEms="10"
+            android:digits="0123456789"
+            android:hint="9593217537"
+            android:textColorHint="@color/TMC_Hint_Color"
+            android:background="@drawable/pale_orange_background"
+            android:fontFamily="@font/open_sans_semibold"
+            android:text="" />
+
+        <CheckBox
+            android:id="@+id/userstoreNumberCheckboxWidget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="13sp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:checked="false"
+            android:buttonTint="@color/TMC_Orange"
+            android:text="Use Store Phone Number" />
+
+
+    </LinearLayout>
+        <View
+        android:layout_width="10dp"
+        android:layout_height="150dp"
+
+        android:background="@drawable/vertical_line"
+        />
+
+
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_weight="2"
+
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/TMC_Orange"
+            android:textSize="13sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="20dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/open_sans"
+            android:text="Enter Discount : " />
+        <EditText
+            android:id="@+id/discount_editWidget"
+            android:layout_width="match_parent"
+            android:layout_height="45sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="16sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:gravity="center_vertical"
+            android:inputType="phone"
+            android:maxLength="10"
+            android:background="@drawable/pale_orange_background"
+            android:layout_marginTop="20dp"
+            android:hint="0"
+            android:textColorHint="@color/TMC_Hint_Color"
+
+            android:digits="0123456789"
+            android:fontFamily="@font/open_sans_semibold"
+            android:text="" />
+
+
+
+        <Button
+            android:layout_width="125dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:text="Apply Discount"
+            android:textColor="@color/TMC_White"
+            android:id="@+id/apply_discount_buttonWidget"
+            android:background="@drawable/button_background"/>
+
+    </LinearLayout>
+    </LinearLayout>
+
+
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+
+        android:background="@drawable/border_line"
+        />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp"
+
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Orange"
+                android:textSize="18sp"
+                android:paddingEnd="20dp"
+                android:gravity="center_vertical"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="@string/Bill_Details" />
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="15sp"
+                android:paddingEnd="20dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="Item Total  " />
+
+
+
+
+
+            <TextView
+                android:id="@+id/itemtotal_textWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="16sp"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="100" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="14sp"
+                android:gravity="right"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text=" rs" />
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:layout_marginTop="5dp"
+
+            android:paddingEnd="10dp"
+            android:orientation="horizontal">
+
+
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="15sp"
+                android:paddingEnd="20dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="Applied Discount" />
+
+
+
+
+
+            <TextView
+                android:id="@+id/discountTextWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="16sp"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="10" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="14sp"
+                android:gravity="right"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text=" rs" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="17sp"
+
+                android:paddingEnd="20dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="@string/To_Pay" />
+
+
+
+
+
+            <TextView
+                android:id="@+id/toPay_textWidget"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="17sp"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="90" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="14sp"
+                android:gravity="right"
+                android:fontFamily="@font/open_sans_bold"
+                android:text=" rs" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/TMC_Orange"
+            android:textSize="13sp"
+            android:layout_marginTop="15dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/open_sans"
+            android:text="Select Any Payment Mode" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+
+            <Spinner
+                android:id="@+id/paymentModeSpinner_Widget"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="7dp"
+
+                android:layout_weight=".5"
+                android:textAlignment="viewStart" />
+
+            <Button
+                android:id="@+id/checkout_button_Widget"
+                android:layout_weight="1"
+                android:background="@drawable/orange_selected_button_background"
+                android:textColor="@color/TMC_White"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/Check_out" />
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="20dp"
+
+            android:background="@drawable/border_line"
+            />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="20dp"
+
+            />
+
+
+    </LinearLayout>
+</LinearLayout>

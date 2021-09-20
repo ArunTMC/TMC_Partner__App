@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Modal_MenuItem implements Parcelable {
-    public String dunzoprice,swiggyprice,reportname,grossweightingrams,applieddiscountpercentage,barcode,checkoutimageurl,displayno,grossweight,gstpercentage,imageurl,itemavailability,
+    public String bigbasketprice,dunzoprice,swiggyprice,reportname,grossweightingrams,applieddiscountpercentage,barcode,checkoutimageurl,displayno,grossweight,gstpercentage,imageurl,itemavailability,
             itemcalories,itemname,itemuniquecode,key,marinadelinkedcodes,menuboarddisplayname,menutype,netweight,portionsize,preparationsteps,
             menuItemId,preparationtime,pricetypeforpos,showinmenuboard,tmcctgykey,tmcprice,tmcpriceperkg,tmcsubctgykey,vendorkey,vendorname;
 
@@ -49,6 +49,7 @@ public class Modal_MenuItem implements Parcelable {
         reportname = in.readString();
         swiggyprice = in.readString();
         dunzoprice = in.readString();
+        bigbasketprice = in.readString();
     }
 
     public static final Creator<Modal_MenuItem> CREATOR = new Creator<Modal_MenuItem>() {
@@ -320,6 +321,14 @@ public class Modal_MenuItem implements Parcelable {
         this.swiggyprice = swiggyprice;
     }
 
+    public String getBigbasketprice() {
+        return bigbasketprice;
+    }
+
+    public void setBigbasketprice(String bigbasketprice) {
+        this.bigbasketprice = bigbasketprice;
+    }
+
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(applieddiscountpercentage);
@@ -354,5 +363,6 @@ public class Modal_MenuItem implements Parcelable {
         parcel.writeString(reportname);
         parcel.writeString(swiggyprice);
         parcel.writeString(dunzoprice);
+        parcel.writeString(bigbasketprice);
     }
 }

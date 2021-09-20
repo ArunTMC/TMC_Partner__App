@@ -718,7 +718,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                         manageOrdersPojoClass.orderType ="";
                     }
 
-                    if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
+                    if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder)) ||(ordertype.toUpperCase().equals(Constants.BigBasket))){
 
 
                         if(json.has("orderid")){
@@ -968,7 +968,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                     }
 
                     try {
-                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
+                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder)) ||(ordertype.toUpperCase().equals(Constants.BigBasket))){
                             if (json.has("useraddress")) {
 
                                 String addresss =  String.valueOf(json.get("useraddress"));
@@ -994,7 +994,7 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
 
-                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder))){
+                        if((ordertype.toUpperCase().equals(Constants.POSORDER))||(ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.toUpperCase().equals(Constants.PhoneOrder)) ||(ordertype.toUpperCase().equals(Constants.BigBasket))){
 
                         ordersList.add(manageOrdersPojoClass);
                     }

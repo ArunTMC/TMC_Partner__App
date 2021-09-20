@@ -770,7 +770,78 @@
 
 
 
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/bigbasketPriceLayout"
+                                android:orientation="vertical">
 
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="18sp"
+                                    android:layout_weight="1"
+
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_bold_italic"
+                                    android:text="BIGBASKET PRICE  : " />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="13sp"
+                                    android:layout_marginTop="2dp"
+                                    android:layout_marginBottom="2dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Note :- BigBasket Price Value Can be Zero" />
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="65dp"
+                                        android:layout_marginTop="10dp"
+                                        android:layout_weight="1"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:gravity="center_vertical"
+                                        android:id="@+id/bigbasket_price_label"
+
+                                        android:text="BigBasket  Price (  Price Per Kg  )  :-   "
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp" />
+
+
+                                    <EditText
+                                        android:id="@+id/bigbasket_selling_price_text_widget_bigbasketLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="50dp"
+                                        android:layout_marginTop="10dp"
+                                        android:layout_weight="1"
+                                        android:background="@color/TMC_PaleOrange"
+                                        android:digits="0123456789"
+                                        android:focusedByDefault="false"
+
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:gravity="center_vertical|center"
+                                        android:imeOptions="actionDone"
+                                        android:inputType="phone"
+                                        android:paddingEnd="25dp"
+                                        android:text="2000  "
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+
+                                        android:textSize="16sp" />
+
+
+                                </LinearLayout>
+                            </LinearLayout>
 
 
 

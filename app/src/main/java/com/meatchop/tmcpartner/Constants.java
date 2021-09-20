@@ -13,6 +13,7 @@ public class Constants {
     public static final String RedeemPoints_and_Discount_Instruction2  ="To Enter discount Points Make Sure redeem point is not more than zero";
     public static final String RedeemPointsDetailsIsNotExistedInstruction  ="This User didn't saved any redeem points yet.";
     public static final String RedeemPointsDetailsTryAgainInstruction  ="Can't get Users Redeem points Details . Try Again.";
+    public static final String CantApplyDiscountbelowzeroInstruction  =" Can't Apply discount when discountvalue is zero";
 
     public static final String CantApplyDiscountInstruction  =" Can't Apply discount when Cart is Empty";
     public static final String AddedRedeemPointsCancelledInstruction  ="Redeem Points Added in this Order is cancelled . So Kindly Add again";
@@ -57,10 +58,12 @@ public class Constants {
     public static final String EXPRESS_DELIVERY_SLOTNAME ="EXPRESS DELIVERY";
     public static final String EXPRESSDELIVERY_SLOTNAME ="EXPRESSDELIVERY";
     public static final String DUNZOORDER_PAYMENTMODE ="DUNZOPAYMENT";
-
+    public static final String BIGBASKETORDER_PAYMENTMODE ="BIGBASKETPAYMENT";
     public static final String SWIGGYORDER_PAYMENTMODE ="SWIGGYPAYMENT";
     public static final String DunzoOrder ="DUNZOORDER";
     public static final String SwiggyOrder ="SWIGGYORDER";
+    public static final String BigBasket ="BIGBASKETORDER";
+
     public static final String PhoneOrder ="PHONEORDER";
 
     public static final String POSORDER ="POSORDER";

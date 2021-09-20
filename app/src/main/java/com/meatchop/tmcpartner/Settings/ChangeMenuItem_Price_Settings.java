@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
-    String dunzoPrice,swiggyPrice,pricetypeforPos,menuitemKey, itemUniqueCode, itemName, grossweight,grossweightingrams,portionsize,netweight,
+    String bigBasketPrice,dunzoPrice,swiggyPrice,pricetypeforPos,menuitemKey, itemUniqueCode, itemName, grossweight,grossweightingrams,portionsize,netweight,
             appPrice, posPrice, appliedDiscountPercentage,finalweight,posPrice_pricePerKg,appPrice_PricePerKg;
 
     String MarinadeepricetypeforPos,MarinadeemenuitemKey, MarinadeeitemUniqueCode, MarinadeeitemName, Marinadeegrossweight,Marinadeegrossweightingrams,Marinadeeportionsize,Marinadeenetweight,
@@ -47,9 +47,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
     LinearLayout loadingPanel, loadingpanelmask,tmcUnitPrice_layout,tmcpriceperkg_layout;
-    TextView dunzo_price_label,swiggy_price_label,TMCpriceperkg_app_price_label,TMCpriceperkg_appSelling_price_label,TMCpriceperkg_pos_price_label,TMCprice_pos_price_label,
+    TextView bigBasket_price_label,dunzo_price_label,swiggy_price_label,TMCpriceperkg_app_price_label,TMCpriceperkg_appSelling_price_label,TMCpriceperkg_pos_price_label,TMCprice_pos_price_label,
     TMCprice_selling_price_label,  TMCpriceperkg_posSelling_price_label,pricetype_ofItem_text_widget,itemUniqueCode_text_widget, itemName_text_widget, grossweight_text_widget, appPrice_text_widget, posPrice_text_widget,posPrice_text_widget_posLayout,appPrice_text_widget_appLayout;
-    EditText appliedDiscountPercentage_text_widget, selling_price_text_widget,pos_selling_price_text_widget_posLayout,app_selling_price_text_widget_appLayout,swiggy_selling_price_text_widget_swiggyLayout,dunzo_selling_price_text_widget_dunzoLayout;
+    EditText appliedDiscountPercentage_text_widget, selling_price_text_widget,pos_selling_price_text_widget_posLayout,app_selling_price_text_widget_appLayout,swiggy_selling_price_text_widget_swiggyLayout,dunzo_selling_price_text_widget_dunzoLayout,bigbasket_selling_price_text_widget_bigbasketLayout;
     Button saveDetails,computeAppandPosPrice;
     double sellingprice = 0,sellingprice_withoutDiscount = 0,  sellingPriceWithoutDiscount = 0, grossweightdouble = 0, posPricedouble = 0, appPricedouble = 0,posPricedouble__priceperKg =0,appPricedouble_priceperKg =0, appSellingPrice_priceperKg =0, posSellingPrice_priceperKg =0;
     int discount_percentage =0;
@@ -82,6 +82,8 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         tmcUnitPrice_layout =findViewById(R.id.tmcUnitPrice_layout);
         swiggy_selling_price_text_widget_swiggyLayout =findViewById(R.id.swiggy_selling_price_text_widget_swiggyLayout);
         dunzo_selling_price_text_widget_dunzoLayout = findViewById(R.id.dunzo_selling_price_text_widget_dunzoLayout);
+        bigbasket_selling_price_text_widget_bigbasketLayout  =findViewById(R.id.bigbasket_selling_price_text_widget_bigbasketLayout);
+
 
         pos_selling_price_text_widget_posLayout = findViewById(R.id.Pos_selling_price_text_widget_posLayout);
         app_selling_price_text_widget_appLayout = findViewById(R.id.app_selling_price_text_widget_appLayout);
@@ -94,6 +96,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         TMCprice_pos_price_label = findViewById(R.id.TMCprice_pos_price_label);
         swiggy_price_label =findViewById(R.id.swiggy_price_label);
         dunzo_price_label = findViewById(R.id.dunzo_price_label);
+        bigBasket_price_label = findViewById(R.id.bigbasket_price_label);
 
 
         getMarinadeeMenuItemArrayFromSharedPreferences();
@@ -130,7 +133,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             TMCprice_pos_price_label .setText("POS Price (  TMC Price )  :-   ");
             swiggy_price_label.setText("Swiggy  Price (  TMC Price  )  :-   ");
             dunzo_price_label.setText("Dunzo  Price (  TMC Price  )  :-   ");
-
+            bigBasket_price_label.setText("BigBasket  Price (  TMC Price  )  :-   ");
 
         }
         else{
@@ -140,6 +143,8 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             TMCprice_pos_price_label .setText("POS Price (  Price Per Kg )  :-   ");
             swiggy_price_label.setText("Swiggy  Price (  Price Per Kg  )  :-   ");
             dunzo_price_label.setText("Dunzo  Price (  Price Per Kg  )  :-   ");
+            bigBasket_price_label.setText("BigBasket  Price (  Price Per Kg  )  :-   ");
+
         }
 
 
@@ -187,7 +192,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isTMCPrice) {
-                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0)  {
+                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0)  {
                         if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
                             Adjusting_Widgets_Visibility(true);
                             try {
@@ -231,7 +236,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 else {
                     if (isPosPrice_PricePerKgChanged) {
                         isPosPrice_PricePerKgChanged = false;
-                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0) {
+                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
                                 Adjusting_Widgets_Visibility(true);
                                 try {
@@ -278,7 +283,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
                     else if(isAppPrice_PricePerKgChanged){
                         isAppPrice_PricePerKgChanged = false;
-                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0) {
+                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
                                 try {
                                     appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
@@ -332,20 +337,22 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isTMCPrice) {
-                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0) {
+                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                         if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
                             try {
                                 sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
                                 discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
                                 swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
                                 dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
+                                bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
+
                                 CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
 
                                 CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
                                 if(sellingprice>0) {
                                     ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
 
-                                    ChangeMenuItemPriceInDB(menuitemKey, appPrice, posPrice, appliedDiscountPercentage, swiggyPrice,dunzoPrice);
+                                    ChangeMenuItemPriceInDB(menuitemKey, appPrice, posPrice, appliedDiscountPercentage, swiggyPrice,dunzoPrice,bigBasketPrice);
                                 }
                                 else{
                                     Adjusting_Widgets_Visibility(false);
@@ -371,7 +378,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
                 }
                 else{
-                    if (pos_selling_price_text_widget_posLayout.getText().length() > 0 &&  app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0) {
+                    if (pos_selling_price_text_widget_posLayout.getText().length() > 0 &&  app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                         if (appPrice_text_widget_appLayout.getText().length() > 0 && posPrice_text_widget_posLayout.getText().toString().length() > 0) {
                             try {
                                 appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
@@ -379,6 +386,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                                 discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
                                 swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
                                 dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
+                                bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
 
                                 CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
 
@@ -389,7 +397,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
                                         ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
 
-                                        ChangeMenuItemPriceInDB(menuitemKey, appPrice_PricePerKg, posPrice_pricePerKg, appliedDiscountPercentage, swiggyPrice, dunzoPrice);
+                                        ChangeMenuItemPriceInDB(menuitemKey, appPrice_PricePerKg, posPrice_pricePerKg, appliedDiscountPercentage, swiggyPrice, dunzoPrice, bigBasketPrice);
 
                                     }
                                     else{
@@ -799,7 +807,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     }
 
 
-    private void ChangeMenuItemPriceInDB(String menuitemKey, String appPrice, String posPrice, String appliedDiscountPercentage, String swiggyPrice, String dunzoPrice) {
+    private void ChangeMenuItemPriceInDB(String menuitemKey, String appPrice, String posPrice, String appliedDiscountPercentage, String swiggyPrice, String dunzoPrice, String bigBasketPrice) {
         Adjusting_Widgets_Visibility(true);
 
         //Log.d(TAG, " uploaduserDatatoDB.");
@@ -810,6 +818,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             jsonObject.put("tmcpriceperkg", posPrice);
             jsonObject.put("swiggyprice", swiggyPrice);
             jsonObject.put("dunzoprice", dunzoPrice);
+            jsonObject.put("bigbasketprice", bigBasketPrice);
 
             jsonObject.put("applieddiscountpercentage", appliedDiscountPercentage);
 
@@ -824,7 +833,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 //Log.d(Constants.TAG, "Response: " + response);
-                ChangeMenuItemPriceInSharedPreferenes(menuitemKey, appPrice, posPrice, appliedDiscountPercentage,swiggyPrice,dunzoPrice);
+                ChangeMenuItemPriceInSharedPreferenes(menuitemKey, appPrice, posPrice, appliedDiscountPercentage,swiggyPrice,dunzoPrice,bigBasketPrice);
 
 
             }
@@ -944,7 +953,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
 
-    private void ChangeMenuItemPriceInSharedPreferenes(String menuitemKey, String appPrice, String posPrice, String appliedDiscountPercentage, String swiggyPrice, String dunzoPrice) {
+    private void ChangeMenuItemPriceInSharedPreferenes(String menuitemKey, String appPrice, String posPrice, String appliedDiscountPercentage, String swiggyPrice, String dunzoPrice, String bigBasketPrice) {
         for (int i = 0; i < MenuItem.size(); i++) {
             Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(i);
             String MenuItemkey = modal_menuItemSettings.getKey();
@@ -954,6 +963,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 modal_menuItemSettings.setApplieddiscountpercentage(appliedDiscountPercentage);
                 modal_menuItemSettings.setSwiggyprice(swiggyPrice);
                 modal_menuItemSettings.setDunzoprice(dunzoPrice);
+                modal_menuItemSettings.setBigbasketprice(bigBasketPrice);
                 savedMenuIteminSharedPrefrences(MenuItem);
                // finish();
 
@@ -1094,6 +1104,14 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
 
                     try{
+                        bigBasketPrice = String.valueOf(modal_menuItemSettings.getBigbasketprice());
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try{
                         itemName = String.valueOf(modal_menuItemSettings.getItemname());
 
                     }
@@ -1168,7 +1186,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     posPrice_text_widget.setText(posPrice);
                     swiggy_selling_price_text_widget_swiggyLayout.setText(swiggyPrice);
                     dunzo_selling_price_text_widget_dunzoLayout.setText(dunzoPrice);
-
+                     bigbasket_selling_price_text_widget_bigbasketLayout.setText(bigBasketPrice);
                     appliedDiscountPercentage_text_widget.setText(appliedDiscountPercentage);
                     appPrice_text_widget_appLayout.setText(appPrice_PricePerKg);
                     posPrice_text_widget_posLayout.setText(posPrice_pricePerKg);

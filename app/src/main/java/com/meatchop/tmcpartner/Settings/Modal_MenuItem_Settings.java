@@ -1,7 +1,7 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuItem_Settings extends Throwable {
-    public String totalnoofmenuitem,noofmenuitemavailable,noofmenuitemavailableinpercentage,dunzoprice,swiggyprice,reportname,marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
+    public String totalnoofmenuitem,noofmenuitemavailable,noofmenuitemavailableinpercentage,bigbasketprice,dunzoprice,swiggyprice,reportname,marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
             vendorname,displayno, grossweight,grossweightingrams,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage,tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
@@ -407,6 +407,13 @@ public class Modal_MenuItem_Settings extends Throwable {
         this.editTextValue = editTextValue;
     }
 
+    public String getBigbasketprice() {
+        return bigbasketprice;
+    }
+
+    public void setBigbasketprice(String bigbasketprice) {
+        this.bigbasketprice = bigbasketprice;
+    }
 
     public String getSwiggyprice() {
         return swiggyprice;

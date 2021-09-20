@@ -23,10 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_AutoCompleteMenuItem;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_CartItem_Recyclerview;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.R;
 
 import java.text.DecimalFormat;
@@ -34,22 +31,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
-
-
-public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Adapter_AddSwiggyOrdersRecyclerview.ViewHolder>{
+public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter<Adapter_AddBigBasketOrdersRecyclerview.ViewHolder>{
 
     private Context context;
     private String pricetype_of_pos;
-    Adapter_AutoCompleteMenuitemForSwiggyOrders adapter;
+    Adapter_AutoCompleteMenuitemForBigbasketOrders adapter;
     private double item_total = 0;
     private Handler handler;
     int price_per_kg, taxes_and_charges;
-    AddSwiggyOrders newOrders_menuItem_fragment;
-    public static HashMap<String,Modal_NewOrderItems> itemInCart = new HashMap();
-    List<Modal_MenuItem_Settings>Menulist;
+    AddBigBasketOrder newOrders_menuItem_fragment;
+    public static HashMap<String, Modal_NewOrderItems> itemInCart = new HashMap();
+    List<Modal_MenuItem_Settings> Menulist;
 
-    public Adapter_AddSwiggyOrdersRecyclerview(Context context, HashMap<String, Modal_NewOrderItems> itemInCart, List<Modal_MenuItem_Settings>  menuItems, AddSwiggyOrders newOrders_menuItem_fragment) {
+    public Adapter_AddBigBasketOrdersRecyclerview(Context context, HashMap<String, Modal_NewOrderItems> itemInCart, List<Modal_MenuItem_Settings>  menuItems, AddBigBasketOrder newOrders_menuItem_fragment) {
 
         //Log.e(TAG, "Auto call adapter itemInCart itemInCart" + itemInCart.size());
         this.newOrders_menuItem_fragment = newOrders_menuItem_fragment;
@@ -62,15 +56,15 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
 
     @NonNull
     @Override
-    public Adapter_AddSwiggyOrdersRecyclerview.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public Adapter_AddBigBasketOrdersRecyclerview.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.neworders_cart_tem_listview, parent, false);
 
-        return new Adapter_AddSwiggyOrdersRecyclerview.ViewHolder(view);
+        return new Adapter_AddBigBasketOrdersRecyclerview.ViewHolder(view);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public void onBindViewHolder(@NonNull Adapter_AddSwiggyOrdersRecyclerview.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull Adapter_AddBigBasketOrdersRecyclerview.ViewHolder holder, int position) {
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
@@ -92,7 +86,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
         int length = holder.autoComplete_widget.getText().length();
         holder.autoComplete_widget.setSelection(length);
         //Log.e("TAG", "position" + position);
-        Modal_NewOrderItems recylerviewPojoClass = AddSwiggyOrders.cartItem_hashmap.get(AddSwiggyOrders.cart_Item_List.get(position));
+        Modal_NewOrderItems recylerviewPojoClass = AddBigBasketOrder.cartItem_hashmap.get(AddBigBasketOrder.cart_Item_List.get(position));
 
 
         //Log.i("TAG", "HASHMAP" + recylerviewPojoClass.getItemuniquecode());
@@ -134,9 +128,9 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                     holder.barcode_widget.setFocusedByDefault(false);
                 }
                 holder.barcode_widget.setText(recylerviewPojoClass.getItemuniquecode());
-                    holder.barcode_widget.setKeyListener(null);
+                holder.barcode_widget.setKeyListener(null);
 
-                
+
 
 
 
@@ -166,7 +160,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                     //Log.e("TAG", "Cant set itemweight/portionsize in recycler adapter");
 
                 }
-              //  holder.itemWeight_edittextwidget.setKeyListener(null);
+                //  holder.itemWeight_edittextwidget.setKeyListener(null);
 
             } else if (pricetype_of_pos.equals("tmcpriceperkg")) {
                 holder.barcode_widget.setText(recylerviewPojoClass.getItemuniquecode());
@@ -192,7 +186,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                 holder. itemWeight_edittextwidget.setVisibility(View.VISIBLE);
                 holder.   gramsTextview.setVisibility(View.VISIBLE);
                 taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
-               holder.itemWeight_edittextwidget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
+                holder.itemWeight_edittextwidget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
                 holder.itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
                 newOrders_menuItem_fragment.add_amount_ForBillDetails();
             }
@@ -210,9 +204,9 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
                     //do what you want on the press of 'done'
-                    String barcode = AddSwiggyOrders.cart_Item_List.get(position);
+                    String barcode = AddBigBasketOrder.cart_Item_List.get(position);
 
-                    Modal_NewOrderItems modal_newOrderItems = AddSwiggyOrders.cartItem_hashmap.get(barcode);
+                    Modal_NewOrderItems modal_newOrderItems = AddBigBasketOrder.cartItem_hashmap.get(barcode);
                     String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
 
 
@@ -220,7 +214,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                         String weight_string = holder.itemWeight_edittextwidget.getText().toString();
                         weight_string =weight_string .replaceAll("[^\\d.]", "");
                         modal_newOrderItems.setIstmcpriceperkgitemedited("TRUE");
-                        int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                        int priceperKg = Integer.parseInt(modal_newOrderItems.getBigbasketAmount());
 
                         int weight = Integer.parseInt(weight_string);
                         if (weight < 1000) {
@@ -265,9 +259,9 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
 
                             //Log.e("TAg", "weight item_total" + item_total);
 
-                         //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
+                            //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
 
-                            AddSwiggyOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                            AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
 
                         }
 
@@ -300,12 +294,12 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
 
-                            AddSwiggyOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                            AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
 
                         }
 
                         if (weight > 1000) {
-                            priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                            priceperKg = Integer.parseInt(modal_newOrderItems.getBigbasketAmount());
 
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -350,8 +344,8 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
                             modal_newOrderItems.setGrossweight((String.valueOf(weight)));
 
-                          //  holder.itemWeight_edittextwidget.setText(String.valueOf(total));
-                            AddSwiggyOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                            //  holder.itemWeight_edittextwidget.setText(String.valueOf(total));
+                            AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
 
                         }
 
@@ -403,43 +397,43 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
         holder.removeItem_fromCart_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Log.e(TAG, "Item" + String.valueOf(AddSwiggyOrders.cartItem_hashmap.size() - 1));
-                String barcode = AddSwiggyOrders.cart_Item_List.get(position);
+                //Log.e(TAG, "Item" + String.valueOf(AddBigBasketOrder.cartItem_hashmap.size() - 1));
+                String barcode = AddBigBasketOrder.cart_Item_List.get(position);
 
                 if(barcode.equals(""))
                 {
                     barcode="empty";
                 }
                 //Log.i("TAG", "KEY: " + barcode);
-                if ((AddSwiggyOrders.cartItem_hashmap.size() - 1) == 0) {
+                if ((AddBigBasketOrder.cartItem_hashmap.size() - 1) == 0) {
 
                     //Log.i("TAG", "KEY: " + barcode);
 
-                    AddSwiggyOrders.cartItem_hashmap.remove(barcode);
-                    AddSwiggyOrders.cart_Item_List.remove(barcode);
+                    AddBigBasketOrder.cartItem_hashmap.remove(barcode);
+                    AddBigBasketOrder.cart_Item_List.remove(barcode);
                     newOrders_menuItem_fragment.add_amount_ForBillDetails();
                     newOrders_menuItem_fragment.createEmptyRowInListView("empty");
-                   // newOrders_menuItem_fragment.discountAmount ="0";
-                  //  newOrders_menuItem_fragment.discount_Edit_widget .setText("0");
-                 //   newOrders_menuItem_fragment.discount_rs_text_widget .setText("0");
+                    // newOrders_menuItem_fragment.discountAmount ="0";
+                    //  newOrders_menuItem_fragment.discount_Edit_widget .setText("0");
+                    //   newOrders_menuItem_fragment.discount_rs_text_widget .setText("0");
                     newOrders_menuItem_fragment.finaltoPayAmount = "0";
 
                     newOrders_menuItem_fragment.CallAdapter();
 
-                    //Log.e(TAG, "Item_not_deleted  " + String.valueOf(AddSwiggyOrders.cartItem_hashmap.size() - 1));
+                    //Log.e(TAG, "Item_not_deleted  " + String.valueOf(AddBigBasketOrder.cartItem_hashmap.size() - 1));
 
                 } else {
                     //Log.i("TAG", "KEY: " + barcode);
 
 
-                    AddSwiggyOrders.cartItem_hashmap.remove(barcode);
-                    AddSwiggyOrders.cart_Item_List.remove(barcode);
+                    AddBigBasketOrder.cartItem_hashmap.remove(barcode);
+                    AddBigBasketOrder.cart_Item_List.remove(barcode);
 
                     newOrders_menuItem_fragment.add_amount_ForBillDetails();
                     newOrders_menuItem_fragment.CallAdapter();
 
-                    //  AddSwiggyOrders.adapter_cartItem_recyclerview.notifyDataSetChanged();
-                    //Log.e(TAG, "Item_deleted  " + String.valueOf(AddSwiggyOrders.cartItem_hashmap.size() - 1));
+                    //  AddBigBasketOrder.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                    //Log.e(TAG, "Item_deleted  " + String.valueOf(AddBigBasketOrder.cartItem_hashmap.size() - 1));
 
 
                 }
@@ -469,9 +463,9 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                 if(! holder.itemQuantity_widget.getText().toString().equals("")&& !holder.itemPrice_Widget.getText().toString().equals(""))
                 {
 
-                    String barcode = AddSwiggyOrders.cart_Item_List.get(position);
+                    String barcode = AddBigBasketOrder.cart_Item_List.get(position);
 
-                    Modal_NewOrderItems modal_newOrderItems = AddSwiggyOrders.cartItem_hashmap.get(barcode);
+                    Modal_NewOrderItems modal_newOrderItems = AddBigBasketOrder.cartItem_hashmap.get(barcode);
                     int quantity = Integer.parseInt(holder.itemQuantity_widget.getText().toString());
 
                     quantity = quantity + 1;
@@ -508,9 +502,9 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                 if(! holder.itemQuantity_widget.getText().toString().equals("")&& !holder.itemPrice_Widget.getText().toString().equals(""))
                 {
 
-                    String barcode = AddSwiggyOrders.cart_Item_List.get(position);
+                    String barcode = AddBigBasketOrder.cart_Item_List.get(position);
 
-                    Modal_NewOrderItems modal_newOrderItems = AddSwiggyOrders.cartItem_hashmap.get(barcode);
+                    Modal_NewOrderItems modal_newOrderItems = AddBigBasketOrder.cartItem_hashmap.get(barcode);
 
 
                     int quantity = Integer.parseInt(holder.itemQuantity_widget.getText().toString());
@@ -616,7 +610,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
         boolean isTMCproduct = false;
         boolean isIndiaGateBasmatiRiceproduct = false;
 
-        private EditTextListener EditTextListener = new EditTextListener();
+        private Adapter_AddBigBasketOrdersRecyclerview.ViewHolder.EditTextListener EditTextListener = new Adapter_AddBigBasketOrdersRecyclerview.ViewHolder.EditTextListener();
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -643,7 +637,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
             itemWeight_widget.setVisibility(View.GONE);
             itemWeight_edittextwidget.setVisibility(View.VISIBLE);
             gramsTextview.setVisibility(View.VISIBLE);
-            adapter = new Adapter_AutoCompleteMenuitemForSwiggyOrders(context, Menulist,getPosition());
+            adapter = new Adapter_AutoCompleteMenuitemForBigbasketOrders(context, Menulist,getPosition());
             adapter.setHandler(newHandler());
 
 
@@ -652,7 +646,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
 
 
 
-         //  itemWeight_edittextwidget.addTextChangedListener(EditTextListener);
+            //  itemWeight_edittextwidget.addTextChangedListener(EditTextListener);
 
 
         }
@@ -673,11 +667,11 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
             @Override
             public void afterTextChanged(Editable s) {
 
-             //   String s1 = (s.toString());
+                //   String s1 = (s.toString());
                 //do what you want on the press of 'done'
-                String barcode = AddSwiggyOrders.cart_Item_List.get(getPosition());
+                String barcode = AddBigBasketOrder.cart_Item_List.get(getPosition());
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
-                Modal_NewOrderItems modal_newOrderItems = AddSwiggyOrders.cartItem_hashmap.get(barcode);
+                Modal_NewOrderItems modal_newOrderItems = AddBigBasketOrder.cartItem_hashmap.get(barcode);
                 String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
 
 
@@ -685,7 +679,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                     String weight_string = modal_newOrderItems.getItemFinalWeight();
                     weight_string =weight_string .replaceAll("[^\\d.]", "");
 
-                    int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                    int priceperKg = Integer.parseInt(modal_newOrderItems.getBigbasketAmount());
 
                     int weight = Integer.parseInt(weight_string);
                     if (weight < 1000) {
@@ -710,12 +704,12 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
 
                         //Log.e("TAg", "weight item_total" + item_total);
 
-                     //   itemWeight_edittextwidget.setText(String.valueOf(weight));
-                        AddSwiggyOrders.recyclerView.post(new Runnable()
+                        //   itemWeight_edittextwidget.setText(String.valueOf(weight));
+                        AddBigBasketOrder.recyclerView.post(new Runnable()
                         {
                             @Override
                             public void run() {
-                                AddSwiggyOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                                AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
                             }
                         });
 
@@ -732,17 +726,17 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                         //itemWeight_edittextwidget.setText(String.valueOf(weight));
 
 
-                        AddSwiggyOrders.recyclerView.post(new Runnable()
+                        AddBigBasketOrder.recyclerView.post(new Runnable()
                         {
                             @Override
                             public void run() {
-                                AddSwiggyOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                                AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
                             }
                         });
                     }
 
                     if (weight > 1000) {
-                        priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                        priceperKg = Integer.parseInt(modal_newOrderItems.getBigbasketAmount());
 
                         //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -767,17 +761,17 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                         //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
                         modal_newOrderItems.setGrossweight((String.valueOf(weight)));
 
-                     //   itemWeight_edittextwidget.setText(String.valueOf(weight));
-                        AddSwiggyOrders.recyclerView.post(new Runnable()
+                        //   itemWeight_edittextwidget.setText(String.valueOf(weight));
+                        AddBigBasketOrder.recyclerView.post(new Runnable()
                         {
                             @Override
                             public void run() {
-                                AddSwiggyOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                                AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
                             }
                         });
 
 
-                        
+
                     }
 
                 }
@@ -818,6 +812,6 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
         }
 
     }
-    }
+}
 
 

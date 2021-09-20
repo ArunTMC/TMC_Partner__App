@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/TMC_Grey"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/cardviewcontainer"
+        android:layout_marginBottom="7dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="5dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="5dp"
+            android:orientation="vertical">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="8"
+        android:gravity="center"
+        android:layout_marginStart="8dp"
+
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="2dp"
+            android:visibility="gone"
+            android:text="NO"
+            android:textColor="@color/TMC_Primary_Text_Color"
+
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/mobile_itemIndex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:inputType="textPersonName"
+            android:text="999"
+            android:textColor="@color/TMC_proressbar_mask_Color"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                  android:layout_weight="1"
+
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView11"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Item Name"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="13sp" />
+
+
+        <AutoCompleteTextView
+            android:id="@+id/mobile_autoComplete_widget"
+            android:layout_width="match_parent"
+
+            android:layout_height="35dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="40dp"
+            android:background="@drawable/pale_orange_background"
+            android:completionThreshold="1"
+            android:ems="10"
+            android:fontFamily="@font/open_sans_bold"
+            android:hint="Enter Item Name"
+            android:inputType="textPersonName"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textColorHint="@color/TMC_Hint_Color"
+
+            android:textSize="16sp"
+            android:visibility="visible"
+
+            >
+
+        </AutoCompleteTextView>
+    </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:orientation="horizontal"
+                android:paddingStart="10dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginTop="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="17dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Barcode"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/mobile_barcode_textwidget"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="40dp"
+                        android:inputType="textPersonName"
+                        android:text="99222"
+                       android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
+
+                    android:layout_weight="1"
+
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Gms/Units"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+
+                        android:textSize="13sp" />
+
+                    <EditText
+                        android:id="@+id/mobile_weight_textwidget"
+                        android:layout_width="100dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/pale_orange_background"
+                        android:inputType="number"
+                        android:text="1000gm"
+                        android:digits="0123456789g"
+                        android:layout_marginTop="5dp"
+                        android:gravity="center"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginTop="5dp"
+
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Quantity"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+
+                        android:textSize="13sp" />
+
+
+                    <LinearLayout
+                        android:id="@+id/tmcUnitprice_weight_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:orientation="horizontal"
+                        android:paddingStart="5dp"
+
+                        android:paddingEnd="10dp"
+                        android:visibility="visible">
+
+                        <LinearLayout
+                            android:id="@+id/mobile_tmcUnitprice_weightAdd_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="10dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:layout_gravity="center"
+                                android:background="@mipmap/plus" />
+                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/mobile_itemQuantity_widget"
+                            android:layout_width="38dp"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:gravity="center"
+                            android:text="999"
+                            android:background="@drawable/grey_color_textview_backgrounf"
+                            android:padding="5dp"
+                            android:textColorHint="@color/TMC_Hint_Color"
+                            android:textSize="16sp"
+                            android:visibility="visible" />
+
+                        <LinearLayout
+                            android:id="@+id/mobile_tmcUnitprice_weightMinus_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+
+                                android:layout_gravity="center"
+                                android:layout_marginStart="10dp"
+                                android:background="@mipmap/minus" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/mobile_removeItem_fromCart_widget"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/mobile_delete_to_remove_item_widget"
+                        android:layout_width="24dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="10dp"
+                        android:background="@mipmap/delete_icon" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="75dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="6dp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:text="Price"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="10dp"
+                        android:id="@+id/mobile_PriceWidget"
+
+                        android:text="159.00 rs"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cardviewcontainer"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="20dp"
+        android:layout_centerInParent="true"
+        android:id="@+id/mobile_addNewItemLayout"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/imageView8"
+            android:layout_width="65dp"
+            android:layout_height="50dp"
+            android:visibility="gone"
+            app:srcCompat="@mipmap/semicirclewithplusicon" />
+
+
+        <LinearLayout
+            android:layout_width="210dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:id="@+id/addNewItem_layout"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/orange_selected_button_background"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:src="@mipmap/whiteplus" />
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="22sp"
+                android:gravity="center_vertical"
+                android:textColor="@color/TMC_White"
+                android:text="Add New Item" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+</RelativeLayout>

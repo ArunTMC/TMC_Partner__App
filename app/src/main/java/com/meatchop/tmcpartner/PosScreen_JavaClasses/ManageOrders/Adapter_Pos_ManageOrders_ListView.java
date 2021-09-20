@@ -1971,7 +1971,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             }
 
 
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+                //PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
 
 
 
@@ -1983,8 +1983,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "Netweight : "+Printer_POJO_ClassArray[i].getItemWeight()+" ,  Quantity : "+"(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "Netweight : "+Printer_POJO_ClassArray[i].getItemWeight());
 
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, " ,  Quantity : "+"(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
 
 
 

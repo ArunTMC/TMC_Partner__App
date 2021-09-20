@@ -1487,6 +1487,8 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                     row.createCell(19).setCellValue(itemRow.getOrderdeliveredtime());
                     row.createCell(20).setCellValue(itemRow.getTokenno());
                     row.createCell(21).setCellValue(String.valueOf(itemRow.getOrderstatus()));
+                    row.createCell(23).setCellValue(String.valueOf(itemRow.getDeliveryPartnerName()));
+                    row.createCell(24).setCellValue(String.valueOf(itemRow.getDeliveryPartnerMobileNo()));
 
 
 

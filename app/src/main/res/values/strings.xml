@@ -21,15 +21,16 @@
     <string name="Empty_Text"> </string>
     <string name="RePrint_Instruction">Do you want to another Copy ? </string>
     <string name="Do_You_Want_to_Connect_Printer_Now">Printer Is Not Connected Yet !! Do You Want to Connect Now ???</string>
-    <string name="Bluetooth_turnedOff_Information">Connection Lost!! Turn On Bluetooth Again</string>
+    <string name="Bluetooth_turnedOff_Information">Connection Lost!! Turn On Bluetooth </string>
     <string name="Printer_is_Disconnected">Printer is Disconnected Please Goto Settings and Connect it</string>
     <string name="Please_Wait_Until_Printer_Stop">Please Wait Until Printer Stop</string>
 
     <string name="Printer_is_Disconnected_want_to_generate_TokenNo">Printer is Disconnected . Are u sure you need to Generate Token No withOut Recipt</string>
     <string name="Vendor_logoutInstruction">Are you sure you want to Logout from this Vendor </string>
     <string name="Cant_Refresh_OrderStatus_Instruction">Can`t Refresh !!! Please Refresh Again</string>
+    <string name="Weight_cant_be_empty">You Cant Leave weight of the Product Empty</string>
 
-    <string name="Exit_Instruction">Are you sure do you want to Exit now ? </string>
+    <string name="Exit_Instruction">Are you sure do you want to Close TMCPartner App now? </string>
     <string name="ResetToken_Instruction">Click Yes to Reset the Token No for your Store </string>
     <string name="Token_No_Error_Instruction">Cant Generate Token No </string>
     <string name="OrderCancellingInstruction">Are You Sure ! You Want to Cancel this Order  </string>
@@ -60,6 +61,7 @@
     <string name="TodaysOrderText">Todays Order </string>
     <string name="TomorrowsOrderText">Tomorrows Order</string>
     <string name="Enter_the_mobile_no_text">Enter the Valid Mobile Number</string>
+    <string name="SelectPaymentMode">Select Payment Mode to Place Order</string>
 
     <string name="PointusercanRedeemtoday">You Cant redeem more than  : </string>
     <string name="Name_Of_the_Vendor_text">TMC Hasthinapuram , Chromepet</string>
@@ -137,6 +139,16 @@
 
     </string-array>
 
+    <string-array name="PaymentMode">
+        <item>None Selected</item>
+
+
+        <item>CARD</item>
+        <item>CASH</item>
+        <item>UPI</item>
+
+    </string-array>
+
 
     <string name="CustomerName"> Name </string>
     <string name="Customer_PhoneNumber">  Mobile No  </string>
@@ -176,6 +188,8 @@
     <string name="GenereateCustomerMobilenOReort">Generate Customer MobileNumber wise  Report  </string>
     <string name="PlotOrdersLocation">Plot Orders Location   </string>
     <string name="AddSwiggyOrders">Add Swiggy Orders </string>
+    <string name="AddBigBasketOrders">Add BigBasket Orders </string>
+
     <string name="AddDunzoOrders">Add Dunzo Orders </string>
     <string name="SelectItemCtgy">Select Item Category  : </string>
 
@@ -195,6 +209,7 @@
     <string name="App_Sales_Report">APP Sales Report </string>
     <string name="Delivery_Partner_settlement_report">Delivery Partner Settlement Report </string>
     <string name="Consolidated_Sales_Report_Weekwise">Consolidated Sales Report Weekwise </string>
+    <string name="Mobile_Billing_Screen">Mobile Billing Screen</string>
 
     <string name="Reset_token_no">Reset</string>
     <string name="Current_token_no">Current Token No   : </string>
@@ -221,7 +236,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.7.3 </string>
+    <string name="Version_No">Version No : 1.7.5.1 </string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

@@ -41,6 +41,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderScreenFragment_mobile;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
@@ -124,6 +125,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                         loadMyFragment(new Mobile_ManageOrders1());
 
                     }
+              //      getDatafromMobileApp();
+
                     tmcSubctgykey = getIntent().getStringExtra("tmcSubctgykey");
                     tmcSubctgyname = getIntent().getStringExtra("tmcSubctgyname");
                     tmcctgyname = getIntent().getStringExtra("tmcctgyname");
@@ -175,18 +178,23 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     case R.id.new_order_navigatioBar_widget:
                         try{
 
-                            Toast.makeText(MobileScreen_Dashboard.this,"Clicked on New Orders Button",Toast.LENGTH_LONG).show();
 
-                           /* if(!completemenuItem.isEmpty()) {
-                                mfragment = new NewOrders_MenuItem_Fragment();
-                                //loadMyFragment(mfragment);
-                                FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
-                                transaction1.replace(R.id.frame, NewOrders_MenuItem_Fragment.newInstance(completemenuItem));
-                                transaction1.commit();
+                            if(!completemenuItem.isEmpty()) {
 
 
-                                Toast.makeText(MobileScreen_Dashboard.this,"Clicked on New Orders Button",Toast.LENGTH_LONG).show();
+                                if((UserRole.equals(Constants.STOREMANAGER_ROLENAME))||(UserRole.equals(Constants.CASHIER_ROLENAME))||(UserRole.equals(Constants.ADMIN_ROLENAME))) {
+                                    mfragment = new NewOrderScreenFragment_mobile();
+                                    //loadMyFragment(mfragment);
+                                    FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+                                    transaction1.replace(R.id.frame, NewOrderScreenFragment_mobile.newInstance(completemenuItem));
+                                    transaction1.commit();
 
+                                }
+                                else{
+
+                                    Toast.makeText(MobileScreen_Dashboard.this,"You Don't have Access to place Order",Toast.LENGTH_LONG).show();
+
+                                }
                             }
                             else{
                                 Toast.makeText(MobileScreen_Dashboard.this,"MenuItem is Not Loaded",Toast.LENGTH_LONG).show();
@@ -194,7 +202,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                             }
 
-                            */
+
+
 
 
                         }catch(Exception e){
@@ -723,6 +732,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 if(json.has("swiggyprice")){
                                     modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice"));
+                                    if(String.valueOf(json.get("swiggyprice")).equals("")){
+                                        modal_menuItem.swiggyprice = "0";
+
+                                    }else  if(String.valueOf(json.get("swiggyprice")).equals("\r")) {
+
+                                        modal_menuItem.dunzoprice = "0";
+
+                                    }
 
                                 }
                                 else{
@@ -731,9 +748,38 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
                                 }
-                                if(json.has("dunzoprice")){
-                                    modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice"));
 
+
+                                if(json.has("bigbasketprice")){
+                                    modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice"));
+                                    if(String.valueOf(json.get("bigbasketprice")).equals("")){
+                                        modal_menuItem.bigbasketprice = "0";
+
+                                    }else  if(String.valueOf(json.get("bigbasketprice")).equals("\r")) {
+
+                                        modal_menuItem.dunzoprice = "0";
+
+                                    }
+
+                                }
+                                else{
+                                    modal_menuItem.bigbasketprice = "0";
+                                    Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " +MenuItemKey );
+
+
+                                }
+
+
+                                if(json.has("dunzoprice")){
+                                    modal_menuItem.dunzoprice= String.valueOf(json.get("dunzoprice"));
+                                    if(String.valueOf(json.get("dunzoprice")).equals("")){
+                                        modal_menuItem.dunzoprice = "0";
+
+                                    }else  if(String.valueOf(json.get("dunzoprice")).equals("\r")) {
+
+                                        modal_menuItem.dunzoprice = "0";
+
+                                    }
                                 }
                                 else{
                                     modal_menuItem.dunzoprice = "0";

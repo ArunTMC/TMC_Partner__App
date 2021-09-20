@@ -25,7 +25,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.DatewiseRatingreport_SecondScreen"></activity>
+        <activity android:name=".Settings.AddBigBasketOrder"></activity>
+        <activity android:name=".MobileScreen_JavaClasses.Mobile_NewOrders.CartActivity_Mobile_NewOrdersScreen" />
+        <activity android:name=".Settings.DatewiseRatingreport_SecondScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_FirstScreen" />
         <activity android:name=".Settings.MenuItemAvailabilityStatusReport" />
         <activity

@@ -13,7 +13,7 @@ public class Modal_OrderDetails implements Parcelable {
             slotname,posSales,appSales,UpiSales,phonepeSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,
             weightingrams,finalAmount,usermobile,barcode,paymentmode,coupondiscount,gstamount,itemname,menuitemid,netweight,portionsize,quantity,
             tmcprice,vendorkey,deliverydistanceinkm;
-    String dunzoSales,swiggySales,PhoneOrderSales,totalAmount_Price,discountAmount,subtotalAmount_discount_price,total_gstAmount,totalAmount_discount_price_gst;
+    String bigBasketSales,dunzoSales,swiggySales,PhoneOrderSales,totalAmount_Price,discountAmount,subtotalAmount_discount_price,total_gstAmount,totalAmount_discount_price_gst;
 
     protected Modal_OrderDetails(Parcel in) {
         orderdeliverytime = in.readString();
@@ -83,6 +83,7 @@ public class Modal_OrderDetails implements Parcelable {
         subtotalAmount_discount_price = in.readString();
         total_gstAmount = in.readString();
         totalAmount_discount_price_gst = in.readString();
+        bigBasketSales = in.readString();
     }
 
     public static final Creator<Modal_OrderDetails> CREATOR = new Creator<Modal_OrderDetails>() {
@@ -347,6 +348,14 @@ public class Modal_OrderDetails implements Parcelable {
 
     public void setSwiggySales(String swiggySales) {
         this.swiggySales = swiggySales;
+    }
+
+    public String getBigBasketSales() {
+        return bigBasketSales;
+    }
+
+    public void setBigBasketSales(String bigBasketSales) {
+        this.bigBasketSales = bigBasketSales;
     }
 
     public String getPhoneOrderSales() {
@@ -719,5 +728,6 @@ public class Modal_OrderDetails implements Parcelable {
         dest.writeString(subtotalAmount_discount_price);
         dest.writeString(total_gstAmount);
         dest.writeString(totalAmount_discount_price_gst);
+        dest.writeString(bigBasketSales);
     }
 }

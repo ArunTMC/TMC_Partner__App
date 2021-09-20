@@ -28,8 +28,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.FetchAddressIntentService;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
@@ -60,10 +58,12 @@ Button changeDeliveryPartner;
     List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
     ListView itemDesp_listview;
     LinearLayout deliveryPartnerAssignLayout,refresh_googleAddress_loadinganim_layout,refresh_googleAddress_image_layout,refresh_googleAddress_layout,refreshpaymentmode__loadinganim_layout,refreshpaymentmode_image_layout,refresh_paymentmode_layout;
+    static LinearLayout loadingPanel;
+    static LinearLayout loadingpanelmask;
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
-    String ordertype,coupondiscountAmount,deliveryCharges,useraddreskey,vendorkey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,deliverydistance,fromActivityName;
+    String orderdetailskey="",ordertype,coupondiscountAmount,deliveryCharges,useraddreskey,vendorkey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,deliverydistance,fromActivityName;
     ScrollView parentScrollView;
     ResultReceiver resultReceiver;
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
@@ -113,6 +113,8 @@ Button changeDeliveryPartner;
         refresh_googleAddress_loadinganim_layout = findViewById(R.id.refresh_googleAddress_loadinganim_layout);
         refresh_googleAddress_image_layout = findViewById(R.id.refresh_googleAddress_image_layout);
         refresh_googleAddress_layout = findViewById(R.id.refresh_googleAddress_layout);
+        loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
+        loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", ""));
 
@@ -165,7 +167,39 @@ Button changeDeliveryPartner;
         delivery_type_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getDeliverytype()));
         slotTime_Range_textwidget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlottimerange()));
         mobileNotext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getUsermobile()));
-        try{
+
+
+
+
+
+                try{
+                    String  paymentmode  = (String.valueOf(modal_manageOrders_pojo_class.getPaymentmode()).toUpperCase());
+                    try {
+                        String orderidtoFetchPaymentmode = (String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
+                        if(ordertype.equals(Constants.APPORDER)) {
+
+                            if ((paymentmode.equals(Constants.CASH_ON_DELIVERY)) || paymentmode.equals("cash")) {
+                                showProgressBar(true);
+                                orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
+
+                                getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode, orderdetailskey);
+                            }
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+
+
+
+                try{
             if(modal_manageOrders_pojo_class.getNotes()!=null){
                 notes_textwidget.setText(modal_manageOrders_pojo_class.getNotes().toUpperCase());
             }else{
@@ -330,7 +364,10 @@ Button changeDeliveryPartner;
                 refreshpaymentmode__loadinganim_layout.setVisibility(View.VISIBLE);
                 refreshpaymentmode_image_layout.setVisibility(View.GONE);
                 String orderidtoFetchPaymentmode = String.valueOf(modal_manageOrders_pojo_class.getOrderid());
-                getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode);
+                orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
+                showProgressBar(true);
+
+                getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode,orderdetailskey);
             }
         });
 
@@ -456,7 +493,7 @@ Button changeDeliveryPartner;
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
 
     }
-    private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode) {
+    private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode , String orderdetailskey) {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid+orderidtoFetchPaymentmode ,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
@@ -492,7 +529,7 @@ Button changeDeliveryPartner;
                                         paymentTypetext_widget.setText(PaymentMode);
 
 
-                                        Toast.makeText(Pos_OrderDetailsScreen.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
+                                    //    Toast.makeText(Pos_OrderDetailsScreen.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
 
                                         if(fromActivityName.equals("MobileManageOrders")) {
                                             if(Pos_ManageOrderFragment.sorted_OrdersList.size()>0){
@@ -641,12 +678,25 @@ Button changeDeliveryPartner;
                                         else{
 
 
-                                            Toast.makeText(Pos_OrderDetailsScreen.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+                                          //  Toast.makeText(Pos_OrderDetailsScreen.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
 
                                         }
 
 
 
+                                        try {
+                                            if ((PaymentMode.equals(Constants.CASH_ON_DELIVERY)) || (PaymentMode.equals("CASH"))) {
+                                                getMerchantOrderidDetailsFromPaymentTransactionTable(orderidtoFetchPaymentmode, orderdetailskey);
+                                            } else {
+                                                showProgressBar(false);
+
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                            showProgressBar(false);
+
+                                        }
 
 
                                     } catch (JSONException e) {
@@ -1034,6 +1084,18 @@ Button changeDeliveryPartner;
 
     }
 
+    private void showProgressBar(boolean show) {
+        if(show){
+            loadingPanel.setVisibility(View.VISIBLE);
+            loadingpanelmask.setVisibility(View.VISIBLE);
+
+        }
+        else{
+            loadingPanel.setVisibility(View.GONE);
+            loadingpanelmask.setVisibility(View.GONE);
+        }
+    }
+
     private class AddressResultReceiver extends ResultReceiver {
 
         public AddressResultReceiver(Handler handler) {
@@ -1062,6 +1124,813 @@ Button changeDeliveryPartner;
             }
         }
     }
+
+
+    private void getMerchantOrderidDetailsFromPaymentTransactionTable(String orderidtoFetchPaymentmode, String orderdetailskey) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPaymentTransactionusingOrderid+orderidtoFetchPaymentmode ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
+
+                            try {
+
+                                String ordertype="#";
+
+                                //converting jsonSTRING into array
+                                JSONArray JArray  = response.getJSONArray("content");
+
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                if(arrayLength>1){
+                                    Toast.makeText(Pos_OrderDetailsScreen.this, "This orderid have more than 1 orders", Toast.LENGTH_LONG).show();
+                                    showProgressBar(false);
+
+                                }
+                                else if(arrayLength==0){
+                                    Toast.makeText(Pos_OrderDetailsScreen.this, "No Online Payment Transaction so its CashOnDelivery", Toast.LENGTH_LONG).show();
+                                    showProgressBar(false);
+                                    return;
+                                }
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        String paymentMode,merchantpaymentid,merchantorderid,status,desp,mobileno,userkey,paymenttype,key,orderid;
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        try{
+                                            if(json.has("paymentmode")){
+                                                paymentMode = json.getString("paymentmode");
+
+                                            }
+                                            else{
+                                                paymentMode = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            paymentMode ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            if(json.has("merchantpaymentid")){
+                                                merchantpaymentid = json.getString("merchantpaymentid");
+
+                                            }
+                                            else{
+                                                merchantpaymentid = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            merchantpaymentid ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            if(json.has("merchantorderid")){
+                                                merchantorderid = json.getString("merchantorderid");
+
+                                            }
+                                            else{
+                                                merchantorderid = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            merchantorderid ="";
+                                            e.printStackTrace();
+                                        }
+                                        try{
+                                            if(json.has("status")){
+                                                status = json.getString("status");
+
+                                            }
+                                            else{
+                                                status = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            status ="";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try{
+                                            if(json.has("desp")){
+                                                desp = json.getString("desp");
+
+                                            }
+                                            else{
+                                                desp = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            desp ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            if(json.has("mobileno")){
+                                                mobileno = json.getString("mobileno");
+
+                                            }
+                                            else{
+                                                mobileno = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            mobileno ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            if(json.has("userkey")){
+                                                userkey = json.getString("userkey");
+
+                                            }
+                                            else{
+                                                userkey = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            userkey ="";
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        try{
+                                            if(json.has("paymenttype")){
+                                                paymenttype = json.getString("paymenttype");
+
+                                            }
+                                            else{
+                                                paymenttype = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            paymenttype ="";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try{
+                                            if(json.has("key")){
+                                                key = json.getString("key");
+
+                                            }
+                                            else{
+                                                key = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            key ="";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try{
+                                            if(json.has("orderid")){
+                                                orderid = json.getString("orderid");
+
+                                            }
+                                            else{
+                                                orderid = "";
+                                            }
+                                        }
+                                        catch(Exception e ){
+                                            orderid ="";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        if(merchantorderid.equals(null)||merchantorderid.equals("null")){
+                                            merchantorderid ="";
+                                        }
+                                        if(merchantpaymentid.equals(null)||merchantpaymentid.equals("null")){
+                                            merchantpaymentid ="";
+                                        }
+
+                                        if((!merchantorderid.equals(""))&&(!merchantpaymentid.equals(""))&&(status.toUpperCase().equals("SUCCESS"))){
+                                            changePaymentModeinOrderDetails(paymentMode,orderidtoFetchPaymentmode,orderdetailskey);
+                                        }
+                                        else if((!merchantorderid.equals(""))&&(merchantpaymentid.equals(""))&&(status.toUpperCase().equals("SUCCESS"))){
+                                            if(paymentMode.toUpperCase().equals(Constants.RAZORPAY)){
+                                                getPaymentStatusFromRazorPay(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+                                            }
+                                            else if(paymentMode.toUpperCase().equals(Constants.PAYTM)){
+                                                getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+
+                                            }
+
+                                        }
+                                        else if((!merchantorderid.equals(""))&&(!merchantpaymentid.equals(""))&&(!status.toUpperCase().equals("SUCCESS"))){
+                                            if(paymentMode.toUpperCase().equals(Constants.RAZORPAY)){
+                                                getPaymentStatusFromRazorPay(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+                                            }
+                                            else if(paymentMode.toUpperCase().equals(Constants.PAYTM)){
+                                                getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+
+                                            }
+
+                                        }
+                                        else if((!merchantorderid.equals(""))&&(merchantpaymentid.equals(""))&&(!status.toUpperCase().equals("SUCCESS"))){
+                                            if(paymentMode.toUpperCase().equals(Constants.RAZORPAY)){
+                                                getPaymentStatusFromRazorPay(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+                                            }
+                                            else if(paymentMode.toUpperCase().equals(Constants.PAYTM)){
+                                                getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+
+                                            }
+
+                                        }
+                                        else if((merchantorderid.equals(""))&&(merchantpaymentid.equals(""))&&(!status.toUpperCase().equals("SUCCESS"))){
+                                            showProgressBar(false);
+
+                                            Toast.makeText(Pos_OrderDetailsScreen.this,"Merchant Order Id is Empty So Can't Fetch payment mode",Toast.LENGTH_LONG).show();
+
+                                        }
+                                        else if(!status.toUpperCase().equals("SUCCESS")){
+                                            if(paymentMode.toUpperCase().equals(Constants.RAZORPAY)){
+                                                getPaymentStatusFromRazorPay(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+                                            }
+                                            else if(paymentMode.toUpperCase().equals(Constants.PAYTM)){
+                                                getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+
+                                            }
+
+                                        }
+                                        else if((paymentMode.toUpperCase().equals(Constants.CASH_ON_DELIVERY))&&status.toUpperCase().equals("SUCCESS")){
+
+                                            showProgressBar(false);
+                                            Toast.makeText(Pos_OrderDetailsScreen.this,"Order Placed as Cash On Delivery",Toast.LENGTH_LONG).show();
+
+                                        }
+                                        else{
+                                            showProgressBar(false);
+                                            Toast.makeText(Pos_OrderDetailsScreen.this,"Problem in fetching payment mode  "+paymentMode,Toast.LENGTH_LONG).show();
+
+                                        }
+
+
+
+
+
+
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                        showProgressBar(false);
+
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                showProgressBar(false);
+
+                            }
+
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+                            showProgressBar(false);
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(Pos_OrderDetailsScreen.this, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
+
+                    showProgressBar(false);
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    showProgressBar(false);
+
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void getPaymentStatusFromPaytm(String merchantorderid, String merchantpaymentid, String key, String orderdetailskey, String orderidtoFetchPaymentmode) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_GetPaymentDetailsFromPaytm+merchantorderid ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, " Response from paytm : " + response);
+                            String Status = response.getString("STATUS");
+                            if(Status.equals(Constants.PAYTM_SUCCESSSTATUS)){
+                                changePaymentModeinOrderDetails("PAYTM",orderidtoFetchPaymentmode,orderdetailskey);
+                                changePaymentStatusinPaymentTransaction("SUCCESS",key);
+                            }
+
+                            else{
+                                showProgressBar(false);
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+                            showProgressBar(false);
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(Pos_OrderDetailsScreen.this, "No response from Paytm", Toast.LENGTH_LONG).show();
+
+                    showProgressBar(false);
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    showProgressBar(false);
+
+                }
+            }
+        })
+        {
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+
+    }
+
+
+
+    private void getPaymentStatusFromRazorPay(String merchantorderid, String merchantpaymentid, String key, String orderdetailskey, String orderidtoFetchPaymentmode) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_GetPaymentDetailsFromRazorpay+merchantorderid ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, " Response from Razorpay : " + response);
+                            String Status = response.getString("status");
+                            if(Status.equals(Constants.RAZORPAY_SUCCESSSTATUS)){
+                                changePaymentModeinOrderDetails("RAZORPAY",orderidtoFetchPaymentmode,orderdetailskey);
+                                changePaymentStatusinPaymentTransaction("SUCCESS",key);
+                            }
+                            else{
+                                showProgressBar(false);
+
+                            }
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            showProgressBar(false);
+
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(Pos_OrderDetailsScreen.this, "No response from Razorpay", Toast.LENGTH_LONG).show();
+                    showProgressBar(false);
+
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    showProgressBar(false);
+
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+    }
+
+
+
+    private void changePaymentModeinOrderDetails(String PaymentMode, String orderidtoFetchPaymentmode, String orderdetailskey) {
+
+
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("key", orderdetailskey);
+            jsonObject.put("paymentmode", PaymentMode);
+            Log.i("tag","listenertoken"+ "");
+
+
+
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+            showProgressBar(false);
+
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                try {
+
+
+
+               //     Toast.makeText(Pos_OrderDetailsScreen.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
+
+                    if(fromActivityName.equals("PosManageOrders")) {
+                        if(Pos_ManageOrderFragment.sorted_OrdersList.size()>0){
+                            for(int i =0; i<Pos_ManageOrderFragment.sorted_OrdersList.size();i++){
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Pos_ManageOrderFragment.sorted_OrdersList.get(i);
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                    Pos_ManageOrderFragment.manageOrdersListViewAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        }
+
+                        if(Pos_ManageOrderFragment.ordersList.size()>0){
+                            for(int i =0; i<Pos_ManageOrderFragment.ordersList.size();i++){
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Pos_ManageOrderFragment.ordersList.get(i);
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                    Pos_ManageOrderFragment.manageOrdersListViewAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        }
+
+                    }
+
+
+
+                    if(fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder")) {
+                        try {
+                            if (GetDeliverypartnersAssignedOrders.ordersList.size() > 0) {
+                                for (int i = 0; i < GetDeliverypartnersAssignedOrders.ordersList.size(); i++) {
+                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = GetDeliverypartnersAssignedOrders.ordersList.get(i);
+
+                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                    if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
+                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+                                        try {
+                                            GetDeliverypartnersAssignedOrders.adapter_mobile_getDeliveryPartnersAssignedOrders.notifyDataSetChanged();
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                    }
+                                }
+                            }
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+
+                            if(DeliveryPartnerSettlementReport.result_JArray.length()>0){
+
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i11 = 0;
+                                int arrayLength1 = DeliveryPartnerSettlementReport.result_JArray.length();
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                //  Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+                                if(arrayLength1>0) {
+
+                                    for (; i11 < (arrayLength1); i11++) {
+
+                                        try {
+                                            JSONObject jsonv = DeliveryPartnerSettlementReport.result_JArray.getJSONObject(i11);
+                                            String orderidd= jsonv.getString("orderid");
+
+                                            if(orderidd.equals(orderidtoFetchPaymentmode)) {
+                                                jsonv.put("paymentmode", PaymentMode);
+
+
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+
+
+                    if(fromActivityName.equals("AppOrdersList")) {
+
+                        if(searchOrdersUsingMobileNumber.sorted_OrdersList.size()>0){
+                            for(int i =0; i<searchOrdersUsingMobileNumber.sorted_OrdersList.size();i++){
+
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+
+
+                                    try {
+                                        searchOrdersUsingMobileNumber.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }
+                            }
+                        }
+
+
+                        if(searchOrdersUsingMobileNumber.ordersList.size()>0){
+                            for(int i =0; i<searchOrdersUsingMobileNumber.ordersList.size();i++){
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =searchOrdersUsingMobileNumber.ordersList.get(i);
+
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+                                    try {
+                                        searchOrdersUsingMobileNumber.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }                                                        }
+                            }
+                        }
+
+
+                    }
+                    else{
+
+
+                      //  Toast.makeText(Pos_OrderDetailsScreen.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
+
+
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                    showProgressBar(false);
+
+                }
+
+
+
+                try{
+                    paymentTypetext_widget.setText(PaymentMode);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    showProgressBar(false);
+
+                }
+
+                Log.d(Constants.TAG, "Responsewwwww: " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+                showProgressBar(false);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+    }
+    private void changePaymentStatusinPaymentTransaction(String status, String key) {
+
+        try {
+            JSONObject jsonObject = new JSONObject();
+
+            try {
+                jsonObject.put("status", status);
+                jsonObject.put("key", key);
+
+                Log.i("tag", "listenertoken" + "");
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+                showProgressBar(false);
+
+            }
+            Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updatePaymentTransactionTable, jsonObject,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(@NonNull JSONObject response) {
+                            try {
+                                Log.d(Constants.TAG, "Request Payload: response  ");
+
+                                showProgressBar(false);
+
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                showProgressBar(false);
+
+                            }
+
+
+                        }
+
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                    Log.d(Constants.TAG, "Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Error: " + error.toString());
+
+
+                    showProgressBar(false);
+
+                    error.printStackTrace();
+                }
+            }) {
+                @Override
+                public Map<String, String> getParams() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("modulename", "Store");
+                    return params;
+                }
+
+
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> header = new HashMap<>();
+                    header.put("Content-Type", "application/json");
+
+                    return header;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+            // Make the request
+            Volley.newRequestQueue(Pos_OrderDetailsScreen.this).add(jsonObjectRequest);
+
+        } catch (Exception e) {
+            showProgressBar(false);
+
+            e.printStackTrace();
+        }
+    }
+
+
+
 
 
     @Override

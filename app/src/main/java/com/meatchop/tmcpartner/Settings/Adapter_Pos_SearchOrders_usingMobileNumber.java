@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.Settings;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
     Context mContext;
 
@@ -62,6 +65,12 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
     public DeliveredOrdersTimewiseReport deliveredOrdersTimewiseReport;
     String AdapterCalledFrom ="AppSearchOrders";
     public searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber;
+
+    String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
+    String StoreAddressLine2 = "Hasthinapuram Chromepet";
+    String StoreAddressLine3 = "Chennai - 600044";
+    String StoreLanLine = "PH No :4445568499";
+
     public Adapter_Pos_SearchOrders_usingMobileNumber(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber, String orderStatus) {
         super(mContext, R.layout.pos_manageorders_listview_child, ordersList);
         this.searchOrdersUsingMobileNumber = searchOrdersUsingMobileNumber;
@@ -158,6 +167,14 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         final TextView other_print_button_widget = listViewItem.findViewById(R.id.other_print_button_widget);
         final TextView cancelled_print_button_widget = listViewItem.findViewById(R.id.cancelled_print_button_widget);
 
+
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+
+
+        StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (shared.getString("VendorPincode", ""));
+        StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
 
         final TextView changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
@@ -822,7 +839,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
-                if ((ordertype.equals(Constants.POSORDER))||(ordertype.equals(Constants.SwiggyOrder))||(ordertype.equals(Constants.DunzoOrder))) {
+                if ((ordertype.equals(Constants.POSORDER))||(ordertype.equals(Constants.SwiggyOrder))||(ordertype.equals(Constants.DunzoOrder))||(ordertype.equals(Constants.BigBasket))) {
                     try {
                         Thread t = new Thread() {
                             public void run() {
@@ -1674,22 +1691,22 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "No 57, Rajendra Prasad Road," + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Hasthinapuram,Chromepet" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Chennai-600044" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "+914445568499" + "\n");
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
@@ -1839,7 +1856,29 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             }
 
 
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+          //  PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+
+
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "Grossweight : "+Printer_POJO_ClassArray[i].getGrossWeight()+"\n");
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "Netweight : "+Printer_POJO_ClassArray[i].getItemWeight());
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, " ,  Quantity : "+"(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+
+
+
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);

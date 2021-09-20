@@ -94,7 +94,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
     String orderid="",itemnamefromOrderDetails="";
 
     int iterator =0,isReachedLastItemInLoop_int=0;
-    boolean isReachedLastItemInLoop = false;
+    boolean  isgetRatingDetailsCalled = false;
 
 
     @Override
@@ -172,12 +172,6 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
         deliveryrating2_count = findViewById(R.id.deliveryrating2_count);
         deliveryrating1_count = findViewById(R.id.deliveryrating1_count);
 
-       // deliveryRating_textview.findViewById(R.id.deliveryRating_textview);
-        RatingArray.add("1");
-        RatingArray.add("2");
-        RatingArray.add("3");
-        RatingArray.add("4");
-        RatingArray.add("5");
 
 //        orderinstruction.setVisibility(View.VISIBLE);
 //        orderinstruction.setText("Select Date to get Data");
@@ -277,6 +271,13 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                 ratingList.clear();
                 sorted_ratingList.clear();
                 sorted_OrdersList.clear();
+                RatingArray.clear();
+                // deliveryRating_textview.findViewById(R.id.deliveryRating_textview);
+                RatingArray.add("1");
+                RatingArray.add("2");
+                RatingArray.add("3");
+                RatingArray.add("4");
+                RatingArray.add("5");
                 itemrating_String="0"; qualityrating_String="0"; deliveryrating_String="0";totalrating_String="0";
                 itemrating_double=0; qualityrating_double=0; deliveryrating_double=0; totalitemrating_double=0; totalqualityrating_double=0; totaldeliveryrating_double=0;totalrating_double=0;totalNo_of_stars_expected=0;no_stars_given_in_percentage=0;
                 no_of_stars_recieved_for_the_service=0;
@@ -445,6 +446,13 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                             ratingList.clear();
                             sorted_ratingList.clear();
                             sorted_OrdersList.clear();
+                            RatingArray.clear();
+                            // deliveryRating_textview.findViewById(R.id.deliveryRating_textview);
+                            RatingArray.add("1");
+                            RatingArray.add("2");
+                            RatingArray.add("3");
+                            RatingArray.add("4");
+                            RatingArray.add("5");
                             itemrating_String="0"; qualityrating_String="0"; deliveryrating_String="0";totalrating_String="0";
                             itemrating_double=0; qualityrating_double=0; deliveryrating_double=0; totalitemrating_double=0; totalqualityrating_double=0; totaldeliveryrating_double=0;totalrating_double=0;totalNo_of_stars_expected=0;no_stars_given_in_percentage=0;
                             no_of_stars_recieved_for_the_service=0;
@@ -1151,7 +1159,8 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
     private void GetItemdetailsfromOrderDetailsNeww(String vendorKey) {
 
-        Boolean isCompleted=false;
+
+
         showProgressBar(true);
         for( iterator=0;iterator<ratingList.size();iterator++)    {
             Modal_RatingOrderDetails modal_ratingOrderDetails = ratingList.get(iterator);
@@ -1523,6 +1532,8 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                                                 //Log.d(Constants.TAG, "iterator: " +iterator);
                                                 //Log.d(Constants.TAG, "sorted_OrdersList: " +sorted_OrdersList.size());
                                                 showProgressBar(false);
+                                                isgetRatingDetailsCalled = false;
+
                                                 Toast.makeText(DatewiseRatingreport_FirstScreen.this, "Cant get OrderDetails", Toast.LENGTH_LONG).show();
                                             }
                                         }
@@ -1536,6 +1547,8 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                     showProgressBar(false);
+                                    isgetRatingDetailsCalled = false;
+
                                     Toast.makeText(DatewiseRatingreport_FirstScreen.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
                                 }
 
@@ -1544,6 +1557,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                                 e.printStackTrace();
                                 showProgressBar(false);
                                 Toast.makeText(DatewiseRatingreport_FirstScreen.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+                                isgetRatingDetailsCalled = false;
 
                             }
 
@@ -1559,7 +1573,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                     ////Log.d(Constants.TAG, "Error: " + error.toString());
                     showProgressBar(false);
                     Toast.makeText(DatewiseRatingreport_FirstScreen.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
-
+                    isgetRatingDetailsCalled = false;
                     error.printStackTrace();
                 }
             }) {
@@ -2052,6 +2066,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
 
     private void SetProgressBarAndCount(String RateType) {
+        isgetRatingDetailsCalled = false;
 
         if(RateType.equals("ForTotalRating")){
             try{

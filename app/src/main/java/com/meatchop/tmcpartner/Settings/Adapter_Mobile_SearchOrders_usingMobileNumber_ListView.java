@@ -247,7 +247,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
  */
-        searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+      //  searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
 
         totalButtonLayout.setVisibility(View.VISIBLE);
         ordercancellationtimeRefresh_Layout.setVisibility(View.GONE);
@@ -401,7 +401,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         }
 
 
-
         try {
             ordertype_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderType()));
         }
@@ -522,7 +521,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         }
 
 
-        if((orderType.equals(Constants.SwiggyOrder))||(orderType.equals(Constants.PhoneOrder))||(orderType.equals(Constants.DunzoOrder))){
+        if((orderType.equals(Constants.SwiggyOrder))||(orderType.equals(Constants.PhoneOrder))  ||(orderType.equals(Constants.DunzoOrder)) ||(orderType.equals(Constants.BigBasket))){
             tokenNoLayout.setVisibility(View.GONE);
             slotTimeLayout.setVisibility(View.GONE);
             slotdate_label_widget.setText("Order Type");

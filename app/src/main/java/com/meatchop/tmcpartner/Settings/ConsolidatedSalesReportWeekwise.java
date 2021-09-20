@@ -87,8 +87,8 @@ import java.util.Objects;
 public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     LinearLayout getData,endDateSelectorLayout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker,enddatepicker;
-    TextView vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorname,deliveryamount,vendorKey, ordertype, slotname, DateString;
+    TextView vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String vendorname,deliveryamount="0",vendorKey, ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     double screenInches;
@@ -124,6 +124,12 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     public static List<String> dunzoOrders_couponDiscountOrderidArray;
     public static HashMap<String, String> dunzoOrders_couponDiscount_hashmap = new HashMap();
 
+
+
+    public static List<String> bigBasketOrders_couponDiscountOrderidArray;
+    public static HashMap<String, String> bigBasketOrders_couponDiscount_hashmap = new HashMap();
+
+
     public static List<String> SubCtgywiseTotalArray;
     public static HashMap<String, String> SubCtgywiseTotalHashmap = new HashMap();
     ;
@@ -136,7 +142,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
     ScrollView scrollView;
     double itemDespTotalAmount = 0;
-    String todatestring,fromdatestring,CurrentDate, CouponDiscout, pos_CouponDiscount,Swiggy_CouponDiscount,PhoneOrder_CouponDiscount,DunzoOrder_CouponDiscount,PreviousDateString;
+    String todatestring,fromdatestring,CurrentDate, CouponDiscout, pos_CouponDiscount,Swiggy_CouponDiscount,PhoneOrder_CouponDiscount,BigBasket_CouponDiscount,DunzoOrder_CouponDiscount,PreviousDateString;
     ListView consolidatedSalesReport_Listview;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -184,6 +190,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
       //  getdatainstruction = findViewById(R.id.getdatainstruction);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
+        bigBasketSales = findViewById(R.id.bigBasketSales);
         getData = findViewById(R.id.getData);
         Order_Item_List = new ArrayList<>();
         finalBillDetails = new ArrayList<>();
@@ -197,6 +204,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         phoneOrders_couponDiscountOrderidArray = new ArrayList<>();
         swiggyOrders_couponDiscountOrderidArray = new ArrayList<>();
         dunzoOrders_couponDiscountOrderidArray = new ArrayList<>();
+        bigBasketOrders_couponDiscountOrderidArray = new ArrayList<>();
         ordertypeArray = new ArrayList<>();
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
@@ -215,6 +223,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         phoneOrders_couponDiscountOrderidArray.clear();
         swiggyOrders_couponDiscountOrderidArray.clear();
         dunzoOrders_couponDiscountOrderidArray.clear();
+        bigBasketOrders_couponDiscountOrderidArray.clear();
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
         dataList.clear();
@@ -282,6 +291,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             phoneOrders_couponDiscountOrderidArray.clear();
             swiggyOrders_couponDiscountOrderidArray.clear();
             dunzoOrders_couponDiscountOrderidArray.clear();
+            bigBasketOrders_couponDiscountOrderidArray.clear();
+            bigBasketOrders_couponDiscount_hashmap.clear();
+            swiggyOrders_couponDiscount_hashmap.clear();
+            dunzoOrders_couponDiscount_hashmap.clear();
             SubCtgywiseTotalArray.clear();
             SubCtgywiseTotalHashmap.clear();
             dataList.clear();
@@ -345,7 +358,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     SubCtgywiseTotalHashmap.clear();
                     dataList.clear();
                     tmcSubCtgykey.clear();
-
+                    bigBasketOrders_couponDiscountOrderidArray.clear();
+                    bigBasketOrders_couponDiscount_hashmap.clear();
+                    swiggyOrders_couponDiscount_hashmap.clear();
+                    dunzoOrders_couponDiscount_hashmap.clear();
 
 
                     calculate_the_dateandgetData(fromdatestring, todatestring);
@@ -921,11 +937,13 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
                                             if(json.has("deliveryamount")) {
                                                 try{
-                                                    deliveryamount =  String.valueOf(json.get("deliveryamount"));
+
+                                                        deliveryamount = String.valueOf(json.get("deliveryamount"));
                                                     modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+
                                                     //Log.d(Constants.TAG, "OrderType: " + slotname);
                                                     if (deliveryamount.equals("")) {
-                                                        deliveryamount = "0";
+                                                        deliveryamount = "0.00";
                                                     }
                                                     //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                     if (!orderid.equals("")) {
@@ -1160,7 +1178,42 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                                             }
                                         }
 
+                                        else if((ordertype.equals(Constants.BigBasket))){
+                                            if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
+
+                                                if (json.has("coupondiscount")) {
+                                                    try {
+                                                        modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                                                        BigBasket_CouponDiscount = String.valueOf(json.get("coupondiscount"));
+                                                        if (BigBasket_CouponDiscount.equals("")) {
+                                                            BigBasket_CouponDiscount = "0";
+                                                        }
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        if (!orderid.equals("")) {
+                                                            if (!bigBasketOrders_couponDiscountOrderidArray.contains(orderid)) {
+                                                                bigBasketOrders_couponDiscountOrderidArray.add(orderid);
+                                                                bigBasketOrders_couponDiscount_hashmap.put(orderid, BigBasket_CouponDiscount);
+                                                            } else {
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                } else {
+
+                                                    modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+
+                                                }
+                                                getItemDetailsFromItemDespArray(modal_orderDetails, ordertype, orderid);
+
+
+                                            }
+                                        }
                                         else {
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
@@ -1383,6 +1436,10 @@ swiggyOrders_couponDiscountOrderidArray.clear();
             phoneOrders_couponDiscountOrderidArray.clear();
             swiggyOrders_couponDiscountOrderidArray.clear();
             dunzoOrders_couponDiscountOrderidArray.clear();
+            bigBasketOrders_couponDiscountOrderidArray.clear();
+            bigBasketOrders_couponDiscount_hashmap.clear();
+            swiggyOrders_couponDiscount_hashmap.clear();
+            dunzoOrders_couponDiscount_hashmap.clear();
             SubCtgywiseTotalArray.clear();
             SubCtgywiseTotalHashmap.clear();
             dataList.clear();
@@ -1987,6 +2044,18 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                                 }
 
 
+                                if (ordertype.equals(Constants.BigBasket) || ordertype.equals("BigBasket Order")) {
+                                    double bigBasketOrder_amount_fromhashmap = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales());
+
+                                    double bigBasketOrder_amount = marinadesObjectpayableAmount + bigBasketOrder_amount_fromhashmap;
+
+                                    double newTotalbigBasketOrderAmount = bigBasketOrder_amount;
+                                    modal_orderDetails.setBigBasketSales(String.valueOf(newTotalbigBasketOrderAmount));
+
+
+                                }
+
+
                             }
                               /*  else{
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
@@ -2069,6 +2138,18 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
 
                             }
+
+
+                            if (ordertype.equals(Constants.BigBasket) || ordertype.equals("BigBasket Order")) {
+                                double bigBasketOrderSales_amount = marinadesObjectpayableAmount;
+                                double Gst_phoneOrderSales_amount = marinadesObjectgstAmount;
+                                double newTotalbigBasketamount = bigBasketOrderSales_amount;
+
+                                modal_orderDetails.setDunzoSales(String.valueOf((newTotalbigBasketamount)));
+
+
+                            }
+
 
 
 
@@ -2313,6 +2394,19 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
                             }
 
+
+                            if (ordertype.equals(Constants.BigBasket) || ordertype.equals("BigBasket Order")) {
+                                double bigBasketOrder_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getBigBasketSales());
+                                double bigBasketOrder_amount = tmcprice + bigBasketOrder_amount_fromhashmap;
+                                double newTotalbigBasketOrderAmount = bigBasketOrder_amount;
+                                modal_orderDetails.setBigBasketSales(String.valueOf((newTotalbigBasketOrderAmount)));
+
+
+
+                            }
+
+
+
                         }
                            /* else{
                                 Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
@@ -2370,6 +2464,12 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                         if (ordertype.equals(Constants.DunzoOrder) || ordertype.equals("Dunzo Order")) {
 
                             modal_orderDetails.setDunzoSales(String.valueOf((tmcprice)));
+
+
+                        }
+                        if (ordertype.equals(Constants.BigBasket) || ordertype.equals("BigBasket Order")) {
+
+                            modal_orderDetails.setBigBasketSales(String.valueOf((tmcprice)));
 
 
                         }
@@ -2532,6 +2632,9 @@ swiggyOrders_couponDiscountOrderidArray.clear();
         double swiggyDiscount_amount = 0;
         double phoneOrders_discountAmount = 0;
         double dunzoOrders_discountAmount =0;
+        double bigBasketOrders_discountAmount =0;
+
+
         double GST = 0;
         double totalAmount = 0;
         double posorder_Amount = 0;
@@ -2540,6 +2643,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
         double swiggyorder_Amount = 0;
         double dunzoorder_Amount = 0;
 
+        double bigBasketorder_Amount = 0;
 
         try {
             for (String orderid : couponDiscountOrderidArray) {
@@ -2581,6 +2685,14 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                 dunzoOrders_discountAmount = dunzoOrders_discountAmount + CouponDiscount_double;
 
             }
+
+            for (String orderid : bigBasketOrders_couponDiscountOrderidArray) {
+                String bigBasketOrdersDiscount_Amount = bigBasketOrders_couponDiscount_hashmap.get(orderid);
+                double CouponDiscount_double = Double.parseDouble(bigBasketOrdersDiscount_Amount);
+                bigBasketOrders_discountAmount = bigBasketOrders_discountAmount + CouponDiscount_double;
+
+            }
+
 
             for (String orderid : deliveryChargeOrderidArray) {
                 String DeliveryChargeString =deliveryCharge_hashmap.get(orderid);
@@ -2634,6 +2746,10 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                         dunzoorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getDunzoSales()));
                         dunzoorder_Amount = dunzoorder_Amount-dunzoOrders_discountAmount;
                     }
+                    if ((ordertype.toUpperCase().equals(Constants.BigBasket))||(ordertype.equals("BigBasket Order"))) {
+                        bigBasketorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getBigBasketSales()));
+                        bigBasketorder_Amount = bigBasketorder_Amount-bigBasketOrders_discountAmount;
+                    }
 
                 }
                 catch (Exception e){
@@ -2642,7 +2758,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
             }
             double totalAmountWithoutGst = totalAmountWithhGst-GST;
-            discountAmount = discountAmount+pos_discountAmount+swiggyDiscount_amount+phoneOrders_discountAmount+dunzoOrders_discountAmount;
+            discountAmount = discountAmount+pos_discountAmount+swiggyDiscount_amount+phoneOrders_discountAmount+dunzoOrders_discountAmount+bigBasketOrders_discountAmount;
             double totalAmt_with_CouponDiscount_double = totalAmountWithoutGst-discountAmount;
             double totalAmt_with_CouponDiscount__deliverycharge = totalAmt_with_CouponDiscount_double+deliveryChargee;
             double totalAmt_with_CouponDiscount__deliverycharge_GST = totalAmt_with_CouponDiscount__deliverycharge-GST;
@@ -2659,6 +2775,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
             possales.setText(String.valueOf(decimalFormat.format(posorder_Amount)));
             swiggySales.setText(String.valueOf(decimalFormat.format(swiggyorder_Amount)));
             dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoorder_Amount)));
+            bigBasketSales.setText(String.valueOf(decimalFormat.format(bigBasketorder_Amount)));
             deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee)));
             phoneOrderSales.setText(String.valueOf(decimalFormat.format(phoneorder_Amount)));
             totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
@@ -3937,11 +4054,14 @@ swiggyOrders_couponDiscountOrderidArray.clear();
             double swiggyorder_discountAmount = 0;
             double phoneorder_discountAmount = 0;
             double dunzoorder_discountAmount = 0;
+            double bigBasketorder_discountAmount = 0;
             double posorder_Amount = 0;
             double apporder_Amount = 0;
             double swiggyorder_Amount = 0;
             double phoneorder_Amount = 0;
             double dunzoorder_Amount = 0;
+            double bigBasketorder_Amount = 0;
+
             String Payment_Amount = "0";
             double discountAmount = 0;
             for (String orderid : couponDiscountOrderidArray) {
@@ -3985,7 +4105,14 @@ swiggyOrders_couponDiscountOrderidArray.clear();
             for (String orderid : dunzoOrders_couponDiscountOrderidArray) {
                 String dunzoOrdersDiscount_Amount = dunzoOrders_couponDiscount_hashmap.get(orderid);
                 double CouponDiscount_double = Double.parseDouble(dunzoOrdersDiscount_Amount);
-                dunzoOrdersDiscount_Amount = dunzoOrdersDiscount_Amount + CouponDiscount_double;
+                dunzoorder_discountAmount = dunzoorder_discountAmount + CouponDiscount_double;
+
+            }
+
+            for (String orderid : bigBasketOrders_couponDiscountOrderidArray) {
+                String bigBasketOrdersDiscount_Amount = bigBasketOrders_couponDiscount_hashmap.get(orderid);
+                double CouponDiscount_double = Double.parseDouble(bigBasketOrdersDiscount_Amount);
+                bigBasketorder_discountAmount = bigBasketorder_discountAmount + CouponDiscount_double;
 
             }
 
@@ -4123,6 +4250,31 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                         paymentModeitemValueCell.setPaddingRight(10);
                         tablePaymentMode.addCell(paymentModeitemValueCell);
                     }
+
+
+                    if ((ordertype.toUpperCase().equals(Constants.BigBasket))||(ordertype.equals("BigBasket Order"))) {
+                        bigBasketorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales())));
+                        bigBasketorder_Amount = bigBasketorder_Amount-bigBasketorder_discountAmount;
+                        paymentModeitemkeycell = new PdfPCell(new Phrase("BIGBASKET ORDER :  "));
+                        paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                        paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
+                        paymentModeitemkeycell.setMinimumHeight(25);
+                        paymentModeitemkeycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        paymentModeitemkeycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        tablePaymentMode.addCell(paymentModeitemkeycell);
+
+
+                        paymentModeitemValueCell = new PdfPCell(new Phrase("Rs. " + bigBasketorder_Amount));
+                        paymentModeitemValueCell.setBorderColor(BaseColor.LIGHT_GRAY);
+                        paymentModeitemValueCell.setBorder(Rectangle.NO_BORDER);
+                        paymentModeitemValueCell.setMinimumHeight(25);
+                        paymentModeitemValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        paymentModeitemValueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        paymentModeitemValueCell.setPaddingRight(10);
+                        tablePaymentMode.addCell(paymentModeitemValueCell);
+                    }
+
+
 
 
                 }

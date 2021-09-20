@@ -95,7 +95,7 @@ public class SettingsFragment extends Fragment {
     LinearLayout addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor, manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
+    LinearLayout addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -250,6 +250,7 @@ public class SettingsFragment extends Fragment {
         menuItemAvailabiltyStatusReport  =  view.findViewById(R.id.menuItemAvailabiltyStatusReport);
         mobilePrinterConnectLayout = view.findViewById(R.id.mobilePrinterConnectLayout);
         orderRating_report  =  view.findViewById(R.id.orderRating_report);
+        addBigbasketOrders_placing_layout = view.findViewById(R.id.addBigbasketOrders_placing_layout);
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -635,16 +636,12 @@ public class SettingsFragment extends Fragment {
             mobilePrinterConnectLayout.setVisibility(GONE);
             dataAnalyticsLinearLayout.setVisibility(GONE);
 
-            if(UserRole.equals(Constants.CASHIER_ROLENAME)){
-                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
-             addDunzoOrders_Placing_layout.setVisibility(VISIBLE);
 
-
-            }
 
 
         } else {
             //if Mobile
+            addBigbasketOrders_placing_layout.setVisibility(GONE);
             addDunzoOrders_Placing_layout.setVisibility(GONE);
             swiggyOrderPlacing_layout.setVisibility(GONE);
             if(UserRole.equals(Constants.DELIVERYMANAGER_ROLENAME)){
@@ -694,6 +691,15 @@ public class SettingsFragment extends Fragment {
         } else {
             // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
+
+
+        addBigbasketOrders_placing_layout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, AddBigBasketOrder.class);
+                startActivity(intent);
+            }
+        });
 
         orderRating_report.setOnClickListener(new OnClickListener() {
             @Override

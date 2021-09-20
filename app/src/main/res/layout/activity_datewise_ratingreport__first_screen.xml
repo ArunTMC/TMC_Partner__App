@@ -784,16 +784,17 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:orientation="horizontal">
+
                                 <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="center"
-                                    android:textSize="14sp"
-                                    android:layout_marginStart="16dp"
                                     android:id="@+id/quantityratingsCount_textview"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="16dp"
                                     android:fontFamily="@font/open_sans_bold"
+                                    android:gravity="center"
+                                    android:text=" 0   "
                                     android:textColor="@color/TMC_Orange"
-                                    android:text=" 0   "/>
+                                    android:textSize="14sp" />
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"

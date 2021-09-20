@@ -401,7 +401,25 @@
 
                         />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/orderRating_report"
+                    android:visibility="visible"
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/DatewiseRatingDetails"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -476,6 +494,25 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:text="@string/AddDunzoOrders"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/addBigbasketOrders_placing_layout"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/AddBigBasketOrders"
                         android:textSize="16sp"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:fontFamily="@font/open_sans_semibold"
@@ -702,7 +739,7 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:id="@+id/dataAnalyticsLinearLayout"
-                     android:visibility="visible"
+                     android:visibility="gone"
 
                 android:orientation="vertical">
 
@@ -796,25 +833,7 @@
 
 
 
-                     <LinearLayout
-                         android:layout_width="match_parent"
-                         android:layout_height="40dp"
-                         android:gravity="center_vertical"
-                         android:id="@+id/orderRating_report"
-                         android:visibility="visible"
-                         android:orientation="vertical">
 
-                         <TextView
-                             android:layout_width="match_parent"
-                             android:layout_height="wrap_content"
-                             android:layout_marginTop="5dp"
-                             android:text="@string/DatewiseRatingDetails"
-                             android:textSize="16sp"
-                             android:textColor="@color/TMC_Primary_Text_Color"
-                             android:fontFamily="@font/open_sans_semibold"
-
-                             />
-                     </LinearLayout>
                      <LinearLayout
                          android:layout_width="match_parent"
                          android:layout_height="40dp"
