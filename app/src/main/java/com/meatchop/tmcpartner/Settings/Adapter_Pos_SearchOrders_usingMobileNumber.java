@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssigningDeliveryPartner;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
@@ -65,6 +67,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
     public DeliveredOrdersTimewiseReport deliveredOrdersTimewiseReport;
     String AdapterCalledFrom ="AppSearchOrders";
     public searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber;
+    String deliverytype="";
 
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
@@ -255,7 +258,6 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         }
 
-
         String orderStatusFromArray = modal_manageOrders_pojo_class.getOrderstatus();
         String SlotName = modal_manageOrders_pojo_class.getSlotname().toUpperCase();
         tokenNo_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getTokenno()));
@@ -301,7 +303,15 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             e.printStackTrace();
         }
         */
+        if(AdapterCalledFrom.equals( "AppSearchOrders")) {
+            slotDate_text_widget.setText(String.format(" %s", " - " + modal_manageOrders_pojo_class.getSlotdate() + " ( " + modal_manageOrders_pojo_class.getSlottimerange() + " ) "));
+            slotName_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getSlotname()));
+        }
+        else{
+            slotDate_text_widget.setVisibility(View.GONE);
 
+        }
+/*
         if(SlotName.equals(Constants.PREORDER_SLOTNAME)) {
             slotDate_text_widget.setVisibility(View.VISIBLE);
             slotDate_text_widget.setText(String.format(" %s"," - "+ modal_manageOrders_pojo_class.getSlotdate()+" ( "+modal_manageOrders_pojo_class.getSlottimerange()+" ) "));
@@ -313,6 +323,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         }
 
+
+ */
 
         if(!modal_manageOrders_pojo_class.getOrderstatus().equals(Constants.NEW_ORDER_STATUS)) {
 
@@ -343,13 +355,18 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             changeDeliveryPartner.setText("Assign Delivery Person");
 
         }
-
+        try {
+            deliverytype = ( modal_manageOrders_pojo_class.getDeliverytype()).toUpperCase();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
 
         //deliveryPartner_name_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliveryPartnerName()));
         //  deliveryPartner_mobileNo_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo()));
-        if (orderType.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
+        if (deliverytype.equals(Constants.STOREPICKUP_DELIVERYTYPE)) {
             ready_for_pickup_button_widget.setVisibility(View.GONE);
             if(orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
 
@@ -476,30 +493,58 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     */
 
 
+                    String cutname = "";
+
+                    try {
+                        if(json.has("cutname")) {
+                            cutname =  String.valueOf(json.get("cutname"));
+                        }
+                        else {
+                            cutname = "";
+                        }
+                    }
+                    catch (Exception e){
+                        cutname ="";
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if((cutname.length()>0) && (!cutname.equals(null)) && (!cutname.equals("null"))){
+                            cutname = " [ "+cutname + " ] ";
+                        }
+                        else{
+                            //cutname="";
+                        }
+                    }
+                    catch (Exception e ){
+                        e.printStackTrace();
+                    }
+
+
                     if (itemDesp.length()>0) {
                         if(subCtgyKey.equals("tmcsubctgy_16")){
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp,  "Grill House "+ itemName,cutname, quantity);
 
                         }
                         else  if(subCtgyKey.equals("tmcsubctgy_15")){
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp, "Ready to Cook  "+ itemName,cutname, quantity);
 
                         }
                         else{
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp, itemName,cutname, quantity);
 
                         }
                     } else {
                         if(subCtgyKey.equals("tmcsubctgy_16")){
-                            itemDesp = String.format("%s * %s",  "Grill House "+itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s",  "Grill House "+ itemName, cutname,quantity);
 
                         }
                         else  if(subCtgyKey.equals("tmcsubctgy_15")){
-                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s",  "Ready to Cook  "+ itemName,cutname, quantity);
 
                         }
                         else{
-                            itemDesp = String.format("%s * %s", itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s", itemName,cutname, quantity);
 
                         }
 
@@ -660,6 +705,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
 
                 selectedBillDetails.add(selectedOrder);
                 //  OrderdItems_desp.clear();
@@ -720,6 +766,33 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
 
+        ready_for_pickup_delivered_button_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Currenttime = getDate_and_time();
+
+                changestatusto =Constants.DELIVERED_ORDER_STATUS;
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                //Log.i("Tag","0"+OrderKey);
+                new_Order_Linearlayout.setVisibility(View.GONE);
+                ready_Order_Linearlayout.setVisibility(View.GONE);
+                confirming_order_Linearlayout.setVisibility(View.GONE);
+                cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
+                //Log.i("Tag",""+changestatusto+OrderKey);
+
+                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                getStockOutGoingDetailsUsingOrderid(orderid);
+                notifyDataSetChanged();
+            }
+        });
+
 
         pending_order_print_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -754,6 +827,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -836,6 +910,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -920,6 +995,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -978,6 +1054,199 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         return  listViewItem ;
 
     }
+
+
+
+    private void getStockOutGoingDetailsUsingOrderid(String orderid) {
+        searchOrdersUsingMobileNumber.showProgressBar(true);
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getStockOutgoingUsingSalesOrderid+orderid ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
+
+                            try {
+
+                                String ordertype="#";
+
+                                //converting jsonSTRING into array
+                                JSONArray JArray  = response.getJSONArray("content");
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                /*Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                if(arrayLength>1){
+                                    Toast.makeText(mContext, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+
+
+                                }
+
+                                 */
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        String entryKey = json.getString("key");
+
+
+                                        ChangeOutGoingTypeInOutgoingTable(entryKey);
+
+
+
+
+
+
+
+                                    } catch (JSONException e) {
+                                        searchOrdersUsingMobileNumber.showProgressBar(false);
+
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                searchOrdersUsingMobileNumber.showProgressBar(false);
+
+
+                            }
+
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            searchOrdersUsingMobileNumber.showProgressBar(false);
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(mContext, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
+                    searchOrdersUsingMobileNumber.showProgressBar(false);
+
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    searchOrdersUsingMobileNumber.showProgressBar(false);
+
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+
+
+
+    private void ChangeOutGoingTypeInOutgoingTable(String entryKey) {
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("outgoingtype", Constants.SALES_FULFILLED_OUTGOINGTYPE);
+            jsonObject.put("key", entryKey);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateStockOutgoingUsingKey,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                searchOrdersUsingMobileNumber.showProgressBar(false);
+
+                Log.d(Constants.TAG, "Response: " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                searchOrdersUsingMobileNumber.showProgressBar(false);
+
+                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+
+
+
 
     private void generatingTokenNo(String vendorkey, String orderDetailsKey, List<Modal_ManageOrders_Pojo_Class> selectedOrderr) {
         searchOrdersUsingMobileNumber.showProgressBar(true);
@@ -1253,11 +1522,24 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         String deliverydistance= "";
         String notes ="";
         String DeliveryAmount ="";
+        String orderPlacedTime ="";
+
         String subCtgyKey ="";
         double totalSubtotalItem=0;
         double totalSubtotalItemwithdiscount=0;
         double totalSubtotalItemwithdiscountwithdeliverycharge=0;
         double deliveryamount_double=0;
+
+
+        try {
+            orderPlacedTime = manageOrders_pojo_class.getOrderplacedtime().toString();
+
+        }catch (Exception e ){
+            e.printStackTrace();
+            orderPlacedTime="--";
+        }
+
+
 
         try {
             payment_mode = manageOrders_pojo_class.getPaymentmode();
@@ -1464,6 +1746,17 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     manageOrders_pojo_classs.netweight = " - ";
 
                 }
+
+
+                if (json.has("cutname")) {
+                    manageOrders_pojo_classs.cutname = String.valueOf(json.get("cutname"));
+
+                } else {
+                    manageOrders_pojo_classs.cutname = "";
+
+                }
+
+
                 if (json.has("grossweight")) {
                     manageOrders_pojo_classs.grossweight = String.valueOf(json.get("grossweight"));
 
@@ -1587,7 +1880,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                     }
                 } else {
-                    int indexofbraces = fullitemName.indexOf("(");
+                    /*int indexofbraces = fullitemName.indexOf("(");
                     if (indexofbraces >= 0) {
                         itemName = fullitemName.substring(0, indexofbraces);
 
@@ -1600,6 +1893,41 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                         itemName = fullitemName;
 
                     }
+
+                     */
+
+                    if(fullitemName.contains("(")){
+                        int openbraces = fullitemName.indexOf("(");
+                        int closebraces = fullitemName.indexOf(")");
+                        System.out.println(fullitemName);
+                        itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                        System.out.println(itemName);
+
+                    }
+                    if(!itemName.matches("[a-zA-Z0-9]+")){
+                        fullitemName = fullitemName.replaceAll(
+                                "[^a-zA-Z0-9()]", "");
+                        fullitemName = fullitemName.replaceAll(
+                                "[()]", " ");
+                        System.out.println("no english");
+
+                        System.out.println(fullitemName);
+
+                    }
+                    else{
+                        fullitemName = fullitemName.replaceAll(
+                                "[^a-zA-Z0-9()]", "");
+                        System.out.println("have English");
+
+                        System.out.println(fullitemName);
+
+                    }
+
+
+
+
+
+
                 }
             }
             catch (Exception e){
@@ -1607,6 +1935,16 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 e.printStackTrace();
             }
+            String cutname ="";
+            try{
+                cutname = modal_newOrderItems.getCutname().toString();
+            }
+            catch(Exception e){
+                cutname = "0";
+                e.printStackTrace();
+            }
+
+
             double gst_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getGstAmount()));
             String Gst = String.valueOf(decimalFormat.format(gst_double));
             double subtotal_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getSubTotal_perItem()));
@@ -1654,8 +1992,23 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
 
             }
+            if((cutname.length()>0) && (!cutname.equals("null")) && (!cutname.equals(null))) {
 
 
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0,  (cutname.toUpperCase()) + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+            }
             PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Grossweight : "+ grossweight + "\n");
@@ -1671,7 +2024,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal, cutname);
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
@@ -1860,7 +2213,27 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
 
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "ItemName : "+Printer_POJO_ClassArray[i].getItemName()+"\n");
 
+
+            String cutName = "";
+            try{
+                cutName = String.valueOf(Printer_POJO_ClassArray[i].getCutname().toString());
+            }
+            catch (Exception e){
+                cutName ="";
+                e.printStackTrace();
+            }
+
+            if((cutName.length()>0) && (!cutName.equals("null")) && (!cutName.equals(null))) {
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Cut Name : " +(cutName.toUpperCase()) + "\n");
+            }
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -2294,6 +2667,17 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             PrinterFunctions. PrintText(portName,portSettings,0, 0,0,0,0, 0,0,0,SlotDate+"         "+"\n");
 
 
+            if(SlotName.equals(Constants.EXPRESSDELIVERY_SLOTNAME)){
+                PrinterFunctions.SetLineSpacing(portName,portSettings,100);
+                PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
+                PrinterFunctions. PrintText(portName,portSettings,0, 0,1,0,0, 0,30,0,"Order Placed Time  : ");
+
+
+                PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
+                PrinterFunctions. PrintText(portName,portSettings,0, 0,0,0,0, 0,0,0,orderPlacedTime+"         "+"\n");
+
+            }
+
 
             PrinterFunctions.SetLineSpacing(portName,portSettings,100);
             PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
@@ -2393,43 +2777,34 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 jsonObject.put("key", OrderKey);
                 jsonObject.put("orderstatus", changestatusto);
                 jsonObject.put("orderconfirmedtime", currenttime);
-                jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
+
                 ////Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
                 jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", "");
                 jsonObject.put("orderreadytime", currenttime);
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
+
                 ////Log.i("tag","listenertoken"+ "");
             }
             if(changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)){
                 jsonObject.put("key", OrderKey);
                 jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
                 jsonObject.put("ordercancelledtime", currenttime);
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
+
+                ////Log.i("tag","listenertoken"+ "");
+            }
+            if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                jsonObject.put("key", OrderKey);
+                jsonObject.put("orderstatus", changestatusto);
+                jsonObject.put("orderdeliverytime", currenttime);
                 ////Log.i("tag","listenertoken"+ "");
             }
 
 
 
 
-
+            Log.i("tag","listenertoken"+ jsonObject);
 
 
         } catch (JSONException e) {
@@ -2453,6 +2828,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                         }
                         if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
                             modal_manageOrders_pojo_class.setOrderreadytime(currenttime);
+                        } if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                            modal_manageOrders_pojo_class.setOrderdeliveredtime(currenttime);
                         }
 
                         notifyDataSetChanged();
@@ -2478,7 +2855,9 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                         if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
                             modal_manageOrders_pojo_class.setOrderreadytime(currenttime);
                         }
-
+                        if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                            modal_manageOrders_pojo_class.setOrderdeliveredtime(currenttime);
+                        }
                         notifyDataSetChanged();
                       /*  if(changestatusto.equals("CONFIRMED")){
                             Intent intent = new Intent(mContext,AssigningDeliveryPartner.class);

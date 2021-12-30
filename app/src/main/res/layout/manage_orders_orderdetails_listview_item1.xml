@@ -20,6 +20,21 @@
             android:textSize="19sp"
             android:text="ItemName" />
 
+
+        <TextView
+            android:id="@+id/itemCut_widget"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.6"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:gravity="center_horizontal"
+            android:textSize="19sp"
+            android:paddingStart="5dp"
+
+            android:text="Item Cut" />
+
+
         <TextView
             android:id="@+id/itemWeight_widget"
             android:layout_width="0dp"

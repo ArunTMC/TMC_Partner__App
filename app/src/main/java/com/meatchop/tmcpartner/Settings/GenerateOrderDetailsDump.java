@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -78,6 +79,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
 
 public class GenerateOrderDetailsDump extends AppCompatActivity {
         private Spinner daysCountSpinner;
@@ -228,7 +232,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-
+/*
                     int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateOrderDetailsDump.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
                     // If do not grant write external storage permission.
@@ -249,7 +253,63 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
+
+ */
+
+
+
+
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if(Environment.isExternalStorageManager()){
+                            try {
+                                showProgressBar(true);
+
+                                AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                        else{
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    } else {
+
+
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateOrderDetailsDump.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(GenerateOrderDetailsDump.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            showProgressBar(true);
+                            try {
+                                AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }
                 }
+
+
             }
         });
 
@@ -515,6 +575,65 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
     }
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case OPENPDF_ACTIVITY_REQUEST_CODE:
+                setResult(RESULT_OK);
+                finish();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    try {
+                        AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        else {
+
+            if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+                int grantResultsLength = grantResults.length;
+                if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                    // exportInvoice();
+                    try {
+                        AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+
 
     private void openFromDatePicker() {
 
@@ -1716,7 +1835,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         calendar.setTime(date);
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
-        calendar.add(Calendar.DATE, 6);
+        calendar.add(Calendar.DATE, 15);
 
 
 

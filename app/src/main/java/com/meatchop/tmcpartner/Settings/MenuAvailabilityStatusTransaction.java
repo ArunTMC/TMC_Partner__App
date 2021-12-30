@@ -397,7 +397,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                     try {
                         JSONObject json = JArray.getJSONObject(i1);
                         //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
-                        String itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus="";
+                        String  allownegativestock = "" , itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus="";
                         try {
                             if (json.has("itemname")) {
                                 itemname = String.valueOf(json.get("itemname"));
@@ -515,7 +515,6 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-
                         try{
                             if (json.has("vendorkey")) {
                                 vendorkeyfromdb = String.valueOf(json.get("vendorkey"));
@@ -529,6 +528,19 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                             vendorkeyfromdb = "";
                             e.printStackTrace();
                         }
+                        try{
+                            if (json.has("allownegativestock")) {
+                                allownegativestock = String.valueOf(json.get("allownegativestock"));
+
+                            } else {
+                                allownegativestock = "";
+                            }
+
+                        }
+                        catch (Exception e){
+                            allownegativestock = "";
+                            e.printStackTrace();
+                        }
                                 //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
 
 
@@ -538,6 +550,8 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                         modal_menuAvailabilityStatusTransaction.menuItemKeyfromdb = menuItemKeyfromdb;
                         modal_menuAvailabilityStatusTransaction.mobileno = mobileno;
                         modal_menuAvailabilityStatusTransaction.status = status;
+                        modal_menuAvailabilityStatusTransaction.allownegativestock = allownegativestock;
+
                         modal_menuAvailabilityStatusTransaction.subCtgykey = subCtgykey;
                         modal_menuAvailabilityStatusTransaction.transactiontime = transactiontime;
                         modal_menuAvailabilityStatusTransaction.transcationstatus =transcationstatus;

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -24,7 +25,9 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONException;
@@ -60,7 +63,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     boolean isTMCPrice= false;
     boolean isAppPrice_PricePerKgChanged =false;
     boolean isPosPrice_PricePerKgChanged = false;
-
+    double screenInches;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +100,13 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         swiggy_price_label =findViewById(R.id.swiggy_price_label);
         dunzo_price_label = findViewById(R.id.dunzo_price_label);
         bigBasket_price_label = findViewById(R.id.bigbasket_price_label);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
+        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
+        screenInches = Math.sqrt(x+y);
+
 
 
         getMarinadeeMenuItemArrayFromSharedPreferences();
@@ -964,6 +974,34 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 modal_menuItemSettings.setSwiggyprice(swiggyPrice);
                 modal_menuItemSettings.setDunzoprice(dunzoPrice);
                 modal_menuItemSettings.setBigbasketprice(bigBasketPrice);
+
+
+                try{
+
+                    //Log.d("Constants.TAG", " mobileScreen_dashboard.completemenuItem 1 " +  mobileScreen_dashboard.completemenuItem);
+
+                    //    Log.d("Constants.TAG", "completemenuItem json  " + json);
+                    //  Log.d("Constants.TAG",  "       N               " );
+                    String json = new Gson().toJson(MenuItem);
+                    if(screenInches>Constants.default_mobileScreenSize){
+                        Pos_Dashboard_Screen.completemenuItem =json;
+
+                    }
+                    else{
+                        MobileScreen_Dashboard.completemenuItem =json;
+
+                    }
+                    //  Log.d("Constants.TAG", " mobileScreen_dashboard.completemenuItem 2 " +  mobileScreen_dashboard.completemenuItem);
+
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+
                 savedMenuIteminSharedPrefrences(MenuItem);
                // finish();
 
@@ -985,6 +1023,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         editor.putString("MarinadeMenuList", json);
         editor.apply();
     }
+
+
+
     private void savedMenuIteminSharedPrefrences(List<Modal_MenuItem_Settings> menuItem) {
         final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
 
@@ -995,6 +1036,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         editor.putString("MenuList", json);
         editor.apply();
     }
+
+
+
 
     private void getMenuItemArrayFromSharedPreferences() {
         final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -1012,9 +1056,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     }
 
 
-
-
-    private void getMarinadeeMenuItemArrayFromSharedPreferences() {
+   private void getMarinadeeMenuItemArrayFromSharedPreferences() {
         final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MarinadeMenuList", MODE_PRIVATE);
 
         Gson gson = new Gson();
@@ -1028,6 +1070,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         }
 
     }
+
+
+
 
     private void getMenuItembasedOnkey(String key) {
         int finalsellingprice , finalAppSellingPrice,finalPosSellingPrice;
@@ -1552,10 +1597,7 @@ return app_SellingPrice;
 
     }
 
-
-
-
-    private double CalculateSellingPrice(String tmcPrice, String appliedDiscountPercentage) {
+   private double CalculateSellingPrice(String tmcPrice, String appliedDiscountPercentage) {
         double sellingPrice = 0;
         double tmcprice = 0;
         double discount = 0;

@@ -9,7 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
@@ -40,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrderDetails> {
     Context mContext;
@@ -49,6 +54,7 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
     List<Modal_RatingOrderDetails> ratingList;
     String createdTime,orderId,mobileNumber,itemName,itemQuantity,feedBack,qualityrating,deliveryrating;
     DatewiseRatingreport_SecondScreen datewiseRatingreport_secondScreen;
+    public static BottomSheetDialog bottomSheetDialog;
     List<Modal_OrderDetails>orderDetails = new ArrayList<>();
     public Adapter_DatewiseRatingReport(Context context, List<Modal_RatingOrderDetails> ratingList, DatewiseRatingreport_SecondScreen DatewiseRatingreport_secondScreen) {
         super(context, R.layout.datewiseratingreportlistitem);
@@ -62,7 +68,8 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup view) {
-        @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.datewiseratingreportlistitem, (ViewGroup) view, false);
+        @SuppressLint("ViewHolder")
+        final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.datewiseratingreportlistitem, (ViewGroup) view, false);
         final TextView createdTimetextview = listViewItem.findViewById(R.id.createdTimetextview);
         final TextView orderIdtextview = listViewItem.findViewById(R.id.orderIdtextview);
         final TextView mobileNumbertextview = listViewItem.findViewById(R.id.mobileNumbertextview);
@@ -71,6 +78,12 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
         final RatingBar qualityratingBar = listViewItem.findViewById(R.id.qualityratingBar);
         final RatingBar deliveryratingBar = listViewItem.findViewById(R.id.deliveryratingBar);
         final CardView ratingCardView = listViewItem.findViewById(R.id.ratingCardView);
+
+
+        final Button addEnquiryStatusButton = listViewItem.findViewById(R.id.addEnquiryStatusButton);
+
+
+
         orderDetails.clear();
 
         Modal_RatingOrderDetails modal_ratingOrderDetails = ratingList.get(position);
@@ -109,6 +122,46 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
                 }
             }
         });
+
+
+
+        addEnquiryStatusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog = new BottomSheetDialog(mContext);
+                bottomSheetDialog.setContentView(R.layout.add_enquiry_status);
+                bottomSheetDialog.setCanceledOnTouchOutside(false);
+
+                Button apply_discount_buttonWidget = bottomSheetDialog.findViewById(R.id.apply_discount_buttonWidget);
+                final TextView orderidtext_bottomsheet =  bottomSheetDialog.findViewById(R.id.orderidtext_bottomsheet);
+                final TextView MobileNo_text_bottomsheet =  bottomSheetDialog.findViewById(R.id.MobileNo_text_bottomsheet);
+                final TextView itemName_text_bottomsheet =  bottomSheetDialog.findViewById(R.id.itemName_text_bottomsheet);
+                final Spinner enquiryStatusSpinner_bottomsheet =  bottomSheetDialog.findViewById(R.id.enquiryStatusSpinner_bottomsheet);
+
+                final EditText editTextTextMultiLine_bottomsheet =  bottomSheetDialog.findViewById(R.id.editTextTextMultiLine_bottomsheet);
+
+
+                orderidtext_bottomsheet.setText(ratingList.get(position).getOrderid());
+                MobileNo_text_bottomsheet.setText(ratingList.get(position).getUsermobileno());
+                itemName_text_bottomsheet.setText(ratingList.get(position).getItemname());
+
+
+                String[] ordertype=mContext.getResources().getStringArray(R.array.RatingEnquiryStatus);
+
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, ordertype);
+                arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                Objects.requireNonNull(enquiryStatusSpinner_bottomsheet).setAdapter(arrayAdapter);
+
+
+
+                bottomSheetDialog.show();
+            }
+        });
+
+
+
+
         return listViewItem;
     }
 

@@ -1,11 +1,11 @@
 package com.meatchop.tmcpartner;
 
 public class Printer_POJO_Class {
-    String orderID; String itemName; String itemWeight; String itemRate; String discount;String GST; String subTotal;String quantity;String grossWeight;
+    String cutname,orderID; String itemName; String itemWeight; String itemRate; String discount;String GST; String subTotal;String quantity;String grossWeight;
     String SlotDate,SlotName,SlotTimeInRange,totalRate,couponDiscount,totaldiscount,totalGST,totalsubtotal;
     double oldSavedAmount;
     String useraddress,SubCtgyName ,itemname_report,tmcprice_report;
-    public Printer_POJO_Class(String grossweight, String quantity, String orderID, String itemName, String itemWeight, String itemRate, String discount, String GST, String subTotal) {
+    public Printer_POJO_Class(String grossweight, String quantity, String orderID, String itemName, String itemWeight, String itemRate, String discount, String GST, String subTotal, String cutname) {
         this.grossWeight =grossweight;
         this.quantity =quantity;
         this.orderID=orderID;
@@ -15,7 +15,17 @@ public class Printer_POJO_Class {
         this.discount=discount;
         this.GST=GST;
         this.subTotal=subTotal;
+        this.cutname=cutname ;
 
+
+    }
+
+    public String getCutname() {
+        return cutname;
+    }
+
+    public void setCutname(String cutname) {
+        this.cutname = cutname;
     }
 
     public String getGrossWeight() {

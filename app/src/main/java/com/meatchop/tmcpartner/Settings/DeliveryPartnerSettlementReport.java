@@ -1004,23 +1004,23 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
                                                 String discountAmount = modal_orderDetails1.getDiscountAmount();
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount" + discountAmount);
+                                                    Log.i("TAG", "discountAmount" + discountAmount);
                                                 }
                                                 double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                 double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
                                                 discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                    Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
                                                 }
                                                 modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                                    Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
                                                 }
                                             } else {
                                                 Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                    Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
                                                 }
                                                 modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
                                                 preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
@@ -1028,7 +1028,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                                         } else {
-                                            //Log.d(Constants.TAG, "orderid already availabe");
+                                            Log.d(Constants.TAG, "orderid already availabe");
 
                                         }
                                     } else {
@@ -1037,11 +1037,11 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                         CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
 
                                         if (paymentMode.equals("PAYTM")) {
-                                            //Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
+                                            Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
                                         }
 
                                         if (paymentMode.equals("PAYTM")) {
-                                            //Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
+                                            Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
                                         }
                                         if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
                                             preorderpaymentMode_DiscountOrderid.add(orderid);
@@ -1050,7 +1050,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
                                                 String discountAmount = modal_orderDetails1.getDiscountAmount();
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                                    Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
                                                 }
 
                                                 double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
@@ -1058,14 +1058,14 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                                 discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                 modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                    Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
                                                 }
 
                                             } else {
                                                 Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                 modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
                                                 if (paymentMode.equals("PAYTM")) {
-                                                    //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                    Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
                                                 }
                                                 preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                             }
@@ -3052,7 +3052,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
         totalDeliveryCharges =deliveryCharges+deliveryCharges_preorder;
         totalCouponDiscount = CouponDiscount+CouponDiscount_preorder;
-        totalAmount_with_Coupondiscount_deliveryCharges_double = (totalAmountWithOutGst-CouponDiscount)+totalDeliveryCharges;
+        totalAmount_with_Coupondiscount_deliveryCharges_double = (totalAmountWithOutGst-totalCouponDiscount)+totalDeliveryCharges;
         totalAmount = totalAmount_with_Coupondiscount_deliveryCharges_double+GST;
 
 

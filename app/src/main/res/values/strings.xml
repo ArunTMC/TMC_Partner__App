@@ -29,6 +29,10 @@
     <string name="Vendor_logoutInstruction">Are you sure you want to Logout from this Vendor </string>
     <string name="Cant_Refresh_OrderStatus_Instruction">Can`t Refresh !!! Please Refresh Again</string>
     <string name="Weight_cant_be_empty">You Cant Leave weight of the Product Empty</string>
+    <string name="CreditedOrdersIrrespectiveofDate">Showing Credit Orders Irrespective of Date</string>
+    <string name="Showing_Tickets_That_Not_Closed_Yet">Showing Tickets thats not Closed Yet</string>
+
+    <string name="ShowCreditedOrdersOnly">Show Credit Orders Only </string>
 
     <string name="Exit_Instruction">Are you sure do you want to Close TMCPartner App now? </string>
     <string name="ResetToken_Instruction">Click Yes to Reset the Token No for your Store </string>
@@ -38,6 +42,8 @@
     <string name="Token_No_Not_Updated_Instruction">Cant Update Token No </string>
     <string name="TurnOnMenuInstruction">   Turn ON this Menu  </string>
     <string name="TurnOffMenuInstruction">  Turn OFF this Menu  </string>
+    <string name="TurnOffAllowNegativeStock">  Dont allow stock balance below zero  </string>
+    <string name="TurnOnAllowNegativeStock">  Allow stock balance below zero  </string>
 
 
     <string name="TurnOnAllMenuSubCtgywiseInstruction">   Turn ON All Menu with this SubCtgy </string>
@@ -142,10 +148,22 @@
     <string-array name="PaymentMode">
         <item>None Selected</item>
 
+        <item>CREDIT</item>
 
         <item>CARD</item>
         <item>CASH</item>
         <item>UPI</item>
+
+    </string-array>
+
+
+    <string-array name="RatingEnquiryStatus">
+        <item>Customer not picked the call </item>
+
+        <item>Customer convinced ,ticket closed </item>
+
+        <item>Customer cannot be convinced </item>
+
 
     </string-array>
 
@@ -167,19 +185,25 @@
     <string name="No.of.ordersAssigned">Assigned Orders</string>
 
     <string name="Menu_Item_Availability_Transaction_Details">Menu Item Availability Transaction Details </string>
+    <string name="Change_Menu_Item_Avail_allowNegativeStock">Change MenuItem Avail Status </string>
 
     <string name="Change_Menu_Item_Status">Change Menu Availability Status </string>
     <string name="Change_Menu_Item_Visibility_in_Tv">Change Menu Visibility In TV </string>
     <string name="Change_Menu_Item_Price">Change Menu Item Price</string>
+
+    <string name="Change_Menu_Item_Price_weight">Change Menu Item Price and Weight Details</string>
+
     <string name="AppOrdersList">App Orders List </string>
     <string name="slotAppOrdersList">Slotwise Item Report </string>
     <string name="OrderedMenuItemDetails">Selected  Menu Item Details</string>
+    <string name="RaisedTicketDetailsForRating">Raised Ticket Details For Rating</string>
 
     <string name="PosOrdersList">Pos Orders List </string>
     <string name="CancelledOrdersList">Cancelled Orders List </string>
     <string name="DatewiseRatingDetails">Datewise Rating Details Report </string>
+    <string name="RaisedTicketsdetails">Raised Tickets For Rating</string>
 
-    <string name="EditPaymentModeoftheOrder">Edit  Orders Datewise </string>
+    <string name="EditPaymentModeoftheOrder">Edit  Orders  </string>
     <string name="DeliveredOrdersTimewise_report">Delivered Orders Timewise Report </string>
     <string name="ChangePaymentMode">Change Payment Mode </string>
     <string name="CancelOrder">Cancel Order </string>
@@ -215,6 +239,7 @@
     <string name="Current_token_no">Current Token No   : </string>
     <string name="Genereate_User_Details">Generate User Details With Address</string>
     <string name="Generate_OrderItemDetails">Generate Order Item Details </string>
+    <string name="You_didnot_close_any_tickets_instruction">You didnot close any Tickets today so you cannot create report</string>
 
 
     <!-- TODO: Remove or change this placeholder text -->
@@ -236,7 +261,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.7.5.1 </string>
+    <string name="Version_No">Version No : 1.9.0.1(2) </string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

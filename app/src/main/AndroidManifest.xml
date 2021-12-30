@@ -4,7 +4,10 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -25,7 +28,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.AddBigBasketOrder"></activity>
+        <activity android:name=".Settings.ConsolidatedRatingReportWeekwise"></activity>
+        <activity android:name=".Settings.ChangeMenuItemStatus_AllowNegativeStock_Settings" />
+        <activity android:name=".Settings.changeMenuItemAvailability_allowNegativeStock" />
+        <activity android:name=".Settings.ChangeMenuItemWeightAndPriceSecondScreen" />
+        <activity android:name=".Settings.OrderAndRatingDetailsScreen" />
+        <activity android:name=".Settings.RaisedTicketDetailsForRating" />
+        <activity android:name=".Settings.AddBigBasketOrder" />
         <activity android:name=".MobileScreen_JavaClasses.Mobile_NewOrders.CartActivity_Mobile_NewOrdersScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_SecondScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_FirstScreen" />

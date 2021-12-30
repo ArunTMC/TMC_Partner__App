@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,7 +26,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
@@ -41,6 +39,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlots;
 
 public class MenuItem_List_Settings extends AppCompatActivity {
     LinearLayout loadingPanel,loadingpanelmask;
@@ -63,7 +63,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
         NukeSSLCerts.nuke();
 
 
-        IntentFrom = getIntent().getExtras().getString("ClickedOn","ChangeMenuItemPrice");
+        IntentFrom = getIntent().getExtras().getString("ClickedOn","");
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
         subCtgyItem_spinner = findViewById(R.id.subCtgyItem);
@@ -71,7 +71,7 @@ public class MenuItem_List_Settings extends AppCompatActivity {
         headingTextview = findViewById(R.id.headingTextview);
         Adjusting_Widgets_Visibility(true);
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-        vendorkey = (shared.getString("VendorKey", "vendor_1"));
+        vendorkey = (shared.getString("VendorKey", ""));
         getMenuItemArrayFromSharedPreferences();
         if(IntentFrom.equals("ChangeMenuItemPrice")) {
             headingTextview.setText("Select Menu Item to Change Price ");
@@ -79,6 +79,14 @@ public class MenuItem_List_Settings extends AppCompatActivity {
         if(IntentFrom.equals("MenuAvailabilityTransactionDetails")) {
             headingTextview.setText("Select Item to get its On/Off Transaction");
         }
+        if(IntentFrom.equals("ChangeMenuItemPriceAndWeight")) {
+            Adjusting_Widgets_Visibility(true);
+            //getItemCutDetails();
+
+            headingTextview.setText("Select Menu to Change Price & Weight");
+        }
+
+
         getMenuCategoryList();
         displaying_menuItems = new ArrayList<>();
         subCtgyName_arrayList = new ArrayList<>();
@@ -109,8 +117,232 @@ public class MenuItem_List_Settings extends AppCompatActivity {
 
 
     }
+/*
+    private void getItemCutDetails() {
+
+        showProgressBar(true);
+        TomorrowsPreOrdersSlotList.clear();
+        TodaysPreOrdersSlotList.clear();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, api_GetDeliverySlots+"?storeid="+vendorkey,
+                null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+
+                    JSONArray content = (JSONArray) response.get("content");
+                    if (content != null) {
+                        for (int i = 0; i < content.length(); i++) {
+                            try {
+                                JSONObject json = content.getJSONObject(i);
+                                String slotName = String.valueOf(json.get("slotname"));
+                                String slotDateType = String.valueOf(json.get("slotdatetype"));
+                                slotDateType =slotDateType.toUpperCase();
+                                slotName = slotName.toUpperCase();
+                                if(slotName.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)){
+                                    deliverySlotKey= String.valueOf(json.get("key"));
+                                    String status =String.valueOf(json.get("status"));
+                                    status = status.toUpperCase();
+
+                                    if(status.equals("ACTIVE")){
+                                        isActiveinDeliverySlots=true;
+
+                                    }
+                                    if(status.equals("INACTIVE")){
+                                        isActiveinDeliverySlots=false;
+
+                                    }
 
 
+                                    if(isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
+                                        expressDeliveryAvailabiltySwitch.setChecked(true);
+                                    }
+                                    else if(!isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
+                                        Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"INACTIVE in Delivery slot details",Toast.LENGTH_LONG).show();
+                                    }
+                                    else if(!isActiveinDeliverySlots&&isActiveinDeliverySlotDetails){
+                                        Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"INACTIVE in Delivery slots ",Toast.LENGTH_LONG).show();
+                                    }
+                                    else{
+                                        expressDeliveryAvailabiltySwitch.setChecked(false);
+
+                                    }
+
+
+
+
+
+
+
+
+
+
+                                }
+                                try {
+                                    if (slotName.equals(Constants.PREORDER_SLOTNAME) && (slotDateType.equals(Constants.TODAYPREORDER_SLOTNAME))) {
+                                        Modal_DeliverySlots modal_deliverySlots = new Modal_DeliverySlots();
+                                        modal_deliverySlots.key = String.valueOf(json.get("key"));
+                                        modal_deliverySlots.status = String.valueOf(json.get("status"));
+                                        modal_deliverySlots.slotdatetype = String.valueOf(json.get("slotdatetype"));
+                                        modal_deliverySlots.slotstarttime = String.valueOf(json.get("slotstarttime"));
+                                        modal_deliverySlots.slotendtime = String.valueOf(json.get("slotendtime"));
+                                        try {
+                                            TodaysPreOrdersSlotList.add(modal_deliverySlots);
+                                            Collections.sort(TodaysPreOrdersSlotList, new Comparator<Modal_DeliverySlots>() {
+                                                public int compare(final Modal_DeliverySlots object1, final Modal_DeliverySlots object2) {
+                                                    return object2.getSlotstarttime().compareTo(object1.getSlotstarttime());
+                                                }
+                                            });
+                                        } catch (Exception e) {
+                                            TodaysPreOrdersSlotList.add(modal_deliverySlots);
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        Adapter_TodaysDeliverySlots adapter_todaysDeliverySlots = new Adapter_TodaysDeliverySlots(ChangeDelivery_Slot_Availability_Status.this, TodaysPreOrdersSlotList, ChangeDelivery_Slot_Availability_Status.this);
+                                        todaysDeliverySlotListview.setAdapter(adapter_todaysDeliverySlots);
+                                        Helper.getListViewSize(todaysDeliverySlotListview, screenInches);
+
+
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                    showProgressBar(false);
+                                }
+                                try {
+
+
+                                    if (slotName.equals(Constants.PREORDER_SLOTNAME) && (slotDateType.equals(Constants.TOMORROWPREORDER_SLOTNAME))) {
+                                        Modal_DeliverySlots modal_deliverySlots = new Modal_DeliverySlots();
+                                        modal_deliverySlots.key = String.valueOf(json.get("key"));
+                                        modal_deliverySlots.status = String.valueOf(json.get("status"));
+                                        modal_deliverySlots.slotdatetype = String.valueOf(json.get("slotdatetype"));
+                                        modal_deliverySlots.slotstarttime = String.valueOf(json.get("slotstarttime"));
+                                        modal_deliverySlots.slotendtime = String.valueOf(json.get("slotendtime"));
+
+                                        TomorrowsPreOrdersSlotList.add(modal_deliverySlots);
+
+                                        try {
+                                            Collections.sort(TomorrowsPreOrdersSlotList, new Comparator<Modal_DeliverySlots>() {
+                                                public int compare(final Modal_DeliverySlots object1, final Modal_DeliverySlots object2) {
+                                                    return object2.getSlotstarttime().compareTo(object1.getSlotstarttime());
+                                                }
+                                            });
+                                        } catch (Exception e) {
+                                            TomorrowsPreOrdersSlotList.add(modal_deliverySlots);
+
+                                            e.printStackTrace();
+                                        }
+                                        Adapter_TomorrowsDeliverySlots adapter_tomorrowsDeliverySlots = new Adapter_TomorrowsDeliverySlots(ChangeDelivery_Slot_Availability_Status.this, TomorrowsPreOrdersSlotList, ChangeDelivery_Slot_Availability_Status.this);
+                                        tomorrowsDeliverySlotListview.setAdapter(adapter_tomorrowsDeliverySlots);
+                                        Helper.getListViewSize(tomorrowsDeliverySlotListview, screenInches);
+                                        showProgressBar(false);
+
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                    showProgressBar(false);
+                                }
+
+
+
+                            } catch (JSONException e) {
+                                TomorrowsPreOrdersSlotList.clear();
+                                TodaysPreOrdersSlotList.clear();
+                                showProgressBar(false);
+
+                                e.printStackTrace();
+                            }
+                        }
+
+
+
+                    }
+                } catch (JSONException e) {
+                    if(isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
+                        expressDeliveryAvailabiltySwitch.setChecked(true);
+                    }
+                    else if(!isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
+                        Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"INACTIVE in Delivery slot details",Toast.LENGTH_LONG).show();
+                    }
+                    else if(!isActiveinDeliverySlots&&isActiveinDeliverySlotDetails){
+                        Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"INACTIVE in Delivery slots ",Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        expressDeliveryAvailabiltySwitch.setChecked(false);
+
+                    }
+
+
+                    showProgressBar(false);
+
+
+
+                    TomorrowsPreOrdersSlotList.clear();
+                    TodaysPreOrdersSlotList.clear();
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                TomorrowsPreOrdersSlotList.clear();
+                TodaysPreOrdersSlotList.clear();
+                error.printStackTrace();
+                showProgressBar(false);
+
+                if(isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
+                    expressDeliveryAvailabiltySwitch.setChecked(true);
+                }
+                else if(!isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
+                    Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"INACTIVE in Delivery slot details",Toast.LENGTH_LONG).show();
+                }
+                else if(!isActiveinDeliverySlots&&isActiveinDeliverySlotDetails){
+                    Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"INACTIVE in Delivery slots ",Toast.LENGTH_LONG).show();
+                }
+                else{
+                    expressDeliveryAvailabiltySwitch.setChecked(false);
+
+                }
+
+
+
+
+
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(ChangeDelivery_Slot_Availability_Status.this).add(jsonObjectRequest);
+
+
+
+
+    }
+
+
+ */
 
 
     private void getMenuItemArrayFromSharedPreferences() {
@@ -248,10 +480,16 @@ public class MenuItem_List_Settings extends AppCompatActivity {
                 Adjusting_Widgets_Visibility(false);
 
                 try{
+
+
+
+
+
+
                     Collections.sort(displaying_menuItems, new Comparator<Modal_MenuItem_Settings>() {
                         public int compare(final Modal_MenuItem_Settings object1, final Modal_MenuItem_Settings object2) {
-                            Long i2 = Long.valueOf(object2.getDisplayno());
-                            Long i1 = Long.valueOf(object1.getDisplayno());
+                            String i2 = String.valueOf(object2.getItemname());
+                            String i1 = String.valueOf(object1.getItemname());
                             return i1.compareTo(i2);
                         }
                     });

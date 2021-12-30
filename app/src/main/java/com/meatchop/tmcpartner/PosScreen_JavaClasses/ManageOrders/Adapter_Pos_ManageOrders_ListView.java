@@ -265,10 +265,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
 
+        slotDate_text_widget.setText(String.format(" %s"," - "+ modal_manageOrders_pojo_class.getSlotdate()+" ( "+modal_manageOrders_pojo_class.getSlottimerange()+" ) "));
+        slotName_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getSlotname()));
 
 
-
-
+/*
 
         if(SlotName.equals(Constants.PREORDER_SLOTNAME)) {
             slotDate_text_widget.setVisibility(View.VISIBLE);
@@ -281,6 +282,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         }
 
+
+ */
 
 
 
@@ -482,6 +485,37 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     catch (Exception e){
                         e.printStackTrace();
                     }
+
+
+                    String cutname = "";
+
+                    try {
+                        if(json.has("cutname")) {
+                            cutname =  String.valueOf(json.get("cutname"));
+                        }
+                        else {
+                            cutname = "";
+                        }
+                    }
+                    catch (Exception e){
+                        cutname ="";
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if((cutname.length()>0) && (!cutname.equals(null)) && (!cutname.equals("null"))){
+                            cutname = " [ "+cutname + " ] ";
+                        }
+                        else{
+                            //cutname="";
+                        }
+                    }
+                    catch (Exception e ){
+                        e.printStackTrace();
+                    }
+
+
+
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
@@ -497,28 +531,28 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                     if (itemDesp.length()>0) {
                         if(subCtgyKey.equals("tmcsubctgy_16")){
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+ itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp,  "Grill House "+ itemName,cutname, quantity);
 
                         }
                         else  if(subCtgyKey.equals("tmcsubctgy_15")){
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+ itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp, "Ready to Cook  "+ itemName,cutname, quantity);
 
                         }
                         else{
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp, itemName,cutname, quantity);
 
                         }
-                    } else {
+            } else {
                         if(subCtgyKey.equals("tmcsubctgy_16")){
-                            itemDesp = String.format("%s * %s",  "Grill House "+ itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s",  "Grill House "+ itemName, cutname,quantity);
 
                         }
                         else  if(subCtgyKey.equals("tmcsubctgy_15")){
-                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+ itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s",  "Ready to Cook  "+ itemName,cutname, quantity);
 
                         }
                         else{
-                            itemDesp = String.format("%s * %s", itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s", itemName,cutname, quantity);
 
                         }
 
@@ -551,7 +585,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 //Log.i("Tag",""+changestatusto+OrderKey);
 
                 ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
-
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                getStockOutGoingDetailsUsingOrderid(orderid);
                 Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
             }
@@ -627,6 +668,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
                 selectedBillDetails.add(selectedOrder);
               //  OrderdItems_desp.clear();
                 generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails);
@@ -784,6 +826,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.slottimerange=modal_manageOrders_pojo_class.getSlottimerange();
                 selectedOrder.deliverytype = modal_manageOrders_pojo_class.getDeliverytype();
                 selectedOrder.notes = modal_manageOrders_pojo_class.getNotes();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
@@ -846,6 +889,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
@@ -907,6 +951,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
+                selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
 
 
 
@@ -951,6 +996,203 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         return  listViewItem ;
 
     }
+
+    private void getStockOutGoingDetailsUsingOrderid(String orderid) {
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getStockOutgoingUsingSalesOrderid+orderid ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
+
+                            try {
+
+                                String ordertype="#";
+
+                                //converting jsonSTRING into array
+                                JSONArray JArray  = response.getJSONArray("content");
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                /*Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                if(arrayLength>1){
+                                    Toast.makeText(mContext, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+
+
+                                }
+
+                                 */
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        String entryKey = json.getString("key");
+
+
+                                        ChangeOutGoingTypeInOutgoingTable(entryKey);
+
+
+
+
+
+
+
+                                    } catch (JSONException e) {
+                                        pos_manageOrderFragment.showProgressBar(false);
+
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                pos_manageOrderFragment.showProgressBar(false);
+
+
+                            }
+
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            pos_manageOrderFragment.showProgressBar(false);
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(mContext, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
+                    pos_manageOrderFragment.showProgressBar(false);
+
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    pos_manageOrderFragment.showProgressBar(false);
+
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+
+
+
+    private void ChangeOutGoingTypeInOutgoingTable(String entryKey) {
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("outgoingtype", Constants.SALES_FULFILLED_OUTGOINGTYPE);
+            jsonObject.put("key", entryKey);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateStockOutgoingUsingKey,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                pos_manageOrderFragment.showProgressBar(false);
+
+                Log.d(Constants.TAG, "Response: " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                pos_manageOrderFragment.showProgressBar(false);
+
+                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     private void generatingTokenNo(String vendorkey, String orderDetailsKey, List<Modal_ManageOrders_Pojo_Class> selectedOrderr) {
         pos_manageOrderFragment.showProgressBar(true);
@@ -1325,10 +1567,19 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         String SlotTimeInRange ="";
         String DeliveryDistance ="";
         String DeliveryAmount ="";
+        String orderPlacedTime ="";
         double totalSubtotalItem=0;
         double totalSubtotalItemwithdiscount=0;
         double totalSubtotalItemwithdiscountwithdeliverycharge=0;
         double deliveryamount_double=0;
+
+        try {
+            orderPlacedTime = manageOrders_pojo_class.getOrderplacedtime().toString();
+
+        }catch (Exception e ){
+            e.printStackTrace();
+            orderPlacedTime="--";
+        }
 
         try {
             payment_mode = manageOrders_pojo_class.getPaymentmode();
@@ -1336,6 +1587,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         }catch (Exception e ){
             e.printStackTrace();
         }
+
         try {
             DeliveryDistance = manageOrders_pojo_class.getDeliverydistance();
 
@@ -1558,6 +1810,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 }
 
 
+                if (json.has("cutname")) {
+                    manageOrders_pojo_classs.cutname = String.valueOf(json.get("cutname"));
+
+                } else {
+                    manageOrders_pojo_classs.cutname = "";
+
+                }
+
 
                 if (json.has("tmcprice")) {
                     manageOrders_pojo_classs.ItemFinalPrice = String.valueOf(json.get("tmcprice"));
@@ -1615,11 +1875,24 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         for (int i = 0; i < OrderdItems_desp.size(); i++) {
 
             Modal_ManageOrders_Pojo_Class modal_newOrderItems = OrderdItems_desp.get(i);
-            String fullitemName = String.valueOf(modal_newOrderItems.getItemName());
-            String itemName = "";
-            String itemNameAfterBraces = "";
+            String fullitemName ="",tmcSubCtgyKey="",itemName = "",itemNameAfterBraces = "",Gst="",subtotal="",quantity="",price="",cutname="",weight="",netweight="";
+            double gst_double=0,subtotal_double=0,price_double=0;
+            try{
+                fullitemName = String.valueOf(modal_newOrderItems.getItemName());
+            }
+            catch (Exception e){
+                fullitemName = "";
+                e.printStackTrace();
+            }
 
-            String tmcSubCtgyKey = String.valueOf(modal_newOrderItems.getTmcSubCtgyKey());
+            try{
+                tmcSubCtgyKey = String.valueOf(modal_newOrderItems.getTmcSubCtgyKey());
+
+            }
+            catch (Exception e){
+                tmcSubCtgyKey ="";
+                e.printStackTrace();
+            }
             try {
                 if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
                     int indexofbraces = fullitemName.indexOf("(");
@@ -1665,6 +1938,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                     }
                 } else {
+
+
+                    /*
                     int indexofbraces = fullitemName.indexOf("(");
                     if (indexofbraces >= 0) {
                         itemName = fullitemName.substring(0, indexofbraces);
@@ -1678,6 +1954,40 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         itemName = fullitemName;
 
                     }
+
+                     */
+
+
+                    if(fullitemName.contains("(")){
+                        int openbraces = fullitemName.indexOf("(");
+                        int closebraces = fullitemName.indexOf(")");
+                      //  System.out.println(fullitemName);
+                        itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                     //   System.out.println(itemName);
+
+                    }
+                    if(!itemName.matches("[a-zA-Z0-9]+")){
+                        fullitemName = fullitemName.replaceAll(
+                                "[^a-zA-Z0-9()]", "");
+                        fullitemName = fullitemName.replaceAll(
+                                "[()]", " ");
+                      //  System.out.println("no english");
+
+                      //  System.out.println(fullitemName);
+
+                    }
+                    else{
+                        fullitemName = fullitemName.replaceAll(
+                                "[^a-zA-Z0-9()]", "");
+                       // System.out.println("have English");
+
+                    //    System.out.println(fullitemName);
+
+                    }
+
+
+
+
                 }
             }
             catch (Exception e){
@@ -1685,24 +1995,127 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 e.printStackTrace();
             }
-            double gst_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getGstAmount()));
-            String Gst = String.valueOf(decimalFormat.format(gst_double));
-            double subtotal_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getSubTotal_perItem()));
+            try{
+                gst_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getGstAmount()));
 
-            String subtotal = String.valueOf(decimalFormat.format(subtotal_double));
-            String quantity = modal_newOrderItems.getQuantity();
-            double price_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getSubTotal_PerItemWithoutGst()));
+            }
+            catch(Exception e){
+                gst_double =0;
+                e.printStackTrace();
+            }
+            try{
+                Gst  = String.valueOf(decimalFormat.format(gst_double));
 
-            String price = String.valueOf(decimalFormat.format(price_double));
-            String weight = modal_newOrderItems.getItemFinalWeight();
-            taxAmount = modal_newOrderItems.getTotalGstAmount();
-            itemwithoutGst = modal_newOrderItems.getTotalAmountWithoutGst();
-            String netweight = modal_newOrderItems.getNetweight();
+            }
+            catch(Exception e){
+                Gst ="0";
+                e.printStackTrace();
+            }
+
+
+            try{
+                subtotal_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getSubTotal_perItem()));
+
+            }
+            catch(Exception e){
+                subtotal_double = 0;
+                e.printStackTrace();
+            }
+
+
+            try{
+                subtotal  = String.valueOf(decimalFormat.format(subtotal_double));
+
+            }
+            catch(Exception e){
+                subtotal = "";
+                e.printStackTrace();
+            }
+
+
+
+            try{
+                quantity  = modal_newOrderItems.getQuantity();
+
+            }
+            catch(Exception e){
+                quantity = "0";
+                e.printStackTrace();
+            }
+
+
+            try{
+                 price_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getSubTotal_PerItemWithoutGst()));
+
+            }
+            catch(Exception e){
+                price_double = 0;
+                e.printStackTrace();
+            }
+
+            try{
+                price = String.valueOf(decimalFormat.format(price_double));
+            }
+            catch(Exception e){
+                price  = "0";
+                e.printStackTrace();
+            }
+            try{
+                cutname = modal_newOrderItems.getCutname().toString();
+            }
+            catch(Exception e){
+                cutname = "";
+                e.printStackTrace();
+            }
+            try{
+                weight = modal_newOrderItems.getItemFinalWeight().toString();
+            }
+            catch(Exception e){
+                weight = "0";
+                e.printStackTrace();
+            }
+
+            try{
+                taxAmount = modal_newOrderItems.getTotalGstAmount().toString();
+
+            }
+            catch(Exception e){
+                taxAmount     = "0";
+                e.printStackTrace();
+            }
+
+            try{
+                itemwithoutGst = modal_newOrderItems.getTotalAmountWithoutGst().toString();
+
+            }
+            catch(Exception e){
+                itemwithoutGst = "0";
+                e.printStackTrace();
+            }
+
+            try{
+                netweight = modal_newOrderItems.getNetweight().toString();
+            }
+            catch(Exception e){
+                netweight = "0";
+                e.printStackTrace();
+            }
+
+
+
+
             String grossweight ="";
-            //Log.i("tag","grossweight Log    "+                grossweight);
 
             try {
-                 grossweight = modal_newOrderItems.getGrossweight();
+
+                try{
+                    grossweight = modal_newOrderItems.getGrossweight().toString();
+
+                }
+                catch(Exception e){
+                    grossweight = "0";
+                    e.printStackTrace();
+                }
                 //Log.i("tag","grossweight Log   1 "+                grossweight);
 
 
@@ -1771,6 +2184,24 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
 
             }
+            if((cutname.length()>0) && (!cutname.equals("null")) && (!cutname.equals(null))) {
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0,  (cutname.toUpperCase()) + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+            }
+
+
             PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Grossweight : "+ grossweight + "\n");
@@ -1786,7 +2217,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight,quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight,quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal,cutname);
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
@@ -1838,6 +2269,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "# " + orderid + "\n");
 
+        PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Order Placed Time :  "+orderPlacedTime + "\n");
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -1973,7 +2407,31 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 //PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
 
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, "ItemName : "+Printer_POJO_ClassArray[i].getItemName()+"\n");
 
+
+            String cutName = "";
+            try{
+                cutName = String.valueOf(Printer_POJO_ClassArray[i].getCutname().toString());
+            }
+            catch (Exception e){
+                cutName ="";
+                e.printStackTrace();
+            }
+
+            if((cutName.length()>0) && (!cutName.equals("null")) && (!cutName.equals(null))) {
+
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Cut Name : " +(cutName.toUpperCase()) + "\n");
+
+
+
+            }
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -2409,6 +2867,17 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
             PrinterFunctions. PrintText(portName,portSettings,0, 0,0,0,0, 0,0,0,SlotDate+"         "+"\n");
 
+
+            if(SlotName.equals(Constants.EXPRESSDELIVERY_SLOTNAME)){
+                PrinterFunctions.SetLineSpacing(portName,portSettings,100);
+                PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
+                PrinterFunctions. PrintText(portName,portSettings,0, 0,1,0,0, 0,30,0,"Order Placed Time  : ");
+
+
+                PrinterFunctions.SelectCharacterFont(portName,portSettings,0);
+                PrinterFunctions. PrintText(portName,portSettings,0, 0,0,0,0, 0,0,0,orderPlacedTime+"         "+"\n");
+
+            }
 
 
             PrinterFunctions.SetLineSpacing(portName,portSettings,100);

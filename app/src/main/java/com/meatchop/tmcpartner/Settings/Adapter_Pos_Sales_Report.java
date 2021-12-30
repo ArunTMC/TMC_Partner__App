@@ -79,6 +79,14 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
         ListItem listItem = (ListItem) getItem(position);
         itemViewHolder.setMessage(listItem.getMessage());
         itemViewHolder.setMessageLine2(listItem.getMessageLine2());
+       /* if((listItem.getCutname().equals(null)) || (listItem.getCutname().equals("null"))  || (listItem.getCutname().equals("")) ) {
+            itemViewHolder.setCutname("");
+        }
+        else {
+            itemViewHolder.setCutname(listItem.getCutname());
+        }
+
+        */
       //  posSalesReport.setHeightforListview();
         if(isFromSlotAppordersList) {
             itemViewHolder.viewtokens.setVisibility(View.VISIBLE);
@@ -91,6 +99,8 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
                     Intent i = new Intent(context,TokenNoShowingActivity.class);
                     i.putExtra("tokenNo",listItem.getTokens());
                     i.putExtra("itemname",listItem.getMessage());
+               //     i.putExtra("cutname",listItem.getCutname());
+
                     i.putExtra("quantity",listItem.getMessageLine2());
                     context.startActivity(i);
                 }
@@ -160,21 +170,48 @@ public class Adapter_Pos_Sales_Report extends BaseAdapter {
 
     }
     class ItemViewHolder {
-        TextView tvMessage, tvMessageLine2;
-        LinearLayout viewtokens;
+        TextView tvMessage, tvMessageLine2,cutName;
+        LinearLayout viewtokens,cutnameLayout;
         public ItemViewHolder(View itemView) {
             tvMessage = (TextView) itemView.findViewById(R.id.name_and_quantity);
             tvMessageLine2 = (TextView) itemView.findViewById(R.id.price);
+            cutName = (TextView) itemView.findViewById(R.id.cutName);
+
             viewtokens = (LinearLayout) itemView.findViewById(R.id.viewtokens);
+            cutnameLayout = (LinearLayout) itemView.findViewById(R.id.cutnameLayout);
+
+            cutnameLayout.setVisibility(View.GONE);
             viewtokens.setVisibility(View.GONE);
             if(isFromSlotAppordersList){
                 viewtokens.setVisibility(View.VISIBLE);
+                    cutnameLayout.setVisibility(View.VISIBLE);
+
                 tvMessageLine2.setTextColor(context.getResources().getColor(R.color.TMC_Orange));
             }
             else{
                 viewtokens.setVisibility(View.GONE);
             }
         }
+        public void setCutname(String message) {
+            try {
+                if(message.equals("")){
+                    cutnameLayout.setVisibility(View.GONE);
+
+                }
+                else {
+                    cutnameLayout.setVisibility(View.VISIBLE);
+
+                    cutName.setText(message);
+                }
+
+            }
+            catch (Exception e){
+                cutnameLayout.setVisibility(View.GONE);
+
+                e.printStackTrace();
+            }
+        }
+
         public void setMessage(String message) {
             tvMessage.setText(message);
         }

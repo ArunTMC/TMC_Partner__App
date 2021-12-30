@@ -34,6 +34,7 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
             android:id="@+id/searchlayout"
             android:layout_width="match_parent"
             android:layout_height="58dp"
+            android:layout_marginTop="1dp"
             android:gravity="clip_vertical"
             android:orientation="horizontal">
 
@@ -50,6 +51,7 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:layout_weight="1"
+                    android:visibility="visible"
                     android:orientation="vertical">
 
 
@@ -75,6 +77,30 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
                         android:text="10 Jan 2021"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp" />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/creditOrdersTextLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="13dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:gravity="center_vertical"
+                        android:text="@string/CreditedOrdersIrrespectiveofDate"
+                        android:textColor="@color/TMC_Orange"
+                        android:textSize="14sp" />
+
+
                 </LinearLayout>
 
 
@@ -178,7 +204,7 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="30dp"
+            android:layout_height="50dp"
             android:layout_marginTop="55dp"
             android:orientation="horizontal">
 
@@ -206,17 +232,47 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
                 android:textColor="@color/TMC_Orange"
                 android:textSize="16sp" />
 
-            <Spinner
-                android:id="@+id/SlotrangeSelector_spinner"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_weight="1" />
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="1dp"
+                android:gravity="center"
+                android:id="@+id/creditOrderscheckLayout"
 
+                android:orientation="horizontal">
+
+
+                <CheckBox
+                    android:id="@+id/showcreditorderscheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:clickable="false"
+                    android:focusable="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ShowCreditedOrdersOnly"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="16sp"
+                    android:layout_marginStart="10dp"
+
+                    />
+
+
+            </LinearLayout>
 
         </LinearLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="105dp"
 
+            android:background="@drawable/border_line"
+            />
         <LinearLayout
             android:id="@+id/statusbuttonLayout"
             android:layout_width="match_parent"
@@ -374,19 +430,15 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
 
 
             </LinearLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="50dp"
 
-                android:background="@drawable/border_line"
-                />
 
         </LinearLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+
             android:layout_weight="1">
 
 

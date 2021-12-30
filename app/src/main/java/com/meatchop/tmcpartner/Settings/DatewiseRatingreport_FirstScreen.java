@@ -2,12 +2,19 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -29,13 +36,23 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -48,6 +65,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
+
 public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
     public static LinearLayout loadingpanelmask;
     public static LinearLayout loadingPanel;
@@ -56,7 +76,10 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
     private TextView orderinstruction,dateSelector_text,generateDataInstruction,fromdateSelector_text,todateSelector_text;
     private DatePickerDialog datepicker;
     private DatePickerDialog fromdatepicker;
-    private LinearLayout dateSelectorLayout,daysCountSpinner_layout,generateReport_Layout,fromdateSelectorLayout,todateSelectorLayout;
+    private LinearLayout dateSelectorLayout;
+    private LinearLayout daysCountSpinner_layout;
+    private LinearLayout fromdateSelectorLayout;
+    private LinearLayout todateSelectorLayout , generateExcelSheet;
     private Switch switchfor_singleDayDump;
     private Spinner daysCountSpinner;
     List<Modal_RatingOrderDetails> ratingList;
@@ -97,6 +120,14 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
     boolean  isgetRatingDetailsCalled = false;
 
 
+    private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
+    private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
+
+    Workbook wb;
+    Sheet sheet = null;
+    private static String[] columns = {"S.No","Orderid ","Mobile Number","Created Time","Item Name","Quantity Rating","Delivery Rating","FeedBack"};
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,6 +154,9 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
         sorted_ratingList = new ArrayList<>();
         wholeRating_textview = findViewById(R.id.wholeRating_textview);
         ratingsCount_textview = findViewById(R.id.ratingsCount_textview);
+        generateExcelSheet = findViewById(R.id.generateExcelSheet );
+
+
 
         detailedRatingButton = findViewById(R.id.detailedRatingButton);
 
@@ -233,7 +267,67 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
         });
 
 
+        generateExcelSheet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(ratingList.size()>0){
+                    try {
+                        wb = new HSSFWorkbook();
+                        //Now we are creating sheet
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if(Environment.isExternalStorageManager()){
+                            try {
+                                AddDatatoExcelSheet(ratingList);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                        else{
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    } else {
+
+
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(DatewiseRatingreport_FirstScreen.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(DatewiseRatingreport_FirstScreen.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            showProgressBar(true);
+                            try {
+                                AddDatatoExcelSheet(ratingList);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }
+                }else {
+                    Toast.makeText(DatewiseRatingreport_FirstScreen.this, "There iS no Data to Generate Sheet", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
 
 
@@ -255,6 +349,10 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
             }
         });
+
+
+
+
 
 
 
@@ -388,10 +486,194 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
     }
 
+    private void AddDatatoExcelSheet(List<Modal_RatingOrderDetails> ratingList) {
+        String createdTime = "",orderId = "",mobileNumber = "",itemName = "",itemQuantity = "",feedBack = "",qualityrating = "",deliveryrating = "";
+
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+        sheet = wb.createSheet(String.valueOf(System.currentTimeMillis()) );
+        int rowNum = 1;
+        Cell headercell = null;
+
+        org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 12);
+        headerFont.setColor(HSSFColor.RED.index);
+
+        CellStyle headerCellStyle = wb.createCellStyle();
+        headerCellStyle.setFillForegroundColor(HSSFColor.BLUE.index);
+        headerCellStyle.setFont(headerFont);
+        headerCellStyle.setAlignment(HorizontalAlignment.CENTER);
+
+
+        org.apache.poi.ss.usermodel.Font contentFont = wb.createFont();
+        contentFont.setBold(false);
+        contentFont.setFontHeightInPoints((short) 10);
+        contentFont.setColor(HSSFColor.BLACK.index);
+
+        CellStyle cellStyle = wb.createCellStyle();
+        cellStyle.setFont(contentFont);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        //Now column and row
+        Row headerRow = sheet.createRow(0);
+
+        for (int i = 0; i < columns.length; i++) {
+            headercell = headerRow.createCell(i);
+            headercell.setCellValue(columns[i]);
+            headercell.setCellStyle(headerCellStyle);
+        }
+
+
+        for(int position =0 ; position < ratingList.size() ; position++) {
+
+            Modal_RatingOrderDetails modal_ratingOrderDetails = ratingList.get(position);
+            deliveryrating = modal_ratingOrderDetails.getDeliveryrating();
+            createdTime = modal_ratingOrderDetails.getCreatedtime();
+            mobileNumber = modal_ratingOrderDetails.getUsermobileno();
+            feedBack = modal_ratingOrderDetails.getFeedback();
+            qualityrating = modal_ratingOrderDetails.getQualityrating();
+            deliveryrating = modal_ratingOrderDetails.getDeliveryrating();
+            itemName = modal_ratingOrderDetails.getItemname();
+            orderId = modal_ratingOrderDetails.getOrderid();
+
+            Row row ;
+
+            row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(rowNum-1);
+            row.createCell(1).setCellValue(orderId);
+            row.createCell(2).setCellValue(mobileNumber);
+            row.createCell(3).setCellValue(createdTime);
+            row.createCell(4).setCellValue(itemName);
+            row.createCell(5).setCellValue(qualityrating);
+            row.createCell(6).setCellValue(deliveryrating);
+            row.createCell(7).setCellValue(feedBack);
+
+            row.getCell(5).setCellStyle(cellStyle);
+            row.getCell(6).setCellStyle(cellStyle);
+
+
+            sheet.setColumnWidth(0, (10 * 250));
+            sheet.setColumnWidth(1, (10 * 500));
+            sheet.setColumnWidth(2, (10 * 500));
+            sheet.setColumnWidth(3, (10 * 700));
+            sheet.setColumnWidth(4, (10 * 1200));
+            sheet.setColumnWidth(5, (10 * 600));
+            sheet.setColumnWidth(6, (10 * 600));
+            sheet.setColumnWidth(7, (10 * 1000));
+            ;
+
+
+            if(ratingList.size() - position ==1 ){
+                GenerateExcelSheet();
+
+            }
+
+        }
+
+
+    }
+
+
+    private void GenerateExcelSheet() {
+        String  path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/TMCPartner/Rating Report Weekwise/";
+        File dir = new File(path);
+        if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
+            Log.e("Failed", "Storage not available or read only");
+
+        }
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File file = new File(dir, "Consolidated Report "+ System.currentTimeMillis()  +".xls");
+
+
+        //   File file = new File(getExternalFilesDir(null), "Onlineorderdetails.xls");
+        FileOutputStream outputStream = null;
+
+        try {
+            outputStream = new FileOutputStream(file);
+            wb.write(outputStream);
+            showProgressBar(false);
+            //  Toast.makeText(getApplicationContext(), "File can't be  Created", Toast.LENGTH_LONG).show();
+            try {
+                outputStream.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+          /*  StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+            Uri pdfUri;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                pdfUri = FileProvider.getUriForFile(this, this.getPackageName() + ".provider", file);
+            } else {
+                pdfUri = Uri.fromFile(file);
+            }
+            Intent pdfViewIntent = new Intent(Intent.ACTION_SEND);
+            pdfViewIntent.setDataAndType(pdfUri,"application/xls");
+            pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            pdfViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            Intent intent = Intent.createChooser(pdfViewIntent, "Share  File via ");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            try {
+                Adjusting_Widgets_Visibility(false);
+
+                startActivityForResult(intent, OPENPDF_ACTIVITY_REQUEST_CODE);
+            } catch (ActivityNotFoundException e) {
+                // Instruct the user to install a PDF reader here, or something
+            }
 
 
 
-  private void openDatePicker() {
+           */
+
+            //     startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(Uri.fromFile(file), "application/xls"));
+
+            Toast.makeText(getApplicationContext(), "File Created", Toast.LENGTH_LONG).show();
+        } catch (java.io.IOException e) {
+            Toast.makeText(getApplicationContext(), "File can't Created Permission Denied", Toast.LENGTH_LONG).show();
+
+            e.printStackTrace();
+            showProgressBar(false);
+
+
+        }
+        Uri pdfUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            pdfUri = FileProvider.getUriForFile(this, this.getPackageName() + ".provider", file);
+        } else {
+            pdfUri = Uri.fromFile(file);
+        }
+        Intent share = new Intent();
+        share.setAction(Intent.ACTION_SEND);
+        share.setType("application/xls");
+        share.putExtra(Intent.EXTRA_STREAM, pdfUri);
+        startActivity(Intent.createChooser(share, "Share"));
+
+
+    }
+    public static boolean isExternalStorageReadOnly() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isExternalStorageAvailable() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
+            return true;
+        }
+        return false;
+    }
+
+
+
+
+
+    private void openDatePicker() {
 
         spinnerselecteditem = 1 ;
         spinnerselecteditem_Count=1;
@@ -516,6 +798,27 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                                 monthstring="0"+monthstring;
                             }
 
+                            itemRatingHashmap.clear();
+                            qualityRatingHashmap.clear();
+                            deliveryRatingHashmap.clear();
+                            qualityRatingArray.clear();
+                            itemRatingarray.clear();
+                            deliveryRatingArray.clear();
+                            isReachedLastItemInLoop_int=0;
+                            ratingList.clear();
+                            sorted_ratingList.clear();
+                            sorted_OrdersList.clear();
+                            RatingArray.clear();
+                            // deliveryRating_textview.findViewById(R.id.deliveryRating_textview);
+                            RatingArray.add("1");
+                            RatingArray.add("2");
+                            RatingArray.add("3");
+                            RatingArray.add("4");
+                            RatingArray.add("5");
+                            itemrating_String="0"; qualityrating_String="0"; deliveryrating_String="0";totalrating_String="0";
+                            itemrating_double=0; qualityrating_double=0; deliveryrating_double=0; totalitemrating_double=0; totalqualityrating_double=0; totaldeliveryrating_double=0;totalrating_double=0;totalNo_of_stars_expected=0;no_stars_given_in_percentage=0;
+                            no_of_stars_recieved_for_the_service=0;
+                            SetProgressBarAndCount("MakeZero");
 
 
                             Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
@@ -1056,9 +1359,10 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
                             if(todaysdate.equals(todatestring)) {
                                 //Log.d(Constants.TAG, "ratingList: 2  " +ratingList.size());
+                                FilterDatawithVendorKey(vendorKey);
 
                                 //calculateRatingPercentage();
-                                GetItemdetailsfromOrderDetailsNeww(vendorKey);
+                               // GetItemdetailsfromOrderDetailsNeww(vendorKey);
                                 // new GetItemdetailsfromOrderDetailsNew(orderid).execute();
                             }
                             else{
@@ -1087,7 +1391,8 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                     if(todaysdate.equals(todatestring)) {
                         showProgressBar(false);
                         // calculateRatingPercentage();
-                        GetItemdetailsfromOrderDetailsNeww(vendorKey);
+                       // GetItemdetailsfromOrderDetailsNeww(vendorKey);
+                        FilterDatawithVendorKey(vendorKey);
 
                         // new GetItemdetailsfromOrderDetailsNew(orderid).execute();
                     }
@@ -1608,7 +1913,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
 
 
-    private void FilterDatawithVendorKey(String vendorKey) {
+    private void FilterDatawithVendorKey(String vendorkey) {
         //Log.d(Constants.TAG, "sorted_ratingList: ratingList 1   " +ratingList.size());
 
         for(int i =0; i<ratingList.size();i++){
@@ -1618,17 +1923,17 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
             //Log.d(Constants.TAG, "sorted_ratingList: ratingList   i  1   " +i);
             //Log.d(Constants.TAG, "sorted_ratingList: res 1 in i   " +sorted_ratingList.size());
 
-            for(int j =0 ; j<sorted_OrdersList.size();j++){
+           // for(int j =0 ; j<sorted_OrdersList.size();j++){
                 //Log.d(Constants.TAG, "sorted_ratingList: sorted_OrdersList 1   " +sorted_OrdersList.size());
                 //Log.d(Constants.TAG, "sorted_ratingList: ratingList   j  1   " +j);
                 //Log.d(Constants.TAG, "sorted_ratingList: res 1  in j " +sorted_ratingList.size());
 
-                Modal_OrderDetails modal_orderDetails= sorted_OrdersList.get(j);
-                String orderid_fromOrderDetails = modal_orderDetails.getOrderid();
-                String vendorkey_fromOrderDetails = modal_orderDetails.getVendorkey();
+             //   Modal_OrderDetails modal_orderDetails= sorted_OrdersList.get(j);
+               // String orderid_fromOrderDetails = modal_orderDetails.getOrderid();
+               // String vendorkey_fromOrderDetails = modal_orderDetails.getVendorkey();
                // //Log.d(Constants.TAG, "sorted_ratingList: orderid_fromOrderDetail  1   " +orderid_fromOrderDetails);
                // //Log.d(Constants.TAG, "sorted_ratingList: vendorkey_fromOrderDetails 1   " +vendorkey_fromOrderDetails);
-                if((orderid_fromRating.equals(orderid_fromOrderDetails))&&(vendorkey_fromOrderDetails.equals(vendorKey))){
+                if((vendorKey.equals(vendorkey))){
                     //Log.d(Constants.TAG, "sorted_ratingList: res 1 in if   " +sorted_ratingList.size());
 
                     //Log.d(Constants.TAG, "sorted_ratingList: sorted_OrdersList 1 in if   " +sorted_ratingList.size());
@@ -1647,7 +1952,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                     //Log.d(Constants.TAG, "sorted_ratingList: res 2  " +sorted_ratingList.size());
 
 
-                }
+             //   }
             }
 
             if(i==(ratingList.size()-1)){
@@ -2170,10 +2475,10 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                         }
 
 
-                        //Log.d(Constants.TAG, "ForQualityRating totalratinghashmapValue: " + totalratinghashmapValue);
+                        Log.d(Constants.TAG, "ForQualityRating totalratinghashmapValue: " + totalratinghashmapValue);
                     }
                     else{
-                        //String totalratinghashmapValue =String.valueOf(ratingArray_value);
+                        String totalratinghashmapValue =String.valueOf(ratingArray_value);
 
                     }
 
@@ -2236,7 +2541,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
                     }
                     else{
-                        //String totalratinghashmapValue =String.valueOf(ratingArray_value);
+                        String totalratinghashmapValue =String.valueOf(ratingArray_value);
 
                     }
 

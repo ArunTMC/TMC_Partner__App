@@ -773,9 +773,20 @@ tools:context=".Settings.Edit_Or_CancelOrder_OrderDetails_Screen">
                         android:id="@+id/textView12"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="4.5"
+                        android:layout_weight="4"
                         android:fontFamily="@font/open_sans_semibold"
                         android:text="ItemName"
+                        android:textColor="@color/TMC_Orange"
+
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/textViegw12"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="Cut Name"
                         android:textColor="@color/TMC_Orange"
 
                         android:textSize="15sp" />

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="20dp"
+            android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight=".58"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="16sp"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:text="Order Id  " />
+
+        <TextView
+            android:id="@+id/orderid_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:layout_weight="1"
+            android:textAlignment="textEnd"
+            android:textSize="14sp"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="TextView" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textSize="16sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:layout_weight=".35"
+            android:text="Mobile Number" />
+
+        <TextView
+            android:id="@+id/mobileno_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textAlignment="textEnd"
+            android:textSize="14sp"
+            android:fontFamily="@font/open_sans_bold"
+            android:textColor="@color/TMC_Primary_Text_Color"
+
+            android:text="TextView" />
+
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"        android:layout_marginTop="4dp"
+
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textSize="16sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:layout_weight=".16"
+            android:text="Ticket Raised Time" />
+
+        <TextView
+            android:id="@+id/ticketRaisedTime"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textAlignment="textEnd"
+            android:textSize="14sp"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:textColor="@color/TMC_Primary_Text_Color"
+
+            android:text="" />
+
+
+    </LinearLayout>
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:visibility="gone"
+                android:id="@+id/ticketDescLayout"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:fontFamily="@font/open_sans_bold"
+
+                    android:layout_weight=".16"
+                    android:text="Ticket Description" />
+
+                <TextView
+                    android:id="@+id/ticketDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:layout_marginTop="5dp"
+                    android:textColor="@color/TMC_Orange"
+
+                    android:text="" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="33dp"
+                android:gravity="center"
+                android:layout_marginTop="6dp"
+
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textSize="16sp"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:gravity="center_vertical"
+
+                    android:layout_weight=".16"
+                    android:text="Quality Rating :"
+                />
+
+                <RatingBar
+                    android:id="@+id/qualityratingBar"
+                    style="?android:attr/ratingBarStyleIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="33dp"
+                    android:numStars="5"
+                    android:rating="0" />
+
+
+            </LinearLayout>
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:gravity="center"
+
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textSize="16sp"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:gravity="center_vertical"
+
+                    android:layout_weight=".16"
+                    android:text="Delivery Rating :"
+
+
+                    />
+
+                <RatingBar
+                    android:id="@+id/deliveryratingBar"
+                    android:layout_width="wrap_content"
+                    android:numStars="5"
+                    android:rating="0"
+                    style="?android:attr/ratingBarStyleIndicator"
+                    android:layout_height="33dp" />
+
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="2dp"
+                android:layout_marginTop="3dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/addDesp"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_White"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:background="@drawable/orange_selected_button_background"
+                    android:layout_marginEnd="15dp"
+                    android:layout_weight="1"
+                    android:textSize="13sp"
+                    android:text="Add Desc / Close Ticket " />
+
+                <Button
+                    android:id="@+id/vieworderdetails"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:background="@drawable/orange_non_selected_button_background"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="13sp"
+
+                    android:text="View Order / Rating Details " />
+
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

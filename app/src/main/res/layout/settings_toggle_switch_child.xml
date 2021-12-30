@@ -46,9 +46,9 @@
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
 
             <LinearLayout
+                android:id="@+id/overlapLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/overlapLayout"
                 android:orientation="horizontal"></LinearLayout>
         </RelativeLayout>
 

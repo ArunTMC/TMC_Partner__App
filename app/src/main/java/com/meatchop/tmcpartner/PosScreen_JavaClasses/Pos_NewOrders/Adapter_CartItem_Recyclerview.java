@@ -200,7 +200,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
                             holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
                             holder.itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
-                            newOrders_menuItem_fragment.add_amount_ForBillDetails();
+                         newOrders_menuItem_fragment.add_amount_ForBillDetails();
                         }
                         //Log.e(TAG, "Got barcode isBarcodeEn position " + position);
                         //Log.e(TAG, "Got barcode newOrders_menuItem_fragment.cart_Item_List.size() " + newOrders_menuItem_fragment.cart_Item_List.size());
@@ -562,13 +562,34 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
                             newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
                             newItem_newOrdersPojoClass.menuItemId = (modal_newOrderItems.getMenuItemId());
+
                             newItem_newOrdersPojoClass.barcode = (modal_newOrderItems.getBarcode());
+                            newItem_newOrdersPojoClass.key = modal_newOrderItems.getKey();
+                            newItem_newOrdersPojoClass.itemavailability = (modal_newOrderItems.getItemavailability());
 
                             newItem_newOrdersPojoClass.gstpercentage = modal_newOrderItems.getGstpercentage();
                             newItem_newOrdersPojoClass.portionsize = modal_newOrderItems.getPortionsize();
                             newItem_newOrdersPojoClass.pricetypeforpos = modal_newOrderItems.getPricetypeforpos();
                             newItem_newOrdersPojoClass.itemuniquecode = modal_newOrderItems.getItemuniquecode();
                             newItem_newOrdersPojoClass.keyforHashmap = barcode;
+
+                            newItem_newOrdersPojoClass.barcode_AvlDetails =String.valueOf(modal_newOrderItems.getBarcode_AvlDetails());
+                            newItem_newOrdersPojoClass.itemavailability_AvlDetails =String.valueOf(modal_newOrderItems.getItemavailability_AvlDetails());
+                            newItem_newOrdersPojoClass.key_AvlDetails =String.valueOf(modal_newOrderItems.getKey_AvlDetails());
+                            newItem_newOrdersPojoClass.lastupdatedtime_AvlDetails =String.valueOf(modal_newOrderItems.getLastupdatedtime_AvlDetails());
+                            newItem_newOrdersPojoClass.menuitemkey_AvlDetails =String.valueOf(modal_newOrderItems.getMenuitemkey_AvlDetails());
+                            newItem_newOrdersPojoClass.receivedstock_AvlDetails =String.valueOf(modal_newOrderItems.getReceivedstock_AvlDetails());
+                            newItem_newOrdersPojoClass.allownegativestock =String.valueOf(modal_newOrderItems.getAllownegativestock());
+
+                            newItem_newOrdersPojoClass.stockbalance_AvlDetails =String.valueOf(modal_newOrderItems.getStockbalance_AvlDetails());
+                            newItem_newOrdersPojoClass.stockincomingkey_AvlDetails =String.valueOf(modal_newOrderItems.getStockincomingkey_AvlDetails());
+                            newItem_newOrdersPojoClass.vendorkey_AvlDetails =String.valueOf(modal_newOrderItems.getVendorkey_AvlDetails());
+
+                            newItem_newOrdersPojoClass.barcode =String.valueOf(modal_newOrderItems.getBarcode());
+                            newItem_newOrdersPojoClass.tmcctgykey =String.valueOf(modal_newOrderItems.getTmcctgykey());
+
+
+
                             newItem_newOrdersPojoClass.discountpercentage = (String.valueOf(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getDiscountpercentage()))));
                             try {
                                 if (modal_newOrderItems.getTmcsubctgykey().equals("")) {
@@ -627,6 +648,16 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 e.printStackTrace();
                             }
 
+
+                            newItem_newOrdersPojoClass.itemweightdetails = (String.valueOf(((modal_newOrderItems.getItemFinalWeight()))));
+                            newItem_newOrdersPojoClass.itemcutdetails = (String.valueOf(((modal_newOrderItems.getItemcutdetails()))));
+                            newItem_newOrdersPojoClass.inventorydetails = (String.valueOf(((modal_newOrderItems.getInventorydetails()))));
+
+
+
+
+
+
                             addItemIntheCart(barcode, newItem_newOrdersPojoClass, itemWeight, modal_newOrderItems.getItemuniquecode());
 
                         }
@@ -666,6 +697,28 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         newItem_newOrdersPojoClass.itemuniquecode = (modal_newOrderItems.getItemuniquecode());
                         newItem_newOrdersPojoClass.menuItemId = (modal_newOrderItems.getMenuItemId());
                         newItem_newOrdersPojoClass.keyforHashmap = barcode;
+                        newItem_newOrdersPojoClass.key = modal_newOrderItems.getKey();
+                        newItem_newOrdersPojoClass.itemavailability = (modal_newOrderItems.getItemavailability());
+
+
+                        newItem_newOrdersPojoClass.allownegativestock =String.valueOf(modal_newOrderItems.getAllownegativestock());
+                        newItem_newOrdersPojoClass.barcode_AvlDetails =String.valueOf(modal_newOrderItems.getBarcode_AvlDetails());
+                        newItem_newOrdersPojoClass.itemavailability_AvlDetails =String.valueOf(modal_newOrderItems.getItemavailability_AvlDetails());
+                        newItem_newOrdersPojoClass.key_AvlDetails =String.valueOf(modal_newOrderItems.getKey_AvlDetails());
+                        newItem_newOrdersPojoClass.lastupdatedtime_AvlDetails =String.valueOf(modal_newOrderItems.getLastupdatedtime_AvlDetails());
+                        newItem_newOrdersPojoClass.menuitemkey_AvlDetails =String.valueOf(modal_newOrderItems.getMenuitemkey_AvlDetails());
+                        newItem_newOrdersPojoClass.receivedstock_AvlDetails =String.valueOf(modal_newOrderItems.getReceivedstock_AvlDetails());
+
+                        newItem_newOrdersPojoClass.stockbalance_AvlDetails =String.valueOf(modal_newOrderItems.getStockbalance_AvlDetails());
+                        newItem_newOrdersPojoClass.stockincomingkey_AvlDetails =String.valueOf(modal_newOrderItems.getStockincomingkey_AvlDetails());
+                        newItem_newOrdersPojoClass.vendorkey_AvlDetails =String.valueOf(modal_newOrderItems.getVendorkey_AvlDetails());
+
+                        newItem_newOrdersPojoClass.barcode =String.valueOf(modal_newOrderItems.getBarcode());
+                        newItem_newOrdersPojoClass.tmcctgykey =String.valueOf(modal_newOrderItems.getTmcctgykey());
+
+
+
+
                         newItem_newOrdersPojoClass.discountpercentage =  ( String.valueOf(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getDiscountpercentage()))));
                        String tmcsubctgykey = (String.valueOf(((modal_newOrderItems.getTmcsubctgykey()))));
                         try {
@@ -683,6 +736,10 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         newItem_newOrdersPojoClass.subTotal_perItem = "";
                         newItem_newOrdersPojoClass.total_of_subTotal_perItem = "";
                         newItem_newOrdersPojoClass.totalGstAmount = "";
+                        newItem_newOrdersPojoClass.itemweightdetails = (String.valueOf(((modal_newOrderItems.getItemweightdetails()))));
+                        newItem_newOrdersPojoClass.itemcutdetails = (String.valueOf(((modal_newOrderItems.getItemcutdetails()))));
+                        newItem_newOrdersPojoClass.inventorydetails = (String.valueOf(((modal_newOrderItems.getInventorydetails()))));
+
 
 
                         if (String.valueOf(modal_newOrderItems.getPricetypeforpos()).equals("tmcpriceperkg")) {
@@ -860,46 +917,112 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
         private void addItemIntheCart(String barcode, Modal_NewOrderItems newItem_newOrdersPojoClass, String itemWeight, String itemUniquecode) {
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
             boolean IsItemAlreadyAddedinCart = false;
+            String pricetypeOfItem = "";
+            try {
+                pricetypeOfItem = newItem_newOrdersPojoClass.getPricetypeforpos().toString().toUpperCase();
+            }
+            catch (Exception e ) {
+                Toast.makeText(context, "Error in boolean pricetypeOfItem ", Toast.LENGTH_LONG).show();
+
+            }
+
 
             try {
-             IsItemAlreadyAddedinCart = checkforBarcodeInCart(barcode);
-         }
-         catch (Exception e ) {
-             Toast.makeText(context, "Error in boolean IsItemAlreadyAddedin Cart", Toast.LENGTH_LONG).show();
+                if (pricetypeOfItem.equals(Constants.TMCPRICEPERKG)) {
+                    try {
+                        IsItemAlreadyAddedinCart = checkforBarcodeInCart(barcode);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Error in boolean IsItemAlreadyAddedin Cart", Toast.LENGTH_LONG).show();
 
-         }
-            if(IsItemAlreadyAddedinCart){
-                Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-                int quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
-                quantity = quantity + 1;
-
-                double itemPrice_quantityBased = Double.parseDouble(modal_newOrderItems.getItemPrice_quantityBased());
-                double finalprice = quantity * itemPrice_quantityBased;
-
-                modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(finalprice)));
-                modal_newOrderItems.setQuantity(String.valueOf(quantity));
-                NewOrders_MenuItem_Fragment.cartItem_hashmap.put(barcode,modal_newOrderItems);
-               if(checkforBarcodeInCart("empty")) {
-                   NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
-
-                   NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
-               }
+                    }
 
 
-            }
-            else {
-                if(checkforBarcodeInCart("empty")) {
-                    NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
+                    try {
+                        IsItemAlreadyAddedinCart = checkforBarcodeInCart(barcode);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Error in boolean IsItemAlreadyAddedin Cart", Toast.LENGTH_LONG).show();
 
-                    NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
+                    }
+                    if (IsItemAlreadyAddedinCart) {
+                        Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
+                        int quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                        quantity = quantity + 1;
+
+                        double itemPrice_quantityBased = Double.parseDouble(modal_newOrderItems.getItemPrice_quantityBased());
+                        double finalprice = quantity * itemPrice_quantityBased;
+
+                        modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(finalprice)));
+                        modal_newOrderItems.setQuantity(String.valueOf(quantity));
+                        NewOrders_MenuItem_Fragment.cartItem_hashmap.put(barcode, modal_newOrderItems);
+                        if (checkforBarcodeInCart("empty")) {
+                            NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
+
+                            NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
+                        }
+
+
+                    } else {
+                        if (checkforBarcodeInCart("empty")) {
+                            NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
+
+                            NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
+                        }
+
+                        NewOrders_MenuItem_Fragment.cart_Item_List.add(barcode);
+                        NewOrders_MenuItem_Fragment.cartItem_hashmap.put(barcode, newItem_newOrdersPojoClass);
+
+                    }
+                    Modal_NewOrderItems m = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
+                    NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+
                 }
 
-                NewOrders_MenuItem_Fragment.cart_Item_List.add(barcode);
-                NewOrders_MenuItem_Fragment.cartItem_hashmap.put(barcode,newItem_newOrdersPojoClass);
+                else{
 
+
+                    try {
+                        IsItemAlreadyAddedinCart = checkforBarcodeInCart(itemUniquecode);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Error in boolean IsItemAlreadyAddedin Cart", Toast.LENGTH_LONG).show();
+
+                    }
+                    if (IsItemAlreadyAddedinCart) {
+                        Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(itemUniquecode);
+                        int quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                        quantity = quantity + 1;
+
+                        double itemPrice_quantityBased = Double.parseDouble(modal_newOrderItems.getItemPrice_quantityBased());
+                        double finalprice = quantity * itemPrice_quantityBased;
+
+                        modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(finalprice)));
+                        modal_newOrderItems.setQuantity(String.valueOf(quantity));
+                        NewOrders_MenuItem_Fragment.cartItem_hashmap.put(itemUniquecode, modal_newOrderItems);
+                        if (checkforBarcodeInCart("empty")) {
+                            NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
+
+                            NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
+                        }
+
+
+                    } else {
+                        if (checkforBarcodeInCart("empty")) {
+                            NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
+
+                            NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
+                        }
+
+                        NewOrders_MenuItem_Fragment.cart_Item_List.add(itemUniquecode);
+                        NewOrders_MenuItem_Fragment.cartItem_hashmap.put(itemUniquecode, newItem_newOrdersPojoClass);
+
+                    }
+                    NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+
+                }
             }
-            Modal_NewOrderItems m = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-            NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+            catch(Exception e ){
+                    Toast.makeText(context, "Error in boolean pricetypeOfItem ", Toast.LENGTH_LONG).show();
+
+                }
 
 
         }
@@ -943,7 +1066,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
     private boolean checkforBarcodeInCart(String barcode) {
         String search = barcode;
         for(String str: NewOrders_MenuItem_Fragment.cart_Item_List) {
-            if(str.trim().contains(search))
+            if(str.trim().equals(search))
                 return true;
         }
         return false;

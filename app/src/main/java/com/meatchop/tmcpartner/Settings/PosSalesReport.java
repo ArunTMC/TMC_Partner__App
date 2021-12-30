@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -76,11 +77,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
+
 public class PosSalesReport extends AppCompatActivity {
     LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView vendorName,bigBasketSales,dunzoSales,swiggySales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey,vendorname;
+
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
@@ -179,12 +184,14 @@ public class PosSalesReport extends AppCompatActivity {
         cashSales = findViewById(R.id.cashSales);
         cardSales = findViewById(R.id.cardSales);
         upiSales  = findViewById(R.id.upiSales);
+        creditSales =  findViewById(R.id.creditSales);
         dunzoSales = findViewById(R.id.dunzoSales);
         bigBasketSales = findViewById(R.id.bigBasketSales);
 
         swiggySales = findViewById(R.id.swiggySales);
         scrollView  = findViewById(R.id.scrollView);
         totalSales_headingText = findViewById(R.id.totalRating_headingText);
+        phoneordercreditSales  = findViewById(R.id.phoneordercreditSales);
         phoneorderupiSales = findViewById(R.id.phoneorderupiSales);
         phoneordercashSales = findViewById(R.id.phoneordercashSales);
         phoneordercardSales = findViewById(R.id.phoneordercardSales);
@@ -307,21 +314,55 @@ public class PosSalesReport extends AppCompatActivity {
         generateReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int writeExternalStoragePermission = ContextCompat.checkSelfPermission(PosSalesReport.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
-                // If do not grant write external storage permission.
-                if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
-                    // Request user to grant write external storage permission.
-                    ActivityCompat.requestPermissions(PosSalesReport.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                    if(Environment.isExternalStorageManager()){
+                        try {
+                            exportReport();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ;
+                        }
+                    }
+                    else{
+                        try {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                            intent.addCategory("android.intent.category.DEFAULT");
+                            intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                            startActivityForResult(intent, 2296);
+                        } catch (Exception e) {
+                            Intent intent = new Intent();
+                            intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                            startActivityForResult(intent, 2296);
+                        }
+                    }
+
                 } else {
-                    Adjusting_Widgets_Visibility(true);
-                    try {
-                        exportReport();
-                    }catch (Exception e ){
-                        e.printStackTrace();
+
+
+                    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(PosSalesReport.this, WRITE_EXTERNAL_STORAGE);
+                    //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                    // If do not grant write external storage permission.
+                    if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                        // Request user to grant write external storage permission.
+                        ActivityCompat.requestPermissions(PosSalesReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                    } else {
+                        Adjusting_Widgets_Visibility(true);
+                        try {
+                            exportReport();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ;
+                        }
                     }
                 }
+
+
+
+
             }
         });
 
@@ -635,7 +676,7 @@ public class PosSalesReport extends AppCompatActivity {
                         e.printStackTrace();
                         payment_AmountDouble = 0.00;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Card Sales";
+                        key = "Cash Sales";
 
                     }
                 }
@@ -674,7 +715,23 @@ public class PosSalesReport extends AppCompatActivity {
 
                     }
                 }
+                if ((key.toUpperCase().equals("CREDIT"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                    }
+                }
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -723,7 +780,7 @@ public class PosSalesReport extends AppCompatActivity {
                         e.printStackTrace();
                         payment_AmountDouble = 0.00;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Card Sales";
+                        key = "Cash Sales";
 
                     }
                 }
@@ -763,6 +820,23 @@ public class PosSalesReport extends AppCompatActivity {
                     }
                 }
 
+                if ((key.toUpperCase().equals("CREDIT"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                    }
+                }
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -884,6 +958,62 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, "\n" + "BigBasket Sales " + "\n");
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+            for (int i = 0; i < bigBasketOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = bigBasketOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = bigBasketOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = bigBasketOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals(Constants.BIGBASKETORDER_PAYMENTMODE)) ) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "BigBasket Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "BigBasket Sales";
+
+                    }
+                }
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 2, key + "     " + "Rs : " + Payment_Amount + "\n");
+                //Log.i("tag", "Printer log key key  " + key + "Rs : " + Payment_Amount);
+
+            }
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+
 
 
 
@@ -1067,18 +1197,35 @@ public class PosSalesReport extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    try {
+                        exportReport();
 
-        if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
-            int grantResultsLength = grantResults.length;
-            if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
-                // exportInvoice();
-                try {
-                    exportReport();
-                }catch (Exception e ){
-                    e.printStackTrace();
-                }            } else {
-                Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else {
+            if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+                int grantResultsLength = grantResults.length;
+                if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                    // exportInvoice();
+                    try {
+                        exportReport();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
@@ -2239,19 +2386,24 @@ public class PosSalesReport extends AppCompatActivity {
             double discountAmount = 0;
             double GST = 0;
             double totalAmount = 0;
-            double cardPayment_Amount = 0;
+
+           double creditPayment_Amount = 0;
+           double cardPayment_Amount = 0;
             double upiPayment_Amount = 0;
             double cashPayment_Amount = 0;
            double cardDiscount_Amount = 0;
            double upiDiscount_Amount = 0;
            double cashDiscount_Amount = 0;
+           double creditDiscount_Amount = 0;
 
+           double phoneOrder_creditPayment_Amount = 0;
            double phoneOrder_cardPayment_Amount = 0;
            double phoneOrder_upiPayment_Amount = 0;
            double phoneOrder_cashPayment_Amount = 0;
            double phoneOrder_cardDiscount_Amount = 0;
            double phoneOrder_upiDiscount_Amount = 0;
            double phoneOrder_cashDiscount_Amount = 0;
+           double phoneOrder_creditDiscount_Amount = 0;
 
 
            double swiggyOrder_Payment_Amount = 0;
@@ -2308,6 +2460,12 @@ public class PosSalesReport extends AppCompatActivity {
                    upiDiscount_Amount = Double.parseDouble(discount_String);
                    upiPayment_Amount = upiPayment_Amount-upiDiscount_Amount;
                }
+               if ((paymentmode.toUpperCase().equals("CREDIT"))) {
+                   creditPayment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   creditDiscount_Amount = Double.parseDouble(discount_String);
+                   creditPayment_Amount = creditPayment_Amount-creditDiscount_Amount;
+               }
 
            }
 
@@ -2339,6 +2497,12 @@ public class PosSalesReport extends AppCompatActivity {
                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                    phoneOrder_upiDiscount_Amount = Double.parseDouble(discount_String);
                    phoneOrder_upiPayment_Amount = phoneOrder_upiPayment_Amount-phoneOrder_upiDiscount_Amount;
+               }
+               if ((paymentmode.toUpperCase().equals("CREDIT"))) {
+                   phoneOrder_creditPayment_Amount = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                   String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                   phoneOrder_creditDiscount_Amount = Double.parseDouble(discount_String);
+                   phoneOrder_creditPayment_Amount = phoneOrder_creditPayment_Amount-phoneOrder_creditDiscount_Amount;
                }
 
            }
@@ -2396,7 +2560,7 @@ public class PosSalesReport extends AppCompatActivity {
            Log.d(Constants.TAG, "This orders payment mode tmcprice: " +totalAmount);
 
            try {
-               discountAmount = cardDiscount_Amount+cashDiscount_Amount+upiDiscount_Amount+phoneOrder_cardDiscount_Amount+phoneOrder_cashDiscount_Amount+phoneOrder_upiDiscount_Amount+swiggyOrder_Discount_Amount+dunzoOrder_Discount_Amount+bigBasketOrder_Payment_Amount;
+               discountAmount = cardDiscount_Amount+cashDiscount_Amount+creditDiscount_Amount+upiDiscount_Amount+phoneOrder_cardDiscount_Amount+phoneOrder_cashDiscount_Amount+phoneOrder_upiDiscount_Amount+phoneOrder_creditDiscount_Amount+swiggyOrder_Discount_Amount+dunzoOrder_Discount_Amount+bigBasketOrder_Discount_Amount;
            }
            catch (Exception e){
                e.printStackTrace();
@@ -2427,11 +2591,15 @@ public class PosSalesReport extends AppCompatActivity {
                 upiSales.setText(String.valueOf(decimalFormat.format(upiPayment_Amount)));
                 cashSales.setText(String.valueOf(decimalFormat.format(cashPayment_Amount)));
                 cardSales.setText(String.valueOf(decimalFormat.format(cardPayment_Amount)));
+                creditSales.setText(String.valueOf(decimalFormat.format(creditPayment_Amount)));
+
                 totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount)));
 
                phoneorderupiSales.setText(String.valueOf(decimalFormat.format(phoneOrder_upiPayment_Amount)));
                phoneordercashSales.setText(String.valueOf(decimalFormat.format(phoneOrder_cashPayment_Amount)));
                phoneordercardSales.setText(String.valueOf(decimalFormat.format(phoneOrder_cardPayment_Amount)));
+                phoneordercreditSales.setText(String.valueOf(decimalFormat.format(phoneOrder_creditPayment_Amount)));
+
 
                swiggySales.setText(String.valueOf(decimalFormat.format(swiggyOrder_Payment_Amount)));
                dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoOrder_Payment_Amount)));
@@ -2549,6 +2717,13 @@ public class PosSalesReport extends AppCompatActivity {
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
                     String menuitemidd = String.valueOf(json.get("menuitemid"));
                      newOrderWeightInGrams =  String.valueOf(json.get("weightingrams"));
+                     String ItemName = "";
+                     if(json.has("itemname")){
+                         ItemName = String.valueOf(json.get("itemname"));
+                     }
+
+
+
                      if(!newOrderWeightInGrams.contains("Pcs")&&(!(newOrderWeightInGrams.contains("Unit")))&&(!(newOrderWeightInGrams.contains("Kg")))&&(!(newOrderWeightInGrams.contains("kg")))&&(!(newOrderWeightInGrams.contains("pcs")))&&(!(newOrderWeightInGrams.contains("pc")))&&(!(newOrderWeightInGrams.contains("Set")))&&(!(newOrderWeightInGrams.contains("set")))) {
                          newOrderWeightInGrams = newOrderWeightInGrams.replaceAll("[^\\d.]", "");
                      }
@@ -2559,7 +2734,16 @@ public class PosSalesReport extends AppCompatActivity {
                     try {
                         for (int menuiterator = 0; menuiterator < MenuItem.size(); menuiterator++) {
                             Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(menuiterator);
+
                             String menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
+
+                            if(menuitemidd.equals("")){
+                                String ItemNamefromMenu = String.valueOf(modal_menuItemSettings.getItemname().toString());
+                                if(ItemName.equals(ItemNamefromMenu)){
+                                    menuitemidd=menuItemId;
+                                    modal_orderDetails_ItemDesp.menuitemid=menuitemidd;
+                                }
+                            }
                             String reportname = String.valueOf(modal_menuItemSettings.getReportname());
 
                             if (menuItemId.equals(menuitemidd)) {
@@ -2770,6 +2954,17 @@ public class PosSalesReport extends AppCompatActivity {
 
 
                                     }
+                                    if (paymentMode.equals(Constants.CREDIT) || paymentMode.equals(Constants.Credit)) {
+                                        double credit_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCreditSales());
+                                        double credit_amount = tmcprice + credit_amount_fromhashmap;
+                                        double newTotalcreditAmount = credit_amount + gstAmount;
+                                        modal_orderDetails.setCreditSales(String.valueOf((newTotalcreditAmount)));
+
+
+                                    }
+
+
+
                                 } else {
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
                                     if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
@@ -2800,6 +2995,17 @@ public class PosSalesReport extends AppCompatActivity {
 
 
                                     }
+                                    if (paymentMode.equals(Constants.CREDIT) || paymentMode.equals(Constants.Credit)) {
+                                        double credit_amount = tmcprice;
+                                        double Gst_credit_amount = gstAmount;
+                                        double newTotalcreditAmount = credit_amount + Gst_credit_amount;
+
+                                        modal_orderDetails.setCreditSales(String.valueOf((newTotalcreditAmount)));
+
+
+                                    }
+
+
                                     paymentModeHashmap.put(paymentMode, modal_orderDetails);
                                 }
                             } else {
@@ -2831,6 +3037,17 @@ public class PosSalesReport extends AppCompatActivity {
 
 
                                 }
+                                if (paymentMode.equals(Constants.CREDIT) || paymentMode.equals(Constants.Credit)) {
+                                    double newTotalcreditAmount = tmcprice + gstAmount;
+
+                                    modal_orderDetails.setCreditSales(String.valueOf((newTotalcreditAmount)));
+
+
+                                }
+
+
+
+
                                 paymentModeHashmap.put(paymentMode, modal_orderDetails);
                             }
                         }
@@ -2873,6 +3090,16 @@ public class PosSalesReport extends AppCompatActivity {
 
 
                                     }
+
+                                    if (paymentMode.equals(Constants.CREDIT) || paymentMode.equals(Constants.Credit)) {
+                                        double credit_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCreditSales());
+                                        double credit_amount = tmcprice + credit_amount_fromhashmap;
+                                        double newTotalcreditAmount = credit_amount + gstAmount;
+                                        modal_orderDetails.setCreditSales(String.valueOf((newTotalcreditAmount)));
+
+
+                                    }
+
                                 } else {
                                     Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
                                     if (paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)) {
@@ -2900,6 +3127,14 @@ public class PosSalesReport extends AppCompatActivity {
                                         double newTotalupiAmount = upi_amount + Gst_upi_amount;
 
                                         modal_orderDetails.setUpiSales(String.valueOf((newTotalupiAmount)));
+
+
+                                    }
+                                    if (paymentMode.equals(Constants.CREDIT) || paymentMode.equals(Constants.Credit)) {
+                                        double credit_amount_fromhashmap = Double.parseDouble(modal_orderDetails.getCreditSales());
+                                        double credit_amount = tmcprice + credit_amount_fromhashmap;
+                                        double newTotalcreditAmount = credit_amount + gstAmount;
+                                        modal_orderDetails.setCreditSales(String.valueOf((newTotalcreditAmount)));
 
 
                                     }
@@ -2934,6 +3169,15 @@ public class PosSalesReport extends AppCompatActivity {
 
 
                                 }
+
+                                if (paymentMode.equals(Constants.CREDIT) || paymentMode.equals(Constants.Credit)) {
+                                    double newTotalcreditAmount = tmcprice + gstAmount;
+
+                                    modal_orderDetails.setCreditSales(String.valueOf((newTotalcreditAmount)));
+
+
+                                }
+
                                 phoneOrderpaymentModeHashmap.put(paymentMode, modal_orderDetails);
                             }
                         }
@@ -3137,7 +3381,43 @@ public class PosSalesReport extends AppCompatActivity {
 
 
 
-                    String menuitemid = String.valueOf(json.get("menuitemid"));
+                    String menuitemid = String.valueOf(menuitemidd);
+                   /* if(menuitemid.equals("")) {
+                        String ItemName2 = "";
+                        if (json.has("itemname")) {
+                            ItemName2 = String.valueOf(json.get("itemname"));
+                        }
+
+                        for (int menuiterator = 0; menuiterator < MenuItem.size(); menuiterator++) {
+                            Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(menuiterator);
+
+                            String menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
+
+                            if (menuitemidd.equals("")) {
+                                String ItemNamefromMenu = String.valueOf(modal_menuItemSettings.getItemname().toString());
+                                if (ItemName2.equals(ItemNamefromMenu)) {
+                                    menuitemid = menuItemId;
+
+                                }
+                            }
+
+                        }
+
+
+
+                    }
+
+                    */
+
+
+
+
+
+
+
+
+
+
                          if (Order_Item_List.contains(menuitemid)) {
                              boolean isItemAlreadyOrdered = false;
                         try{
@@ -3362,7 +3642,7 @@ public class PosSalesReport extends AppCompatActivity {
         return dunzoOrderpaymentModeHashmap.containsKey(menuitemid);
     }
     private boolean checkIfBigBasketOrderPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
-        return dunzoOrderpaymentModeHashmap.containsKey(menuitemid);
+        return bigBasketOrderpaymentModeHashmap.containsKey(menuitemid);
     }
     private boolean checkIfMenuItemisAlreadyAvailableInArray(String menuitemid) {
         return OrderItem_hashmap.containsKey(menuitemid);
@@ -3489,8 +3769,10 @@ public class PosSalesReport extends AppCompatActivity {
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
         //Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
-        File fol = new File(extstoragedir, "testpdf");
-        File folder = new File(fol, "pdf");
+        String  path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/TMCPartner/POS Sales Report /";
+
+      //  File fol = new File(extstoragedir, path);
+        File folder = new File(path);
         if (!folder.exists()) {
             boolean bool = folder.mkdirs();
         }
@@ -3841,6 +4123,26 @@ public class PosSalesReport extends AppCompatActivity {
                 }
 
 
+                if ((key.toUpperCase().equals("CREDIT"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                    }
+                    catch(Exception e){
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                        e.printStackTrace();
+
+                    }
+                }
+
 
 
 
@@ -3980,7 +4282,25 @@ public class PosSalesReport extends AppCompatActivity {
                     }
                 }
 
+                if ((key.toUpperCase().equals("CREDIT"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
 
+                    }
+                    catch(Exception e){
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                        e.printStackTrace();
+
+                    }
+                }
 
 
 

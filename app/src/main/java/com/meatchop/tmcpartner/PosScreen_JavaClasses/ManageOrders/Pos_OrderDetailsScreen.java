@@ -42,7 +42,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,14 +179,29 @@ Button changeDeliveryPartner;
                 try{
                     String  paymentmode  = (String.valueOf(modal_manageOrders_pojo_class.getPaymentmode()).toUpperCase());
                     try {
-                        String orderidtoFetchPaymentmode = (String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
+
                         if(ordertype.equals(Constants.APPORDER)) {
 
                             if ((paymentmode.equals(Constants.CASH_ON_DELIVERY)) || paymentmode.equals("cash")) {
                                 showProgressBar(true);
-                                orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
 
-                                getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode, orderdetailskey);
+                                String orderstatus = String.valueOf(modal_manageOrders_pojo_class.getOrderstatus()).toUpperCase();
+                                String time =  "";
+                                if((orderstatus.equals(Constants.NEW_ORDER_STATUS))){
+                                    time = String.valueOf(modal_manageOrders_pojo_class.getOrderplacedtime());
+
+
+                                    CheckPaymentModeAccordingtoTime(time,24);
+                                }
+                                else if ((orderstatus.equals(Constants.CONFIRMED_ORDER_STATUS))){
+                                    time = String.valueOf(modal_manageOrders_pojo_class.getOrderconfirmedtime());
+                                    CheckPaymentModeAccordingtoTime(time,24);
+                                }
+                                else{
+                                    time = String.valueOf(modal_manageOrders_pojo_class.getOrderreadytime());
+                                    CheckPaymentModeAccordingtoTime(time,16);
+                                }
+
                             }
                         }
                     }
@@ -421,6 +440,10 @@ Button changeDeliveryPartner;
                         }
 
 
+
+
+
+
                     marinades_manageOrders_pojo_class.ItemFinalPrice= marinadesObject.getString("tmcprice");
                     marinades_manageOrders_pojo_class.quantity =String.valueOf(json.get("quantity"));
                     marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");
@@ -458,6 +481,32 @@ Button changeDeliveryPartner;
                     e.printStackTrace();
                 }
 
+
+                String cutname ="";
+                try {
+                    if(json.has("cutname")) {
+                        cutname = String.valueOf(json.get("cutname"));
+                    }
+                    else {
+                        cutname = "";
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                try{
+                    manageOrders_pojo_class.cutname= String.valueOf(cutname);
+
+                }
+                catch (Exception E){
+                    E.printStackTrace();
+                }
+
+
+
+
+
                 if(subCtgyKey.equals("tmcsubctgy_16")){
                     //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
                    // marinades_manageOrders_pojo_class.itemName=marinadesObject.getString("itemname")+(" ( Grill House ) ");
@@ -493,6 +542,148 @@ Button changeDeliveryPartner;
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
 
     }
+
+
+    public  boolean CheckPaymentModeAccordingtoTime(String time,int time_toCalculate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+        Date date = null;
+        try {
+            date = dateFormat.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        ////Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        Log.d(Constants.TAG, "log 1 orderPlacedTime : " + time);
+
+
+        calendar.add(Calendar.HOUR, time_toCalculate);
+
+
+
+        Date c1 = calendar.getTime();
+        SimpleDateFormat df1 = new SimpleDateFormat("EEE");
+        String predictedday = df1.format(c1);
+
+
+
+        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy");
+        String  predicteddate = df2.format(c1);
+        String predicteddateandday = predictedday+", "+predicteddate;
+
+
+        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss");
+        String  predictedtime = df3.format(c1);
+        String predicteddateanddayandtime = predictedday+", "+predicteddate+" "+predictedtime;
+
+        Log.d(Constants.TAG, "log 1 predicteddateanddayandtime : " + predicteddateanddayandtime);
+
+        long predictedLongForDate = Long.parseLong(getLongValuefortheDate(predicteddateanddayandtime));
+        String  currentTime = getDate_and_time();
+        Log.d(Constants.TAG, "log 1 currentTime : " +currentTime);
+
+        long currentTimeLong = Long.parseLong(getLongValuefortheDate(currentTime));
+        if(currentTimeLong<=predictedLongForDate){//current time is lesser or equals order placed time +  hours
+            Log.d(Constants.TAG, "log 1 currentTimeLong : " +currentTimeLong);
+            Log.d(Constants.TAG, "log 1 predictedLongForDate : " +predictedLongForDate);
+            String orderidtoFetchPaymentmode = (String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
+
+            showProgressBar(true);
+
+            orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
+
+            getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode, orderdetailskey);
+            return true;
+
+        }
+        else{
+            showProgressBar(false);
+            Toast.makeText(Pos_OrderDetailsScreen.this, "Cash On Delivery", Toast.LENGTH_LONG).show();
+
+            Log.d(Constants.TAG, "log currentTimeLong : " +currentTimeLong);
+            Log.d(Constants.TAG, "log predictedLongForDate : " +predictedLongForDate);
+            return false;
+        }
+
+    }
+
+
+    public String getLongValuefortheDate(String orderplacedtime) {
+        String longvalue = "";
+        try {
+            String time1 = orderplacedtime;
+            //   Log.d(TAG, "time1long  "+orderplacedtime);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            Date date = sdf.parse(time1);
+            long time1long = date.getTime() / 1000;
+            longvalue = String.valueOf(time1long);
+          /*  String time2 = "Sat, 24 Apr 2021 07:50:28";
+            Date date2 = sdf.parse(time2);
+
+            long time2long =  date2.getTime() / 1000;
+            Log.d(TAG, "time1 "+time1long + " time2 "+time2long);
+
+           */
+            //   long differencetime = time2long - time1long;
+            //  Log.d(TAG, "   "+orderplacedtime);
+
+            //   Log.d(TAG, "time1long  "+time1long);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+                String time1 = orderplacedtime;
+                //     Log.d(TAG, "time1long  "+orderplacedtime);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                Date date = sdf.parse(time1);
+                long time1long = date.getTime() / 1000;
+                longvalue = String.valueOf(time1long);
+
+                //   long differencetime = time2long - time1long;
+                //  Log.d(TAG, "   "+orderplacedtime);
+
+                //    Log.d(TAG, "time1long  "+time1long);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return longvalue;
+    }
+
+
+    public String getDate_and_time()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+
+        SimpleDateFormat day = new SimpleDateFormat("EEE");
+      String  CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDatee = df.format(c);
+        String CurrentDate = CurrentDay+", "+CurrentDatee;
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        String FormattedTime = dfTime.format(c);
+        String  formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
+        return formattedDate;
+    }
+
+
+
+
+
+
+
+
+
+
     private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode , String orderdetailskey) {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid+orderidtoFetchPaymentmode ,null,
@@ -531,7 +722,7 @@ Button changeDeliveryPartner;
 
                                     //    Toast.makeText(Pos_OrderDetailsScreen.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
 
-                                        if(fromActivityName.equals("MobileManageOrders")) {
+                                        if(fromActivityName.equals("PosManageOrders")) {
                                             if(Pos_ManageOrderFragment.sorted_OrdersList.size()>0){
                                                 for(int i =0; i<Pos_ManageOrderFragment.sorted_OrdersList.size();i++){
                                                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Pos_ManageOrderFragment.sorted_OrdersList.get(i);
@@ -1324,6 +1515,12 @@ Button changeDeliveryPartner;
                                                 getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
 
                                             }
+                                            else{
+                                                showProgressBar(false);
+                                                Toast.makeText(Pos_OrderDetailsScreen.this,"Order is :"+paymentMode,Toast.LENGTH_LONG).show();
+
+
+                                            }
 
                                         }
                                         else if((!merchantorderid.equals(""))&&(!merchantpaymentid.equals(""))&&(!status.toUpperCase().equals("SUCCESS"))){
@@ -1332,6 +1529,12 @@ Button changeDeliveryPartner;
                                             }
                                             else if(paymentMode.toUpperCase().equals(Constants.PAYTM)){
                                                 getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
+
+                                            }
+                                            else{
+                                                showProgressBar(false);
+                                                Toast.makeText(Pos_OrderDetailsScreen.this,"Order is :"+paymentMode,Toast.LENGTH_LONG).show();
+
 
                                             }
 
@@ -1344,7 +1547,12 @@ Button changeDeliveryPartner;
                                                 getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
 
                                             }
+                                            else{
+                                                showProgressBar(false);
+                                                Toast.makeText(Pos_OrderDetailsScreen.this,"Order is :"+paymentMode,Toast.LENGTH_LONG).show();
 
+
+                                            }
                                         }
                                         else if((merchantorderid.equals(""))&&(merchantpaymentid.equals(""))&&(!status.toUpperCase().equals("SUCCESS"))){
                                             showProgressBar(false);
@@ -1360,7 +1568,12 @@ Button changeDeliveryPartner;
                                                 getPaymentStatusFromPaytm(merchantorderid,merchantpaymentid,key,orderdetailskey,orderidtoFetchPaymentmode);
 
                                             }
+                                            else{
+                                                showProgressBar(false);
+                                                Toast.makeText(Pos_OrderDetailsScreen.this,"Order is :"+paymentMode,Toast.LENGTH_LONG).show();
 
+
+                                            }
                                         }
                                         else if((paymentMode.toUpperCase().equals(Constants.CASH_ON_DELIVERY))&&status.toUpperCase().equals("SUCCESS")){
 

@@ -2,6 +2,8 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import android.app.DatePickerDialog;
@@ -9,12 +11,14 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -77,6 +81,9 @@ import java.util.Objects;
 
 import okhttp3.WebSocket;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
+
 public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     TextView count_AllOrders, count_onTimeDeliveryOrders, count_30MinsLateOrders, count_60MinsLateOrders, count_moreThan60MinsLateOrders, appOrdersCount_textwidget, dateSelector_text, mobile_orderinstruction, mobile_nameofFacility_Textview;
     LinearLayout listview_Layout, timeslotButtonss_layout, show_allOrders, show_onTimeDeliveryOrders, show_30MinsLateOrders, show_60MinsLateOrders, show_moreThan60MinsLateOrders;
@@ -123,7 +130,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     String selecteddeliveredtime_spinner = "All";
     int spinner_check = 0;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
-
+    private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -637,8 +644,53 @@ if(sorted_OrdersList.size()>0){
                     Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
                     Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
 
-                    GenerateExcelSheet();
-                } else {
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if(Environment.isExternalStorageManager()){
+                            try {
+                                GenerateExcelSheet();
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                        else{
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    }
+                    else {
+
+
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(DeliveredOrdersTimewiseReport.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(DeliveredOrdersTimewiseReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            showProgressBar(true);
+                            try {
+                                GenerateExcelSheet();
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }                } else {
                     //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
 
                 }
@@ -653,7 +705,55 @@ else{
             Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
             Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " +rowNum);
 
-            GenerateExcelSheet();
+
+
+        if (SDK_INT >= Build.VERSION_CODES.R) {
+
+            if(Environment.isExternalStorageManager()){
+                try {
+                    GenerateExcelSheet();
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ;
+                }
+            }
+            else{
+                try {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                    intent.addCategory("android.intent.category.DEFAULT");
+                    intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                    startActivityForResult(intent, 2296);
+                } catch (Exception e) {
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                    startActivityForResult(intent, 2296);
+                }
+            }
+
+        }
+        else {
+
+
+            int writeExternalStoragePermission = ContextCompat.checkSelfPermission(DeliveredOrdersTimewiseReport.this, WRITE_EXTERNAL_STORAGE);
+            //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+            // If do not grant write external storage permission.
+            if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                // Request user to grant write external storage permission.
+                ActivityCompat.requestPermissions(DeliveredOrdersTimewiseReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+            } else {
+                showProgressBar(true);
+                try {
+                    GenerateExcelSheet();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ;
+                }
+            }
+        }
 
     }
 
@@ -665,8 +765,69 @@ else{
 
     }
 
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case OPENPDF_ACTIVITY_REQUEST_CODE:
+                setResult(RESULT_OK);
+                finish();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    try {
+                        GenerateExcelSheet();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+
+        else {
+            if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+                int grantResultsLength = grantResults.length;
+                if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                    // exportInvoice();
+                    try {
+                        GenerateExcelSheet();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+
+
+
     private void GenerateExcelSheet() {
-       String  path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/EXCEL/";
+       String  path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/TMC Partner/Delivered Orders Timewise Report /";
         File    dir = new File(path);
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
             Log.e("Failed", "Storage not available or read only");

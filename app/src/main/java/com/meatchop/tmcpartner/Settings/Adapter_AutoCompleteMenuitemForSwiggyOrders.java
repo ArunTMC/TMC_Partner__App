@@ -66,7 +66,39 @@ public class Adapter_AutoCompleteMenuitemForSwiggyOrders extends ArrayAdapter<Mo
             modal_newOrderItems.tmcsubctgykey = String.valueOf(modal_menuItem_settings.getTmcsubctgykey());
             modal_newOrderItems.menuItemId = String.valueOf(modal_menuItem_settings.getMenuItemId());
 
-         menuListFull.add(modal_newOrderItems);
+
+
+            modal_newOrderItems.barcode_AvlDetails = String.valueOf(modal_menuItem_settings.getBarcode_AvlDetails());
+
+            modal_newOrderItems.itemavailability_AvlDetails = String.valueOf(modal_menuItem_settings.getItemavailability_AvlDetails());
+
+            modal_newOrderItems.key_AvlDetails = String.valueOf(modal_menuItem_settings.getKey_AvlDetails());
+
+
+            modal_newOrderItems.lastupdatedtime_AvlDetails = String.valueOf(modal_menuItem_settings.getLastupdatedtime_AvlDetails());
+
+
+            modal_newOrderItems.menuitemkey_AvlDetails = String.valueOf(modal_menuItem_settings.getMenuitemkey_AvlDetails());
+            modal_newOrderItems.receivedstock_AvlDetails = String.valueOf(modal_menuItem_settings.getReceivedstock_AvlDetails());
+            modal_newOrderItems.stockbalance_AvlDetails = String.valueOf(modal_menuItem_settings.getStockbalance_AvlDetails());
+            modal_newOrderItems.stockincomingkey_AvlDetails = String.valueOf(modal_menuItem_settings.getStockincomingkey_AvlDetails());
+            modal_newOrderItems.vendorkey_AvlDetails = String.valueOf(modal_menuItem_settings.getVendorkey_AvlDetails());
+
+
+            modal_newOrderItems.barcode = String.valueOf(modal_menuItem_settings.getBarcode());
+            modal_newOrderItems.tmcctgykey = String.valueOf(modal_menuItem_settings.getTmcctgykey());
+            modal_newOrderItems.inventorydetails = String.valueOf(modal_menuItem_settings.getInventorydetails());
+            modal_newOrderItems.allownegativestock = String.valueOf(modal_menuItem_settings.getAllownegativestock());
+
+
+
+            modal_newOrderItems.discountpercentage ="0";
+
+
+
+
+
+            menuListFull.add(modal_newOrderItems);
         }
 
     }
@@ -337,6 +369,158 @@ public class Adapter_AutoCompleteMenuitemForSwiggyOrders extends ArrayAdapter<Mo
                     Toast.makeText(context,"Can't Get Menu NetWeight  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                 }
+
+
+                try{
+                    modal_newOrderItems.setTmcctgykey(String.valueOf(menuuItem.getTmcctgykey()));
+
+                }
+                catch(Exception e){
+                    Toast.makeText(context,"Can't Get Menu Item ctgykey at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+                try {
+                    modal_newOrderItems.setItemcutdetails(String.valueOf(menuuItem.getItemcutdetails()));
+
+                }
+                catch (Exception e){
+                    Toast.makeText(context,"Can't Get Menu Item CutDetails  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+                try {
+                    modal_newOrderItems.setItemweightdetails(String.valueOf(menuuItem.getItemweightdetails()));
+
+                }
+                catch (Exception e){
+                    Toast.makeText(context,"Can't Get Menu Item Weight  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+                try {
+                    modal_newOrderItems.setInventorydetails(String.valueOf(menuuItem.getInventorydetails()));
+
+                }
+                catch (Exception e){
+                    Toast.makeText(context,"Can't Get Menu Item inventorydetails  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+
+                try{
+                    modal_newOrderItems.setBarcode_AvlDetails(String.valueOf(menuuItem.getBarcode_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu Barcode AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+                try{
+                    modal_newOrderItems.setItemavailability_AvlDetails(String.valueOf(menuuItem.getItemavailability_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+                try{
+                    modal_newOrderItems.setKey_AvlDetails(String.valueOf(menuuItem.getKey_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    modal_newOrderItems.setKey_AvlDetails("nil");
+                    Toast.makeText(context,"Can't Get Menu Key AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+                try{
+                    modal_newOrderItems.setLastupdatedtime_AvlDetails(String.valueOf(menuuItem.getLastupdatedtime_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu LastupdatedTime AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+                try{
+                    modal_newOrderItems.setMenuitemkey_AvlDetails(String.valueOf(menuuItem.getMenuitemkey_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu MenuItem AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+
+                try{
+                    modal_newOrderItems.setReceivedstock_AvlDetails(String.valueOf(menuuItem.getReceivedstock_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu ReceivedStock AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+
+                try{
+                    modal_newOrderItems.setStockbalance_AvlDetails(String.valueOf(menuuItem.getStockbalance_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu stockBalance AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+                try{
+                    modal_newOrderItems.setStockincomingkey_AvlDetails(String.valueOf(menuuItem.getStockincomingkey_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu stock incoming AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+                try{
+                    modal_newOrderItems.setVendorkey_AvlDetails(String.valueOf(menuuItem.getVendorkey_AvlDetails()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu vendorkey AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+
+                try{
+                    modal_newOrderItems.setAllownegativestock(String.valueOf(menuuItem.getAllownegativestock()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu allownegativestock at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+                try{
+                    modal_newOrderItems.setKey(String.valueOf(menuuItem.getKey()));
+
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu key AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
 
                 try {
                     modal_newOrderItems.setQuantity("1");

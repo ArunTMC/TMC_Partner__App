@@ -247,7 +247,26 @@
 
 
         </LinearLayout>
+
+
+
     </LinearLayout>
+
+        <Button
+
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/button_background"
+            android:text="Raise a Ticket"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            android:id="@+id/addEnquiryStatusButton"
+            android:textColor="@color/TMC_White"
+
+            android:textSize="17sp" />
+
     </LinearLayout>
 
     </androidx.cardview.widget.CardView>

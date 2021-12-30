@@ -54,11 +54,30 @@ final TextView itemQty_widget = listViewItem.findViewById(R.id.itemQty_widget);
 final TextView itemGst_widget = listViewItem.findViewById(R.id.itemGst_widget);
 final TextView itemSubtotal_widget = listViewItem.findViewById(R.id.itemSubtotal_widget);
 
-        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
+    final TextView cutName_widget = listViewItem.findViewById(R.id.cutName_widget);
+
+    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
         itemName_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemName()));
         itemWeight_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight()));
         itemQty_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getQuantity()));
         itemGst_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getGstAmount()));
+        String cutname ="";
+        try {
+            cutname = String.valueOf(modal_manageOrders_pojo_class.getCutname());
+        }
+        catch (Exception e){
+            cutname = "";
+            e.printStackTrace();
+        }
+        if((!cutname.equals("null"))  &&(!cutname.equals("NULL"))  && (!cutname.equals(null))){
+            cutName_widget.setText(cutname);
+
+        }
+        else{
+            cutName_widget.setText("");
+
+        }
+
     double subtotal = (Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()));
     double quantity = (Double.parseDouble(modal_manageOrders_pojo_class.getQuantity()));
     subtotal= subtotal*quantity;

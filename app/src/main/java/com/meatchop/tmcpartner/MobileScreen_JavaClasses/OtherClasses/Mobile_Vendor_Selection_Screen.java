@@ -54,6 +54,8 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private ArrayAdapter mobile_spinner_aAdapter;
     private Button mobile_vendorDetails_verification_button;
     private  Boolean mobile_vendorLogin = false;
+    private  Boolean inventoryCheckBool = false;
+
     private Spinner mobile_vendor_selecting_spinner;
     private ArrayList<String> VendorName_arrayList;
     private JSONArray result;
@@ -421,6 +423,11 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         myEdit.putString(
                 "userrole",
                 UserRole);
+
+        myEdit.putString(
+                "userrole",
+                UserRole);
+
         myEdit.putBoolean(
                 "VendorLoginStatus",
                 mobile_vendorLogin);
@@ -463,6 +470,11 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                 mobile_vendorLongitude
         );
 
+        myEdit.putBoolean(
+                "inventoryCheckBool",
+                inventoryCheckBool
+        );
+
         myEdit.apply();
 
     }
@@ -498,6 +510,12 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         mobile_vendorFssaino =getVendorData(position,"vendorfssaino");
         mobile_vendorLatitude =getVendorData(position,"locationlat");
         mobile_vendorLongitude =getVendorData(position,"locationlong");
+        try {
+            inventoryCheckBool = Boolean.parseBoolean(getVendorData(position, "inventorycheckpos"));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

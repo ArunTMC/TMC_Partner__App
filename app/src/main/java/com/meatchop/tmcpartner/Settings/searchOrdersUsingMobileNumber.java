@@ -982,7 +982,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 }
 
                             } else {
-                                int indexofbraces = fullitemName.indexOf("(");
+                             /*   int indexofbraces = fullitemName.indexOf("(");
                                 if (indexofbraces >= 0) {
                                     itemName = fullitemName.substring(0, indexofbraces);
 
@@ -995,6 +995,42 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                     itemName = fullitemName;
 
                                 }
+
+                              */
+
+
+                                if(fullitemName.contains("(")){
+                                    int openbraces = fullitemName.indexOf("(");
+                                    int closebraces = fullitemName.indexOf(")");
+                                    System.out.println(fullitemName);
+                                    itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                                    System.out.println(itemName);
+
+                                }
+                                if(!itemName.matches("[a-zA-Z0-9]+")){
+                                    fullitemName = fullitemName.replaceAll(
+                                            "[^a-zA-Z0-9()]", "");
+                                    fullitemName = fullitemName.replaceAll(
+                                            "[()]", " ");
+                                    System.out.println("no english");
+
+                                    System.out.println(fullitemName);
+
+                                }
+                                else{
+                                    fullitemName = fullitemName.replaceAll(
+                                            "[^a-zA-Z0-9()]", "");
+                                    System.out.println("have English");
+
+                                    System.out.println(fullitemName);
+
+                                }
+
+
+
+
+
+
                             }
                         } catch (Exception e) {
                             itemName = fullitemName;
@@ -1138,7 +1174,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     BluetoothPrintDriver.LF();
 
 
-                    String finalitemname = "", finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+                    String finalCutName ="",finalitemname = "", finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
 
 
                     Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
@@ -1149,6 +1185,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         manageOrders_pojo_class.ItemFinalWeight = "";
 
                     }
+
+
+
 
                     manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
                     manageOrders_pojo_class.ItemFinalPrice = String.valueOf(json.get("tmcprice"));
@@ -1198,7 +1237,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                             }
 
                         } else {
-                            int indexofbraces = fullitemName.indexOf("(");
+                           /* int indexofbraces = fullitemName.indexOf("(");
                             if (indexofbraces >= 0) {
                                 itemName = fullitemName.substring(0, indexofbraces);
 
@@ -1211,6 +1250,42 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 itemName = fullitemName;
 
                             }
+
+                            */
+
+                            if(fullitemName.contains("(")){
+                                int openbraces = fullitemName.indexOf("(");
+                                int closebraces = fullitemName.indexOf(")");
+                                System.out.println(fullitemName);
+                                itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                                System.out.println(itemName);
+
+                            }
+                            if(!itemName.matches("[a-zA-Z0-9]+")){
+                                fullitemName = fullitemName.replaceAll(
+                                        "[^a-zA-Z0-9()]", "");
+                                fullitemName = fullitemName.replaceAll(
+                                        "[()]", " ");
+                                System.out.println("no english");
+
+                                System.out.println(fullitemName);
+
+                            }
+                            else{
+                                fullitemName = fullitemName.replaceAll(
+                                        "[^a-zA-Z0-9()]", "");
+                                System.out.println("have English");
+
+                                System.out.println(fullitemName);
+
+                            }
+
+
+
+
+
+
+
                         }
                     } catch (Exception e) {
                         itemName = fullitemName;
@@ -1249,6 +1324,24 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
                     }
+
+
+                    try {
+                        if(json.has("cutname")){
+                            finalCutName = json.getString("cutname");
+
+                        }
+                        else{
+                            finalCutName = "";
+                        }
+                        //Log.i("tag","grossweight Log    "+                grossweight);
+                    }
+                    catch (Exception e){
+                        finalCutName ="";
+                        e.printStackTrace();
+                    }
+
+
 
                     try {
                         finalitemNetweight = json.getString("netweight");
@@ -1298,6 +1391,42 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         }
                         e.printStackTrace();
                     }
+
+
+                    if((finalCutName.length()>0) && (!finalCutName.equals(null)) && (!finalCutName.equals("null"))){
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetLineSpacing((byte) 55);
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.Begin();
+
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        //   BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 60);
+
+                        BluetoothPrintDriver.printString( (finalCutName.toUpperCase()));
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                    }
+
 
                     BluetoothPrintDriver.Begin();
                     BluetoothPrintDriver.SetLineSpacing((byte) 60);
@@ -1537,7 +1666,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                                 }
                             } else {
-                                int indexofbraces = fullitemName.indexOf("(");
+                              /*  int indexofbraces = fullitemName.indexOf("(");
                                 if (indexofbraces >= 0) {
                                     itemName = fullitemName.substring(0, indexofbraces);
 
@@ -1550,6 +1679,43 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                     itemName = fullitemName;
 
                                 }
+
+
+
+                               */
+
+
+
+                                if(fullitemName.contains("(")){
+                                    int openbraces = fullitemName.indexOf("(");
+                                    int closebraces = fullitemName.indexOf(")");
+                                    System.out.println(fullitemName);
+                                    itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                                    System.out.println(itemName);
+
+                                }
+                                if(!itemName.matches("[a-zA-Z0-9]+")){
+                                    fullitemName = fullitemName.replaceAll(
+                                            "[^a-zA-Z0-9()]", "");
+                                    fullitemName = fullitemName.replaceAll(
+                                            "[()]", " ");
+                                    System.out.println("no english");
+
+                                    System.out.println(fullitemName);
+
+                                }
+                                else{
+                                    fullitemName = fullitemName.replaceAll(
+                                            "[^a-zA-Z0-9()]", "");
+                                    System.out.println("have English");
+
+                                    System.out.println(fullitemName);
+
+                                }
+
+
+
+
                             }
                         } catch (Exception e) {
                             itemName = fullitemName;
@@ -1987,7 +2153,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
                             }
                         } else {
-                            int indexofbraces = fullitemName.indexOf("(");
+                         /*   int indexofbraces = fullitemName.indexOf("(");
                             if (indexofbraces >= 0) {
                                 itemName = fullitemName.substring(0, indexofbraces);
 
@@ -2000,6 +2166,42 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 itemName = fullitemName;
 
                             }
+
+                          */
+
+
+
+
+                            if(fullitemName.contains("(")){
+                                int openbraces = fullitemName.indexOf("(");
+                                int closebraces = fullitemName.indexOf(")");
+                                System.out.println(fullitemName);
+                                itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                                System.out.println(itemName);
+
+                            }
+                            if(!itemName.matches("[a-zA-Z0-9]+")){
+                                fullitemName = fullitemName.replaceAll(
+                                        "[^a-zA-Z0-9()]", "");
+                                fullitemName = fullitemName.replaceAll(
+                                        "[()]", " ");
+                                System.out.println("no english");
+
+                                System.out.println(fullitemName);
+
+                            }
+                            else{
+                                fullitemName = fullitemName.replaceAll(
+                                        "[^a-zA-Z0-9()]", "");
+                                System.out.println("have English");
+
+                                System.out.println(fullitemName);
+
+                            }
+
+
+
+
                         }
                     } catch (Exception e) {
                         itemName = fullitemName;
@@ -2010,7 +2212,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-                    String  finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+                    String  finalCutName = "",finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
 
 
                     try {
@@ -2083,6 +2285,22 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         }
                         e.printStackTrace();
                     }
+
+                    try {
+                        if(json.has("cutname")){
+                            finalCutName = json.getString("cutname");
+
+                        }
+                        else{
+                            finalCutName = "";
+                        }
+                        //Log.i("tag","grossweight Log    "+                grossweight);
+                    }
+                    catch (Exception e){
+                        finalCutName ="";
+                        e.printStackTrace();
+                    }
+
 
 
 
@@ -2164,6 +2382,19 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
                         BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
 
+                        if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            // BluetoothPrintDriver.SetFontEnlarge((byte) 0x01);
+
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Cut Name : " + (finalCutName.toUpperCase()));
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
+
                         if(!finalgrossweight.equals("")) {
 
                             itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
@@ -2192,6 +2423,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
                         BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                        if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            // BluetoothPrintDriver.SetFontEnlarge((byte) 0x01);
+
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Cut Name : " + (finalCutName.toUpperCase()));
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
 
                         if(!finalgrossweight.equals("")) {
 
@@ -2219,6 +2462,21 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
                         BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+
+                        if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            // BluetoothPrintDriver.SetFontEnlarge((byte) 0x01);
+
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Cut Name : " + (finalCutName.toUpperCase()));
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                        }
+
+
                         if(!finalgrossweight.equals("")) {
 
                             itemDespName_Weight_quantity = String.valueOf("Grossweight : " + finalgrossweight);
@@ -2827,6 +3085,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             BluetoothPrintDriver.LF();
 
 
+
+
+
             BluetoothPrintDriver.Begin();
             BluetoothPrintDriver.SetAlignMode((byte) 0);
             BluetoothPrintDriver.SetLineSpacing((byte) 90);
@@ -2834,7 +3095,17 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             BluetoothPrintDriver.BT_Write("\r");
             BluetoothPrintDriver.LF();
 
+            if(Slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)){
 
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                BluetoothPrintDriver.printString("Order Placed time : "+OrderPlacedtime);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+            }
             BluetoothPrintDriver.Begin();
             BluetoothPrintDriver.SetAlignMode((byte) 0);
             BluetoothPrintDriver.SetLineSpacing((byte) 90);
@@ -4272,14 +4543,78 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     else{
                         manageOrdersPojoClass.slotname ="";
                     }
-                    if(json.has("slottimerange")){
+                   /* if(json.has("slottimerange")){
                         manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
 
                     }
                     else{
                         manageOrdersPojoClass.slottimerange ="";
                     }
-                    if(json.has("deliverytype")){
+
+                    */
+
+                        if(json.has("slottimerange")){
+                            manageOrdersPojoClass.slotTimeRangeFromDB = String.valueOf(json.get("slottimerange"));
+
+                        }
+                        else{
+                            manageOrdersPojoClass.slotTimeRangeFromDB ="";
+                        }
+
+
+                        try {
+                            String slottime = "";
+                            slottime = String.valueOf(String.valueOf(json.get("slottimerange")));
+                            String estimated_Slottime = "";
+                            if (String.valueOf(String.valueOf(json.get("slotname"))).toUpperCase().equals(Constants.EXPRESSDELIVERY_SLOTNAME)) {
+                                String orderPlacedTime = String.valueOf(json.get("orderplacedtime"));
+
+                                estimated_Slottime = getSlotTime(slottime, orderPlacedTime);
+
+
+                                try {
+                                    manageOrdersPojoClass.slottimerange = String.valueOf(estimated_Slottime);
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+
+
+                                try {
+
+                                    manageOrdersPojoClass.slottimerange = String.valueOf(slottime);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            try {
+                                if (json.has("slottimerange")) {
+                                    manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+
+                                } else {
+                                    manageOrdersPojoClass.slottimerange = "";
+                                }
+                            } catch (Exception e1) {
+                                manageOrdersPojoClass.slottimerange = "";
+
+                                e1.printStackTrace();
+                            }
+                        }
+
+
+
+
+
+
+                        if(json.has("deliverytype")){
                         manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
 
                     }
@@ -4473,7 +4808,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
               final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
               final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-              String slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange().toUpperCase();
+              String slottimerange = modal_manageOrders_forOrderDetailList.getSlotTimeRangeFromDB().toUpperCase();
               String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
               String deliveryType = String.valueOf(modal_manageOrders_forOrderDetailList.getDeliverytype()).toUpperCase();
               String ordertype = String.valueOf(modal_manageOrders_forOrderDetailList.getOrderType()).toUpperCase();
@@ -5196,5 +5531,68 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
     }
+
+
+
+
+    private String getSlotTime(String slottime, String orderplacedtime) {
+        String result = "", lastFourDigits = "";
+        //   Log.d(TAG, "slottime  "+slottime);
+        if (slottime.contains("mins")) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+
+                final Date date = sdf.parse(orderplacedtime);
+                final Calendar calendar = Calendar.getInstance();
+                String timeoftheSlot ="";
+                try {
+                    timeoftheSlot = (slottime.replaceAll("[^\\d.]", ""));
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                int timeoftheSlotDouble =0;
+                try {
+                    timeoftheSlotDouble = Integer.parseInt(timeoftheSlot);
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                calendar.setTime(date);
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                String placedtime = String.valueOf(sdff.format(calendar.getTime()));
+                calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
+
+                System.out.println("Time here " + sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + orderplacedtime);
+                result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + result);
+
+                result = result.replaceAll("GMT[+]05:30", "");
+
+                //  System.out.println("Time here "+result);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (slottime.length() > 5) {
+                lastFourDigits = slottime.substring(slottime.length() - 5);
+            } else {
+                lastFourDigits = slottime;
+            }
+
+            //  result = slotdate + " " + lastFourDigits + ":00";
+
+        }
+        return result;
+    }
+
+
+
+
+
+
+
+
 
 }

@@ -4,7 +4,17 @@ package com.meatchop.tmcpartner.Settings.report_Activity_model;
  * Created by Krrishnaaaa on Dec 08, 2015
  */
 public class ListItem extends ListData {
-    String message, messageLine2,tokens;
+    String message, messageLine2,tokens,cutname,menuitemkey;
+
+    public String getMenuitemkey() {   return menuitemkey;   }
+
+    public void setMenuitemkey(String menuitemkey) {this.menuitemkey = menuitemkey;   }
+
+    public String getCutname() {   return cutname;    }
+
+    public void setCutname(String cutname) {
+        this.cutname = cutname;
+    }
 
     public String getTokens() {
         return tokens;

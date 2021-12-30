@@ -3,9 +3,13 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_height="match_parent">
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
     <TextView
         android:id="@+id/name_and_quantity"
         android:layout_width="match_parent"
@@ -46,6 +50,40 @@
 
 </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/cutnameLayout"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="6"
+            android:gravity="left"
+            android:textSize="13sp"
+            android:visibility="gone"
+            android:layout_marginTop="14dp"
+            android:fontFamily="@font/open_sans_bold"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:text="Chicken Curry Cut (4)" />
+
+        <TextView
+            android:id="@+id/cutName"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="2"
+            android:gravity="left|center_vertical"
+            android:layout_marginTop="13dp"
+            android:layout_marginEnd="5dp"
+            android:textSize="13sp"
+            android:visibility="gone"
+            android:fontFamily="@font/open_sans_bold"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:text="TextView" />
+    </LinearLayout>
+
+</LinearLayout>
 <!--<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

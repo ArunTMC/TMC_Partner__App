@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ListView
+            android:layout_width="match_parent"
+            android:visibility="gone"
+
+            android:id="@+id/defaultItemCutDetailsListview"
+            android:layout_height="match_parent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:padding="4dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+
+            <ListView
+                android:layout_width="match_parent"
+                android:id="@+id/defaultIteWeightDetailsListview"
+                android:visibility="gone"
+                android:layout_height="match_parent" />
+
+            <LinearLayout
+                android:id="@+id/cutDetailsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="8dp"
+                android:background="@drawable/orange_non_selected_button_background"
+                android:orientation="vertical">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp">
+                        <CheckBox
+                            android:id="@+id/cutDetails_checkbox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/TMC_Orange"
+                            android:text="Set Default" />
+
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:id="@+id/cutDetailsCheckbox_LinearLayout"
+
+                        android:orientation="horizontal" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+
+                    android:padding="5dp">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Cut Name"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                        <EditText
+                            android:id="@+id/edit_cutname"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789"
+                            android:focusedByDefault="false"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionNext"
+                            android:inputType="phone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:visibility="gone"
+
+                            android:text="  "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                        <TextView
+                            android:id="@+id/edit_cutname_textview"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:visibility="gone"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/orange_non_selected_button_background"
+                            android:orientation="vertical">
+                        <Spinner
+                            android:id="@+id/cutDetailsName_spinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+
+                            android:layout_weight="1" />
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Cut Description "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                        <EditText
+                            android:id="@+id/edit_cutDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789"
+                            android:focusedByDefault="false"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionNext"
+                            android:inputType="phone"
+                            android:paddingStart="8dp"
+                            android:visibility="gone"
+
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                        <TextView
+                            android:id="@+id/edit_cutDescription_textview"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Gross Weight"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                        <EditText
+                            android:id="@+id/edit_grossweight_cutdetail"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789"
+                            android:focusedByDefault="false"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionNext"
+                            android:inputType="phone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Net Weight"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+                        <LinearLayout
+                            android:id="@+id/two_cutdetails_editbox_linearlayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:orientation="horizontal"
+
+                            android:visibility="visible">
+
+                            <EditText
+                                android:id="@+id/cutDetails_netweight_first_textview_widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="5dp"
+                                android:background="@color/TMC_PaleOrange"
+                                android:digits="0123456789"
+                                android:focusedByDefault="false"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center_vertical|center"
+                                android:imeOptions="actionNext"
+                                android:inputType="phone"
+                                android:text="  "
+                                android:layout_weight="1"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="20dp"
+                                android:layout_height="wrap_content"
+                                android:text="  - " />
+
+
+                            <EditText
+                                android:id="@+id/cutDetails_netweight_second_textview_widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_weight="1"
+
+
+                                android:layout_marginStart="5dp"
+                                android:background="@color/TMC_PaleOrange"
+                                android:digits="0123456789"
+                                android:focusedByDefault="false"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center_vertical|center"
+                                android:imeOptions="actionNext"
+
+                                android:inputType="phone"
+                                android:paddingStart="8dp"
+                                android:text="  "
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="14sp"
+                                android:visibility="visible" />
+                        </LinearLayout>
+
+                        <EditText
+                            android:id="@+id/edit_netweight_cutdetail"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789"
+                            android:focusedByDefault="false"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionNext"
+                            android:inputType="phone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:visibility="gone"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Portion Size"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                        <EditText
+                            android:id="@+id/edit_portionsize_cutdetail"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_Grey"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionDone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text=""
+                            android:hint="35 - 40 pcs"
+                            android:inputType="textShortMessage"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/saveCutDetails_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Save Cut Details"
+                        android:textColor="@color/TMC_White"
+                        android:layout_marginTop="15dp"
+                        android:background="@drawable/button_background"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/weightDetailsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="8dp"
+                android:background="@drawable/orange_non_selected_button_background"
+
+                android:orientation="vertical">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+
+                        android:layout_height="30dp">
+                        <CheckBox
+                            android:id="@+id/weightDetails_checkbox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/TMC_Orange"
+                            android:text="Set Default" />
+
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:id="@+id/weightDetailsCheckbox_LinearLayout"
+
+                        android:orientation="horizontal" />
+                </RelativeLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+
+                    android:padding="5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Gross Weight "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/orange_non_selected_button_background"
+                            android:orientation="vertical">
+                            <Spinner
+                                android:id="@+id/weightDetailsName_spinner"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+
+                                android:layout_weight="1" />
+                        </LinearLayout>
+
+                        <EditText
+                            android:id="@+id/edit_grossweight"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789"
+                            android:visibility="gone"
+                            android:focusedByDefault="false"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionNext"
+                            android:inputType="phone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Net Weight"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+
+                        <LinearLayout
+                            android:id="@+id/two_weightdetails_editbox_linearlayout"
+
+                            android:gravity="end"
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+
+                            android:visibility="visible">
+
+                            <EditText
+                                android:id="@+id/weightDetails_netweight_first_textview_widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="5dp"
+                                android:background="@color/TMC_PaleOrange"
+                                android:digits="0123456789"
+                                android:focusedByDefault="false"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center_vertical|center"
+                                android:imeOptions="actionNext"
+                                android:inputType="phone"
+                                android:text="  "
+                                android:layout_weight="1"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="20dp"
+                                android:layout_height="wrap_content"
+                                android:text="  - " />
+
+
+                            <EditText
+                                android:id="@+id/weightDetails_netweight_second_textview_widget"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="5dp"
+                                android:background="@color/TMC_PaleOrange"
+                                android:digits="0123456789"
+                                android:focusedByDefault="false"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center_vertical|center"
+                                android:layout_weight="1"
+
+                                android:imeOptions="actionNext"
+
+                                android:inputType="phone"
+                                android:paddingStart="8dp"
+                                android:text="  "
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="14sp"
+                                android:visibility="visible" />
+                        </LinearLayout>
+
+                        <EditText
+                            android:id="@+id/edit_netweight_weightDetails"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789-"
+                            android:focusedByDefault="false"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionNext"
+                            android:inputType="phone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:text="  "
+                            android:visibility="gone"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Portion Size"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                        <EditText
+                            android:id="@+id/edit_portionsize_weightDetails"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_Grey"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center"
+                            android:imeOptions="actionDone"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="25dp"
+                            android:inputType="textShortMessage"
+
+                            android:text=""
+                            android:hint="35 - 40 pcs"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+                    <Button
+                        android:id="@+id/saveWeightDetails_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Save Weight Details"
+                        android:layout_marginTop="15dp"
+                        android:textColor="@color/TMC_White"
+                        android:background="@drawable/button_background"/>
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/loadingpanelmask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/TMC_proressbar_mask_Color"
+            android:alpha="0.85"
+
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+
+        <LinearLayout
+            android:id="@+id/loadingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:visibility="gone">
+
+            <com.wang.avi.AVLoadingIndicatorView
+                android:id="@+id/loadinganim_layout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="visible"
+                android:layout_gravity="center"
+                app:indicatorColor="@color/TMC_Orange"
+                app:indicatorName="BallPulseIndicator" />
+        </LinearLayout>
+    </RelativeLayout>
+
+
+</LinearLayout>

@@ -555,7 +555,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             //Log.i("tag","array.length()"+ array.length());
             String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
-            String itemDesp="",subCtgyKey="";
+            String itemDesp="",subCtgyKey="",cutname="";
 
 
             for(int i=0; i < array.length(); i++) {
@@ -638,6 +638,31 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                     catch (Exception e){
                         e.printStackTrace();
                     }
+
+
+                    try {
+                        if(json.has("cutname")) {
+                            cutname = String.valueOf(json.get("cutname"));
+                        }
+                        else {
+                            cutname = "";
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if((cutname.length()>0) && (!cutname.equals(null)) && (!cutname.equals("null"))){
+                            cutname = " [ "+cutname + " ] ";
+                        }
+                        else{
+                            //cutname="";
+                        }
+                    }
+                    catch (Exception e ){
+                        e.printStackTrace();
+                    }
                     String itemName = String.valueOf(json.get("itemname"));
                     String price = String.valueOf(json.get("tmcprice"));
                     String quantity = String.valueOf(json.get("quantity"));
@@ -653,33 +678,32 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                     if (itemDesp.length()>0) {
                         if(subCtgyKey.equals("tmcsubctgy_16")){
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp,  "Grill House "+itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp,  "Grill House "+ itemName,cutname, quantity);
 
                         }
                         else  if(subCtgyKey.equals("tmcsubctgy_15")){
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, "Ready to Cook  "+itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp, "Ready to Cook  "+ itemName,cutname, quantity);
 
                         }
                         else{
-                            itemDesp = String.format("%s ,\n%s * %s", itemDesp, itemName, quantity);
+                            itemDesp = String.format("%s ,\n%s  %s * %s", itemDesp, itemName,cutname, quantity);
 
                         }
                     } else {
                         if(subCtgyKey.equals("tmcsubctgy_16")){
-                            itemDesp = String.format("%s * %s",  "Grill House "+itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s",  "Grill House "+ itemName, cutname,quantity);
 
                         }
                         else  if(subCtgyKey.equals("tmcsubctgy_15")){
-                            itemDesp = String.format("%s * %s",  "Ready to Cook  "+itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s",  "Ready to Cook  "+ itemName,cutname, quantity);
 
                         }
                         else{
-                            itemDesp = String.format("%s * %s", itemName, quantity);
+                            itemDesp = String.format("%s  %s * %s", itemName,cutname, quantity);
 
                         }
 
                     }
-
             //        orderDetails_text_widget.setText(String.format(itemDesp));
                     //Log.i("tag", "array.lengrh(i" + json.length());
 
@@ -1079,6 +1103,34 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             }
         });
 
+        ready_for_pickup_delivered_button_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Currenttime = getDate_and_time();
+                searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
+
+                changestatusto =Constants.DELIVERED_ORDER_STATUS;
+                OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
+                //Log.i("Tag","0"+OrderKey);
+                new_Order_Linearlayout.setVisibility(View.GONE);
+                ready_Order_Linearlayout.setVisibility(View.GONE);
+                confirming_order_Linearlayout.setVisibility(View.GONE);
+                cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
+                //Log.i("Tag",""+changestatusto+OrderKey);
+
+                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                getStockOutGoingDetailsUsingOrderid(orderid);
+                //  mobile_manageOrders1.sorted_OrdersList.remove(pos);
+                //  notifyDataSetChanged();
+            }
+        });
 
 
 
@@ -1185,6 +1237,206 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         return  listViewItem ;
 
     }
+
+
+
+    private void getStockOutGoingDetailsUsingOrderid(String orderid) {
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getStockOutgoingUsingSalesOrderid+orderid ,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
+
+                            try {
+
+                                String ordertype="#";
+
+                                //converting jsonSTRING into array
+                                JSONArray JArray  = response.getJSONArray("content");
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                /*Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                if(arrayLength>1){
+                                    Toast.makeText(mContext, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+
+
+                                }
+
+                                 */
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        String entryKey = json.getString("key");
+
+
+                                        ChangeOutGoingTypeInOutgoingTable(entryKey);
+
+
+
+
+
+
+
+                                    } catch (JSONException e) {
+                                        searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+
+                            }
+
+
+
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(mContext, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
+                    searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+
+
+
+    private void ChangeOutGoingTypeInOutgoingTable(String entryKey) {
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("outgoingtype", Constants.SALES_FULFILLED_OUTGOINGTYPE);
+            jsonObject.put("key", entryKey);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateStockOutgoingUsingKey,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+                Log.d(Constants.TAG, "Response: " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                 searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
+
+                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     private void showBottomSheetDialog(String orderkey, String deliverypartnerName) {
 
           bottomSheetDialog = new BottomSheetDialog(mContext);
@@ -1464,6 +1716,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 jsonObject.put("deliveryuserlat", "");
                 jsonObject.put("deliveryuserlong", "");
                 //Log.i("tag","listenertoken"+ "");
+            }
+            if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                jsonObject.put("key", OrderKey);
+                jsonObject.put("orderstatus", changestatusto);
+                jsonObject.put("orderdeliverytime", currenttime);
+                ////Log.i("tag","listenertoken"+ "");
             }
 
 

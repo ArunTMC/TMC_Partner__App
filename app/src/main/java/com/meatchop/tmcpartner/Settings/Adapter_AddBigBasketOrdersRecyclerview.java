@@ -50,7 +50,6 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
         this.context = context;
 
         this.itemInCart = itemInCart;
-
         this.Menulist = menuItems;
     }
 

@@ -455,6 +455,19 @@
 
 
                                 <Button
+                                    android:id="@+id/procced_to_pay_widget"
+                                    android:layout_width="200dp"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="50dp"
+                                    android:layout_marginTop="35dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/Check_out"
+                                    android:textAllCaps="false"
+                                    android:textColor="@color/TMC_White"
+                                    android:textSize="25sp" />
+
+                                <Button
                                     android:id="@+id/redeemPoints_widget"
                                     android:layout_width="200dp"
                                     android:layout_height="50dp"
@@ -468,18 +481,7 @@
                                     android:textColor="@color/TMC_White"
                                     android:textSize="25sp" />
 
-                                <Button
-                                    android:id="@+id/procced_to_pay_widget"
-                                    android:layout_width="200dp"
-                                    android:layout_height="50dp"
-                                    android:layout_marginStart="50dp"
-                                    android:layout_marginTop="35dp"
-                                    android:layout_marginBottom="10dp"
-                                    android:background="@drawable/button_background"
-                                    android:text="@string/Check_out"
-                                    android:textAllCaps="false"
-                                    android:textColor="@color/TMC_White"
-                                    android:textSize="25sp" />
+
 
 
                                 <Button

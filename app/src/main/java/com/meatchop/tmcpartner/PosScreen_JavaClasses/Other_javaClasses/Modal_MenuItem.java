@@ -4,9 +4,34 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Modal_MenuItem implements Parcelable {
-    public String bigbasketprice,dunzoprice,swiggyprice,reportname,grossweightingrams,applieddiscountpercentage,barcode,checkoutimageurl,displayno,grossweight,gstpercentage,imageurl,itemavailability,
+    public String showinapp,allownegativestock, barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
+            inventorydetails,itemcutdetails,itemweightdetails,bigbasketprice,dunzoprice,swiggyprice,reportname,grossweightingrams,applieddiscountpercentage,barcode,checkoutimageurl,displayno,grossweight,gstpercentage,imageurl,itemavailability,
             itemcalories,itemname,itemuniquecode,key,marinadelinkedcodes,menuboarddisplayname,menutype,netweight,portionsize,preparationsteps,
             menuItemId,preparationtime,pricetypeforpos,showinmenuboard,tmcctgykey,tmcprice,tmcpriceperkg,tmcsubctgykey,vendorkey,vendorname;
+
+    public String getShowinapp() {
+        return showinapp;
+    }
+
+    public void setShowinapp(String showinapp) {
+        this.showinapp = showinapp;
+    }
+
+    public String getInventorydetails() {
+        return inventorydetails;
+    }
+
+    public void setInventorydetails(String inventorydetails) {
+        this.inventorydetails = inventorydetails;
+    }
+
+    public String getAllownegativestock() {
+        return allownegativestock;
+    }
+
+    public void setAllownegativestock(String allownegativestock) {
+        this.allownegativestock = allownegativestock;
+    }
 
     public String getMenuItemId() {
         return menuItemId;
@@ -14,6 +39,78 @@ public class Modal_MenuItem implements Parcelable {
 
     public void setMenuItemId(String menuItemId) {
         this.menuItemId = menuItemId;
+    }
+
+    public String getBarcode_AvlDetails() {
+        return barcode_AvlDetails;
+    }
+
+    public void setBarcode_AvlDetails(String barcode_AvlDetails) {
+        this.barcode_AvlDetails = barcode_AvlDetails;
+    }
+
+    public String getItemavailability_AvlDetails() {
+        return itemavailability_AvlDetails;
+    }
+
+    public void setItemavailability_AvlDetails(String itemavailability_AvlDetails) {
+        this.itemavailability_AvlDetails = itemavailability_AvlDetails;
+    }
+
+    public String getKey_AvlDetails() {
+        return key_AvlDetails;
+    }
+
+    public void setKey_AvlDetails(String key_AvlDetails) {
+        this.key_AvlDetails = key_AvlDetails;
+    }
+
+    public String getLastupdatedtime_AvlDetails() {
+        return lastupdatedtime_AvlDetails;
+    }
+
+    public void setLastupdatedtime_AvlDetails(String lastupdatedtime_AvlDetails) {
+        this.lastupdatedtime_AvlDetails = lastupdatedtime_AvlDetails;
+    }
+
+    public String getMenuitemkey_AvlDetails() {
+        return menuitemkey_AvlDetails;
+    }
+
+    public void setMenuitemkey_AvlDetails(String menuitemkey_AvlDetails) {
+        this.menuitemkey_AvlDetails = menuitemkey_AvlDetails;
+    }
+
+    public String getReceivedstock_AvlDetails() {
+        return receivedstock_AvlDetails;
+    }
+
+    public void setReceivedstock_AvlDetails(String receivedstock_AvlDetails) {
+        this.receivedstock_AvlDetails = receivedstock_AvlDetails;
+    }
+
+    public String getStockbalance_AvlDetails() {
+        return stockbalance_AvlDetails;
+    }
+
+    public void setStockbalance_AvlDetails(String stockbalance_AvlDetails) {
+        this.stockbalance_AvlDetails = stockbalance_AvlDetails;
+    }
+
+    public String getStockincomingkey_AvlDetails() {
+        return stockincomingkey_AvlDetails;
+    }
+
+    public void setStockincomingkey_AvlDetails(String stockincomingkey_AvlDetails) {
+        this.stockincomingkey_AvlDetails = stockincomingkey_AvlDetails;
+    }
+
+    public String getVendorkey_AvlDetails() {
+        return vendorkey_AvlDetails;
+    }
+
+    public void setVendorkey_AvlDetails(String vendorkey_AvlDetails) {
+        this.vendorkey_AvlDetails = vendorkey_AvlDetails;
     }
 
     protected Modal_MenuItem(Parcel in) {
@@ -50,6 +147,19 @@ public class Modal_MenuItem implements Parcelable {
         swiggyprice = in.readString();
         dunzoprice = in.readString();
         bigbasketprice = in.readString();
+        itemweightdetails = in.readString();
+        itemcutdetails = in.readString();
+        barcode_AvlDetails = in.readString();
+        itemavailability_AvlDetails = in.readString();
+        key_AvlDetails = in.readString();
+        lastupdatedtime_AvlDetails = in.readString();
+        menuitemkey_AvlDetails = in.readString();
+        receivedstock_AvlDetails  = in.readString();
+        stockbalance_AvlDetails = in.readString();
+        stockincomingkey_AvlDetails = in.readString();
+        vendorkey_AvlDetails  = in.readString();
+        inventorydetails = in.readString();
+        allownegativestock = in.readString();
     }
 
     public static final Creator<Modal_MenuItem> CREATOR = new Creator<Modal_MenuItem>() {
@@ -64,17 +174,23 @@ public class Modal_MenuItem implements Parcelable {
         }
     };
 
-    public Modal_MenuItem() {
+    public Modal_MenuItem() { }
 
-    }
+
+    public String getItemcutdetails() { return itemcutdetails;  }
+
+    public void setItemcutdetails(String itemcutdetails) { this.itemcutdetails = itemcutdetails;  }
+
+    public String getItemweightdetails() {    return itemweightdetails;  }
+
+    public void setItemweightdetails(String itemweightdetails) {  this.itemweightdetails = itemweightdetails;  }
 
     public String getApplieddiscountpercentage() {
         return applieddiscountpercentage;
     }
 
     public void setApplieddiscountpercentage(String applieddiscountpercentage) {
-        this.applieddiscountpercentage = applieddiscountpercentage;
-    }
+        this.applieddiscountpercentage = applieddiscountpercentage;    }
 
     public String getDunzoprice() {
         return dunzoprice;
@@ -364,5 +480,20 @@ public class Modal_MenuItem implements Parcelable {
         parcel.writeString(swiggyprice);
         parcel.writeString(dunzoprice);
         parcel.writeString(bigbasketprice);
+        parcel.writeString(itemweightdetails);
+        parcel.writeString(itemcutdetails);
+        parcel.writeString(barcode_AvlDetails);
+        parcel.writeString(itemavailability_AvlDetails);
+        parcel.writeString(key_AvlDetails);
+        parcel.writeString(lastupdatedtime_AvlDetails);
+        parcel.writeString(menuitemkey_AvlDetails);
+        parcel.writeString(receivedstock_AvlDetails);
+        parcel.writeString(stockbalance_AvlDetails);
+        parcel.writeString(stockincomingkey_AvlDetails);
+        parcel.writeString(vendorkey_AvlDetails);
+        parcel.writeString(inventorydetails);
+        parcel.writeString(allownegativestock);
+
+
     }
 }

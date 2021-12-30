@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/childLayout"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:id="@+id/MenuitemNameLayout"
+
+        android:orientation="horizontal">
+
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_weight=".4">
+
+                <Switch
+                    android:id="@+id/menuItemAvailabiltySwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:textSize="16sp"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:text="Chicken Curry Cut 500g"
+                    app:thumbTint="@drawable/switch_thumb_selector"
+                    app:trackTint="@drawable/switch_track_selector"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+                <LinearLayout
+                    android:id="@+id/overlapLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+
+                    <TextView
+                        android:id="@+id/child"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".4"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:padding="2dp"
+                        android:text="TextView"
+                        android:textSize="15dp"
+                        android:visibility="invisible" />
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="30dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="8dp"
+        android:id="@+id/MenuitemNameLayout_allowNegativeToggle"
+
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/child_allowNegativeToggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".4"
+            android:visibility="gone"
+            android:fontFamily="@font/open_sans_semibold"
+            android:textSize="15dp"
+            android:text="TextView" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/negativeStckSwitch_parentLayout"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.5"
+                android:fontFamily="@font/open_sans_semibold"
+                android:textSize="15dp"
+                android:text="" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_weight="1">
+
+                <Switch
+                    android:id="@+id/menuItem_allowNegativeToggleSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:textSize="13sp"
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:thumbTint="@drawable/switch_thumb_selector"
+                    app:trackTint="@drawable/switch_track_selector"
+                    android:text="Allow Negative Stock"
+                    tools:ignore="UseSwitchCompatOrMaterialXml"
+                     />
+                <LinearLayout
+                    android:id="@+id/overlapLayout_allowNegativeToggle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".4"
+                        android:padding="2dp"
+                        android:visibility="invisible"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:textSize="15dp"
+                        android:text="TextView" />
+
+                </LinearLayout>
+
+
+            </RelativeLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+</LinearLayout>

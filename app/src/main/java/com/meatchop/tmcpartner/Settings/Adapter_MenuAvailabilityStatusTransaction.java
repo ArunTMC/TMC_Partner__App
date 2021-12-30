@@ -30,7 +30,7 @@ import java.util.List;
 public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Modal_MenuAvailabilityStatusTransaction> {
     Context mContext;
     List<Modal_MenuAvailabilityStatusTransaction> ordersList;
-    String menuItemKey="",status="",mobileNo="",itemname="",transcationstatus ="",transcationtime ="";
+    String allowNegativeStock = "" , menuItemKey="",status="",mobileNo="",itemname="",transcationstatus ="",transcationtime ="";
 
 
 
@@ -65,6 +65,8 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
         final TextView time_textview = listViewItem.findViewById(R.id.time_textview);
         final TextView subctgyitemInstruction_textview = listViewItem.findViewById(R.id.subctgyitemInstruction_textview);
 
+        final TextView allowNegativeStock_status_textview = listViewItem.findViewById(R.id.allowNegativeStock_status_textview);
+
         final LinearLayout totalLayout =listViewItem.findViewById(R.id.totalLayout);
         
         Modal_MenuAvailabilityStatusTransaction modal_menuAvailabilityStatusTransaction = ordersList.get(pos);
@@ -86,6 +88,16 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
         }
         catch (Exception e){
             status="";
+
+            e.printStackTrace();
+
+        }
+           try {
+               allowNegativeStock = modal_menuAvailabilityStatusTransaction.getAllownegativestock().toUpperCase();
+
+        }
+        catch (Exception e){
+            allowNegativeStock="";
 
             e.printStackTrace();
 
@@ -147,6 +159,22 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
         }
 
 
+  try{
+            if(allowNegativeStock.equals("TRUE")){
+                allowNegativeStock = "ON";
+            }
+            else if(allowNegativeStock.equals("FALSE")){
+                allowNegativeStock ="OFF";
+            }
+            else{
+                allowNegativeStock = allowNegativeStock;
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            allowNegativeStock = allowNegativeStock;
+
+        }
 
 
 
@@ -225,6 +253,14 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
 
         try {
             status_textview.setText(String.format(" %s", "Turned "+status));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try {
+            allowNegativeStock_status_textview.setText(String.format(" %s", "Turned "+allowNegativeStock));
         }
         catch (Exception e){
             e.printStackTrace();

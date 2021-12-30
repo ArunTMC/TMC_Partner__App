@@ -14,7 +14,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,7 +34,6 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,10 +53,14 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Edit_Or_CancelTheOrders extends AppCompatActivity {
-private  String OrderDetailsResultjsonString,CurrentDate,CurrentDay,TodaysDate,DateString,PreviousDateString,vendorKey,vendorname;
+private  String OrderDetailsResultjsonString,CreditResultjsonString,CurrentDate,CurrentDay,TodaysDate,DateString,PreviousDateString,vendorKey,vendorname;
 private double screenInches;
 public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
 public static List<Modal_ManageOrders_Pojo_Class> ordersList;
+    public static List<Modal_ManageOrders_Pojo_Class> sorted_CreditedOrdersList;
+    public static List<Modal_ManageOrders_Pojo_Class> CreditedordersList;
+    boolean isChecked = false;
+
     TextView appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
     EditText mobile_search_barEditText;
@@ -65,11 +68,17 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
     public LinearLayout PrintReport_Layout;
     public LinearLayout generateReport_Layout;
     public LinearLayout dateSelectorLayout;
+    public LinearLayout creditOrdersTextLayout,creditOrderscheckboxLayout;
+    public LinearLayout creditOrderscheckLayout;
+    public static CheckBox showcreditorderscheckbox;
     DatePickerDialog datepicker;
 
+    static Adapter_Edit_Or_CancelTheOrders adapter_edit_or_cancelTheOrders;
     public static LinearLayout loadingpanelmask;
     public static LinearLayout loadingPanel;
     public LinearLayout newOrdersSync_Layout;
+    public static List<String> array_of_creditedOrderId;
+
     public static List<String> array_of_orderId;
     static boolean isSearchButtonClicked = false;
 
@@ -96,6 +105,9 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
 
 
+        CreditedordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
+        sorted_CreditedOrdersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
+        array_of_creditedOrderId = new ArrayList<>();
 
         ordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         sorted_OrdersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
@@ -115,6 +127,10 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
         mobile_search_close_btn = findViewById(R.id.search_close_btn);
         newOrdersSync_Layout = findViewById(R.id.newOrdersSync_Layout);
 
+        creditOrderscheckLayout = findViewById(R.id.creditOrderscheckLayout);
+        creditOrdersTextLayout = findViewById(R.id.creditOrdersTextLayout);
+        showcreditorderscheckbox = findViewById(R.id.showcreditorderscheckbox);
+
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         showProgressBar(true);
@@ -123,6 +139,11 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
 
         try{
+            CreditedordersList.clear();
+            sorted_CreditedOrdersList.clear();
+            array_of_creditedOrderId.clear();
+            getCreditOrders();
+
             TodaysDate = getDate();
             PreviousDateString = getDatewithNameofthePreviousDay();
             //Now we are creating sheet
@@ -144,25 +165,72 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
             e.printStackTrace();
         }
 
+
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ordersList.clear();
-                sorted_OrdersList.clear();
-                array_of_orderId.clear();
+                if(showcreditorderscheckbox.isChecked()){
+                    CreditedordersList.clear();
+                    sorted_CreditedOrdersList.clear();
+                    array_of_creditedOrderId.clear();
+                    Adjusting_Widgets_Visibility(true);
+                    getCreditOrders();
 
-                Adjusting_Widgets_Visibility(true);
-                String  todatestring=dateSelector_text.getText().toString();
-
-                PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(todatestring);
+                }
+                else {
 
 
+                    ordersList.clear();
+                    sorted_OrdersList.clear();
+                    array_of_orderId.clear();
+
+                    Adjusting_Widgets_Visibility(true);
+                    String todatestring = dateSelector_text.getText().toString();
+
+                    PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(todatestring);
+
+
+                    isSearchButtonClicked = false;
+
+                    getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, todatestring, vendorKey);
+                }
+            }
+        });
+
+        creditOrderscheckLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+                Log.d(Constants.TAG, "checkbox : "+showcreditorderscheckbox.isChecked());
+                hideKeyboard(mobile_search_barEditText);
+                closeSearchBarEditText();
+                mobile_search_barEditText.setText("");
                 isSearchButtonClicked = false;
 
-                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+                if(showcreditorderscheckbox.isChecked()){
+                    isChecked = true;
+                    showcreditorderscheckbox.setChecked(false);
+                    dateSelectorLayout.setVisibility(View.VISIBLE);
+                    creditOrdersTextLayout.setVisibility(View.GONE);
+                    DisplayOrderListDatainListView(ordersList);
+
+                }
+                else{
+                    isChecked = false;
+
+                    creditOrdersTextLayout.setVisibility(View.VISIBLE);
+                    dateSelectorLayout.setVisibility(View.GONE);
+                    showcreditorderscheckbox.setChecked(true);
+                    DisplayOrderListDatainListView(CreditedordersList);
+
+                }
+
+
 
             }
         });
+
+
         mobile_search_close_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -170,18 +238,26 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 closeSearchBarEditText();
                 mobile_search_barEditText.setText("");
                 isSearchButtonClicked = false;
+               // Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 1 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+                Log.d(Constants.TAG, "checkbox 1 : "+showcreditorderscheckbox.isChecked());
 
-                DisplayOrderListDatainListView( ordersList);
+                if(showcreditorderscheckbox.isChecked()){
+                    DisplayOrderListDatainListView(CreditedordersList);
+                }
+                else {
+                    DisplayOrderListDatainListView(ordersList);
+                }
             }
         });
         mobile_search_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 int textlength = mobile_search_barEditText.getText().toString().length();
                 isSearchButtonClicked = true;
+                showSearchBarEditText();
 
                 showKeyboard(mobile_search_barEditText);
-                showSearchBarEditText();
             }
         });
         dateSelectorLayout.setOnClickListener(new View.OnClickListener() {
@@ -216,74 +292,151 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 sorted_OrdersList.clear();
-
+                sorted_CreditedOrdersList.clear();
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
                 sorted_OrdersList.clear();
+                sorted_CreditedOrdersList.clear();
+
                 isSearchButtonClicked =true;
                 String mobileNo = (editable.toString());
                 if(!mobileNo.equals("")) {
                     String orderstatus = "";
+                    //Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 2 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+                    Log.d(Constants.TAG, "checkbox 2 : "+showcreditorderscheckbox.isChecked());
 
-                    for (int i = 0; i < ordersList.size(); i++) {
-                        try {
-                            //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
-                            mobileNo = mobileNo;
-                            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
-                            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-                            String mobilenumber = modal_manageOrders_forOrderDetailList.getUsermobile();
-                            //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                            //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobilenumber);
-                            //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobileNo);
-                            if (mobilenumber.contains("+91" + mobileNo)) {
+                    if(showcreditorderscheckbox.isChecked()) {
 
-                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderid: " + modal_manageOrders_forOrderDetailList.getOrderid());
-                                orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
-                                modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
-                                modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
-                                modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
-                                modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
-                                modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
-                                modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
-                                modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
-                                modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
-                                modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
-                                modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
-                                modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
-                                modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
-                                modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
-                                modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
-                                modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
-                                modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
-                                modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
-                                modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
-                                modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
-                                modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
-                                modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
-                                modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
-                                modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
-                                modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                        for (int i = 0; i < CreditedordersList.size(); i++) {
+                            try {
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                                mobileNo = mobileNo;
+                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
+                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = CreditedordersList.get(i);
+                                String mobilenumber = modal_manageOrders_forOrderDetailList.getUsermobile();
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobilenumber);
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobileNo);
+                                if (mobilenumber.contains("+91" + mobileNo)) {
 
-                                modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
-                                modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
-                                modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
-                                modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+                                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderid: " + modal_manageOrders_forOrderDetailList.getOrderid());
+                                    orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                                    modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                                    modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                                    modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                                    modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                                    modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                                    modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                                    modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                                    modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                                    modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                                    modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                                    modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                                    modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                                    modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                                    modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                                    modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                                    modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                                    modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                                    modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                                    modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                                    modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                                    modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                                    modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
-                                sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                                    modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
 
+                                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                                    modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                                    modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+                                    sorted_CreditedOrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+
+                                }
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
 
                             }
+                        }
+                    }
+                    else {
+                        for (int i = 0; i < ordersList.size(); i++) {
+                            try {
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                                mobileNo = mobileNo;
+                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
+                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+                                String mobilenumber = modal_manageOrders_forOrderDetailList.getUsermobile();
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobilenumber);
+                                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + mobileNo);
+                                if (mobilenumber.contains("+91" + mobileNo)) {
 
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderid: " + modal_manageOrders_forOrderDetailList.getOrderid());
+                                    orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                                    modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                                    modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                                    modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                                    modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                                    modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                                    modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                                    modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                                    modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                                    modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                                    modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                                    modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                                    modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                                    modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                                    modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                                    modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                                    modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                                    modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                                    modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                                    modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                                    modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                                    modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                                    modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
+                                    modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+
+                                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                                    modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                                    modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+                                    sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+
+
+                                }
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                            }
                         }
                     }
                     try {
-                        DisplayOrderListDatainListView(sorted_OrdersList);
+                        //Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 3 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+                        Log.d(Constants.TAG, "checkbox 3 : "+showcreditorderscheckbox.isChecked());
+
+                        if(showcreditorderscheckbox.isChecked()){
+                            DisplayOrderListDatainListView(sorted_CreditedOrdersList);
+
+                        }
+                        else{
+                            DisplayOrderListDatainListView(sorted_OrdersList);
+
+                        }
 
                     } catch (Exception E) {
                         E.printStackTrace();
@@ -314,9 +467,95 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
     }
 
+    private void getCreditOrders() {
+
+        Adjusting_Widgets_Visibility(true);
+
+        CreditedordersList.clear();
+        sorted_CreditedOrdersList.clear();
+       array_of_creditedOrderId.clear();
 
 
 
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingPaymentmode_vendorkey + "?paymentmode=CREDIT"+"&vendorkey="+vendorKey,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                            CreditResultjsonString = response.toString();
+                           // Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 4 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+                            Log.d(Constants.TAG, "checkbox 4 : "+showcreditorderscheckbox.isChecked());
+
+                            convertingJsonStringintoArray( CreditResultjsonString,true);
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(Edit_Or_CancelTheOrders.this, "There is no Credited Orders " , Toast.LENGTH_LONG).show();
+
+                    CreditedordersList.clear();
+                    sorted_CreditedOrdersList.clear();
+                    array_of_creditedOrderId.clear();
+
+
+
+                    error.printStackTrace();
+
+
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelTheOrders.this).add(jsonObjectRequest);
+
+
+
+
+
+
+
+
+
+
+
+    }
 
 
     private void openDatePicker() {
@@ -400,8 +639,10 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                         try {
                             //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                             OrderDetailsResultjsonString = response.toString();
+                            //Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 5 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+                            Log.d(Constants.TAG, "checkbox 5 : "+showcreditorderscheckbox.isChecked());
 
-                            convertingJsonStringintoArray( OrderDetailsResultjsonString);
+                            convertingJsonStringintoArray( OrderDetailsResultjsonString, false);
                         }
                         catch (Exception e){
                             e.printStackTrace();
@@ -491,7 +732,7 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
     }
 
-    private void convertingJsonStringintoArray(String orderDetailsResultjsonString) {
+    private void convertingJsonStringintoArray(String orderDetailsResultjsonString, boolean isCreditOrdersData) {
         try {
             String ordertype="#",orderid="";
             sorted_OrdersList.clear();
@@ -510,6 +751,7 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 try {
                     JSONObject json = JArray.getJSONObject(i1);
                     Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
+
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
                     if(json.has("ordertype")){
                         manageOrdersPojoClass.orderType = String.valueOf(json.get("ordertype"));
@@ -644,6 +886,13 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                         }
                         else{
                             manageOrdersPojoClass.orderdetailskey ="";
+                            if(json.has("key")){
+                                manageOrdersPojoClass.orderdetailskey =  String.valueOf(json.get("key"));
+
+                            }
+                            else{
+                                manageOrdersPojoClass.orderdetailskey ="";
+                            }
                         }
 
 
@@ -709,17 +958,58 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
 
 
-                        if(json.has("slottimerange")){
-                            manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+                    try {
+                        String slottime = "";
+                        slottime = String.valueOf(String.valueOf(json.get("slottimerange")));
+                        String estimated_Slottime = "";
+                        if (String.valueOf(String.valueOf(json.get("slotname"))).toUpperCase().equals(Constants.EXPRESSDELIVERY_SLOTNAME)) {
+                            String orderPlacedTime = String.valueOf(json.get("orderplacedtime"));
 
+                            estimated_Slottime = getSlotTime(slottime, orderPlacedTime);
+
+
+                            try {
+                                manageOrdersPojoClass.slottimerange = String.valueOf(estimated_Slottime);
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                        } else {
+
+
+                            try {
+
+                                manageOrdersPojoClass.slottimerange = String.valueOf(slottime);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                        else{
-                            manageOrdersPojoClass.slottimerange ="";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        try {
+                            if (json.has("slottimerange")) {
+                                manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+
+                            } else {
+                                manageOrdersPojoClass.slottimerange = "";
+                            }
+                        } catch (Exception e1) {
+                            manageOrdersPojoClass.slottimerange = "";
+
+                            e1.printStackTrace();
                         }
+                    }
 
 
 
-                        if(json.has("slotdate")){
+
+
+                    if(json.has("slotdate")){
                             manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
 
                         }
@@ -735,13 +1025,15 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                         else{
                             manageOrdersPojoClass.slotname ="";
                         }
-                        if(json.has("slottimerange")){
+                      /*  if(json.has("slottimerange")){
                             manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
 
                         }
                         else{
                             manageOrdersPojoClass.slottimerange ="";
                         }
+
+                       */
                         if(json.has("deliverytype")){
                             manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
 
@@ -760,6 +1052,14 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                             manageOrdersPojoClass.useraddresslat ="";
                         }
 
+
+                        if(json.has("userkey")){
+                            manageOrdersPojoClass.userkey =  String.valueOf(json.get("userkey"));
+
+                        }
+                        else{
+                            manageOrdersPojoClass.userkey ="";
+                        }
 
                         if(json.has("useraddresslong")){
                             manageOrdersPojoClass.useraddresslon =  String.valueOf(json.get("useraddresslong"));
@@ -828,28 +1128,45 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
 
 
-                        if(!String.valueOf(json.get("orderStatus")).equals("NEW")){
 
-                            if(json.has("deliveryusername")){
-                                manageOrdersPojoClass.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
+                                if (json.has("deliveryusername")) {
+                                    manageOrdersPojoClass.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
 
-                            }
-                            if(json.has("deliveryuserkey")){
-                                manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));;
+                                }
+                                else{
+                                    manageOrdersPojoClass.deliveryPartnerName ="";
+                                }
+                                if (json.has("deliveryuserkey")) {
+                                    manageOrdersPojoClass.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));
 
-                            }
-                            if(json.has("deliveryusermobileno")){
-                                manageOrdersPojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
 
-                            }
+                                }
+                                else{
+                                    manageOrdersPojoClass.deliveryPartnerKey ="";
+                                }
+                                if (json.has("deliveryusermobileno")) {
+                                    manageOrdersPojoClass.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
 
+                                }
+                                else{
+                                    manageOrdersPojoClass.deliveryPartnerMobileNo ="";
+                                }
+
+
+
+
+                    Log.d(Constants.TAG, "checkbox 6 : "+isCreditOrdersData);
+
+                   // Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 6 : "+isCreditOrdersShowing, Toast.LENGTH_SHORT).show();
+
+                        if(isCreditOrdersData) {
+
+                            CreditedordersList.add(manageOrdersPojoClass);
+                        }
+                        else{
+                            ordersList.add(manageOrdersPojoClass);
 
                         }
-
-
-
-
-                        ordersList.add(manageOrdersPojoClass);
 
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
 
@@ -861,20 +1178,35 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
                 }
 
+                if(arrayLength - i1 == 1){
+                    if(showcreditorderscheckbox.isChecked()) {
+                        DisplayOrderListDatainListView(CreditedordersList);
+
+                    }
+                    else{
+                        if(!isCreditOrdersData) {
+                            DisplayOrderListDatainListView(ordersList);
+                        }
+
+                    }
+                }
 
             }
 
-                DisplayOrderListDatainListView(ordersList);
+
+            Log.d(Constants.TAG, "checkbox 7 : "+showcreditorderscheckbox.isChecked());
+
 
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Adjusting_Widgets_Visibility(false);
         }
     }
 
     private void DisplayOrderListDatainListView(List<Modal_ManageOrders_Pojo_Class> ordersList) {
         try {
+            Adjusting_Widgets_Visibility(true);
+
             if (ordersList.size() > 0) {
                 Collections.sort(ordersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
                     public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
@@ -899,10 +1231,12 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
                 appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
+               // Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
+
+                Log.d(Constants.TAG, "adapter : "+isChecked);
 
 
-
-                Adapter_Edit_Or_CancelTheOrders adapter_edit_or_cancelTheOrders = new Adapter_Edit_Or_CancelTheOrders(Edit_Or_CancelTheOrders.this, ordersList, Edit_Or_CancelTheOrders.this);
+                 adapter_edit_or_cancelTheOrders = new Adapter_Edit_Or_CancelTheOrders(Edit_Or_CancelTheOrders.this, ordersList, Edit_Or_CancelTheOrders.this,showcreditorderscheckbox.isChecked());
                 manageOrders_ListView.setAdapter(adapter_edit_or_cancelTheOrders);
 
 
@@ -917,11 +1251,18 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 loadingpanelmask.setVisibility(View.GONE);
                 loadingPanel.setVisibility(View.GONE);
                 manageOrders_ListView.setVisibility(View.GONE);
-                mobile_orderinstruction.setText("There is No Order ");
+                if(showcreditorderscheckbox.isChecked()){
+                    mobile_orderinstruction.setText("There is No Credit Order ");
+
+                }
+                else {
+                    mobile_orderinstruction.setText("There is No Order .");
+                }
                 mobile_orderinstruction.setVisibility(View.VISIBLE);
                 appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
             }
+
         }
         catch (Exception e){
             e.printStackTrace();
@@ -936,14 +1277,21 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 manageOrders_ListView.setVisibility(View.VISIBLE);
                 mobile_orderinstruction.setVisibility(View.GONE);
 
+                Adjusting_Widgets_Visibility(false);
 
             } else {
                 loadingpanelmask.setVisibility(View.GONE);
                 loadingPanel.setVisibility(View.GONE);
                 manageOrders_ListView.setVisibility(View.GONE);
-                mobile_orderinstruction.setText("There is No Order ");
+                if(showcreditorderscheckbox.isChecked()){
+                    mobile_orderinstruction.setText("There is No Credit Order ");
 
+                }
+                else {
+                    mobile_orderinstruction.setText("There is No Order ");
+                }
                 mobile_orderinstruction.setVisibility(View.VISIBLE);
+               Adjusting_Widgets_Visibility(false);
 
             }
         }
@@ -1078,6 +1426,58 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
         return yesterdayAsString;
     }
 
+    private String getSlotTime(String slottime, String orderplacedtime) {
+        String result = "", lastFourDigits = "";
+        //   Log.d(TAG, "slottime  "+slottime);
+        if (slottime.contains("mins")) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+
+                final Date date = sdf.parse(orderplacedtime);
+                final Calendar calendar = Calendar.getInstance();
+                String timeoftheSlot ="";
+                try {
+                    timeoftheSlot = (slottime.replaceAll("[^\\d.]", ""));
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                int timeoftheSlotDouble =0;
+                try {
+                    timeoftheSlotDouble = Integer.parseInt(timeoftheSlot);
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                calendar.setTime(date);
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                String placedtime = String.valueOf(sdff.format(calendar.getTime()));
+                calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
+
+                System.out.println("Time here " + sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + orderplacedtime);
+                result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + result);
+
+                result = result.replaceAll("GMT[+]05:30", "");
+
+                //  System.out.println("Time here "+result);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (slottime.length() > 5) {
+                lastFourDigits = slottime.substring(slottime.length() - 5);
+            } else {
+                lastFourDigits = slottime;
+            }
+
+            //  result = slotdate + " " + lastFourDigits + ":00";
+
+        }
+        return result;
+    }
+
 
 
 
@@ -1191,17 +1591,36 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
     }
 
     private void closeSearchBarEditText() {
-        dateSelectorLayout.setVisibility(View.VISIBLE);
-        mobile_search_button.setVisibility(View.VISIBLE);
-        mobile_search_close_btn.setVisibility(View.GONE);
-        mobile_search_barEditText.setVisibility(View.GONE);
+        if(showcreditorderscheckbox.isChecked()){
+            dateSelectorLayout.setVisibility(View.GONE);
+            mobile_search_button.setVisibility(View.VISIBLE);
+            mobile_search_close_btn.setVisibility(View.GONE);
+            mobile_search_barEditText.setVisibility(View.GONE);
+            creditOrdersTextLayout.setVisibility(View.VISIBLE);
+
+        }
+        else{
+            dateSelectorLayout.setVisibility(View.VISIBLE);
+            mobile_search_button.setVisibility(View.VISIBLE);
+            mobile_search_close_btn.setVisibility(View.GONE);
+            mobile_search_barEditText.setVisibility(View.GONE);
+            creditOrdersTextLayout.setVisibility(View.GONE);
+
+        }
+
     }
 
     private void showSearchBarEditText() {
-        dateSelectorLayout.setVisibility(View.GONE);
-        mobile_search_button.setVisibility(View.GONE);
-        mobile_search_close_btn.setVisibility(View.VISIBLE);
-        mobile_search_barEditText.setVisibility(View.VISIBLE);
+
+
+            dateSelectorLayout.setVisibility(View.GONE);
+            mobile_search_button.setVisibility(View.GONE);
+            mobile_search_close_btn.setVisibility(View.VISIBLE);
+            mobile_search_barEditText.setVisibility(View.VISIBLE);
+            creditOrdersTextLayout.setVisibility(View.GONE);
+
+
+
     }
     private void showKeyboard(final EditText editText) {
         final Handler handler = new Handler();

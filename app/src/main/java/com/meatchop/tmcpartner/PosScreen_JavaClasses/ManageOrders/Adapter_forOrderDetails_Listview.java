@@ -52,9 +52,13 @@ public class Adapter_forOrderDetails_Listview extends ArrayAdapter<Modal_ManageO
         final TextView itemQty_widget = listViewItem.findViewById(R.id.itemQty_widget);
         final TextView itemGst_widget = listViewItem.findViewById(R.id.itemGst_widget);
         final TextView itemSubtotal_widget = listViewItem.findViewById(R.id.itemSubtotal_widget);
+        final TextView cutName_widget = listViewItem.findViewById(R.id.itemCut_widget);
 
-            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
+
+
+        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
         itemName_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemName()));
+        cutName_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getCutname()));
         itemWeight_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight()));
         itemQty_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getQuantity()));
         itemGst_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getGstAmount()));

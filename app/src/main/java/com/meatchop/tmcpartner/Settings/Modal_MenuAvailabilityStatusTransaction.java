@@ -1,10 +1,18 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuAvailabilityStatusTransaction {
-    String itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus ="",transactionTimeLong="";
+    String allownegativestock="", itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus ="",transactionTimeLong="";
 
     public String getTranscationstatus() {
         return transcationstatus;
+    }
+
+    public String getAllownegativestock() {
+        return allownegativestock;
+    }
+
+    public void setAllownegativestock(String allownegativestock) {
+        this.allownegativestock = allownegativestock;
     }
 
     public void setTranscationstatus(String transcationstatus) {

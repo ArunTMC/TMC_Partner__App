@@ -18,28 +18,31 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
+import org.w3c.dom.Text;
+
 import java.text.DecimalFormat;
 import java.util.List;
 
 public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Modal_MenuItem_Settings> {
     Context mContext;
-    boolean isSwitchClicked =false;
+    boolean isCalledFromchangeMenuItemStatus_Settings =false;
     boolean isoverlaplayoutClicked =false;
-
     int total_no_of_item=0;
     int total_no_of_item_Available = 0 ;
     double total_no_of_item_Available_inPercentage = 0;
     List<Modal_MenuItem_Settings> menuList;
     ChangeMenuItemStatus_Settings changeMenuItemStatus_Settings;
+    ChangeMenuItemStatus_AllowNegativeStock_Settings changeMenuItemStatus_allowNegativeStock_settings;
     public Adapter_ChangeMenutem_Availability_settings(Context mContext, List<Modal_MenuItem_Settings> menuList, ChangeMenuItemStatus_Settings changeMenuItemStatus_Settings) {
     super(mContext, R.layout.settings_toggle_switch_child, menuList);
     this.changeMenuItemStatus_Settings=changeMenuItemStatus_Settings;
     this.mContext=mContext;
     this.menuList = menuList;
 
-
+        isCalledFromchangeMenuItemStatus_Settings = true;
 
 }
+
 
     @Override
     public int getCount() {
@@ -57,8 +60,11 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
         return super.getPosition(item);
     }
 
+    @SuppressLint("ViewHolder")
     public View getView(final int pos, View view, ViewGroup v) {
-        @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.settings_toggle_switch_child, (ViewGroup) view, false);
+         View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.settings_toggle_switch_child, (ViewGroup) view, false);
+
+
         final TextView itemName_widget = listViewItem.findViewById(R.id.child);
         final LinearLayout overlapLayout = listViewItem.findViewById(R.id.overlapLayout);
         @SuppressLint("UseSwitchCompatOrMaterialCode") final Switch menuItemAvailabiltySwitch = listViewItem.findViewById(R.id.menuItemAvailabiltySwitch);
@@ -69,17 +75,26 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
       String  itemAvailability =String.valueOf(modal_manageOrders_pojo_class.getItemavailability()).toUpperCase();
 
 
-      if(itemAvailability.equals("TRUE")){
-          menuItemAvailabiltySwitch.setChecked(true);
-          if(!changeMenuItemStatus_Settings.subctgy_on_Off_Switch.isChecked()){
-              changeMenuItemStatus_Settings.subctgy_on_Off_Switch.setChecked(true);
-          }
-      }
-      if(itemAvailability.equals("FALSE")){
-          menuItemAvailabiltySwitch.setChecked(false);
+            if(itemAvailability.equals("TRUE")){
+
+                menuItemAvailabiltySwitch.setChecked(true);
+                if(!changeMenuItemStatus_Settings.subctgy_on_Off_Switch.isChecked()){
+                    changeMenuItemStatus_Settings.subctgy_on_Off_Switch.setChecked(true);
+                }
 
 
-      }
+            }
+            if(itemAvailability.equals("FALSE")){
+                menuItemAvailabiltySwitch.setChecked(false);
+
+
+            }
+
+
+
+
+
+
       try {
           total_no_of_item_Available = 0;
           total_no_of_item_Available_inPercentage =0;
@@ -97,6 +112,8 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
           if(menuList.size()<=0){
               changeMenuItemStatus_Settings.itemAvailabilityCount_textWidget.setText("There is no MenuItem Under this SubCtgy");
 
+
+
           }
           else{
               try {
@@ -107,34 +124,33 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
               }catch (Exception e ) {
                 e.printStackTrace();
               }
-                  changeMenuItemStatus_Settings.itemAvailabilityCount_textWidget.setText("Out of "+String.valueOf(total_no_of_item)+" Items / "+String.valueOf(total_no_of_item_Available)+" Items Available"+" ( "+String.valueOf(total_no_of_item_Available_inPercentage)+" % ) ");
 
-              }
+
+              changeMenuItemStatus_Settings.itemAvailabilityCount_textWidget.setText("Out of "+String.valueOf(total_no_of_item)+" Items / "+String.valueOf(total_no_of_item_Available)+" Items Available"+" ( "+String.valueOf(total_no_of_item_Available_inPercentage)+" % ) ");
+
+
+          }
 
       }
       catch(Exception e){
           e.printStackTrace();
       }
+
+
+
+
         menuItemAvailabiltySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                 if (isChecked) {
-
-
-
-
-
                 } else {
-
-
-
-
-
-
-
 
                 }}
         });
+
+
+
+
         overlapLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -189,9 +205,12 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
                                         if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
 
                                             changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"FALSE",itemuniquecode);
+
                                         }
 
                                     }
+
+
                                     changeMenuItemStatus_Settings.ChangeMenuitemAvailabilityStatus(menuItemkey,"FALSE", itemuniquecode);
                                     changeMenuItemStatus_Settings.subctgy_on_Off_Switch.setChecked(false);
 
@@ -248,10 +267,10 @@ public class Adapter_ChangeMenutem_Availability_settings extends ArrayAdapter<Mo
                                         if(marinadeItem_itemuniquecode.equals(itemuniquecode)){
 
                                             changeMenuItemStatus_Settings.ChangeMarinadeMenuitemAvailabilityStatus(marinadeItemKey,"TRUE",itemuniquecode);
+
                                         }
 
                                     }
-
 
                                     changeMenuItemStatus_Settings.ChangeMenuitemAvailabilityStatus(menuItemkey,"TRUE",itemuniquecode);
                                     modal_manageOrders_pojo_class.setItemavailability("TRUE");

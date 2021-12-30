@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -30,7 +32,7 @@ import java.util.List;
 public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
     Context mContext;
     List<Modal_ManageOrders_Pojo_Class> ordersList;
-    String changestatusto,orderStatus,OrderKey,deliveryPersonName="";
+    String changestatusto,paymentmode,orderStatus,OrderKey,deliveryPersonName="";
     String Currenttime,MenuItems,orderStatusFromArray,FormattedTime,CurrentDate,formattedDate,CurrentDay,deliverytype;
     public Edit_Or_CancelTheOrders edit_or_cancelTheOrders;
     public static BottomSheetDialog bottomSheetDialog;
@@ -39,8 +41,10 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
     private  boolean isFromGenerateCustomermobile_billvaluereport;
     private  boolean isFromEditOrders;
     private  boolean isFromCancelledOrders;
+    private  boolean isshowingOnlyCreditOrders;
     public Adapter_Edit_Or_CancelTheOrders(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Edit_Or_CancelTheOrders edit_or_cancelTheOrders1 ) {
         super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
+        this.isshowingOnlyCreditOrders =false;
 
         this.edit_or_cancelTheOrders = edit_or_cancelTheOrders1;
         this.mContext=mContext;
@@ -58,6 +62,7 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         this.isFromEditOrders=false;
         this.isFromGenerateCustomermobile_billvaluereport=false;
         this.isFromCancelledOrders = false;
+        this.isshowingOnlyCreditOrders =false;
 
     }
 
@@ -68,6 +73,7 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         this.isFromGenerateCustomermobile_billvaluereport=true;
         this.isFromEditOrders = false;
         this.isFromCancelledOrders = false;
+        this.isshowingOnlyCreditOrders =false;
 
     }
 
@@ -78,6 +84,19 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         this.isFromGenerateCustomermobile_billvaluereport=false;
         this.isFromEditOrders = false;
         this.isFromCancelledOrders = true;
+        this.isshowingOnlyCreditOrders =false;
+
+    }
+
+    public Adapter_Edit_Or_CancelTheOrders(Edit_Or_CancelTheOrders mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Edit_Or_CancelTheOrders edit_or_cancelTheOrders1, boolean isshowingOnlyCreditOrders) {
+        super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
+        this.isshowingOnlyCreditOrders =isshowingOnlyCreditOrders;
+        this.edit_or_cancelTheOrders = edit_or_cancelTheOrders1;
+        this.mContext=mContext;
+        this.ordersList=ordersList;
+        this.isFromEditOrders = true;
+        this.isFromGenerateCustomermobile_billvaluereport=false;
+        this.isFromCancelledOrders = false;
     }
 
 
@@ -109,6 +128,8 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         final TextView payableAmount_text_widget = listViewItem.findViewById(R.id.payableAmount_text_widget);
         final TextView slottime_label_widget = listViewItem.findViewById(R.id.slottime_label_widget);
 
+        final TextView paymentMode_text_widget = listViewItem.findViewById(R.id.paymentMode_text_widget);
+
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
         final LinearLayout tokenNoLayout =listViewItem.findViewById(R.id.tokenNoLayout);
@@ -118,11 +139,13 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         final LinearLayout orderstatus_layout =listViewItem.findViewById(R.id.orderstatus_layout);
 
         final LinearLayout payableAmountLayout =listViewItem.findViewById(R.id.payableAmountLayout);
+        final LinearLayout paymentModeLayout =listViewItem.findViewById(R.id.paymentModeLayout);
 
         final RelativeLayout buttonsRelativeLayout =listViewItem.findViewById(R.id.buttonsRelativeLayout);
 
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
         orderStatus = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
+
         buttonsRelativeLayout.setVisibility(View.GONE);
         modal_manageOrders_pojo_class.setIsFromEditOrders(String.valueOf(isFromEditOrders));
         modal_manageOrders_pojo_class.setIsFromCancelledOrders(String.valueOf(isFromCancelledOrders));
@@ -143,8 +166,16 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
             deliveryTypeLayout.setVisibility(View.VISIBLE);
             orderstatus_layout.setVisibility(View.VISIBLE);
             slotNameLayout.setVisibility(View.VISIBLE);
-        }
+            paymentModeLayout.setVisibility(View.GONE);
 
+        }
+        try{
+            paymentmode = modal_manageOrders_pojo_class.getPaymentmode().toString().toUpperCase();
+        }
+        catch (Exception e){
+            paymentmode = "";
+            e.printStackTrace();
+        }
 
         try {
             payableAmount_text_widget.setText(String.format("Rs . %s", String.valueOf(modal_manageOrders_pojo_class.getPayableamount())));
@@ -152,6 +183,44 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         catch (Exception e){
             e.printStackTrace();
         }
+
+        try {
+            paymentMode_text_widget.setText(String.format("%s", String.valueOf(modal_manageOrders_pojo_class.getPaymentmode())));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+       // Toast.makeText(mContext, "checkbox : "+isshowingOnlyCreditOrders, Toast.LENGTH_SHORT).show();
+        Log.d(Constants.TAG, "adapter isshowingOnlyCreditOrders: "+isshowingOnlyCreditOrders);
+        Log.d(Constants.TAG, "adapter isFromEditOrders: "+isFromEditOrders);
+
+        if(isFromEditOrders){
+            if(isshowingOnlyCreditOrders){
+                payableAmountLayout.setVisibility(View.VISIBLE);
+                paymentModeLayout.setVisibility(View.GONE);
+                orderstatus_layout.setVisibility(View.GONE);
+                slotNameLayout.setVisibility(View.GONE);
+            }
+            else {
+                paymentModeLayout.setVisibility(View.GONE);
+                orderstatus_layout.setVisibility(View.VISIBLE);
+
+                payableAmountLayout.setVisibility(View.GONE);
+                slotNameLayout.setVisibility(View.VISIBLE);
+
+            }
+        }
+        else {
+            paymentModeLayout.setVisibility(View.GONE);
+
+            payableAmountLayout.setVisibility(View.GONE);
+
+        }
+
+
+
+
         try {
             deliverytype =  modal_manageOrders_pojo_class.getDeliverytype().toUpperCase();
             deliveryType_text_widget.setText(String.valueOf(deliverytype));
@@ -251,14 +320,14 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         catch (Exception e){
             e.printStackTrace();
         }
-        if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.POSORDER))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))){
+        if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.POSORDER))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.BigBasket))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.DunzoOrder))){
             slotTimeLayout.setVisibility(View.GONE);
             tokenNoLayout.setVisibility(View.GONE);
             slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderdeliveredtime()));
 
         }
 
-        if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))){
+        if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.BigBasket))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.DunzoOrder))){
             slotTimeLayout.setVisibility(View.VISIBLE);
             slottime_label_widget.setText("Order Type");
             slottime_text_widget.setText(modal_manageOrders_pojo_class.getOrderType().toUpperCase());

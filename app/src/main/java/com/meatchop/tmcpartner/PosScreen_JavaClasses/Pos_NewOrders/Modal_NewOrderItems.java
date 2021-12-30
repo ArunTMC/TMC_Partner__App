@@ -3,10 +3,123 @@ package com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders;
 import java.io.Serializable;
 
 public class Modal_NewOrderItems extends Throwable implements Serializable {
-   public String istmcpriceperkgitemedited,dunzoAmount,bigbasketAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
+   public String itemweightdetails,itemcutdetails,allownegativestock,barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
+    inventorydetails, stockincomingkey,istmcpriceperkgitemedited,dunzoAmount,bigbasketAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
     private String editTextValue;
+
+    public String getAllownegativestock() {
+        return allownegativestock;
+    }
+
+    public void setAllownegativestock(String allownegativestock) {
+        this.allownegativestock = allownegativestock;
+    }
+
+    public String getItemweightdetails() {
+        return itemweightdetails;
+    }
+
+    public void setItemweightdetails(String itemweightdetails) {
+        this.itemweightdetails = itemweightdetails;
+    }
+
+    public String getItemcutdetails() {
+        return itemcutdetails;
+    }
+
+    public void setItemcutdetails(String itemcutdetails) {
+        this.itemcutdetails = itemcutdetails;
+    }
+
+    public String getInventorydetails() {
+        return inventorydetails;
+    }
+
+    public void setInventorydetails(String inventorydetails) {
+        this.inventorydetails = inventorydetails;
+    }
+
+    public String getBarcode_AvlDetails() {
+        return barcode_AvlDetails;
+    }
+
+    public void setBarcode_AvlDetails(String barcode_AvlDetails) {
+        this.barcode_AvlDetails = barcode_AvlDetails;
+    }
+
+    public String getItemavailability_AvlDetails() {
+        return itemavailability_AvlDetails;
+    }
+
+    public void setItemavailability_AvlDetails(String itemavailability_AvlDetails) {
+        this.itemavailability_AvlDetails = itemavailability_AvlDetails;
+    }
+
+    public String getKey_AvlDetails() {
+        return key_AvlDetails;
+    }
+
+    public void setKey_AvlDetails(String key_AvlDetails) {
+        this.key_AvlDetails = key_AvlDetails;
+    }
+
+    public String getLastupdatedtime_AvlDetails() {
+        return lastupdatedtime_AvlDetails;
+    }
+
+    public void setLastupdatedtime_AvlDetails(String lastupdatedtime_AvlDetails) {
+        this.lastupdatedtime_AvlDetails = lastupdatedtime_AvlDetails;
+    }
+
+    public String getMenuitemkey_AvlDetails() {
+        return menuitemkey_AvlDetails;
+    }
+
+    public void setMenuitemkey_AvlDetails(String menuitemkey_AvlDetails) {
+        this.menuitemkey_AvlDetails = menuitemkey_AvlDetails;
+    }
+
+    public String getReceivedstock_AvlDetails() {
+        return receivedstock_AvlDetails;
+    }
+
+    public void setReceivedstock_AvlDetails(String receivedstock_AvlDetails) {
+        this.receivedstock_AvlDetails = receivedstock_AvlDetails;
+    }
+
+    public String getStockbalance_AvlDetails() {
+        return stockbalance_AvlDetails;
+    }
+
+    public void setStockbalance_AvlDetails(String stockbalance_AvlDetails) {
+        this.stockbalance_AvlDetails = stockbalance_AvlDetails;
+    }
+
+    public String getStockincomingkey_AvlDetails() {
+        return stockincomingkey_AvlDetails;
+    }
+
+    public void setStockincomingkey_AvlDetails(String stockincomingkey_AvlDetails) {
+        this.stockincomingkey_AvlDetails = stockincomingkey_AvlDetails;
+    }
+
+    public String getVendorkey_AvlDetails() {
+        return vendorkey_AvlDetails;
+    }
+
+    public void setVendorkey_AvlDetails(String vendorkey_AvlDetails) {
+        this.vendorkey_AvlDetails = vendorkey_AvlDetails;
+    }
+
+    public String getStockincomingkey() {
+        return stockincomingkey;
+    }
+
+    public void setStockincomingkey(String stockincomingkey) {
+        this.stockincomingkey = stockincomingkey;
+    }
 
     public String getBigbasketAmount() {
         return bigbasketAmount;

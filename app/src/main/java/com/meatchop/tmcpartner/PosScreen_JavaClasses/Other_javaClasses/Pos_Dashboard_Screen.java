@@ -28,6 +28,7 @@ import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
+import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
@@ -36,9 +37,11 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
+import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
 import com.meatchop.tmcpartner.Settings.SettingsFragment;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -54,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.R.id.manage_order_navigatioBar_widget;
 import static com.meatchop.tmcpartner.R.id.new_order_navigatioBar_widget;
 import static com.meatchop.tmcpartner.R.id.settings_navigatioBar_widget;
@@ -65,7 +69,8 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     NewOrders_MenuItem_Fragment newOrders_menuItem_fragment;
     SettingsFragment settingsFragment;
     public static String completemenuItem="";
-    public static String completeMarinademenuItem="";
+    public static String completeMarinademenuItem="",completemenuItemStockAvlDetails="";
+    List<Modal_MenuItemStockAvlDetails> MenuItemStockAvlDetails=new ArrayList<>();
 
     LinearLayout loadingPanel,loadingpanelmask;
     int gettingMenuItemRetryCount = 5;
@@ -78,6 +83,10 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     TextView title;
     List<Modal_MenuItem> MenuList=new ArrayList<>();
     boolean isMenuListSavedLocally = false;
+
+    boolean isinventorycheck = false;
+
+
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +97,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 //
         SharedPreferences shared =getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", ""));
-
+        isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
         bottomNavigationView = findViewById(R.id.bottomnav);
         dialog = new Dialog(Pos_Dashboard_Screen.this);
 
@@ -116,9 +125,12 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     private void checkForInternetConnectionAndGetMenuItemAndMobileAppData() {
         try {
             if (isConnected()) {
+                getDatafromVendorTable(vendorkey);
+
                 //Toast.makeText(getApplicationContext(), "Internet Connected", Toast.LENGTH_SHORT).show();
                 completemenuItem = getMenuItemusingStoreId(vendorkey);
                 completeMarinademenuItem =  getMarinadeMenuItemusingStoreId(vendorkey);
+              //  completemenuItemStockAvlDetails =   getMenuItemStockAvlDetails();
                 getDatafromMobileApp();
             } else {
                 Toast.makeText(getApplicationContext(), "No Internet Connection", Toast.LENGTH_SHORT).show();
@@ -163,6 +175,438 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
 
     }
+
+    private void getDatafromVendorTable(String vendorEntryKey) {
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetVendorUsingUserKey +vendorEntryKey,null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+                        //Log.d(Constants.TAG, "Response: " + response);
+                        try {
+
+                            JSONObject resultobject  = response.getJSONObject("content");
+                            JSONObject resultitem = resultobject.getJSONObject("Item");
+                            //Log.d(Constants.TAG, "Response: " + result);
+                            JSONArray result = new JSONArray();
+                            result.put(resultitem);
+                            int i1=0;
+                            int arrayLength = result.length();
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
+
+
+                            for(;i1<=(arrayLength-1);i1++) {
+
+                                try {
+                                    JSONObject json = result.getJSONObject(i1);
+
+
+                                    try{
+                                        isinventorycheck=      Boolean.parseBoolean(String.valueOf(json.get("inventorycheckpos")));
+
+                                    }
+                                    catch (Exception e){
+
+                                        isinventorycheck =     false;
+
+
+                                        e.printStackTrace();
+                                    }
+
+                                    saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+
+
+                                } catch (JSONException e) {
+
+                                    e.printStackTrace();
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
+                                    saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+
+                                }
+
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+
+                        }
+
+                    }
+
+                },new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+
+                error.printStackTrace();
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Store");
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void saveInventoryCodePermisioninSharedPreference(boolean isinventorycheck) {
+
+
+        SharedPreferences sharedPreferences
+                = getSharedPreferences("VendorLoginData",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor myEdit
+                = sharedPreferences.edit();
+        myEdit.putBoolean(
+                "inventoryCheckBool",
+                isinventorycheck
+        );
+
+        myEdit.apply();
+
+
+    }
+
+    private String  getMenuItemStockAvlDetails() {
+        Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
+        completemenuItemStockAvlDetails="";
+        MenuItemStockAvlDetails.clear();
+        SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItemStockAvlDetails+vendorkey,
+                null, new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                try{
+                    completemenuItemStockAvlDetails="";
+                    MenuItemStockAvlDetails.clear();
+                    SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.clear();
+                    editor.apply();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                try{
+                    Log.d(TAG, "starting:onResponse ");
+
+                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+
+                    completemenuItemStockAvlDetails = new String(String.valueOf(response));
+                    try {
+                        JSONArray JArray = response.getJSONArray("content");
+                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        int i1 = 0;
+                        int arrayLength = JArray.length();
+                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+                        String Key="";
+                        for (; i1 < (arrayLength); i1++) {
+
+                            try {
+                                JSONObject json = JArray.getJSONObject(i1);
+                                Modal_MenuItemStockAvlDetails modal_menuItemStockAvlDetails = new Modal_MenuItemStockAvlDetails();
+                                if(json.has("key")){
+                                    modal_menuItemStockAvlDetails.key = String.valueOf(json.get("key"));
+                                    Key =    String.valueOf(json.get("key"));
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.key = "";
+                                    Log.d(Constants.TAG, "There is no key for this Menu: " );
+
+
+                                }
+
+                                if(json.has("barcode")){
+                                    modal_menuItemStockAvlDetails.barcode = String.valueOf(json.get("barcode"));
+
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.barcode = "";
+                                    Log.d(Constants.TAG, "There is no barcode for this Menu: " +Key );
+
+
+                                }
+                                if(json.has("itemavailability")){
+                                    modal_menuItemStockAvlDetails.itemavailability = String.valueOf(json.get("itemavailability"));
+
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.itemavailability = "";
+                                    Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +Key );
+
+
+                                }
+                                if(json.has("lastupdatedtime")){
+                                    modal_menuItemStockAvlDetails.lastupdatedtime = String.valueOf(json.get("lastupdatedtime"));
+                                    if(String.valueOf(json.get("lastupdatedtime")).equals("")){
+                                        modal_menuItemStockAvlDetails.lastupdatedtime = "0";
+
+                                    }else  if(String.valueOf(json.get("lastupdatedtime")).equals("\r")) {
+
+                                        modal_menuItemStockAvlDetails.lastupdatedtime = "0";
+
+                                    }
+
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.lastupdatedtime = "0";
+                                    Log.d(Constants.TAG, "There is no lastupdatedtime for this Menu: " +Key );
+
+
+                                }
+
+
+                                if(json.has("menuitemkey")){
+                                    modal_menuItemStockAvlDetails.menuitemkey = String.valueOf(json.get("menuitemkey"));
+                                    if(String.valueOf(json.get("menuitemkey")).equals("")){
+                                        modal_menuItemStockAvlDetails.menuitemkey = "0";
+
+                                    }else  if(String.valueOf(json.get("menuitemkey")).equals("\r")) {
+
+                                        modal_menuItemStockAvlDetails.menuitemkey = "0";
+
+                                    }
+
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.menuitemkey = "0";
+                                    Log.d(Constants.TAG, "There is no menuitemkey for this Menu: " +Key );
+
+
+                                }
+
+
+                                if(json.has("stockbalance")){
+                                    modal_menuItemStockAvlDetails.stockbalance= String.valueOf(json.get("stockbalance"));
+                                    if(String.valueOf(json.get("stockbalance")).equals("")){
+                                        modal_menuItemStockAvlDetails.stockbalance = "0";
+
+                                    }else  if(String.valueOf(json.get("stockbalance")).equals("\r")) {
+
+                                        modal_menuItemStockAvlDetails.stockbalance = "0";
+
+                                    }
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.stockbalance = "0";
+                                    Log.d(Constants.TAG, "There is no stockbalance for this Menu: " +Key );
+
+
+                                }
+
+                                if(json.has("stockincomingkey")){
+                                    modal_menuItemStockAvlDetails.stockincomingkey = String.valueOf(json.get("stockincomingkey"));
+
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.stockincomingkey = "";
+                                    Log.d(Constants.TAG, "There is no stockincomingkey for this Menu: " +Key );
+
+
+                                }
+                                if(json.has("vendorkey")){
+                                    modal_menuItemStockAvlDetails.vendorkey = String.valueOf(json.get("vendorkey"));
+
+                                }
+                                else{
+                                    modal_menuItemStockAvlDetails.vendorkey = "";
+                                    Log.d(Constants.TAG, "There is no vendorkey for this Menu: " +Key );
+
+
+                                }
+
+
+                                MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
+
+                                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                Log.d(Constants.TAG, "e: " + e.getMessage());
+                                Log.d(Constants.TAG, "e: " + e.toString());
+
+                            }
+
+
+                        }
+
+                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
+
+                    Log.d(TAG, "sending :Response "+completemenuItem);
+
+
+
+
+
+
+
+                    Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+
+
+
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(TAG, "Error: " + error.getMessage());
+                Log.d(TAG, "Error: " + error.toString());
+                completemenuItemStockAvlDetails="";
+                MenuItemStockAvlDetails.clear();
+                SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+
+                if (error instanceof TimeoutError) {
+                    errorCode = "Timeout Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(Pos_Dashboard_Screen.this,"Error in Getting  Menuitem stock Avl details  error code :  "+errorCode,Toast.LENGTH_LONG).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = preferences.edit();
+                                        editor.clear();
+                                        editor.apply();
+
+
+                                        dialog.cancel();
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                params.put("storeid",vendorkey);
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(50000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(Pos_Dashboard_Screen.this).add(jsonObjectRequest);
+
+        return completemenuItemStockAvlDetails;
+    }
+
+
+
+    private void saveMenuItemStockAvlDetailsinSharedPreference(List<Modal_MenuItemStockAvlDetails> menuItemStockAvlDetails) {
+
+        try {
+            final SharedPreferences sharedPreferences = getSharedPreferences("MenuItemStockAvlDetails", MODE_PRIVATE);
+
+            Gson gson = new Gson();
+            String json = gson.toJson(menuItemStockAvlDetails);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("MenuItemStockAvlDetails", json);
+            editor.apply();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+
+
 
     private void getDatafromMobileApp() {
 
@@ -433,9 +877,12 @@ catch (Exception e){
 
                //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
-               completemenuItem = new String(String.valueOf(response));
                try {
+                 //     completemenuItem = new String(String.valueOf(response));
+
                    JSONArray JArray = response.getJSONArray("content");
+                   //completemenuItem = new String(String.valueOf(JArray));
+
                    //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                    int i1 = 0;
                    int arrayLength = JArray.length();
@@ -453,6 +900,16 @@ catch (Exception e){
                            }
                            else{
                                modal_menuItem.key = "";
+                               //Log.d(Constants.TAG, "There is no key for this Menu: " );
+
+
+                           }
+
+                           if(json.has("key")){
+                               modal_menuItem.menuItemId = String.valueOf(json.get("key"));
+                           }
+                           else{
+                               modal_menuItem.menuItemId = "";
                                //Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
@@ -703,11 +1160,11 @@ catch (Exception e){
                            }
 
                            if(json.has("key")){
-                               modal_menuItem.menuItemId= String.valueOf(json.get("key"));
+                               modal_menuItem.key= String.valueOf(json.get("key"));
 
                            }
                            else{
-                               modal_menuItem.menuItemId = "";
+                               modal_menuItem.key = "";
                                //Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
@@ -735,8 +1192,109 @@ catch (Exception e){
                            }
 
 
+                           if(json.has("itemweightdetails")){
+                               try{
+                                   modal_menuItem.itemweightdetails= String.valueOf(json.get("itemweightdetails"));
+
+                               }
+                               catch (Exception e){
+                                   modal_menuItem.itemweightdetails = "nil";
+
+                                   e.printStackTrace();
+                               }
+
+                           }
+                           else{
+                               modal_menuItem.itemweightdetails = "nil";
+                               Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
+                           }
+
+
+                           if(json.has("showinapp")){
+                               modal_menuItem.showinapp = String.valueOf(json.get("showinapp").toString().toUpperCase());
+
+                           }
+                           else{
+                               modal_menuItem.showinapp = "TRUE";
+                               Log.d(Constants.TAG, "There is no showinapp for this Menu: " +MenuItemKey );
+
+
+                           }
+                           if(json.has("itemcutdetails")){
+                               try{
+                                   modal_menuItem.itemcutdetails= String.valueOf(json.get("itemcutdetails"));
+
+                               }
+                               catch (Exception e){
+                                   e.printStackTrace();
+                                   modal_menuItem.itemcutdetails= "nil";
+
+                               }
+
+                           }
+                           else{
+                               modal_menuItem.itemcutdetails = "nil";
+                               Log.d(Constants.TAG, "There is no key for this Menu: "  );
+
+
+                           }
+
+
+                           if(json.has("inventorydetails")){
+                               try{
+                                   modal_menuItem.inventorydetails= String.valueOf(json.get("inventorydetails"));
+
+                               }
+                               catch (Exception e){
+                                   e.printStackTrace();
+                                   modal_menuItem.inventorydetails= "nil";
+
+                               }
+
+                           }
+                           else{
+                               modal_menuItem.inventorydetails = "nil";
+                               Log.d(Constants.TAG, "There is no inventorydetails for this Menu: "  );
+
+
+                           }
+
+                           if(!isinventorycheck){
+
+                               String barcode_AvlDetails ="nil",itemavailability_AvlDetails="nil",key_AvlDetails="nil",lastupdatedtime_AvlDetails="nil",menuitemkey_AvlDetails="nil",
+                                       receivedstock_AvlDetails="nil",stockbalance_AvlDetails="nil",stockincomingkey_AvlDetails="nil",vendorkey_AvlDetails="nil",allownegativestock_AvlDetails="nil";
+
+
+
+                               modal_menuItem.setBarcode_AvlDetails(barcode_AvlDetails);
+                               modal_menuItem.setItemavailability_AvlDetails(itemavailability_AvlDetails);
+                               modal_menuItem.setKey_AvlDetails(key_AvlDetails);
+                               modal_menuItem.setLastupdatedtime_AvlDetails(lastupdatedtime_AvlDetails);
+                               modal_menuItem.setMenuitemkey_AvlDetails(menuitemkey_AvlDetails);
+                               modal_menuItem.setReceivedstock_AvlDetails(receivedstock_AvlDetails);
+                               modal_menuItem.setStockbalance_AvlDetails(stockbalance_AvlDetails);
+                               modal_menuItem.setStockincomingkey_AvlDetails(stockincomingkey_AvlDetails);
+                               modal_menuItem.setVendorkey_AvlDetails(vendorkey_AvlDetails);
+                               modal_menuItem.setAllownegativestock(allownegativestock_AvlDetails);
+
+
+                               Modal_MenuItemStockAvlDetails modal_menuItemStockAvlDetails = new Modal_MenuItemStockAvlDetails();
+                               modal_menuItemStockAvlDetails.setBarcode(barcode_AvlDetails);
+                               modal_menuItemStockAvlDetails.setItemavailability(itemavailability_AvlDetails);
+                               modal_menuItemStockAvlDetails.setKey(key_AvlDetails);
+                               modal_menuItemStockAvlDetails.setMenuitemkey(menuitemkey_AvlDetails);
+                               modal_menuItemStockAvlDetails.setStockincomingkey(stockincomingkey_AvlDetails);
+                               modal_menuItemStockAvlDetails.setVendorkey(vendorkey_AvlDetails);
+                               modal_menuItemStockAvlDetails.setStockbalance(stockbalance_AvlDetails);
+                               modal_menuItemStockAvlDetails.setAllownegativestock(allownegativestock_AvlDetails);
+                               modal_menuItemStockAvlDetails.setLastupdatedtime(lastupdatedtime_AvlDetails);
+                               modal_menuItemStockAvlDetails.setReceivedstock(receivedstock_AvlDetails);
+                               MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
+
+
+                           }
                            MenuList.add(modal_menuItem);
 
                            //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
@@ -749,6 +1307,21 @@ catch (Exception e){
                            //Log.d(Constants.TAG, "e: " + e.toString());
 
                        }
+                       if(arrayLength - i1 ==1){
+
+
+                           if(isinventorycheck) {
+                               completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
+                           }
+                           else{
+                               saveMenuIteminSharedPreference(MenuList);
+                               saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
+
+                               String MenuList_String = new Gson().toJson(MenuList);
+                               completemenuItem = MenuList_String;
+                           }
+                         //  completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
+                       }
 
 
                    }
@@ -759,7 +1332,7 @@ catch (Exception e){
                } catch (JSONException e) {
                    e.printStackTrace();
                }
-               saveMenuIteminSharedPreference(MenuList);
+               //saveMenuIteminSharedPreference(MenuList);
 
 
                //Log.d(TAG, "sending :Response " + completemenuItem);
@@ -877,6 +1450,304 @@ catch (Exception e){
 
 
 
+    private String  getMenuAvlDetailsUsingVendorkey(String vendorKey) {
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItemStockAvlDetails+vendorKey,
+                null, new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                try{
+
+                    JSONArray JArray = response.getJSONArray("content");
+
+
+
+
+                    for(int i =0; i<MenuList.size();i++) {
+                        Modal_MenuItem modal_menuItem = MenuList.get(i);
+                        String menuitemKeyFromArray ="";
+                        menuitemKeyFromArray = modal_menuItem.getKey();
+
+
+
+                        String barcode_AvlDetails ="",itemavailability_AvlDetails="",key_AvlDetails="",lastupdatedtime_AvlDetails="",menuitemkey_AvlDetails="",
+                                receivedstock_AvlDetails="",stockbalance_AvlDetails="",stockincomingkey_AvlDetails="",vendorkey_AvlDetails="",allownegativestock_AvlDetails="";
+
+
+
+                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        int i1 = 0;
+                        int arrayLength = JArray.length();
+                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+                        for (; i1 < (arrayLength); i1++) {
+
+
+                            try {
+                                JSONObject json = JArray.getJSONObject(i1);
+                                if(json.has("menuitemkey")){
+                                    String menuItemKeyFromMenuAvlDetails = json.getString("menuitemkey");
+
+                                    if(menuItemKeyFromMenuAvlDetails.equals(menuitemKeyFromArray)){
+                                        if(json.has("barcode")){
+                                            barcode_AvlDetails = json.getString("barcode");
+
+
+
+                                        }
+                                        else{
+                                            barcode_AvlDetails ="";
+                                        }
+
+                                        if(json.has("itemavailability")){
+                                            itemavailability_AvlDetails = json.getString("itemavailability");
+
+
+
+                                        }
+                                        else{
+                                            itemavailability_AvlDetails ="";
+                                        }
+
+
+                                        if(json.has("key")){
+                                            key_AvlDetails = json.getString("key");
+
+
+
+                                        }
+                                        else{
+                                            key_AvlDetails ="";
+                                        }
+
+
+
+                                        if(json.has("lastupdatedtime")){
+                                            lastupdatedtime_AvlDetails = json.getString("lastupdatedtime");
+
+
+
+                                        }
+                                        else{
+                                            lastupdatedtime_AvlDetails ="";
+                                        }
+
+
+                                        if(json.has("menuitemkey")){
+                                            menuitemkey_AvlDetails = json.getString("menuitemkey");
+
+
+
+                                        }
+                                        else{
+                                            menuitemkey_AvlDetails ="";
+                                        }
+
+
+                                        if(json.has("receivedstock")){
+                                            receivedstock_AvlDetails = json.getString("receivedstock");
+
+
+
+                                        }
+                                        else{
+                                            receivedstock_AvlDetails ="";
+                                        }
+
+
+                                        if(json.has("stockbalance")){
+                                            stockbalance_AvlDetails = json.getString("stockbalance");
+
+
+
+                                        }
+                                        else{
+                                            stockbalance_AvlDetails ="";
+                                        }
+
+
+                                        if(json.has("stockincomingkey")){
+                                            stockincomingkey_AvlDetails = json.getString("stockincomingkey");
+
+
+
+                                        }
+                                        else{
+                                            stockincomingkey_AvlDetails ="";
+                                        }
+
+
+                                        if(json.has("vendorkey")){
+                                            vendorkey_AvlDetails = json.getString("vendorkey");
+
+
+
+                                        }
+                                        else{
+                                            vendorkey_AvlDetails ="";
+                                        }
+
+                                        if(json.has("allownegativestock")){
+                                            allownegativestock_AvlDetails = json.getString("allownegativestock");
+
+
+
+                                        }
+                                        else{
+                                            allownegativestock_AvlDetails ="";
+                                        }
+
+                                        MenuList.get(i).setBarcode_AvlDetails(barcode_AvlDetails);
+                                        MenuList.get(i).setItemavailability_AvlDetails(itemavailability_AvlDetails);
+                                        MenuList.get(i).setKey_AvlDetails(key_AvlDetails);
+                                        MenuList.get(i).setLastupdatedtime_AvlDetails(lastupdatedtime_AvlDetails);
+                                        MenuList.get(i).setMenuitemkey_AvlDetails(menuitemkey_AvlDetails);
+                                        MenuList.get(i).setReceivedstock_AvlDetails(receivedstock_AvlDetails);
+                                        MenuList.get(i).setStockbalance_AvlDetails(stockbalance_AvlDetails);
+                                        MenuList.get(i).setStockincomingkey_AvlDetails(stockincomingkey_AvlDetails);
+                                        MenuList.get(i).setVendorkey_AvlDetails(vendorkey_AvlDetails);
+                                        MenuList.get(i).setAllownegativestock(allownegativestock_AvlDetails);
+
+
+                                        Modal_MenuItemStockAvlDetails modal_menuItemStockAvlDetails = new Modal_MenuItemStockAvlDetails();
+                                        modal_menuItemStockAvlDetails.setBarcode(barcode_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setItemavailability(itemavailability_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setKey(key_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setMenuitemkey(menuitemkey_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setStockincomingkey(stockincomingkey_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setVendorkey(vendorkey_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setStockbalance(stockbalance_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setAllownegativestock(allownegativestock_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setLastupdatedtime(lastupdatedtime_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setReceivedstock(receivedstock_AvlDetails);
+                                        MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
+
+                                    }
+                                }
+                                else{
+                                    Toast.makeText(Pos_Dashboard_Screen.this, "There is no menuItemkey for an Item", Toast.LENGTH_SHORT).show();
+
+                                }
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+
+
+                        if (MenuList.size() - i ==1){
+                            saveMenuIteminSharedPreference(MenuList);
+                            saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
+
+                            String MenuList_String = new Gson().toJson(MenuList);
+                            completemenuItem = MenuList_String;
+                        }
+
+
+                    }
+
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(TAG, "Error: " + error.getMessage());
+                Log.d(TAG, "Error: " + error.toString());
+                completemenuItem="";
+                MenuList.clear();
+                SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+
+                if (error instanceof TimeoutError) {
+                    errorCode = "Timeout Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(Pos_Dashboard_Screen.this,"Error in Getting MenuList : error code :  "+errorCode,Toast.LENGTH_LONG).show();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(dialog.isShowing()){
+
+                            }
+                            else {
+                                title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
+                                restartAgain.setText("Click to Retry !!!");
+
+                                restartAgain.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = preferences.edit();
+                                        editor.clear();
+                                        editor.apply();
+
+
+                                        dialog.cancel();
+                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+
+                                    }
+                                });
+
+
+                                dialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                params.put("storeid",vendorKey);
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(50000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(Pos_Dashboard_Screen.this).add(jsonObjectRequest);
+
+
+        return completemenuItem;
+
+
+    }
 
 
 

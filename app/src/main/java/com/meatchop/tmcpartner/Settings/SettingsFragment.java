@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -79,7 +80,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
+import static android.os.Build.VERSION.SDK_INT;
 import static android.widget.AbsListView.*;
 
 /**
@@ -92,10 +96,11 @@ public class SettingsFragment extends Fragment {
     Context mContext;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoRefreshingSwitch;
-    LinearLayout addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor, manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
+    LinearLayout addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor,
+            changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
+    LinearLayout changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -104,6 +109,7 @@ public class SettingsFragment extends Fragment {
     List<String>allowedModules_array;
 
 
+    boolean isinventorycheck = false;
     // Local Bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter = null;
     // Member object for the chat services
@@ -132,7 +138,7 @@ public class SettingsFragment extends Fragment {
     String printerName = "";
     String printerStatus = "";
     boolean isPrinterCnnectedfromSP = false;
-    String printerNamefromSP = "";
+    String printerNamefromSP = "",whichsheetoGenerate1 = "";
     String printerStatusfromSP = "";
 
 
@@ -142,7 +148,7 @@ public class SettingsFragment extends Fragment {
     private static String[] columnsHeading_orderItemDetails = {"S.No", "Key", "Applied Discount Percentage", " Cut Name", "Cut Price", "Discount Amount", "Grossweight in Grams", "Gst Amount","Orderid ", "Item Name", "TmcPrice","Net Weight","Portion Size","Quantity","Order Placed Time", "Slot Date","Slot Name","Marinade Item Details","Tmc Subctgykey", "Vendor Key","Vendor Name"};
 
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
-
+    private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
     Button generateUserDetailsButton,generateOrderItemDetailsButton,connect_printer_button_widget;
     List<Modal_User> UserTableArray = new ArrayList<>();
     List<Modal_Address> AddressTableArray = new ArrayList<>();
@@ -151,7 +157,7 @@ public class SettingsFragment extends Fragment {
     List<String>AddedUserKey = new ArrayList<>();
 
     List<ModalOrderItemDetails> OrderItemDetailsTableArray = new ArrayList<>();
-    String vendorkey_velachery = "vendor_1",vendorkey_usertable = "";
+    String vendorkey_hastinapuram = "vendor_1",vendorkey_velachery = "vendor_3",vendorkey_usertable = "";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -251,6 +257,9 @@ public class SettingsFragment extends Fragment {
         mobilePrinterConnectLayout = view.findViewById(R.id.mobilePrinterConnectLayout);
         orderRating_report  =  view.findViewById(R.id.orderRating_report);
         addBigbasketOrders_placing_layout = view.findViewById(R.id.addBigbasketOrders_placing_layout);
+        manageRaisedTickets = view.findViewById(R.id.manageRaisedTickets);
+        changeMenuItemPrice_weight = view.findViewById(R.id.changeMenuItemPrice_weight);
+        changeMenuItemAvail_allowNegativeStock  = view.findViewById(R.id.changeMenuItemAvail_allowNegativeStock);
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -261,6 +270,7 @@ public class SettingsFragment extends Fragment {
         vendorkey = shared.getString("VendorKey", "");
         vendorName = shared.getString("VendorName", "");
         UserRole = shared.getString("userrole", "");
+        isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
 
 
         userMobileNo.setText(UserPhoneNumber);
@@ -657,13 +667,32 @@ public class SettingsFragment extends Fragment {
             }
         }
 
-            if (UserPhoneNumber.equals("+919597580128")) {
-            testlayout.setVisibility(VISIBLE);
-        } else {
-            testlayout.setVisibility(GONE);
 
+            if (UserPhoneNumber.equals("+919597580128")) {
+                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            testlayout.setVisibility(VISIBLE);
+             changeMenuItemPrice_weight.setVisibility(VISIBLE);
+
+            } else {
+                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+
+                testlayout.setVisibility(GONE);
+                changeMenuItemPrice_weight.setVisibility(GONE);
+        }
+        if(!isinventorycheck){
+            changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+            changeMenuItemStatus.setVisibility(VISIBLE);
+        }
+        else{
+            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            changeMenuItemStatus.setVisibility(GONE);
         }
 
+        if (UserPhoneNumber.equals("+919597580128")) {
+            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            changeMenuItemStatus.setVisibility(VISIBLE);
+
+        }
 
         if (UserPhoneNumber.equals("+918451023780")) {
             generateUserDetailsLayout.setVisibility(VISIBLE);
@@ -691,6 +720,21 @@ public class SettingsFragment extends Fragment {
         } else {
             // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
+
+
+        manageRaisedTickets.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, RaisedTicketDetailsForRating.class);
+                startActivity(intent);
+            }
+        });
+
+
+
+
+
+
 
 
         addBigbasketOrders_placing_layout.setOnClickListener(new OnClickListener() {
@@ -830,6 +874,8 @@ public class SettingsFragment extends Fragment {
 
             }
         });
+
+
 
 
         plotOrdersLocation_layout.setOnClickListener(new OnClickListener() {
@@ -991,6 +1037,20 @@ public class SettingsFragment extends Fragment {
         });
 
 
+        changeMenuItemAvail_allowNegativeStock.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(mContext, ChangeMenuItemStatus_AllowNegativeStock_Settings.class);
+                startActivity(intent);
+
+
+            }
+        });
+
+
+
+
         changeMenuItemStatus.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -1012,6 +1072,25 @@ public class SettingsFragment extends Fragment {
 
             }
         });
+
+
+
+
+        changeMenuItemPrice_weight.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(mContext, MenuItem_List_Settings.class);
+                intent.putExtra("ClickedOn", "ChangeMenuItemPriceAndWeight");
+                startActivity(intent);
+
+
+            }
+        });
+
+
+
+
         resetTokenNoButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -1796,7 +1875,8 @@ public class SettingsFragment extends Fragment {
 
     private void AskPermissionToGenerateSheet(String whichsheetoGenerate) {
 
-
+        whichsheetoGenerate1 = "";
+        whichsheetoGenerate1 = whichsheetoGenerate;
         try {
             wb = new HSSFWorkbook();
             //Now we are creating sheet
@@ -1806,7 +1886,75 @@ public class SettingsFragment extends Fragment {
         }
 
 
-        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (SDK_INT >= Build.VERSION_CODES.R) {
+
+            if(Environment.isExternalStorageManager()){
+                try {
+                    Adjusting_Widgets_Visibility(true);
+
+                    try {
+                        if(whichsheetoGenerate.equals("UserDetailsSheet")){
+                            FilterUserAndAddressArray() ;
+                        }
+                        else if(whichsheetoGenerate.equals("OrderItemDetailsSheet")){
+                            AddDatatoOrderItemDetailsExcelSheet();
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ;
+                }
+            }
+            else{
+                try {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                    intent.addCategory("android.intent.category.DEFAULT");
+                    intent.setData(Uri.parse(String.format("package:%s",getActivity().getApplicationContext().getPackageName())));
+                    startActivityForResult(intent, 2296);
+                } catch (Exception e) {
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                    startActivityForResult(intent, 2296);
+                }
+            }
+
+        } else {
+
+
+            int writeExternalStoragePermission = ContextCompat.checkSelfPermission(getActivity(), WRITE_EXTERNAL_STORAGE);
+            //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+            // If do not grant write external storage permission.
+            if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                // Request user to grant write external storage permission.
+                ActivityCompat.requestPermissions(getActivity(), new String[]{WRITE_EXTERNAL_STORAGE},
+                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+            } else {
+
+                Adjusting_Widgets_Visibility(true);
+
+                try {
+                    if(whichsheetoGenerate.equals("UserDetailsSheet")){
+                        FilterUserAndAddressArray() ;
+                    }
+                    else if(whichsheetoGenerate.equals("OrderItemDetailsSheet")){
+                        AddDatatoOrderItemDetailsExcelSheet();
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+/*
+
+    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         // If do not grant write external storage permission.
         if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
@@ -1833,7 +1981,70 @@ public class SettingsFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+
+ */
     }
+
+
+
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    Adjusting_Widgets_Visibility(true);
+
+                    try {
+                        if(whichsheetoGenerate1.equals("UserDetailsSheet")){
+                            FilterUserAndAddressArray() ;
+                        }
+                        else if(whichsheetoGenerate1.equals("OrderItemDetailsSheet")){
+                            AddDatatoOrderItemDetailsExcelSheet();
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(mContext, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        else {
+
+            if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+                int grantResultsLength = grantResults.length;
+                if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(mContext, "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                    // exportInvoice();
+                    Adjusting_Widgets_Visibility(true);
+
+                    try {
+                        if(whichsheetoGenerate1.equals("UserDetailsSheet")){
+                            FilterUserAndAddressArray() ;
+                        }
+                        else if(whichsheetoGenerate1.equals("OrderItemDetailsSheet")){
+                            AddDatatoOrderItemDetailsExcelSheet();
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(mContext, "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+
 
     private void FilterUserAndAddressArray() {
         AddedUserKey.clear();
@@ -1843,15 +2054,17 @@ public class SettingsFragment extends Fragment {
             Modal_Address modal_address = AddressTableArray.get(i);
             String vendorFromAddressArray = modal_address.getVendorkey().toString();
             String userkeyFromAddressArray = modal_address.getUserkey().toString();
-            if(!AddedUserKey.contains(userkeyFromAddressArray)) {
+            String AddresskeyFromAddressArray = modal_address.getKey().toString();
+
+            if(!AddedUserKey.contains(AddresskeyFromAddressArray)) {
                 if (vendorFromAddressArray.equals(vendorkey_velachery)) {
                     for (int j = 0; j < UserTableArray.size(); j++) {
                         Modal_User modal_user = UserTableArray.get(j);
                         String userKeyFromUserArray = modal_user.getKey().toString();
                         if (userkeyFromAddressArray.equals(userKeyFromUserArray)) {
                             FilteredUserTableArray.add(modal_user);
-                            AddedUserKey.add(userKeyFromUserArray);
-
+                            AddedUserKey.add(AddresskeyFromAddressArray);
+    
                         }
 
                     }
@@ -1985,6 +2198,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void AddDatatoUserDetailsExcelSheet() {
+        AddedUserKey.clear();
         progressbarInstruction.setText("Generating Sheet ...");
         sheet = wb.createSheet(String.valueOf(System.currentTimeMillis()));
         int rowNum = 1;
@@ -2023,15 +2237,16 @@ public class SettingsFragment extends Fragment {
         boolean isPrintedSecondtime = false;
         for (int useriterator = 0; useriterator < FilteredUserTableArray.size(); useriterator++) {
             Row row = sheet.createRow(rowNum++);
-            if(isPrintedSecondtime) {
-                row = sheet.createRow(rowNum++);
+            if (isPrintedSecondtime) {
+             //   row = sheet.createRow(rowNum++);
 
-                isPrintedSecondtime =false;
+                isPrintedSecondtime = false;
             }
             isFirstAddress = false;
             Modal_User modal_user = FilteredUserTableArray.get(useriterator);
             String userkeyfromUserArray = modal_user.getKey();
-
+            if (!AddedUserKey.contains(userkeyfromUserArray)){
+                AddedUserKey.add(userkeyfromUserArray);
             row.createCell(0).setCellValue(useriterator + 1);
             row.getCell(0).setCellStyle(cellStyle);
 
@@ -2049,56 +2264,57 @@ public class SettingsFragment extends Fragment {
             row.createCell(8).setCellValue(modal_user.getUpdatedtime());
             row.createCell(9).setCellValue(modal_user.getFcmtoken());
 
-            for (int addressiterator = 0; addressiterator < FilteredAddressTableArray.size(); addressiterator++) {
-                Modal_Address modal_address = FilteredAddressTableArray.get(addressiterator);
-                String userkeyfromAddressArray = modal_address.getUserkey();
-                if (userkeyfromUserArray.equals(userkeyfromAddressArray)) {
-                    if (!isFirstAddress) {
-                        isFirstAddress = true;
+                for (int addressiterator = 0; addressiterator < FilteredAddressTableArray.size(); addressiterator++) {
+                    Modal_Address modal_address = FilteredAddressTableArray.get(addressiterator);
+                    String userkeyfromAddressArray = modal_address.getUserkey();
+                    if (userkeyfromUserArray.equals(userkeyfromAddressArray)) {
+                        if (!isFirstAddress) {
+                            isFirstAddress = true;
 
-                    row.createCell(10).setCellValue(modal_address.getKey());
-                    row.createCell(11).setCellValue(modal_address.getAddressline1());
-                    row.createCell(12).setCellValue(modal_address.getAddressline2());
-                    row.createCell(13).setCellValue(modal_address.getLandmark());
-                    row.createCell(14).setCellValue(modal_address.getPincode());
-                    row.createCell(15).setCellValue(modal_address.getAddresstype());
-                    row.createCell(16).setCellValue(modal_address.getDeliverydistance());
-                        row.getCell(16).setCellStyle(cellStyle);
+                            row.createCell(10).setCellValue(modal_address.getKey());
+                            row.createCell(11).setCellValue(modal_address.getAddressline1());
+                            row.createCell(12).setCellValue(modal_address.getAddressline2());
+                            row.createCell(13).setCellValue(modal_address.getLandmark());
+                            row.createCell(14).setCellValue(modal_address.getPincode());
+                            row.createCell(15).setCellValue(modal_address.getAddresstype());
+                            row.createCell(16).setCellValue(modal_address.getDeliverydistance());
+                            row.getCell(16).setCellStyle(cellStyle);
 
-                        row.createCell(17).setCellValue(modal_address.getLocationlat());
+                            row.createCell(17).setCellValue(modal_address.getLocationlat());
 
-                    row.createCell(18).setCellValue(modal_address.getLocationlong());
-                    row.createCell(19).setCellValue(modal_address.getVendorname());
-                    row.createCell(20).setCellValue(modal_address.getContactpersonmobileno());
-                    row.createCell(21).setCellValue(modal_address.getContactpersonname());
-                    } else {
-                        isPrintedSecondtime =true;
+                            row.createCell(18).setCellValue(modal_address.getLocationlong());
+                            row.createCell(19).setCellValue(modal_address.getVendorname());
+                            row.createCell(20).setCellValue(modal_address.getContactpersonmobileno());
+                            row.createCell(21).setCellValue(modal_address.getContactpersonname());
+                        } else {
+                            isPrintedSecondtime = true;
 
-                        row = sheet.createRow(rowNum++);
+                            row = sheet.createRow(rowNum++);
 
-                        row.createCell(10).setCellValue(modal_address.getKey());
-                        row.createCell(11).setCellValue(modal_address.getAddressline1());
-                        row.createCell(12).setCellValue(modal_address.getAddressline2());
-                        row.createCell(13).setCellValue(modal_address.getLandmark());
-                        row.createCell(14).setCellValue(modal_address.getPincode());
-                        row.createCell(15).setCellValue(modal_address.getAddresstype());
-                        row.createCell(16).setCellValue(modal_address.getDeliverydistance());
-                        row.getCell(16).setCellStyle(cellStyle);
+                            row.createCell(10).setCellValue(modal_address.getKey());
+                            row.createCell(11).setCellValue(modal_address.getAddressline1());
+                            row.createCell(12).setCellValue(modal_address.getAddressline2());
+                            row.createCell(13).setCellValue(modal_address.getLandmark());
+                            row.createCell(14).setCellValue(modal_address.getPincode());
+                            row.createCell(15).setCellValue(modal_address.getAddresstype());
+                            row.createCell(16).setCellValue(modal_address.getDeliverydistance());
+                            row.getCell(16).setCellStyle(cellStyle);
 
-                        row.createCell(17).setCellValue(modal_address.getLocationlat());
+                            row.createCell(17).setCellValue(modal_address.getLocationlat());
 
-                        row.createCell(18).setCellValue(modal_address.getLocationlong());
-                        row.createCell(19).setCellValue(modal_address.getVendorname());
-                        row.createCell(20).setCellValue(modal_address.getContactpersonmobileno());
-                        row.createCell(21).setCellValue(modal_address.getContactpersonname());
+                            row.createCell(18).setCellValue(modal_address.getLocationlong());
+                            row.createCell(19).setCellValue(modal_address.getVendorname());
+                            row.createCell(20).setCellValue(modal_address.getContactpersonmobileno());
+                            row.createCell(21).setCellValue(modal_address.getContactpersonname());
+
+                        }
+
 
                     }
 
 
                 }
-
-
-            }
+        }
 
             sheet.setColumnWidth(0, (10 * 300));
             sheet.setColumnWidth(1, (10 * 400));
@@ -2425,7 +2641,7 @@ public class SettingsFragment extends Fragment {
         switch (requestCode) {
             case REQUEST_CONNECT_DEVICE:
                 // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     // Get the device MAC address
                     try {
                         String address = data.getExtras()
@@ -2442,7 +2658,7 @@ public class SettingsFragment extends Fragment {
                 break;
             case REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
-                if (resultCode == Activity.RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     // Bluetooth is now enabled, so set up a chat session
                     setupChat();
                     Intent serverIntent = null;

@@ -396,8 +396,44 @@
                             android:text="3"
 
                             android:textColor="@color/TMC_Primary_Text_Color"
-                            android:textSize="13sp" />
+                            android:textSize="15sp" />
                     </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:id="@+id/paymentModeLayout"
+                        android:visibility="gone"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/paymentMode_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Payment Mode"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/paymentMode_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+
 
                     <LinearLayout
                         android:layout_width="match_parent"

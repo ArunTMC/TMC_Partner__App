@@ -10,7 +10,7 @@ public class Modal_OrderDetails implements Parcelable {
     String orderdeliverytime,orderpickeduptime,orderplacedtime,orderreadytime,useraddresskey,useraddresslat,useraddresslong,deliveryuserkey,deliveryuserlat,
             deliveryuserlong,deliveryusermobileno,deliveryusername,orderconfirmedtime,useraddress,userkey,tokenno,slottimerange,slotdate,payableamount,ordertype,orderplaceddate,notes,orderdetailskey,
             ordertrackingdetailskey,couponkey,deliveryamount,pricetypeforpos,itemFinalWeight,deliverydistance,deliverytype,grossweight,orderstatus,
-            slotname,posSales,appSales,UpiSales,phonepeSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,
+            slotname,posSales,appSales,UpiSales,phonepeSales,CreditSales,CardSales,orderid,razorpaySales,paytmSales, cashOndeliverySales,tmcsubctgyname,tmcsubctgykey,
             weightingrams,finalAmount,usermobile,barcode,paymentmode,coupondiscount,gstamount,itemname,menuitemid,netweight,portionsize,quantity,
             tmcprice,vendorkey,deliverydistanceinkm;
     String bigBasketSales,dunzoSales,swiggySales,PhoneOrderSales,totalAmount_Price,discountAmount,subtotalAmount_discount_price,total_gstAmount,totalAmount_discount_price_gst;
@@ -84,6 +84,7 @@ public class Modal_OrderDetails implements Parcelable {
         total_gstAmount = in.readString();
         totalAmount_discount_price_gst = in.readString();
         bigBasketSales = in.readString();
+        CreditSales = in.readString();
     }
 
     public static final Creator<Modal_OrderDetails> CREATOR = new Creator<Modal_OrderDetails>() {
@@ -300,6 +301,14 @@ public class Modal_OrderDetails implements Parcelable {
 
     public void setOrdertrackingdetailskey(String ordertrackingdetailskey) {
         this.ordertrackingdetailskey = ordertrackingdetailskey;
+    }
+
+    public String getCreditSales() {
+        return CreditSales;
+    }
+
+    public void setCreditSales(String creditSales) {
+        CreditSales = creditSales;
     }
 
     public String getDunzoSales() {
@@ -729,5 +738,6 @@ public class Modal_OrderDetails implements Parcelable {
         dest.writeString(total_gstAmount);
         dest.writeString(totalAmount_discount_price_gst);
         dest.writeString(bigBasketSales);
+        dest.writeString(CreditSales);
     }
 }

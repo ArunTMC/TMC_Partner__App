@@ -1259,11 +1259,51 @@ public class Pos_ManageOrderFragment extends Fragment {
                         }
 
 
-                        if (json.has("slottimerange")) {
-                            manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+                        try {
+                            String slottime = "";
+                            slottime = String.valueOf(String.valueOf(json.get("slottimerange")));
+                            String estimated_Slottime = "";
+                            if (String.valueOf(String.valueOf(json.get("slotname"))).toUpperCase().equals(Constants.EXPRESSDELIVERY_SLOTNAME)) {
+                                String orderPlacedTime = String.valueOf(json.get("orderplacedtime"));
 
-                        } else {
-                            manageOrdersPojoClass.slottimerange = "";
+                                estimated_Slottime = getSlotTime(slottime, orderPlacedTime);
+
+
+                                try {
+                                    manageOrdersPojoClass.slottimerange = String.valueOf(estimated_Slottime);
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+
+
+                                try {
+
+                                    manageOrdersPojoClass.slottimerange = String.valueOf(slottime);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            try {
+                                if (json.has("slottimerange")) {
+                                    manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
+
+                                } else {
+                                    manageOrdersPojoClass.slottimerange = "";
+                                }
+                            } catch (Exception e1) {
+                                manageOrdersPojoClass.slottimerange = "";
+
+                                e1.printStackTrace();
+                            }
                         }
 
 
@@ -1282,12 +1322,14 @@ public class Pos_ManageOrderFragment extends Fragment {
                             manageOrdersPojoClass.slotname = "";
                         }
 
-                        if (json.has("slottimerange")) {
+                        /*if (json.has("slottimerange")) {
                             manageOrdersPojoClass.slottimerange = String.valueOf(json.get("slottimerange"));
 
                         } else {
                             manageOrdersPojoClass.slottimerange = "";
                         }
+
+                         */
 
                         if (json.has("notes")) {
                             manageOrdersPojoClass.notes = String.valueOf(json.get("notes"));
@@ -1933,6 +1975,57 @@ public class Pos_ManageOrderFragment extends Fragment {
 
     }
 
+    private String getSlotTime(String slottime, String orderplacedtime) {
+        String result = "", lastFourDigits = "";
+        //   Log.d(TAG, "slottime  "+slottime);
+        if (slottime.contains("mins")) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+
+                final Date date = sdf.parse(orderplacedtime);
+                final Calendar calendar = Calendar.getInstance();
+                String timeoftheSlot ="";
+                try {
+                    timeoftheSlot = (slottime.replaceAll("[^\\d.]", ""));
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                int timeoftheSlotDouble =0;
+                try {
+                    timeoftheSlotDouble = Integer.parseInt(timeoftheSlot);
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                calendar.setTime(date);
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                String placedtime = String.valueOf(sdff.format(calendar.getTime()));
+                calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
+
+                System.out.println("Time here " + sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + orderplacedtime);
+                result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + result);
+
+                result = result.replaceAll("GMT[+]05:30", "");
+
+                //  System.out.println("Time here "+result);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (slottime.length() > 5) {
+                lastFourDigits = slottime.substring(slottime.length() - 5);
+            } else {
+                lastFourDigits = slottime;
+            }
+
+            //  result = slotdate + " " + lastFourDigits + ":00";
+
+        }
+        return result;
+    }
 
 
     @SuppressLint({"UseCompatLoadingForDrawables", "ResourceAsColor"})

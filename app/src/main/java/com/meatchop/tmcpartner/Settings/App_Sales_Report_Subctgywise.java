@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -74,15 +75,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
+
 public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     LinearLayout PrintReport_Layout, generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
     TextView deliveryChargeAmount_textwidget,totalSales_headingText, cashSales, cardSales, upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey,vendorname;
-    String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf, finalPaytmAmount_pdf;
-    String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf;
+    String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf,finalCreditAmount_pdf, finalPaytmAmount_pdf;
+    String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderCreditAmount_pdf,finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf;
     Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
-    TextView Phonepe, Razorpay, Paytm, cashOnDelivery;
+    TextView preorder_creditSales,creditSales,Phonepe, Razorpay, Paytm, cashOnDelivery;
     TextView vendorName,appOrdersCount_textwidget, preorder_cashOnDelivery, preorder_Phonepe, preorder_Razorpay, preorder_paytmSales;
 
 
@@ -176,9 +180,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         Razorpay = findViewById(R.id.Razorpay);
         Paytm = findViewById(R.id.paytmSales);
         Phonepe = findViewById(R.id.Phonepe);
-        cashSales = findViewById(R.id.cashSales);
-        cardSales = findViewById(R.id.cardSales);
-        upiSales = findViewById(R.id.upiSales);
+        creditSales  = findViewById(R.id.creditSales);
+
         scrollView = findViewById(R.id.scrollView);
         totalSales_headingText = findViewById(R.id.totalSales_headingText);
         deliveryChargeAmount_textwidget = findViewById(R.id.deliveryChargeAmount_textwidget);
@@ -187,6 +190,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         preorder_Phonepe = findViewById(R.id.preorder_Phonepe);
         preorder_Razorpay = findViewById(R.id.preorder_Razorpay);
         preorder_paytmSales = findViewById(R.id.preorder_paytmSales);
+        preorder_creditSales = findViewById(R.id.creditSales_preorder);
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
@@ -282,22 +286,52 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         generateReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int writeExternalStoragePermission = ContextCompat.checkSelfPermission(App_Sales_Report_Subctgywise.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission " + writeExternalStoragePermission);
-                // If do not grant write external storage permission.
-                if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
-                    // Request user to grant write external storage permission.
-                    ActivityCompat.requestPermissions(App_Sales_Report_Subctgywise.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
-                } else {
-                    Adjusting_Widgets_Visibility(true);
+                if (SDK_INT >= Build.VERSION_CODES.R) {
 
-                    try {
-                        exportReport();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if(Environment.isExternalStorageManager()){
+                        try {
+                            exportReport();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ;
+                        }
+                    }
+                    else{
+                        try {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                            intent.addCategory("android.intent.category.DEFAULT");
+                            intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                            startActivityForResult(intent, 2296);
+                        } catch (Exception e) {
+                            Intent intent = new Intent();
+                            intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                            startActivityForResult(intent, 2296);
+                        }
+                    }
+
+                } else {
+
+
+                    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(App_Sales_Report_Subctgywise.this, WRITE_EXTERNAL_STORAGE);
+                    //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                    // If do not grant write external storage permission.
+                    if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                        // Request user to grant write external storage permission.
+                        ActivityCompat.requestPermissions(App_Sales_Report_Subctgywise.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                    } else {
+                        Adjusting_Widgets_Visibility(true);
+                        try {
+                            exportReport();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ;
+                        }
                     }
                 }
+
             }
         });
 
@@ -325,6 +359,72 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case OPENPDF_ACTIVITY_REQUEST_CODE:
+                setResult(RESULT_OK);
+                finish();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    try {
+                        exportReport();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        else{
+
+        if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+            int grantResultsLength = grantResults.length;
+            if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                // exportInvoice();
+                try {
+                    exportReport();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+            }
+        }
+        }
+    }
+
+
+
+
 
     private void printReport() {
             try {
@@ -662,7 +762,20 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         }
 
                     }
+                    if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalCreditAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Credit Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Credit Sales";
 
+                        }
+
+                    }
 
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -750,7 +863,20 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         }
 
                     }
+                    if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(finalpreorderCreditAmount_pdf);
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Credit Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Credit Sales";
 
+                        }
+
+                    }
 
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -2354,13 +2480,13 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         FinalBill_hashmap.clear();
         finalBillDetails.clear();
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        double phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
+        double phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,credit_Discountamount=0,credit_amount=0,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
                 RazorpayDiscount_amount=0,totalAmount=0,GST=0,totalAmountWithOutGst=0,totalAmount_with_Coupondiscount_double=0;
-        double preorderphonepe_amount = 0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
+        double preorderphonepe_amount = 0,preorderCredit_Discountamount=0,preorderCredit_Amount=0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
                 preorderRazorpayDiscount_amount=0,preordertotalAmount=0;
 
-        double razorpayDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
-        cash_on_del_preorderDeliveryCharge=0,paytmpreorderDeliveryCharge=0,phonepepreorderDeliveryCharge=0;
+        double razorpayDeliveryCharge_amount=0,creditDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
+        cash_on_del_preorderDeliveryCharge=0,creditpreorderDeliveryCharge_amount=0,paytmpreorderDeliveryCharge=0,phonepepreorderDeliveryCharge=0;
         appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
 
@@ -2411,6 +2537,31 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     //Log.d(Constants.TAG, "before for " );
                     String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
                     paytmDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+            if (PaymentModefromArray.equals(Constants.CREDIT)) {
+
+
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
+                    credit_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(credit_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    credit_Discountamount = Double.parseDouble(discount_String);
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+                    GST = GST + GST_array;
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    creditDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
 
                 } catch (Exception e) {
@@ -2531,6 +2682,31 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
 
+            if (preorderPaymentModefromArray.equals(Constants.CREDIT)) {
+
+
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
+                    preorderCredit_Amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(preorderCredit_Amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    preorderCredit_Discountamount = Double.parseDouble(discount_String);
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+                    GST = GST + GST_array;
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    creditpreorderDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
 
             if (preorderPaymentModefromArray.equals(Constants.CASH_ON_DELIVERY)) {
                 try {
@@ -2623,6 +2799,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        try{
+            credit_amount = credit_amount-credit_Discountamount+creditDeliveryCharge_amount;
+            finalCreditAmount_pdf=String.valueOf(credit_amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
 
@@ -2671,6 +2855,14 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         }
 
 
+        try{
+            preorderCredit_Amount= preorderCredit_Amount-preorderCredit_Discountamount+creditpreorderDeliveryCharge_amount;
+            finalpreorderCreditAmount_pdf=String.valueOf(preorderCredit_Amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
 
@@ -2689,6 +2881,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             Razorpay.setText(String.valueOf(decimalFormat.format(Razorpay_amount)));
             Paytm.setText(String.valueOf(decimalFormat.format(Paytm_amount)));
             Phonepe.setText(String.valueOf(decimalFormat.format(phonepe_amount)));
+            creditSales.setText(String.valueOf(decimalFormat.format(credit_amount)));
             deliveryChargeAmount_textwidget.setText(String.valueOf(decimalFormat.format(deliveryamount)));
 
 
@@ -2696,6 +2889,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
             preorder_Razorpay.setText(String.valueOf(decimalFormat.format(preorderRazorpay_amount)));
             preorder_paytmSales.setText(String.valueOf(decimalFormat.format(preorderPaytm_amount)));
             preorder_Phonepe.setText(String.valueOf(decimalFormat.format(preorderphonepe_amount)));
+            preorder_creditSales.setText(String.valueOf(decimalFormat.format(preorderCredit_Amount)));
 
 
 
@@ -3374,6 +3568,50 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             }
 
 
+                            if(paymentMode.equals(Constants.CREDIT)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!preorder_paymentModeArray.contains(paymentMode)) {
+                                    preorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
 
                             if(paymentMode.equals(Constants.PHONEPE)){
                                 double payment_tmcprice=0,payment_gstamount=0;
@@ -3551,6 +3789,49 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
                             }
 
+
+                            if(paymentMode.equals(Constants.CREDIT)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!paymentModeArray.contains(paymentMode)) {
+                                    paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
 
 
                             if(paymentMode.equals(Constants.PHONEPE)){
@@ -3905,6 +4186,51 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                         }
 
 
+
+                        if (paymentMode.equals(Constants.CREDIT)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!preorder_paymentModeArray.contains(paymentMode)) {
+                                preorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+
+
+
                         if (paymentMode.equals(Constants.PHONEPE)) {
                             double payment_tmcprice = 0, payment_gstamount = 0;
                             if (!preorder_paymentModeArray.contains(paymentMode)) {
@@ -4154,6 +4480,52 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                         }
+
+
+
+                        if (paymentMode.equals(Constants.CREDIT)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!paymentModeArray.contains(paymentMode)) {
+                                paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+
+
 
 
                         if (paymentMode.equals(Constants.CASH_ON_DELIVERY)) {
@@ -4629,8 +5001,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
         //Log.d("PdfUtil", "external storage state " + state + " extstoragedir " + extstoragedir);
-        File fol = new File(extstoragedir, "testpdf");
-        File folder = new File(fol, "pdf");
+        String  path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/TMCPartner/APP Sales Report /";
+
+      //  File fol = new File(extstoragedir, path);
+        File folder = new File(path);
         if (!folder.exists()) {
             boolean bool = folder.mkdirs();
         }
@@ -4980,6 +5354,27 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
                 }
+
+
+
+                if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalCreditAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+
+                    }
+
+
+                }
+
+
                 if ((key.toUpperCase().equals(Constants.PHONEPE))) {
                     try {
                         payment_AmountDouble = Double.parseDouble(finalPhonepeAmount_pdf);
@@ -5109,6 +5504,24 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     }
 
                 }
+
+
+                if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderCreditAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+
+                    }
+
+                }
+
                 if ((key.toUpperCase().equals(Constants.PAYTM))) {
                     try {
                         payment_AmountDouble = Double.parseDouble(finalpreorderPaytmAmount_pdf);

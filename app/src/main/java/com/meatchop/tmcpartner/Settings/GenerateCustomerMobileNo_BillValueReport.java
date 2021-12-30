@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -76,6 +77,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
 
 public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity {
     private Spinner daysCountSpinner;
@@ -202,7 +206,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                 ordersList.clear();
                 sorted_OrdersList.clear();
                 array_of_orderId.clear();
-
+                array_of_Dates.clear();
                 dateSelector_text.setText(TodaysDate);
                 fromdateSelector_text.setText(TodaysDate);
                 todateSelector_text.setText(TodaysDate);
@@ -229,6 +233,9 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
+
+                    /*
                     int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
                     // If do not grant write external storage permission.
@@ -247,6 +254,61 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             e.printStackTrace();
                         }
                     }
+
+                     */
+
+
+
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if(Environment.isExternalStorageManager()){
+                            try {
+                                showProgressBar(true);
+
+                                AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                        else{
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    } else {
+
+
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            showProgressBar(true);
+                            try {
+                                AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }
+
+
                 }
             }
         });
@@ -518,6 +580,69 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
     }
 
+
+
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case OPENPDF_ACTIVITY_REQUEST_CODE:
+                setResult(RESULT_OK);
+                finish();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    try {
+                        GenerateExcelSheet();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+            else {
+
+            if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+                int grantResultsLength = grantResults.length;
+                if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                    // exportInvoice();
+                    try {
+                        GenerateExcelSheet();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+
+
+
     private void openFromDatePicker() {
 
         spinnerselecteditem = 1 ;
@@ -536,7 +661,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             ordersList.clear();
                             sorted_OrdersList.clear();
                             array_of_orderId.clear();
-
+                            array_of_Dates.clear();
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
@@ -585,7 +710,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
         DatePicker datePicker = fromdatepicker.getDatePicker();
 
-        c.add(Calendar.DATE, -30);
+        c.add(Calendar.DATE, -60);
         // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
         Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
         long oneMonthAhead = c.getTimeInMillis();
@@ -616,7 +741,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             ordersList.clear();
                             sorted_OrdersList.clear();
                             array_of_orderId.clear();
-
+                            array_of_Dates.clear();
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
@@ -686,7 +811,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
         DatePicker datePicker = todatepicker.getDatePicker();
-        c.add(Calendar.DATE, -30);
+        c.add(Calendar.DATE, -60);
         try {
             if (!isEndDateisAfterCurrentDate) {
 
@@ -1349,6 +1474,11 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     }
 
 
+
+
+
+
+
     private void AddDatatoExcelSheet(List<Modal_ManageOrders_Pojo_Class> OrdersList, String name) {
 
 
@@ -1422,8 +1552,54 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     if (rowNum > sorted_OrdersList.size()) {
                         Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
                         Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
+                        if (SDK_INT >= Build.VERSION_CODES.R) {
 
-                        GenerateExcelSheet();
+                            if(Environment.isExternalStorageManager()){
+                                try {
+                                    GenerateExcelSheet();
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    ;
+                                }
+                            }
+                            else{
+                                try {
+                                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                    intent.addCategory("android.intent.category.DEFAULT");
+                                    intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                                    startActivityForResult(intent, 2296);
+                                } catch (Exception e) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                    startActivityForResult(intent, 2296);
+                                }
+                            }
+
+                        }
+                        else {
+
+
+                            int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, WRITE_EXTERNAL_STORAGE);
+                            //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                            // If do not grant write external storage permission.
+                            if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                                // Request user to grant write external storage permission.
+                                ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                            } else {
+                                showProgressBar(true);
+                                try {
+                                    GenerateExcelSheet();
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    ;
+                                }
+                            }
+                        }
+                       // GenerateExcelSheet();
                     } else {
                         //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
 

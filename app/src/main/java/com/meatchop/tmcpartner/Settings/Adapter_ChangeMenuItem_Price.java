@@ -16,8 +16,6 @@ import androidx.annotation.Nullable;
 
 import com.meatchop.tmcpartner.R;
 
-import org.apache.poi.xwpf.usermodel.TOC;
-
 import java.util.List;
 
 public class Adapter_ChangeMenuItem_Price extends ArrayAdapter<Modal_MenuItem_Settings> {
@@ -97,7 +95,6 @@ public class Adapter_ChangeMenuItem_Price extends ArrayAdapter<Modal_MenuItem_Se
 
 
 
-
                 if(IntentFrom.equals("ChangeMenuItemPrice")) {
                     Intent i = new Intent(mContext,ChangeMenuItem_Price_Settings.class);
 
@@ -105,6 +102,18 @@ public class Adapter_ChangeMenuItem_Price extends ArrayAdapter<Modal_MenuItem_Se
                     mContext.startActivity(i);
 
                 }
+
+
+                if(IntentFrom.equals("ChangeMenuItemPriceAndWeight")) {
+                    Intent i = new Intent(mContext, ChangeMenuItemWeightAndPriceSecondScreen.class);
+
+                    i.putExtra("menuItemKey",menuitemKey);
+                    mContext.startActivity(i);
+
+                }
+
+
+
                 if(IntentFrom.equals("MenuAvailabilityTransactionDetails")) {
                     Intent i = new Intent(mContext,MenuAvailabilityStatusTransaction.class);
                     i.putExtra("subctgykey",tmcsubctgykey);

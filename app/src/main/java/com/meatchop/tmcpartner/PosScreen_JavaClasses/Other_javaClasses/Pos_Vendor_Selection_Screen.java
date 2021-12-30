@@ -51,6 +51,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private String pos_vendorAddressline1,pos_vendorAddressline2,pos_vendorPincode;
     private String pos_vendorStatus, pos_vendorFssaino,pos_vendorLatitude,pos_vendorLongitude;
     LinearLayout loadingPanel,loadingpanelmask;
+    private  Boolean inventoryCheckBool = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +91,12 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
 
                 pos_vendorLatitude =getVendorData(position,"locationlat");
                 pos_vendorLongitude =getVendorData(position,"locationlong");
-
+                try {
+                    inventoryCheckBool = Boolean.parseBoolean(getVendorData(position, "inventorycheckpos"));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -457,7 +463,10 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 "VendorLongitute",
                 pos_vendorLongitude
         );
-
+        myEdit.putBoolean(
+                "inventoryCheckBool",
+                inventoryCheckBool
+        );
         myEdit.apply();
 
     }

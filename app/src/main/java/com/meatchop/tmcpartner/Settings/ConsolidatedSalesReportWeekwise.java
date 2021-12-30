@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -83,6 +84,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
 
 public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     LinearLayout getData,endDateSelectorLayout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
@@ -442,8 +446,52 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if(Environment.isExternalStorageManager()){
+                            try {
+                                AddDatatoExcelSheet(Order_Item_List);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                        else{
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    } else {
 
 
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(ConsolidatedSalesReportWeekwise.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(ConsolidatedSalesReportWeekwise.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            Adjusting_Widgets_Visibility(true);
+                            try {
+                                AddDatatoExcelSheet(Order_Item_List);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }
+/*
                     int writeExternalStoragePermission = ContextCompat.checkSelfPermission(ConsolidatedSalesReportWeekwise.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
                     // If do not grant write external storage permission.
@@ -464,6 +512,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
+
+ */
                 }
             }
         });
@@ -622,21 +672,38 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // perform action when allow permission success
+                    try {
+                        AddDatatoExcelSheet(Order_Item_List);
 
-        if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
-            int grantResultsLength = grantResults.length;
-            if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
-                // exportInvoice();
-                try {
-                    //exportReport();
-                    AddDatatoExcelSheet(Order_Item_List);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    ;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
                 }
-            } else {
-                Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+            }
+        }
+        else {
+            if (requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+                int grantResultsLength = grantResults.length;
+                if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
+                    // exportInvoice();
+                    try {
+                        //exportReport();
+                        AddDatatoExcelSheet(Order_Item_List);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
@@ -1491,11 +1558,26 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                     menuitemidd = String.valueOf(json.get("menuitemid"));
 
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
+
                     try {
+
+                        String ItemName = "";
+                        if(json.has("itemname")){
+                            ItemName = String.valueOf(json.get("itemname"));
+                        }
                        try {
                            for (int menuiterator = 0; menuiterator < MenuItem.size(); menuiterator++) {
                                Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(menuiterator);
                                String menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
+
+                               if(menuitemidd.equals("")){
+                                   String ItemNamefromMenu = String.valueOf(modal_menuItemSettings.getItemname().toString());
+                                   if(ItemName.equals(ItemNamefromMenu)){
+                                       menuitemidd=menuItemId;
+                                       modal_orderDetails_ItemDesp.menuitemid=menuitemidd;
+                                   }
+                               }
+
                                String reportname = String.valueOf(modal_menuItemSettings.getReportname());
                                 String pricetypeoftheItem ="";
                                if (menuItemId.equals(menuitemidd)) {
@@ -1897,7 +1979,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
                         }
 
-                        marinade_modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
+                        marinade_modal_orderDetails_ItemDesp.menuitemid = String.valueOf(menuitemidd);
 
                         marinade_modal_orderDetails_ItemDesp.tmcprice = (String.valueOf(marinadesObjectpayableAmount));
                         marinade_modal_orderDetails_ItemDesp.gstamount = String.valueOf(marinadesObjectgstAmount);
@@ -2479,7 +2561,7 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                     }
 
 
-                    String menuitemid = String.valueOf(json.get("menuitemid"));
+                    String menuitemid = String.valueOf(menuitemidd);
                     try {
                         if (Order_Item_List.contains(menuitemid)) {
                             boolean isItemAlreadyOrdered = checkIfMenuItemisAlreadyAvailableInArray(menuitemid);

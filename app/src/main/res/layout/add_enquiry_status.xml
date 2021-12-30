@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/orderidlabel_bottomsheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/open_sans_bold"
+            android:textSize="17sp"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:text="Orderid" />
+
+        <TextView
+            android:id="@+id/orderidtext_bottomsheet"
+            android:layout_width="match_parent"
+            android:textSize="17sp"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:textColor="@color/TMC_Orange"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone"
+
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/MobileNo_label_bottomsheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:layout_weight="1"
+            android:text="Mobile No" />
+
+        <TextView
+            android:id="@+id/MobileNo_text_bottomsheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:textColor="@color/TMC_Orange"
+            android:layout_weight="1"
+            android:text="" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/itemName_label_bottomsheet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:layout_weight="1"
+            android:text="Item Desp" />
+
+        <TextView
+            android:id="@+id/itemName_text_bottomsheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/TMC_Orange"
+            android:layout_weight="1"
+            android:text="" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/enquiryStatusSpinner_label_bottomsheet"
+        android:layout_width="match_parent"
+        android:textSize="17sp"
+        android:fontFamily="@font/open_sans_bold"
+
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:layout_height="wrap_content"
+        android:text="Select Current Enquiry Status" />
+
+    <Spinner
+        android:id="@+id/enquiryStatusSpinner_bottomsheet"
+        android:layout_width="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView25"
+            android:layout_width="match_parent"
+            android:textSize="17sp"
+            android:padding="2dp"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:text="Enter Description" />
+
+        <EditText
+            android:id="@+id/editTextTextMultiLine_bottomsheet"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:hint="Enter the Issue's, Summary raised by the customer ...... And How you resolved the issue."
+            android:ems="10"
+            android:padding="3dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:background="@drawable/orange_non_selected_button_background"
+            android:gravity="start|top"
+            android:inputType="textMultiLine" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+    <Button
+
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/orange_non_selected_button_background"
+        android:text="Save Description Only"
+        android:textAllCaps="false"
+        android:layout_weight="1"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/addDescriptionButton_bottomsheet"
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:visibility="visible"
+        android:textSize="17sp" />
+
+
+    <Button
+
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/orange_selected_button_background"
+        android:text="Close This Ticket"
+        android:textAllCaps="false"
+        android:layout_weight="1"
+
+        android:id="@+id/closeTicketButton_bottomsheet"
+        android:textColor="@color/TMC_White"
+        android:visibility="visible"
+        android:textSize="17sp" />
+    </LinearLayout>
+
+</LinearLayout>

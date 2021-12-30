@@ -127,6 +127,62 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                     }
 
+                    try{
+                        modal_newOrderItems.setItemavailability(String.valueOf(menuuItem.getItemavailability()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu item Availa at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
+                    try{
+                        if(menuuItem.getBarcode().equals("")){
+                            modal_newOrderItems.setBarcode("0");
+
+                        }
+                        else {
+                            modal_newOrderItems.setBarcode(String.valueOf(((menuuItem.getBarcode()))));
+                        }
+                    }
+                    catch(Exception e){
+                        Toast.makeText(context,"Can't Get Menu TMC Barcode at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try{
+                        if(menuuItem.getTmcctgykey().equals("")){
+                            modal_newOrderItems.setTmcctgykey("0");
+
+                        }
+                        else {
+                            modal_newOrderItems.setTmcctgykey(String.valueOf(((menuuItem.getTmcctgykey()))));
+                        }
+                    }
+                    catch(Exception e){
+                        Toast.makeText(context,"Can't Get Menu TMC Ctgy Key at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
+
+                    try{
+                        if(menuuItem.getInventorydetails().equals("")){
+                            modal_newOrderItems.setInventorydetails("nil");
+
+                        }
+                        else {
+                            modal_newOrderItems.setInventorydetails(String.valueOf(((menuuItem.getInventorydetails()))));
+                        }
+                    }
+                    catch(Exception e){
+                        Toast.makeText(context,"Can't Get Menu TMC inventoryDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
 
 
                     try{
@@ -142,6 +198,19 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                         Toast.makeText(context,"Can't Get Menu TMC SubCtgyKey at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                     }
+
+
+                    try{
+                        modal_newOrderItems.setItemavailability(String.valueOf(menuuItem.getItemavailability()));
+
+                    }
+                    catch(Exception e){
+                        Toast.makeText(context,"Can't Get Menu Item Availability at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
                     try{
                         modal_newOrderItems.setMenuItemId(String.valueOf(menuuItem.getMenuItemId()));
 
@@ -231,6 +300,97 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                     }
 
+                    try{
+                        modal_newOrderItems.setBarcode_AvlDetails(String.valueOf(menuuItem.getBarcode_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu Barcode AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try{
+                        modal_newOrderItems.setItemavailability_AvlDetails(String.valueOf(menuuItem.getItemavailability_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try{
+                        modal_newOrderItems.setKey_AvlDetails(String.valueOf(menuuItem.getKey_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu Key AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try{
+                        modal_newOrderItems.setLastupdatedtime_AvlDetails(String.valueOf(menuuItem.getLastupdatedtime_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu LastupdatedTime AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try{
+                        modal_newOrderItems.setMenuitemkey_AvlDetails(String.valueOf(menuuItem.getMenuitemkey_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu MenuItem AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
+                    try{
+                        modal_newOrderItems.setReceivedstock_AvlDetails(String.valueOf(menuuItem.getReceivedstock_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu ReceivedStock AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
+                    try{
+                        modal_newOrderItems.setStockbalance_AvlDetails(String.valueOf(menuuItem.getStockbalance_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu stockBalance AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try{
+                        modal_newOrderItems.setStockincomingkey_AvlDetails(String.valueOf(menuuItem.getStockincomingkey_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu stock incoming AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try{
+                        modal_newOrderItems.setVendorkey_AvlDetails(String.valueOf(menuuItem.getVendorkey_AvlDetails()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu vendorkey AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
                     try {
                         modal_newOrderItems.setQuantity("1");
                         modal_newOrderItems.setSubTotal_perItem("");
@@ -312,12 +472,13 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
             }
             return false;
         }
-        private void    convertMenuStringtoJson(String menulist) {
+        private void  convertMenuStringtoJson(String menulist) {
             try {
                 //converting jsonSTRING into array
                 String tmcsubctgykey="";;
-                JSONObject jsonObject = new JSONObject(menulist);
-                JSONArray JArray  = jsonObject.getJSONArray("content");
+                // JSONObject jsonObject = new JSONObject(menulist);
+                //JSONArray JArray  = jsonObject.getJSONArray("content");
+                JSONArray JArray = new JSONArray(menulist);
                 //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                 int i1=0;
                 int arrayLength = JArray.length();
@@ -368,16 +529,388 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                         }
 
                         //  newOrdersPojoClass.itemname =String.valueOf(json.get("itemname"));
-                        newOrdersPojoClass.tmcpriceperkg =String.valueOf(json.get("tmcpriceperkg"));
-                        newOrdersPojoClass.grossweight =String.valueOf(json.get("grossweight"));
-                        newOrdersPojoClass.netweight =String.valueOf(json.get("netweight"));
-                        newOrdersPojoClass.tmcprice =String.valueOf(json.get("tmcprice"));
-                        newOrdersPojoClass.gstpercentage =String.valueOf(json.get("gstpercentage"));
-                        newOrdersPojoClass.portionsize =String.valueOf(json.get("portionsize"));
-                        newOrdersPojoClass.pricetypeforpos =String.valueOf(json.get("pricetypeforpos"));
-                        newOrdersPojoClass.itemuniquecode =String.valueOf(json.get("itemuniquecode"));
-                        newOrdersPojoClass.menuItemId =String.valueOf(json.get("key"));
+
+
+                        try{
+                            if(json.has("tmcpriceperkg")){
+                                newOrdersPojoClass.tmcpriceperkg =String.valueOf(json.get("tmcpriceperkg"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.tmcpriceperkg = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.tmcpriceperkg = "";
+
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            if(json.has("grossweight")){
+                                newOrdersPojoClass.grossweight =String.valueOf(json.get("grossweight"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.grossweight = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.grossweight = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("netweight")){
+                                newOrdersPojoClass.netweight =String.valueOf(json.get("netweight"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.netweight = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.netweight = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("tmcprice")){
+                                newOrdersPojoClass.tmcprice =String.valueOf(json.get("tmcprice"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.tmcprice = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.tmcprice = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            if(json.has("gstpercentage")){
+                                newOrdersPojoClass.gstpercentage =String.valueOf(json.get("gstpercentage"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.gstpercentage = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.gstpercentage = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("portionsize")){
+                                newOrdersPojoClass.portionsize =String.valueOf(json.get("portionsize"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.portionsize = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.portionsize = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+
+                        try{
+                            if(json.has("pricetypeforpos")){
+                                newOrdersPojoClass.pricetypeforpos =String.valueOf(json.get("pricetypeforpos"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.pricetypeforpos = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.pricetypeforpos = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("itemuniquecode")){
+                                newOrdersPojoClass.itemuniquecode =String.valueOf(json.get("itemuniquecode"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.itemuniquecode = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.itemuniquecode = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("key")){
+                                newOrdersPojoClass.menuItemId =String.valueOf(json.get("key"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.menuItemId = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.menuItemId = "";
+
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            if(json.has("itemavailability")){
+                                newOrdersPojoClass.itemavailability =String.valueOf(json.get("itemavailability"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.itemavailability = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.itemavailability = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("barcode_AvlDetails")){
+                                newOrdersPojoClass.barcode_AvlDetails =String.valueOf(json.get("barcode_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.barcode_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.barcode_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("itemavailability_AvlDetails")){
+                                newOrdersPojoClass.itemavailability_AvlDetails =String.valueOf(json.get("itemavailability_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.itemavailability_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.itemavailability_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("key_AvlDetails")){
+                                newOrdersPojoClass.key_AvlDetails =String.valueOf(json.get("key_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.key_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.key_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("lastupdatedtime_AvlDetails")){
+                                newOrdersPojoClass.lastupdatedtime_AvlDetails =String.valueOf(json.get("lastupdatedtime_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.lastupdatedtime_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.lastupdatedtime_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+
+                        try{
+                            if(json.has("menuitemkey_AvlDetails")){
+                                newOrdersPojoClass.menuitemkey_AvlDetails =String.valueOf(json.get("menuitemkey_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.menuitemkey_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.menuitemkey_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("receivedstock_AvlDetails")){
+                                newOrdersPojoClass.receivedstock_AvlDetails =String.valueOf(json.get("receivedstock_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.receivedstock_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.receivedstock_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+
+                        try{
+                            if(json.has("stockbalance_AvlDetails")){
+                                newOrdersPojoClass.stockbalance_AvlDetails =String.valueOf(json.get("stockbalance_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.stockbalance_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.stockbalance_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            if(json.has("stockincomingkey_AvlDetails")){
+                                newOrdersPojoClass.stockincomingkey_AvlDetails =String.valueOf(json.get("stockincomingkey_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.stockincomingkey_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.stockincomingkey_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            if(json.has("vendorkey_AvlDetails")){
+                                newOrdersPojoClass.vendorkey_AvlDetails =String.valueOf(json.get("vendorkey_AvlDetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.vendorkey_AvlDetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.vendorkey_AvlDetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            if(json.has("barcode")){
+                                newOrdersPojoClass.barcode =String.valueOf(json.get("barcode"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.barcode = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.barcode = "";
+
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            if(json.has("tmcctgykey")){
+                                newOrdersPojoClass.tmcctgykey =String.valueOf(json.get("tmcctgykey"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.tmcctgykey = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.tmcctgykey = "";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("inventorydetails")){
+                                newOrdersPojoClass.inventorydetails =String.valueOf(json.get("inventorydetails"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.inventorydetails = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.inventorydetails = "";
+
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            if(json.has("allownegativestock")){
+                                newOrdersPojoClass.allownegativestock =String.valueOf(json.get("allownegativestock"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.allownegativestock = "";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.allownegativestock = "";
+
+                            e.printStackTrace();
+                        }
+
+
                         newOrdersPojoClass.discountpercentage ="0";
+
+
+
 
 
 

@@ -807,8 +807,21 @@
                             android:text="ItemName"
                             android:textColor="@color/TMC_Orange"
 
-                            android:textSize="15sp" />
+                            android:textSize="12sp" />
 
+
+
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Cut Name"
+                            android:textColor="@color/TMC_Orange"
+
+                            android:textSize="12sp" />
                         <TextView
                             android:id="@+id/textView13"
                             android:layout_width="wrap_content"
@@ -818,7 +831,7 @@
                             android:text="Weight"
                             android:textColor="@color/TMC_Orange"
 
-                            android:textSize="15sp" />
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/textView14"
@@ -829,7 +842,7 @@
                             android:text="Quanity"
                             android:textColor="@color/TMC_Orange"
 
-                            android:textSize="15sp" />
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/textView15"
@@ -840,7 +853,7 @@
                             android:text="GST"
                             android:textColor="@color/TMC_Orange"
 
-                            android:textSize="15sp" />
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/textView16"
@@ -851,7 +864,7 @@
                             android:text="Subtotal"
                             android:textColor="@color/TMC_Orange"
 
-                            android:textSize="15sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <View
