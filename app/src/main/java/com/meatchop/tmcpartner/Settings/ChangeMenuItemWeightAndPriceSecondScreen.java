@@ -32,6 +32,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.R;
@@ -42,7 +43,10 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +71,12 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
     double Marinadesellingprice = 0,Marinadesellingprice_withoutDiscount = 0,  MarinadesellingPriceWithoutDiscount = 0, Marinadegrossweightdouble = 0, MarinadeposPricedouble = 0, MarinadeappPricedouble = 0;
 
-    String appliedDiscountPercentage="",posPrice="",posPrice_pricePerKg="",appPrice="",appPrice_PricePerKg="",portionsize="",netweight="",grossweight="",grossweightingrams="",swiggyPrice="",dunzoPrice="",bigBasketPrice="",itemName="",
+    String appliedDiscountPercentage_old_transactionTable="",posPrice_old_transactionTable="",posPrice_pricePerKg_old_transactionTable="",appPrice_old_transactionTable="",appPrice_PricePerKg_old_transactionTable="",portionsize_old_transactionTable="",netweight_old_transactionTable="",grossweight_old_transactionTable="",grossweightingrams_old_transactionTable="",swiggyPrice_old_transactionTable="",dunzoPrice_old_transactionTable="",bigBasketPrice_old_transactionTable="",
+            finalweight_old_transactionTable="",itemcutdetailsString_old_transactionTable="",itemweightdetailsString_old_transactionTable="",weightDetailDisplayno_old_transactionTable="";
+
+
+
+    String appliedDiscountPercentage="",posPrice="",posPrice_pricePerKg="",appPrice="",appPrice_PricePerKg="",portionsize="",netweight="",grossweight="",grossweightingrams="",swiggyPrice="",dunzoPrice="",bigBasketPrice="",tmcsubctgykey="",itemName="",
             itemUniqueCode ="",pricetypeforPos="",finalweight="",itemcutdetailsString="",itemweightdetailsString="",weightDetailDisplayno="";;
     TextView defaultnetweight_textonly_widget,defaultGrossweight_textonly_widget,defaultportionsize_textonly_widget,itemName_textview_widget,itemUniqueCode_text_widget,grossweight_textview_widget,netweight_textview_widget,portionsize_textview_widget,pricetype_textview_widget,app_price_textview_widget,pos_price_textview_widget,
             selling_price_text_widget,posPrice_text_widget,appPrice_text_widget,appPrice_text_widget_appLayout,posPrice_text_widget_posLayout,swiggy_selling_price_text_widget_swiggyLayout,dunzo_selling_price_text_widget_dunzoLayout,
@@ -94,6 +103,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
     private ArrayAdapter weightDetailsName_aAdapter;
 
 
+
     ArrayList<String> cutDetailsKey_arrayList = new ArrayList<>();
 
     private final ArrayList<String> cutDetailsName_arrayList = new ArrayList<>();
@@ -101,7 +111,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
     public static BottomSheetDialog bottomSheetDialog;
 
-    String MenuItemCutdetailsString="",MenuItemWeightdetailsString="";
+    String MenuItemCutdetailsString="",MenuItemWeightdetailsString="",usermobileno="",vendorkey="";
 
     String isdefault_bottomsheetDialog="", netweight_bottomsheetDialog="",netweightingrams_bottomsheetDialog="",portionsize_bottomsheetDialog="",
             grossweight_bottomsheetDialog="",weightkey_bottomsheetDialog="";
@@ -130,6 +140,12 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
         cutDetailsArray.clear();
         marinadeMenuList.clear();
         MenuItem.clear();
+
+        SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        usermobileno = (shared.getString("UserPhoneNumber", "+91"));
+        vendorkey = shared.getString("VendorKey", "");
+
+
 
 
         itemName_textview_widget = findViewById(R.id.itemName_textview_widget);
@@ -200,7 +216,6 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
         wholescrollview =  findViewById(R.id.wholescrollview);
         wholescrollview.setSmoothScrollingEnabled(true);
         showProgressBar(true);
-
         getMarinadeeMenuItemArrayFromSharedPreferences();
         getMenuItemArrayFromSharedPreferences();
         getMenuItemCutDetailsFromSharedPreferences();
@@ -254,106 +269,139 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
         updateChangesinMenutableDB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isTMCPrice) {
-                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
-                        if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
-                            try {
-                                showProgressBar(true);
 
-                                sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
-                                discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
-                                swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
-                                dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
-                                bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
-
-                                CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
-
-                                CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
-                                if(sellingprice>0) {
-
-                                     //ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
-                                    ChangeMenuItemDataInDB(appPrice, posPrice);
-                                   // ChangeMenuItemPriceInDB(menuitemKey, appPrice, posPrice, appliedDiscountPercentage, swiggyPrice,dunzoPrice,bigBasketPrice);
-                                }
-                                else{
-                                    showProgressBar(false);
-
-                                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
-                                }
-
-                            } catch (Exception e) {
-                                showProgressBar(false);
-                                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "There was a Problem in Changing the Price", Toast.LENGTH_SHORT).show();
-
-                                e.printStackTrace();
-                            }
-                        } else {
-                            showProgressBar(false);
-
-                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
+                boolean isdefaultitemAvlCutDetails = false;
+                boolean isdefaultitemAvWeightDetails = false;
+                if(weightDetailsArray.size()>0) {
+                    for (int i = 0; i < weightDetailsArray.size(); i++) {
+                        String isdefaultWeightdetailsarraylist = "";
+                        isdefaultWeightdetailsarraylist = weightDetailsArray.get(i).getIsdefault().toString();
+                        if (isdefaultWeightdetailsarraylist.toUpperCase().equals("TRUE")) {
+                            isdefaultitemAvWeightDetails = true;
                         }
-                    } else {
-                        showProgressBar(false);
-
-                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
                     }
                 }
                 else{
-                    if (pos_selling_price_text_widget_posLayout.getText().length() > 0 &&  app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
-                        if (appPrice_text_widget_appLayout.getText().length() > 0 && posPrice_text_widget_posLayout.getText().toString().length() > 0) {
-                            try {
-                                showProgressBar(true);
+                    isdefaultitemAvWeightDetails = true;
 
-                                appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
-                                discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+                }
 
+                if(cutDetailsArray.size()>0) {
+                    for (int i = 0; i < cutDetailsArray.size(); i++) {
+                        String isdefaultCutdetailsarraylist = "";
+                        isdefaultCutdetailsarraylist = cutDetailsArray.get(i).getIsdefault().toString();
+                        if (isdefaultCutdetailsarraylist.toUpperCase().equals("TRUE")) {
+                            isdefaultitemAvlCutDetails = true;
+                        }
+                    }
+                }
+                else{
+                    isdefaultitemAvlCutDetails = true;
 
-                                posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
-                                swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
-                                dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
-                                bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
+                }
 
-                                CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
+                if(isdefaultitemAvlCutDetails && isdefaultitemAvWeightDetails) {
+                    if (isTMCPrice) {
+                        if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0 && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                            if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
+                                try {
+                                    showProgressBar(true);
 
-                                CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage);
-                                CalculatePosPrice(posSellingPrice_priceperKg, discount_percentage);
-                                if(appSellingPrice_priceperKg>0) {
-                                    if (posSellingPrice_priceperKg > 0) {
-                                        ChangeMenuItemDataInDB(appPrice_PricePerKg,posPrice_pricePerKg);
+                                    sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
+                                    discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+                                    swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
+                                    dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
+                                    bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
 
-                                       // ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
+                                    //CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
 
-                                        //ChangeMenuItemPriceInDB(menuitemKey, appPrice_PricePerKg, posPrice_pricePerKg, appliedDiscountPercentage, swiggyPrice, dunzoPrice, bigBasketPrice);
+                                    CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                    if (sellingprice > 0) {
 
-                                    }
-                                    else{
+                                        //ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
+                                        ChangeMenuItemDataInDB(appPrice, posPrice);
+                                        // ChangeMenuItemPriceInDB(menuitemKey, appPrice, posPrice, appliedDiscountPercentage, swiggyPrice,dunzoPrice,bigBasketPrice);
+                                    } else {
                                         showProgressBar(false);
 
-                                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "POS Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
                                     }
-                                }
-                                else{
+
+                                } catch (Exception e) {
                                     showProgressBar(false);
+                                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "There was a Problem in Changing the Price", Toast.LENGTH_SHORT).show();
 
-                                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "APP Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
                                 }
-
-                            } catch (Exception e) {
+                            } else {
                                 showProgressBar(false);
-                                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "There was a Problem in Changing the Price", Toast.LENGTH_SHORT).show();
 
-                                e.printStackTrace();
+                                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             showProgressBar(false);
 
-                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        showProgressBar(false);
+                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0 && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                            if (appPrice_text_widget_appLayout.getText().length() > 0 && posPrice_text_widget_posLayout.getText().toString().length() > 0) {
+                                try {
+                                    showProgressBar(true);
 
-                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                                    appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
+                                    discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+
+
+                                    posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
+                                    swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
+                                    dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
+                                    bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
+
+                                    //    CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
+
+                                    CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage);
+                                    CalculatePosPrice(posSellingPrice_priceperKg, discount_percentage);
+                                    if (appSellingPrice_priceperKg > 0) {
+                                        if (posSellingPrice_priceperKg > 0) {
+                                            ChangeMenuItemDataInDB(appPrice_PricePerKg, posPrice_pricePerKg);
+
+                                            // ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
+
+                                            //ChangeMenuItemPriceInDB(menuitemKey, appPrice_PricePerKg, posPrice_pricePerKg, appliedDiscountPercentage, swiggyPrice, dunzoPrice, bigBasketPrice);
+
+                                        } else {
+                                            showProgressBar(false);
+
+                                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "POS Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
+                                        }
+                                    } else {
+                                        showProgressBar(false);
+
+                                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "APP Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                } catch (Exception e) {
+                                    showProgressBar(false);
+                                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "There was a Problem in Changing the Price", Toast.LENGTH_SHORT).show();
+
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                showProgressBar(false);
+
+                                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            showProgressBar(false);
+
+                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                        }
                     }
+                }
+                else{
+                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Should have an default item in Cut and Weight Details", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
@@ -533,7 +581,20 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             }
         });
 
+        appliedDiscountPercentage_text_widget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    //do what you want on the press of 'done'
+                    isPosPrice_PricePerKgChanged = true;
+                    computeAppandPosPrice.performClick();
 
+                    isAppPrice_PricePerKgChanged = true;
+                    computeAppandPosPrice.performClick();
+
+                }
+                return false;
+            }
+        });
 
 
 
@@ -550,7 +611,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                                 if(sellingprice>0) {
                                     discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
                                     if (discount_percentage <= 100) {
-                                        CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                       // CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
                                         CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
                                     } else {
                                         Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
@@ -584,7 +645,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                     }
                 }
                 else {
-                    if (isPosPrice_PricePerKgChanged) {
+                    if (isPosPrice_PricePerKgChanged && !isAppPrice_PricePerKgChanged) {
                         isPosPrice_PricePerKgChanged = false;
                         if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
@@ -631,7 +692,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                             Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
                         }
                     }
-                    else if(isAppPrice_PricePerKgChanged){
+                    else if(isAppPrice_PricePerKgChanged && !isPosPrice_PricePerKgChanged){
                         isAppPrice_PricePerKgChanged = false;
                         if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
@@ -643,7 +704,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                                         discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
                                         if (discount_percentage <= 100) {
                                             CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage);
-                                            CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
+                                          //  CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
 
                                         } else {
                                             Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
@@ -678,6 +739,101 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
                             Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
                         }
+                    }
+                    else if(isAppPrice_PricePerKgChanged && isPosPrice_PricePerKgChanged){
+                        isAppPrice_PricePerKgChanged = false;
+                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                            if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
+                                try {
+                                    appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
+                                    if(appSellingPrice_priceperKg>0) {
+                                        showProgressBar(true);
+
+                                        discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+                                        if (discount_percentage <= 100) {
+                                            CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage);
+                                            //  CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
+
+                                        } else {
+                                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
+                                            showProgressBar(false);
+
+                                        }
+                                    }
+                                    else{
+                                        showProgressBar(false);
+
+                                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "APP Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
+                                    }
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Can't Change the Price", Toast.LENGTH_SHORT).show();
+
+                                    showProgressBar(false);
+
+                                }
+                            }
+                            else {
+                                showProgressBar(false);
+
+                                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+                        else {
+                            showProgressBar(false);
+
+                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                        }
+
+                        isPosPrice_PricePerKgChanged = false;
+                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                            if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
+                                showProgressBar(true);
+                                try {
+                                    posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
+                                    if(posSellingPrice_priceperKg>0) {
+                                        discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+                                        if (discount_percentage <= 100) {
+                                            CalculatePosPrice(posSellingPrice_priceperKg, discount_percentage);
+
+
+                                        } else {
+                                            showProgressBar(false);
+
+                                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
+
+                                        }
+
+                                    }
+                                    else {
+                                        showProgressBar(false);
+
+                                        Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "POS Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
+                                    }
+                                } catch (Exception e) {
+                                    showProgressBar(false);
+                                    Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Can't Change the Price", Toast.LENGTH_SHORT).show();
+
+                                    e.printStackTrace();
+                                }
+                            }
+                            else {
+                                showProgressBar(false);
+
+                                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+                        else {
+                            showProgressBar(false);
+
+                            Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                        }
+
                     }
 
                 }
@@ -1203,7 +1359,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                         String grossweightingrams = getMenuItemWeightData(position,"grossweightingrams");
                         String netweight = getMenuItemWeightData(position,"netweight");
                         String weightkey = getMenuItemWeightData(position,"weightkey");
-                      String weight = getMenuItemWeightData(position,"weight");
+                        String weight = getMenuItemWeightData(position,"weight");
                         weightkey_bottomsheetDialog = getMenuItemWeightData(position,"weightkey");
                         weightDetailDisplayno = getMenuItemWeightData(position,"weightdisplayno");
                         String displayno = getMenuItemWeightData(position,"weightdisplayno");
@@ -1317,14 +1473,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
 
            // if(!Objects.requireNonNull(weightDetails_edit_portionsize).getText().toString().equals("null") && !Objects.requireNonNull(weightDetails_edit_portionsize).getText().toString().equals("")){
-
-
-
-
-
-
-
-            grossweight_bottomsheetDialog = Objects.requireNonNull(weightDetails_edit_grossweight).getText().toString();
+                grossweight_bottomsheetDialog = Objects.requireNonNull(weightDetails_edit_grossweight).getText().toString();
                 grossweight_bottomsheetDialog = grossweight_bottomsheetDialog.replaceAll("[^\\d.]", "");
 
 
@@ -1419,91 +1568,578 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
                 bottomSheetDialog.show();
 
-
-
             }
         });
 
 
     }
 
-    private void AddDataInLocalweightDetailsArray(String grossweight_bottomsheetDialog, String netweight_bottomsheetDialog, String portionsize_bottomsheetDialog, String isdefault_bottomsheetDialog, String weightkey_bottomsheetDialog, String weightDetailDisplayno) {
-        String grossweightingrams_bottomsheetDialog="";
-        if((netweight.toUpperCase().contains("PCS"))||(netweight.toUpperCase().contains("PC"))){
+    private void getDataForMenuItemTransaction() {
+
+        appliedDiscountPercentage_old_transactionTable="";posPrice_old_transactionTable="";appPrice_old_transactionTable="";portionsize_old_transactionTable="";netweight_old_transactionTable="";grossweight_old_transactionTable="";grossweightingrams_old_transactionTable="";swiggyPrice_old_transactionTable="";dunzoPrice_old_transactionTable="";bigBasketPrice_old_transactionTable="";
+                finalweight_old_transactionTable="";itemcutdetailsString_old_transactionTable="";itemweightdetailsString_old_transactionTable="";weightDetailDisplayno_old_transactionTable="";
+
             try{
+                try{
+                    appliedDiscountPercentage_old_transactionTable = appliedDiscountPercentage_text_widget.getText().toString();
 
-                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog+"Pcs");
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        if((netweight.toUpperCase().contains("G"))||(netweight.toUpperCase().contains("GRAMS"))||(netweight.toUpperCase().contains("GMS"))){
-            try{
-                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog+"g");
-
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        if((grossweight.toUpperCase().contains("G"))||(grossweight.toUpperCase().contains("GRAMS"))||(grossweight.toUpperCase().contains("GMS"))){
-            try{
-                grossweight_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog+"g");
-
-
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        if((portionsize.toUpperCase().contains("PCS"))||(portionsize.toUpperCase().contains("PC"))){
-            try{
-                if(!portionsize_bottomsheetDialog.equals("")) {
-
-                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog  );
+                }
+                catch (Exception e){
+                    appliedDiscountPercentage_old_transactionTable = "0";
+                    e.printStackTrace();
                 }
 
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+                if((appliedDiscountPercentage_old_transactionTable.equals("")) && (appliedDiscountPercentage_old_transactionTable.equals(null))){
+                    appliedDiscountPercentage_old_transactionTable = "0";
 
-        else  if((portionsize.toUpperCase().contains("G"))||(portionsize.toUpperCase().contains("GRAMS"))||(portionsize.toUpperCase().contains("GMS"))){
-            try{
-                if(!portionsize_bottomsheetDialog.equals("")) {
-
-                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog );
                 }
 
-            } catch (Exception e){
+            }catch (Exception e){
+                appliedDiscountPercentage_old_transactionTable = "0";
                 e.printStackTrace();
             }
-        }
-        else{
-            portionsize_bottomsheetDialog.trim();
-            if(!portionsize_bottomsheetDialog.equals("")) {
 
-                portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog );
-            }
-        }
 
         try{
-            grossweightingrams_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog);
-            grossweightingrams_bottomsheetDialog= grossweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+            try{
+                posPrice_old_transactionTable = posPrice_text_widget_posLayout.getText().toString();
 
+            }
+            catch (Exception e){
+                posPrice_old_transactionTable = "0";
+                e.printStackTrace();
+            }
+
+            if((posPrice_old_transactionTable.equals("")) && (posPrice_old_transactionTable.equals(null))){
+                posPrice_old_transactionTable = "0";
+
+            }
+
+        }catch (Exception e){
+            posPrice_old_transactionTable = "0";
+            e.printStackTrace();
         }
-        catch (Exception e){
-            grossweightingrams ="0";
+
+
+        try{
+            try{
+                appPrice_old_transactionTable = appPrice_text_widget_appLayout.getText().toString();
+
+            }
+            catch (Exception e){
+                appPrice_old_transactionTable = "0";
+                e.printStackTrace();
+            }
+
+            if((appPrice_old_transactionTable.equals("")) && (appPrice_old_transactionTable.equals(null))){
+                appPrice_old_transactionTable = "0";
+
+            }
+
+        }catch (Exception e){
+            appPrice_old_transactionTable = "0";
             e.printStackTrace();
         }
 
 
 
+        try{
+            try{
+
+                swiggyPrice_old_transactionTable = swiggy_selling_price_text_widget_swiggyLayout.getText().toString();
+
+            }
+            catch (Exception e){
+                swiggyPrice_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            swiggyPrice_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+
+        try{
+            try{
+
+                dunzoPrice_old_transactionTable = dunzo_selling_price_text_widget_dunzoLayout.getText().toString();
+
+            }
+            catch (Exception e){
+                dunzoPrice_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            dunzoPrice_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+        try{
+            try{
+
+                bigBasketPrice_old_transactionTable = bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString();
+
+            }
+            catch (Exception e){
+                bigBasketPrice_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            bigBasketPrice_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+
+
+
+
+
+        try{
+            try{
+
+                if(MenuItemWeightDetailsArrayDefaultList.size()>0) {
+                    portionsize_old_transactionTable = defaultportionsize_textonly_widget.getText().toString();
+                }
+                else{
+                    portionsize_old_transactionTable = defaultportionsize_textview_widget.getText().toString();
+
+                }
+            }
+            catch (Exception e){
+                portionsize_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            portionsize_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+
+        try{
+
+            if(MenuItemWeightDetailsArrayDefaultList.size()>0) {
+                if((netweight.contains("-")) || (netweight.contains("to"))){
+                    netweight_old_transactionTable =  netweight_first_textview_widget .getText().toString();
+
+                    netweight_old_transactionTable =netweight_old_transactionTable + " - "+ netweight_second_textview_widget.getText().toString();
+
+                }
+                else{
+                    netweight_old_transactionTable = defaultnetweight_textview_widget.getText().toString();
+                }
+            }
+            else{
+
+                netweight_old_transactionTable = defaultnetweight_textonly_widget.getText().toString();
+
+            }
+
+
+
+        }catch (Exception e){
+            netweight_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+        try{
+            try{
+                if(MenuItemWeightDetailsArrayDefaultList.size()>0) {
+                    grossweight_old_transactionTable = defaultgrossweight_text_widget.getText().toString();
+
+
+                }
+                else{
+                    grossweight_old_transactionTable = defaultGrossweight_textonly_widget.getText().toString();
+
+                }
+
+            }
+            catch (Exception e){
+                grossweight_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+              grossweight_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+        try{
+            try{
+
+                grossweightingrams_old_transactionTable = grossweight_old_transactionTable.replaceAll("[^\\d.]", "");
+
+            }
+            catch (Exception e){
+                grossweightingrams_old_transactionTable = "0";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            grossweightingrams_old_transactionTable = "0";
+            e.printStackTrace();
+        }
+
+
+
+        try{
+            try{
+
+                Gson gson = new Gson();
+                itemcutdetailsString_old_transactionTable = gson.toJson(cutDetailsArray);
+
+
+
+
+            }
+            catch (Exception e){
+                itemcutdetailsString_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            itemcutdetailsString_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+
+
+
+        try{
+            try{
+
+                Gson gson = new Gson();
+                itemweightdetailsString_old_transactionTable = gson.toJson(weightDetailsArray);
+
+
+
+
+            }
+            catch (Exception e){
+                itemweightdetailsString_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            itemweightdetailsString_old_transactionTable = "";
+            e.printStackTrace();
+        }
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+    private void AddDataInLocalweightDetailsArray(String grossweight_bottomsheetDialog, String netweight_bottomsheetDialog, String portionsize_bottomsheetDialog, String isdefault_bottomsheetDialog, String weightkey_bottomsheetDialog, String weightDetailDisplayno) {
+
+        boolean isArrayContainsdefault = false;
+        if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+            for (int i = 0; i < weightDetailsArray.size(); i++) {
+                String isdefaultCutdetailsarraylist = "";
+                isdefaultCutdetailsarraylist = weightDetailsArray.get(i).getIsdefault().toString();
+                if (isdefaultCutdetailsarraylist.toUpperCase().equals("TRUE")) {
+                    isArrayContainsdefault = true;
+                }
+            }
+            if (isArrayContainsdefault) {
+                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Already Have an default item in Array", Toast.LENGTH_SHORT).show();
+            } else {
+
+                String grossweightingrams_bottomsheetDialog = "";
+                if ((netweight.toUpperCase().contains("PCS")) || (netweight.toUpperCase().contains("PC"))) {
+                    try {
+
+                        netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "Pcs");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if ((netweight.toUpperCase().contains("G")) || (netweight.toUpperCase().contains("GRAMS")) || (netweight.toUpperCase().contains("GMS"))) {
+                    try {
+                        netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "g");
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if ((grossweight.toUpperCase().contains("G")) || (grossweight.toUpperCase().contains("GRAMS")) || (grossweight.toUpperCase().contains("GMS"))) {
+                    try {
+                        grossweight_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog + "g");
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if ((portionsize.toUpperCase().contains("PCS")) || (portionsize.toUpperCase().contains("PC"))) {
+                    try {
+                        if (!portionsize_bottomsheetDialog.equals("")) {
+
+                            portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else if ((portionsize.toUpperCase().contains("G")) || (portionsize.toUpperCase().contains("GRAMS")) || (portionsize.toUpperCase().contains("GMS"))) {
+                    try {
+                        if (!portionsize_bottomsheetDialog.equals("")) {
+
+                            portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    portionsize_bottomsheetDialog.trim();
+                    if (!portionsize_bottomsheetDialog.equals("")) {
+
+                        portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                    }
+                }
+
+                try {
+                    grossweightingrams_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog);
+                    grossweightingrams_bottomsheetDialog = grossweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+
+                } catch (Exception e) {
+                    grossweightingrams = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    if (netweight_bottomsheetDialog.contains("to") || netweight_bottomsheetDialog.contains("-")) {
+
+
+                        if (netweight_bottomsheetDialog.contains("to")) {
+                            String[] split = netweight_bottomsheetDialog.split("to");
+                            String firstSubString = split[0];
+                            String secondSubString = split[1];
+                            firstSubString = firstSubString.trim();
+                            secondSubString = secondSubString.trim();
+                            netweightingrams_bottomsheetDialog = secondSubString;
+
+                        } else {
+                            String[] split = netweight_bottomsheetDialog.split("-");
+                            String firstSubString = split[0];
+                            String secondSubString = split[1];
+                            firstSubString = firstSubString.trim();
+                            secondSubString = secondSubString.trim();
+                            netweightingrams_bottomsheetDialog = secondSubString;
+
+
+                        }
+
+
+                    } else {
+
+
+                        netweightingrams_bottomsheetDialog = netweight_bottomsheetDialog;
+
+
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                Modal_MenuItemWeightDetails modal_menuItemWeightDetails = new Modal_MenuItemWeightDetails();
+                modal_menuItemWeightDetails.grossweight = grossweight_bottomsheetDialog;
+                modal_menuItemWeightDetails.netweight = netweight_bottomsheetDialog;
+                modal_menuItemWeightDetails.portionsize = portionsize_bottomsheetDialog;
+                modal_menuItemWeightDetails.weightkey = weightkey_bottomsheetDialog;
+                modal_menuItemWeightDetails.isdefault = isdefault_bottomsheetDialog;
+                modal_menuItemWeightDetails.weight = grossweight_bottomsheetDialog;
+                modal_menuItemWeightDetails.weightdisplayno = weightDetailDisplayno;
+                modal_menuItemWeightDetails.grossweightingrams = grossweightingrams_bottomsheetDialog;
+                modal_menuItemWeightDetails.netweightingrams = netweightingrams_bottomsheetDialog;
+
+
+                try {
+                    weightDetailsKey_arrayList.add(weightkey_bottomsheetDialog);
+                    weightDetailsArray.add(modal_menuItemWeightDetails);
+                    itemweightdetailsString = "weight added";
+                    bottomSheetDialog.cancel();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+                    try {
+                        grossweight = String.valueOf(grossweight_bottomsheetDialog);
+
+                    } catch (Exception e) {
+                        grossweight = "";
+                        e.printStackTrace();
+                    }
+                    try {
+                        grossweightingrams = String.valueOf(grossweightingrams_bottomsheetDialog);
+
+                    } catch (Exception e) {
+                        grossweightingrams = "00";
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        portionsize = String.valueOf(portionsize_bottomsheetDialog);
+
+                    } catch (Exception e) {
+                        portionsize = "";
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        netweight = String.valueOf(netweight_bottomsheetDialog);
+
+                    } catch (Exception e) {
+                        netweight = "";
+                        e.printStackTrace();
+                    }
+
+
+                }
+
+
+                try {
+                    FormatAndDisplaytheDataa();
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    isPosPrice_PricePerKgChanged = false;
+                    isAppPrice_PricePerKgChanged = true;
+                    computeAppandPosPrice.performClick();
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
+            }
+
+
+        }
+        else{
+        String grossweightingrams_bottomsheetDialog = "";
+        if ((netweight.toUpperCase().contains("PCS")) || (netweight.toUpperCase().contains("PC"))) {
+            try {
+
+                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "Pcs");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ((netweight.toUpperCase().contains("G")) || (netweight.toUpperCase().contains("GRAMS")) || (netweight.toUpperCase().contains("GMS"))) {
+            try {
+                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "g");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ((grossweight.toUpperCase().contains("G")) || (grossweight.toUpperCase().contains("GRAMS")) || (grossweight.toUpperCase().contains("GMS"))) {
+            try {
+                grossweight_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog + "g");
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ((portionsize.toUpperCase().contains("PCS")) || (portionsize.toUpperCase().contains("PC"))) {
+            try {
+                if (!portionsize_bottomsheetDialog.equals("")) {
+
+                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if ((portionsize.toUpperCase().contains("G")) || (portionsize.toUpperCase().contains("GRAMS")) || (portionsize.toUpperCase().contains("GMS"))) {
+            try {
+                if (!portionsize_bottomsheetDialog.equals("")) {
+
+                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            portionsize_bottomsheetDialog.trim();
+            if (!portionsize_bottomsheetDialog.equals("")) {
+
+                portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+            }
+        }
+
+        try {
+            grossweightingrams_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog);
+            grossweightingrams_bottomsheetDialog = grossweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+
+        } catch (Exception e) {
+            grossweightingrams = "0";
+            e.printStackTrace();
+        }
+
+
         try {
 
             if (netweight_bottomsheetDialog.contains("to") || netweight_bottomsheetDialog.contains("-")) {
-
 
 
                 if (netweight_bottomsheetDialog.contains("to")) {
@@ -1535,8 +2171,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             }
 
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -1553,196 +2188,300 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
         modal_menuItemWeightDetails.netweightingrams = netweightingrams_bottomsheetDialog;
 
 
-
-
-        try{
+        try {
             weightDetailsKey_arrayList.add(weightkey_bottomsheetDialog);
             weightDetailsArray.add(modal_menuItemWeightDetails);
-            itemweightdetailsString ="weight added";
+            itemweightdetailsString = "weight added";
             bottomSheetDialog.cancel();
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-        /*
-        if(isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")){
-            try{
+        if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+            try {
                 grossweight = String.valueOf(grossweight_bottomsheetDialog);
 
-            }
-            catch (Exception e){
-                grossweight ="";
+            } catch (Exception e) {
+                grossweight = "";
                 e.printStackTrace();
             }
-            try{
+            try {
                 grossweightingrams = String.valueOf(grossweightingrams_bottomsheetDialog);
 
-            }
-            catch (Exception e){
-                grossweightingrams ="00";
+            } catch (Exception e) {
+                grossweightingrams = "00";
                 e.printStackTrace();
             }
 
-            try{
+            try {
                 portionsize = String.valueOf(portionsize_bottomsheetDialog);
 
-            }
-            catch (Exception e){
-                portionsize ="";
+            } catch (Exception e) {
+                portionsize = "";
                 e.printStackTrace();
             }
 
-            try{
+            try {
                 netweight = String.valueOf(netweight_bottomsheetDialog);
 
-            }
-            catch (Exception e){
-                netweight ="";
+            } catch (Exception e) {
+                netweight = "";
                 e.printStackTrace();
             }
-
 
 
         }
 
-        try{
+
+        try {
+            FormatAndDisplaytheDataa();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        try {
             isPosPrice_PricePerKgChanged = false;
             isAppPrice_PricePerKgChanged = true;
             computeAppandPosPrice.performClick();
 
-x
-        }
-        catch (Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-         */
-        try{
-            FormatAndDisplaytheDataa();
-            bottomSheetDialog.cancel();
-
-
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-
+    }
 
 
     }
     private void AddCutDetailsDataInLocalArray(String cutname_bottomsheetDialog_cutDetails, String cutDesp_bottomsheetDialog_cutDetails1, String grossweight_bottomsheetDialog_cutDetails, String netweight_bottomsheetDialog_cutDetails, String portionsize_bottomsheetDialog_cutDetails, String isdefault_bottomsheetDialog_cutDetails, String cutkey_bottomsheetDialog_cutDetails) {
+        boolean isArrayContainsdefault = false;
+        if (isdefault_bottomsheetDialog_cutDetails.toUpperCase().equals("TRUE")) {
+            for (int i = 0; i < cutDetailsArray.size(); i++) {
+                String isdefaultCutdetailsarraylist = "";
+                isdefaultCutdetailsarraylist = cutDetailsArray.get(i).getIsdefault().toString();
+                if (isdefaultCutdetailsarraylist.toUpperCase().equals("TRUE")) {
+                    isArrayContainsdefault = true;
+                }
+            }
+            if (isArrayContainsdefault) {
+                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Already Have an default item in Array", Toast.LENGTH_SHORT).show();
+            }
+            else {
 
-        String grossweightingrams_bottomsheetDialog="",netweightingrams_bottomsheetDialog="";
-        try{
+
+                String grossweightingrams_bottomsheetDialog="",netweightingrams_bottomsheetDialog="";
+                try{
+                    try {
+
+                        if (netweight_bottomsheetDialog_cutDetails.contains("to") || netweight_bottomsheetDialog_cutDetails.contains("-")) {
+
+
+
+                            if (netweight_bottomsheetDialog_cutDetails.contains("to")) {
+                                String[] split = netweight_bottomsheetDialog_cutDetails.split("to");
+                                String firstSubString = split[0];
+                                String secondSubString = split[1];
+                                firstSubString = firstSubString.trim();
+                                secondSubString = secondSubString.trim();
+                                netweightingrams_bottomsheetDialog = secondSubString;
+
+                            } else {
+                                String[] split = netweight_bottomsheetDialog_cutDetails.split("-");
+                                String firstSubString = split[0];
+                                String secondSubString = split[1];
+                                firstSubString = firstSubString.trim();
+                                secondSubString = secondSubString.trim();
+                                netweightingrams_bottomsheetDialog = secondSubString;
+
+
+                            }
+
+
+                        } else {
+
+
+                            netweightingrams_bottomsheetDialog = netweight_bottomsheetDialog_cutDetails;
+
+
+                        }
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+                        netweightingrams_bottomsheetDialog = netweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+
+                    } catch (Exception e) {
+                        netweightingrams_bottomsheetDialog = "";
+                        e.printStackTrace();
+                    }
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                }
+
+
+                Modal_MenuItemCutDetails modal_menuItemCutDetails = new Modal_MenuItemCutDetails();
+                modal_menuItemCutDetails.grossweight = grossweight_bottomsheetDialog_cutDetails;
+
+                if(!cutname_bottomsheetDialog_cutDetails.equals("")){
+
+                    modal_menuItemCutDetails.cutname = cutname_bottomsheetDialog_cutDetails;
+
+                }
+                else{
+                    modal_menuItemCutDetails.cutname ="";
+                }
+
+
+
+                if(!netweight_bottomsheetDialog_cutDetails.equals("000g - 000g")){
+                    modal_menuItemCutDetails.netweight = netweight_bottomsheetDialog_cutDetails;
+                    modal_menuItemCutDetails.netweightingrams = netweightingrams_bottomsheetDialog;
+                }
+                else{
+                    modal_menuItemCutDetails.netweight ="";
+                    modal_menuItemCutDetails.netweightingrams ="";
+                }
+
+
+
+                modal_menuItemCutDetails.portionsize = portionsize_bottomsheetDialog_cutDetails;
+                modal_menuItemCutDetails.cutdisplayno = cutDisplayNo_bottomsheetDialog_cutDetails;
+                modal_menuItemCutDetails.isdefault = isdefault_bottomsheetDialog_cutDetails;
+                modal_menuItemCutDetails.cutdesp = cutDesp_bottomsheetDialog_cutDetails1;
+                modal_menuItemCutDetails.cutkey = cutkey_bottomsheetDialog_cutDetails;
+                modal_menuItemCutDetails.cutimagename = cutImage_bottomsheetDialog_cutDetails;
+
+                try {
+                    cutDetailsKey_arrayList.add(cutkey_bottomsheetDialog_cutDetails);
+                    cutDetailsArray.add(modal_menuItemCutDetails);
+                    itemcutdetailsString = "cutdetails added";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    FormatAndDisplaytheDataa();
+                    bottomSheetDialog.cancel();
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+
+        }
+        else {
+            String grossweightingrams_bottomsheetDialog = "", netweightingrams_bottomsheetDialog = "";
             try {
+                try {
 
-                if (netweight_bottomsheetDialog_cutDetails.contains("to") || netweight_bottomsheetDialog_cutDetails.contains("-")) {
+                    if (netweight_bottomsheetDialog_cutDetails.contains("to") || netweight_bottomsheetDialog_cutDetails.contains("-")) {
 
 
+                        if (netweight_bottomsheetDialog_cutDetails.contains("to")) {
+                            String[] split = netweight_bottomsheetDialog_cutDetails.split("to");
+                            String firstSubString = split[0];
+                            String secondSubString = split[1];
+                            firstSubString = firstSubString.trim();
+                            secondSubString = secondSubString.trim();
+                            netweightingrams_bottomsheetDialog = secondSubString;
 
-                    if (netweight_bottomsheetDialog_cutDetails.contains("to")) {
-                        String[] split = netweight_bottomsheetDialog_cutDetails.split("to");
-                        String firstSubString = split[0];
-                        String secondSubString = split[1];
-                        firstSubString = firstSubString.trim();
-                        secondSubString = secondSubString.trim();
-                        netweightingrams_bottomsheetDialog = secondSubString;
+                        } else {
+                            String[] split = netweight_bottomsheetDialog_cutDetails.split("-");
+                            String firstSubString = split[0];
+                            String secondSubString = split[1];
+                            firstSubString = firstSubString.trim();
+                            secondSubString = secondSubString.trim();
+                            netweightingrams_bottomsheetDialog = secondSubString;
+
+
+                        }
+
 
                     } else {
-                        String[] split = netweight_bottomsheetDialog_cutDetails.split("-");
-                        String firstSubString = split[0];
-                        String secondSubString = split[1];
-                        firstSubString = firstSubString.trim();
-                        secondSubString = secondSubString.trim();
-                        netweightingrams_bottomsheetDialog = secondSubString;
+
+
+                        netweightingrams_bottomsheetDialog = netweight_bottomsheetDialog_cutDetails;
 
 
                     }
 
 
-                } else {
-
-
-                    netweightingrams_bottomsheetDialog = netweight_bottomsheetDialog_cutDetails;
-
-
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+                try {
+                    netweightingrams_bottomsheetDialog = netweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
 
-
-            }
-            catch (Exception e){
+                } catch (Exception e) {
+                    netweightingrams_bottomsheetDialog = "";
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
+
+
+            Modal_MenuItemCutDetails modal_menuItemCutDetails = new Modal_MenuItemCutDetails();
+            modal_menuItemCutDetails.grossweight = grossweight_bottomsheetDialog_cutDetails;
+
+            if (!cutname_bottomsheetDialog_cutDetails.equals("")) {
+
+                modal_menuItemCutDetails.cutname = cutname_bottomsheetDialog_cutDetails;
+
+            } else {
+                modal_menuItemCutDetails.cutname = "";
+            }
+
+
+            if (!netweight_bottomsheetDialog_cutDetails.equals("000g - 000g")) {
+                modal_menuItemCutDetails.netweight = netweight_bottomsheetDialog_cutDetails;
+                modal_menuItemCutDetails.netweightingrams = netweightingrams_bottomsheetDialog;
+            } else {
+                modal_menuItemCutDetails.netweight = "";
+                modal_menuItemCutDetails.netweightingrams = "";
+            }
+
+
+            modal_menuItemCutDetails.portionsize = portionsize_bottomsheetDialog_cutDetails;
+            modal_menuItemCutDetails.cutdisplayno = cutDisplayNo_bottomsheetDialog_cutDetails;
+            modal_menuItemCutDetails.isdefault = isdefault_bottomsheetDialog_cutDetails;
+            modal_menuItemCutDetails.cutdesp = cutDesp_bottomsheetDialog_cutDetails1;
+            modal_menuItemCutDetails.cutkey = cutkey_bottomsheetDialog_cutDetails;
+            modal_menuItemCutDetails.cutimagename = cutImage_bottomsheetDialog_cutDetails;
+
             try {
-                netweightingrams_bottomsheetDialog = netweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+                cutDetailsKey_arrayList.add(cutkey_bottomsheetDialog_cutDetails);
+                cutDetailsArray.add(modal_menuItemCutDetails);
+                itemcutdetailsString = "cutdetails added";
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+                FormatAndDisplaytheDataa();
+                bottomSheetDialog.cancel();
+
 
             } catch (Exception e) {
-                netweightingrams_bottomsheetDialog = "";
                 e.printStackTrace();
             }
         }
-        catch (Exception e ){
-            e.printStackTrace();
-        }
-
-
-        Modal_MenuItemCutDetails modal_menuItemCutDetails = new Modal_MenuItemCutDetails();
-        modal_menuItemCutDetails.grossweight = grossweight_bottomsheetDialog_cutDetails;
-
-        if(!cutname_bottomsheetDialog_cutDetails.equals("")){
-
-            modal_menuItemCutDetails.cutname = cutname_bottomsheetDialog_cutDetails;
-
-        }
-        else{
-            modal_menuItemCutDetails.cutname ="";
-        }
-
-
-
-        if(!netweight_bottomsheetDialog_cutDetails.equals("000g - 000g")){
-            modal_menuItemCutDetails.netweight = netweight_bottomsheetDialog_cutDetails;
-            modal_menuItemCutDetails.netweightingrams = netweightingrams_bottomsheetDialog;
-        }
-        else{
-            modal_menuItemCutDetails.netweight ="";
-            modal_menuItemCutDetails.netweightingrams ="";
-        }
-
-
-
-        modal_menuItemCutDetails.portionsize = portionsize_bottomsheetDialog_cutDetails;
-        modal_menuItemCutDetails.cutdisplayno = cutDisplayNo_bottomsheetDialog_cutDetails;
-        modal_menuItemCutDetails.isdefault = isdefault_bottomsheetDialog_cutDetails;
-        modal_menuItemCutDetails.cutdesp = cutDesp_bottomsheetDialog_cutDetails1;
-        modal_menuItemCutDetails.cutkey = cutkey_bottomsheetDialog_cutDetails;
-        modal_menuItemCutDetails.cutimagename = cutImage_bottomsheetDialog_cutDetails;
-
-        try {
-            cutDetailsKey_arrayList.add(cutkey_bottomsheetDialog_cutDetails);
-            cutDetailsArray.add(modal_menuItemCutDetails);
-            itemcutdetailsString = "cutdetails added";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        try {
-            FormatAndDisplaytheDataa();
-            bottomSheetDialog.cancel();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
 
 
 
@@ -1828,11 +2567,11 @@ x
                     try{
                         cutdesp = String.valueOf( modal_menuItemCutDetails.getCutdesp().toString());
                         if(cutdesp.equals(null)||cutdesp.equals("null")){
-                            cutdesp="-";
+                            cutdesp="";
                         }
                     }
                     catch(Exception e){
-                        cutdesp="--";
+                        cutdesp="";
                         e.printStackTrace();
                     }
 
@@ -1841,33 +2580,33 @@ x
                     try{
                         cutdisplayno = String.valueOf( modal_menuItemCutDetails.getCutdisplayno().toString());
                         if(cutdisplayno.equals(null)||cutdisplayno.equals("null")){
-                            cutdisplayno="-";
+                            cutdisplayno="";
                         }
                     }
                     catch(Exception e){
-                        cutdisplayno="--";
+                        cutdisplayno="";
                         e.printStackTrace();
                     }
 
                     try{
                         cutimagename = String.valueOf( modal_menuItemCutDetails.getCutimagename().toString());
                         if(cutimagename.equals(null)||cutimagename.equals("null")){
-                            cutimagename="-";
+                            cutimagename="";
                         }
                     }
                     catch(Exception e){
-                        cutimagename="--";
+                        cutimagename="";
                         e.printStackTrace();
                     }
 
                     try{
                         cutkey = String.valueOf( modal_menuItemCutDetails.getCutkey().toString());
                         if(cutkey.equals(null)||cutkey.equals("null")){
-                            cutkey="-";
+                            cutkey="";
                         }
                     }
                     catch(Exception e){
-                        cutkey="--";
+                        cutkey="";
                         e.printStackTrace();
                     }
 
@@ -1876,33 +2615,33 @@ x
                     try{
                         cutname = String.valueOf( modal_menuItemCutDetails.getCutname().toString());
                         if(cutname.equals(null)||cutname.equals("null")){
-                            cutname="-";
+                            cutname="";
                         }
                     }
                     catch(Exception e){
-                        cutname="--";
+                        cutname="";
                         e.printStackTrace();
                     }
 
                     try{
                         isdefault = String.valueOf( modal_menuItemCutDetails.getIsdefault().toString());
                         if(isdefault.equals(null)||isdefault.equals("null")){
-                            isdefault="-";
+                            isdefault="";
                         }
                     }
                     catch(Exception e){
-                        isdefault="--";
+                        isdefault="";
                         e.printStackTrace();
                     }
 
                     try{
                         netweight = String.valueOf( modal_menuItemCutDetails.getNetweight().toString());
                         if(netweight.equals(null)||netweight.equals("null")){
-                            netweight="-";
+                            netweight="";
                         }
                     }
                     catch(Exception e){
-                        netweight="--";
+                        netweight="";
                         e.printStackTrace();
                     }
 
@@ -1913,41 +2652,47 @@ x
                         }
                     }
                     catch(Exception e){
-                        netweightingrams="00";
+                        netweightingrams="0";
                         e.printStackTrace();
                     }
 
                     try{
                         portionsize = String.valueOf( modal_menuItemCutDetails.getPortionsize().toString());
                         if(portionsize.equals(null)||portionsize.equals("null")){
-                            portionsize="-";
+                            portionsize="";
                         }
                     }
                     catch(Exception e){
-                        portionsize="--";
+                        portionsize="";
                         e.printStackTrace();
                     }
 
+                    if((!netweightingrams.equals("")) &&(!netweightingrams.equals("0"))) {
+                        try {
+                            jsonObject_CutDetails.put("cutdesp", cutdesp);
+                            jsonObject_CutDetails.put("cutdisplayno", cutdisplayno);
+                            jsonObject_CutDetails.put("cutimagename", cutimagename);
+                            jsonObject_CutDetails.put("cutkey", cutkey);
+                            jsonObject_CutDetails.put("cutname", cutname);
+                            jsonObject_CutDetails.put("isdefault", isdefault);
+                            jsonObject_CutDetails.put("netweight", netweight);
 
-                    try {
-                        jsonObject_CutDetails.put("cutdesp",cutdesp);
-                        jsonObject_CutDetails.put("cutdisplayno",cutdisplayno );
-                        jsonObject_CutDetails.put("cutimagename",cutimagename);
-                        jsonObject_CutDetails.put("cutkey",cutkey);
-                        jsonObject_CutDetails.put("cutname", cutname);
-                        jsonObject_CutDetails.put("isdefault", isdefault);
-                        jsonObject_CutDetails.put("netweight",netweight);
+                            netweightingrams = netweightingrams.replaceAll("[^\\d.]", "");
+                            if (!netweightingrams.equals("")) {
+                                jsonObject_CutDetails.put("netweightingrams", Integer.parseInt(netweightingrams));
 
-                        netweightingrams = netweightingrams.replaceAll("[^\\d.]", "");
-                        if(!netweightingrams.equals("")){
-                            jsonObject_CutDetails.put("netweightingrams", Integer.parseInt(netweightingrams));
+                            }
+                            jsonObject_CutDetails.put("portionsize", portionsize);
+                            jsonArray_CutDetails.put(jsonObject_CutDetails);
 
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                        jsonObject_CutDetails.put("portionsize", portionsize);
-                        jsonArray_CutDetails.put(jsonObject_CutDetails);
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    }
+                    else{
+                        AlertDialogClass.showDialog(ChangeMenuItemWeightAndPriceSecondScreen.this, R.string.netweight_Cant_be_Zero);
+                        return;
                     }
                 }
 
@@ -1960,21 +2705,21 @@ x
                     try{
                         displayno = String.valueOf( modal_menuItemWeightDetails.getWeightdisplayno().toString());
                         if(displayno.equals(null)||displayno.equals("null")){
-                            displayno="-";
+                            displayno="";
                         }
                     }
                     catch(Exception e){
-                        displayno="--";
+                        displayno="";
                         e.printStackTrace();
                     }
                     try{
                         grossweight = String.valueOf( modal_menuItemWeightDetails.getGrossweight().toString());
                         if(grossweight.equals(null)||grossweight.equals("null")){
-                            grossweight="-";
+                            grossweight="";
                         }
                     }
                     catch(Exception e){
-                        grossweight="--";
+                        grossweight="";
                         e.printStackTrace();
                     }
 
@@ -1987,29 +2732,29 @@ x
                         }
                     }
                     catch(Exception e){
-                        grossweightingrams="00";
+                        grossweightingrams="0";
                         e.printStackTrace();
                     }
 
                     try{
                         weightkey = String.valueOf( modal_menuItemWeightDetails.getWeightkey().toString());
                         if(weightkey.equals(null)||weightkey.equals("null")){
-                            weightkey="-";
+                            weightkey="";
                         }
                     }
                     catch(Exception e){
-                        weightkey="--";
+                        weightkey="";
                         e.printStackTrace();
                     }
 
                     try{
                         weight = String.valueOf( modal_menuItemWeightDetails.getWeight().toString());
                         if(weight.equals(null)||weight.equals("null")){
-                            weight="-";
+                            weight="";
                         }
                     }
                     catch(Exception e){
-                        weight="--";
+                        weight="";
                         e.printStackTrace();
                     }
 
@@ -2017,22 +2762,22 @@ x
                     try{
                         isdefault = String.valueOf( modal_menuItemWeightDetails.getIsdefault().toString());
                         if(isdefault.equals(null)||isdefault.equals("null")){
-                            isdefault="-";
+                            isdefault="";
                         }
                     }
                     catch(Exception e){
-                        isdefault="--";
+                        isdefault="";
                         e.printStackTrace();
                     }
 
                     try{
                         netweight = String.valueOf( modal_menuItemWeightDetails.getNetweight().toString());
                         if(netweight.equals(null)||netweight.equals("null")){
-                            netweight="-";
+                            netweight="";
                         }
                     }
                     catch(Exception e){
-                        netweight="--";
+                        netweight="";
                         e.printStackTrace();
                     }
 
@@ -2043,18 +2788,18 @@ x
                         }
                     }
                     catch(Exception e){
-                        netweightingrams="00";
+                        netweightingrams="0";
                         e.printStackTrace();
                     }
 
                     try{
                         portionsize = String.valueOf( modal_menuItemWeightDetails.getPortionsize().toString());
                         if(portionsize.equals(null)||portionsize.equals("null")){
-                            portionsize="-";
+                            portionsize="";
                         }
                     }
                     catch(Exception e){
-                        portionsize="--";
+                        portionsize="";
                         e.printStackTrace();
                     }
 
@@ -2063,7 +2808,7 @@ x
                         jsonObject_weightDetails.put("grossweight", grossweight);
                         grossweightingrams = grossweightingrams.replaceAll("[^\\d.]", "");
                         if(grossweightingrams.equals("")){
-                            grossweightingrams = "000";
+                            grossweightingrams = "0";
                         }
                         jsonObject_weightDetails.put("grossweightingrams", Integer.parseInt(grossweightingrams));
                         jsonObject_weightDetails.put("isdefault",isdefault);
@@ -2071,7 +2816,7 @@ x
 
                         netweightingrams = netweightingrams.replaceAll("[^\\d.]", "");
                         if(netweightingrams.equals("")){
-                            netweightingrams = "000";
+                            netweightingrams = "0";
                         }
                         jsonObject_weightDetails.put("netweightingrams", Integer.parseInt(netweightingrams));
                         jsonObject_weightDetails.put("portionsize",portionsize);
@@ -2093,33 +2838,82 @@ x
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put("key", menuitemKey);
-             /*   jsonObject.put("tmcprice", appPrice);
-                jsonObject.put("tmcpriceperkg", posPrice);
-                jsonObject.put("grossweight", grossweight);
-                jsonObject.put("portionsize", portionsize);
+                if(!appPrice_old_transactionTable.equals(appPrice)){
+                    jsonObject.put("tmcprice", appPrice);
 
+                }
+
+                if(!posPrice_pricePerKg_old_transactionTable.equals(posPrice)){
+                    jsonObject.put("tmcpriceperkg", posPrice);
+
+                }
+
+                if(!netweight_old_transactionTable.equals(netweight)){
+                    jsonObject.put("netweight", netweight);
+
+                }
+
+                if(!grossweight_old_transactionTable.equals(grossweight)){
+                    jsonObject.put("grossweight", grossweight);
+
+                }
+                if(!portionsize_old_transactionTable.equals(portionsize)){
+                    jsonObject.put("portionsize", portionsize);
+
+                }
                 grossweightingrams = grossweightingrams.replaceAll("[^\\d.]", "");
                 if(grossweightingrams.equals("")){
-                    grossweightingrams = "00000";
+                    grossweightingrams = "0";
                 }
-                jsonObject.put("grossweightingrams", Integer.parseInt(grossweightingrams));
+                if(!grossweightingrams_old_transactionTable.equals(grossweightingrams)){
+                    jsonObject.put("grossweightingrams", Integer.parseInt(grossweightingrams));
 
-                jsonObject.put("netweight", netweight);
-                jsonObject.put("swiggyprice", swiggyPrice);
-                jsonObject.put("dunzoprice", dunzoPrice);
-                jsonObject.put("bigbasketprice", bigBasketPrice);
-                jsonObject.put("applieddiscountpercentage", appliedDiscountPercentage);
-
-              */
-                if(weightDetailsArray.size()>0) {
-                    jsonObject.put("itemweightdetails", jsonArray_weightDetails);
 
                 }
 
-                if(cutDetailsArray.size()>0) {
-                    jsonObject.put("itemcutdetails", jsonArray_CutDetails);
-
+                if(!swiggyPrice_old_transactionTable.equals(swiggyPrice)){
+                    jsonObject.put("swiggyprice", swiggyPrice);
                 }
+
+                if(!dunzoPrice_old_transactionTable.equals(dunzoPrice)){
+                    jsonObject.put("dunzoprice", dunzoPrice);
+                }
+                if(!bigBasketPrice_old_transactionTable.equals(bigBasketPrice)){
+                    jsonObject.put("bigbasketprice", bigBasketPrice);
+                }
+                if(!appliedDiscountPercentage_old_transactionTable.equals(appliedDiscountPercentage)){
+                    jsonObject.put("applieddiscountpercentage", appliedDiscountPercentage);
+                }
+
+
+                Gson gson = new Gson();
+               String itemcutdetailsStringg = gson.toJson(cutDetailsArray);
+
+
+                if(!itemcutdetailsString_old_transactionTable.equals(itemcutdetailsStringg)){
+
+                    if(cutDetailsArray.size()>0) {
+                        jsonObject.put("itemcutdetails", jsonArray_CutDetails);
+
+                    }
+                }
+
+                Gson gson1 = new Gson();
+                String itemweightdetailsStringg = gson1.toJson(weightDetailsArray);
+
+
+                if(!itemweightdetailsString_old_transactionTable.equals(itemweightdetailsStringg)){
+                    if(weightDetailsArray.size()>0) {
+                        jsonObject.put("itemweightdetails", jsonArray_weightDetails);
+
+                    }
+                }
+
+
+
+
+
+
 
 
             } catch (JSONException e) {
@@ -2133,14 +2927,17 @@ x
                 public void onResponse(@NonNull JSONObject response) {
                     //Log.d(Constants.TAG, "Response: " + response);
                      ChangeMenuItemDataInSharedPreferenes(menuitemKey,jsonObject);
-                    showProgressBar(false);
+                     AddEntryinMenuItemTransacion(jsonObject,"SUCCESS");
+                  //  showProgressBar(false);
 
 
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(@NonNull VolleyError error) {
-                    showProgressBar(false);
+                    AddEntryinMenuItemTransacion(jsonObject,"FAILED");
+
+                    //showProgressBar(false);
                     Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price was Not Updated. Check Your Network Connection,T", Toast.LENGTH_LONG).show();
 
                     //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
@@ -2169,6 +2966,167 @@ x
         catch (Exception e){
             e.printStackTrace();
         }
+
+    }
+
+    private void AddEntryinMenuItemTransacion(JSONObject jsonObject, String status) {
+        JSONObject transactionjsonObject = new JSONObject();
+        JSONObject oldpricedetails = new JSONObject();
+        JSONObject newpricedetails = new JSONObject();
+        String device = "";
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+        screenInches = Math.sqrt(x + y);
+
+        if(Constants.default_mobileScreenSize>screenInches){
+            device = "Android";
+        }
+        else{
+            device = "POS Machine";
+
+        }
+
+        try{
+            transactionjsonObject.put("mobileno",(usermobileno));
+            transactionjsonObject.put("transcationstatus",status);
+            transactionjsonObject.put("vendorkey",vendorkey);
+            transactionjsonObject.put("transactiontime",getDate_and_time());
+            transactionjsonObject.put("itemname",itemName);
+            transactionjsonObject.put("tmcsubctgykey",tmcsubctgykey);
+            transactionjsonObject.put("device",device);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            if(jsonObject.has("swiggyprice")){
+                newpricedetails.put("swiggyprice",jsonObject.get("swiggyprice"));
+                oldpricedetails.put("swiggyprice",swiggyPrice_old_transactionTable);
+            }
+            if(jsonObject.has("dunzoprice")){
+                newpricedetails.put("dunzoprice",jsonObject.get("dunzoprice"));
+                oldpricedetails.put("dunzoprice",dunzoPrice_old_transactionTable);
+
+            }
+            if(jsonObject.has("bigbasketprice")){
+                newpricedetails.put("bigbasketprice",jsonObject.get("bigbasketprice"));
+                oldpricedetails.put("bigbasketprice",bigBasketPrice_old_transactionTable);
+
+            }
+            if(jsonObject.has("applieddiscountpercentage")){
+                newpricedetails.put("applieddiscountpercentage",jsonObject.get("applieddiscountpercentage"));
+                oldpricedetails.put("applieddiscountpercentage",appliedDiscountPercentage_old_transactionTable);
+
+            }
+            if(jsonObject.has("tmcprice")){
+                newpricedetails.put("tmcprice",jsonObject.get("tmcprice"));
+                oldpricedetails.put("tmcprice",appPrice_old_transactionTable);
+
+
+            }
+            if(jsonObject.has("tmcpriceperkg")){
+                newpricedetails.put("tmcpriceperkg",jsonObject.get("tmcpriceperkg"));
+                oldpricedetails.put("tmcpriceperkg",posPrice_old_transactionTable);
+
+            }
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            if(jsonObject.has("key")){
+               transactionjsonObject.put("menuitemkey",jsonObject.get("key"));
+
+            }
+
+            if((jsonObject.has("itemweightdetails"))){
+                transactionjsonObject.put("newitemweightdetails",jsonObject.get("itemweightdetails"));
+                JSONArray weightDetailJsonArray = new JSONArray(itemweightdetailsString_old_transactionTable);
+
+                transactionjsonObject.put("olditemweightdetails",weightDetailJsonArray);
+
+            }
+            if(jsonObject.has("itemcutdetails")){
+                transactionjsonObject.put("newitemcutdetails",jsonObject.get("itemcutdetails"));
+
+                JSONArray cutDetailJsonArray = new JSONArray(itemcutdetailsString_old_transactionTable);
+                transactionjsonObject.put("olditemcutdetails",cutDetailJsonArray);
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try{
+            if(newpricedetails.length()>0){
+                transactionjsonObject.put("newpricedetails",newpricedetails);
+
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
+            if(oldpricedetails.length()>0){
+                transactionjsonObject.put("oldpricedetails",oldpricedetails);
+
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addMenuItemTransactionTable,
+                transactionjsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                //Log.d(Constants.TAG, "Response: " + response);
+                showProgressBar(false);
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                showProgressBar(false);
+                Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Price was Not Updated. Check Your Network Connection,T", Toast.LENGTH_LONG).show();
+
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+
+
 
     }
 
@@ -2410,13 +3368,22 @@ x
                         }
                     }
 
-                    if((netweight.toUpperCase().contains("G"))||(netweight.toUpperCase().contains("GRAMS"))||(netweight.toUpperCase().contains("GMS"))){
+                    else if((netweight.toUpperCase().contains("G"))||(netweight.toUpperCase().contains("GRAMS"))||(netweight.toUpperCase().contains("GMS"))){
                         try{
                             netweight = String.valueOf(variableValue+"g");
 
                         } catch (Exception e){
                             e.printStackTrace();
                         }
+                    }
+                    else{
+                        try{
+                            netweight = String.valueOf(variableValue);
+
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+
                     }
                 }
                 catch (Exception e){
@@ -2808,6 +3775,13 @@ x
                         e.printStackTrace();
                     }
 
+                    try{
+                        tmcsubctgykey = String.valueOf(modal_menuItemSettings.getTmcsubctgykey());
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
 
                     try{
                         pricetypeforPos = String.valueOf(modal_menuItemSettings.getPricetypeforpos().toUpperCase());
@@ -2878,6 +3852,7 @@ x
                     }
 
                     FormatAndDisplaytheDataa();
+                    getDataForMenuItemTransaction();
 
 
                     //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
@@ -3103,7 +4078,7 @@ x
             int finalsellingprice, finalAppSellingPrice, finalPosSellingPrice;
 
             try {
-                finalsellingprice = (int) Math.ceil(sellingprice);
+                finalsellingprice = (int) Math.round(sellingprice);
             } catch (Exception e) {
                 finalsellingprice = 00;
                 e.printStackTrace();
@@ -3111,7 +4086,7 @@ x
 
 
             try {
-                finalAppSellingPrice = (int) Math.ceil(appSellingPrice_priceperKg);
+                finalAppSellingPrice = (int) Math.round(appSellingPrice_priceperKg);
             } catch (Exception e) {
                 finalAppSellingPrice = 00;
                 e.printStackTrace();
@@ -3119,7 +4094,7 @@ x
 
 
             try {
-                finalPosSellingPrice = (int) Math.ceil(posSellingPrice_priceperKg);
+                finalPosSellingPrice = (int) Math.round(posSellingPrice_priceperKg);
             } catch (Exception e) {
                 finalPosSellingPrice = 00;
                 e.printStackTrace();
@@ -3357,7 +4332,7 @@ x
 
     private void  addCutDetailsinArray(String itemcutdetailsStringg) {
         cutDetailsArray.clear();
-
+        cutDetailsKey_arrayList.clear();
         cutDetailsName_arrayList.clear();
 
         try {
@@ -3569,7 +4544,7 @@ x
 
                                 modalMenuItemCutDetails.cutkey = String.valueOf(jsonObject.get("cutkey"));
 
-
+                                cutDetailsKey_arrayList.add(String.valueOf(jsonObject.get("cutkey")));
                             }
                             else{
                                 modalMenuItemCutDetails.cutkey = "";
@@ -3790,6 +4765,13 @@ x
         } catch (Exception e) {
             e.printStackTrace();
         }
+        try{
+            discountAmount =  (double) Math.floor(discountAmount);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
         try {
             sellingPrice_withoutDiscount = sellingprice - discountAmount;
 
@@ -3820,7 +4802,12 @@ x
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        try{
+            MarinadeappPricedouble =  (double) Math.floor(MarinadeappPricedouble);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
         try {
             if (MarinadeepricetypeforPos.equals(Constants.TMCPRICE)) {
@@ -3833,8 +4820,8 @@ x
         }
 
         try {
-            appPriceint = (int) Math.ceil(MarinadeappPricedouble);
-            posPriceint = (int) Math.ceil(MarinadeposPricedouble);
+            appPriceint = (int) Math.round(MarinadeappPricedouble);
+            posPriceint = (int) Math.round(MarinadeposPricedouble);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -3872,6 +4859,13 @@ x
             catch (Exception e){
                 e.printStackTrace();
             }
+            try{
+                discountAmount =  (double) Math.floor(discountAmount);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
             try {
                 sellingPrice_withoutDiscount   =  sellingprice -discountAmount;
 
@@ -3921,8 +4915,8 @@ x
             }
 
             try{
-                appPriceint = (int) Math.ceil(appPricedouble);
-                posPriceint = (int) Math.ceil(posPricedouble);
+                appPriceint = (int) Math.round(appPricedouble);
+                posPriceint = (int) Math.round(posPricedouble);
 
             }
             catch (Exception e){
@@ -3988,6 +4982,13 @@ x
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            try{
+                discountAmount =  (double) Math.floor(discountAmount);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
             try {
                 sellingPrice_withoutDiscount = pos_sellingprice - discountAmount;
 
@@ -4035,7 +5036,7 @@ x
         */
 
             try {
-                posPriceint = (int) Math.ceil(posPricedouble__priceperKg);
+                posPriceint = (int) Math.round(posPricedouble__priceperKg);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -4048,6 +5049,14 @@ x
                 e.printStackTrace();
             }
 
+            try{
+                posPrice =  (String.valueOf(posPriceint));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
             try {
                 posPrice_text_widget_posLayout.setText(String.valueOf(posPriceint));
 
@@ -4055,6 +5064,8 @@ x
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+
 
             try{
                 pos_price_textview_widget.setText(String.valueOf(posPriceint));
@@ -4090,6 +5101,15 @@ x
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            try{
+                discountAmount =  (double) Math.floor(discountAmount);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
             try {
                 sellingPrice_withoutDiscount = app_sellingprice - discountAmount;
 
@@ -4123,6 +5143,12 @@ x
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            try{
+                appPricedouble_priceperKg =  (double) Math.floor(appPricedouble_priceperKg);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
 
        /*\ try{
@@ -4139,7 +5165,7 @@ x
         */
 
             try {
-                appPriceint = (int) Math.ceil(appPricedouble_priceperKg);
+                appPriceint = (int) Math.round(appPricedouble_priceperKg);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -4152,11 +5178,26 @@ x
                 e.printStackTrace();
             }
 
+            try{
+                appPrice = (String.valueOf(appPriceint));
+                appliedDiscountPercentage = (String.valueOf(discount_percentage));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
             try {
                 appPrice_text_widget_appLayout.setText(String.valueOf(appPriceint));
 
 
             } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try{
+                appPrice = (String.valueOf(appPriceint));
+                appliedDiscountPercentage = (String.valueOf(discount_percentage));
+            }
+            catch (Exception e){
                 e.printStackTrace();
             }
 
@@ -4292,6 +5333,29 @@ x
         }
 
     }
+
+
+    public String getDate_and_time()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+
+        SimpleDateFormat day = new SimpleDateFormat("EEE");
+       String CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDatee = df.format(c);
+        String   CurrentDate = CurrentDay+", "+CurrentDatee;
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss:SSS");
+        String   FormattedTime = dfTime.format(c);
+        String   formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
+        return formattedDate;
+    }
+
+
 
 
 }

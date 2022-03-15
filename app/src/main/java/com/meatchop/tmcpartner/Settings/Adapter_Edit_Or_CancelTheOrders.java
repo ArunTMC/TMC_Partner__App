@@ -323,8 +323,14 @@ public class Adapter_Edit_Or_CancelTheOrders extends ArrayAdapter<Modal_ManageOr
         if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.POSORDER))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.BigBasket))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.DunzoOrder))){
             slotTimeLayout.setVisibility(View.GONE);
             tokenNoLayout.setVisibility(View.GONE);
-            slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderdeliveredtime()));
+            if(isshowingOnlyCreditOrders) {
+                slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderplacedtime()));
 
+            }
+            else{
+                slotdate_text_widget.setText(String.format(" %s", modal_manageOrders_pojo_class.getOrderdeliveredtime()));
+
+            }
         }
 
         if((modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.SwiggyOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.PhoneOrder))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.BigBasket))||(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.DunzoOrder))){

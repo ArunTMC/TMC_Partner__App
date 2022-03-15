@@ -237,7 +237,7 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,SubCtgyName,checked_or_not,SubCtgyKey,vendorkey,dateandtime,SubCtgyKey,message);
+                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,SubCtgyName,checked_or_not,SubCtgyKey,vendorkey,dateandtime,"",message,true);
 
                 JSONArray JArray = null;
                 try {
@@ -326,6 +326,7 @@ public class ChangeMenuItemStatus_Settings extends AppCompatActivity {
                 //Log.d(TAG, "Error: " + error.getMessage());
                 //Log.d(TAG, "Error: " + error.toString());
                 Log.d(Constants.TAG, "change menu Item menuListFull: 333333333333333333" + error);
+                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,SubCtgyName,checked_or_not,SubCtgyKey,vendorkey,dateandtime,"","Api Call Failed",true);
 
                 error.printStackTrace();
             }
@@ -801,13 +802,14 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,menuItemName,availability,menuItemSubCtgykey,vendorkey,dateandtime,menuItemKey, message);
+                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,menuItemName,availability,menuItemSubCtgykey,vendorkey,dateandtime,menuItemKey, message,false);
                 Adjusting_Widgets_Visibility(false);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
                 Adjusting_Widgets_Visibility(false);
+                uploadMenuAvailabilityStatusTranscationinDB(UserPhoneNumber,menuItemName,availability,menuItemSubCtgykey,vendorkey,dateandtime,menuItemKey,"Api Call Failed",false);
 
                 //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
                 //Log.d(Constants.TAG, "Error: " + error.getMessage());
@@ -836,21 +838,33 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
 
     }
 
-    private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, String availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message) {
-
+    private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, String availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message, boolean issubctgyavailabilitychanged) {
 
         Adjusting_Widgets_Visibility(true);
         //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("itemname", menuItemName);
-            jsonObject.put("Status", availability);
-            jsonObject.put("subCtgykey", menuItemSubCtgykey);
+            if(availability.toUpperCase().equals("TRUE")){
+                jsonObject.put("status", true);
+
+            }
+            else if(availability.toUpperCase().equals("FALSE")){
+                jsonObject.put("status", false);
+
+            }
+            else{
+                jsonObject.put("status", availability);
+
+            }
+
+            jsonObject.put("tmcsubctgykey", menuItemSubCtgykey);
             jsonObject.put("transactiontime", dateandtime);
             jsonObject.put("mobileno", userPhoneNumber);
             jsonObject.put("vendorkey", vendorkey);
             jsonObject.put("menuitemkey", menuItemKey);
             jsonObject.put("transcationstatus",message);
+            jsonObject.put("issubctgyavailabilitychanged",issubctgyavailabilitychanged);
 
 
 

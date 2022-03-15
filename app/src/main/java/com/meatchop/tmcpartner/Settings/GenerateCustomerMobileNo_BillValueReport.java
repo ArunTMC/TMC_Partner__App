@@ -944,18 +944,32 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             public void onErrorResponse(@NonNull VolleyError error) {
                 try {
                     Toast.makeText(GenerateCustomerMobileNo_BillValueReport.this, "There is no Order  on " + todaysdate, Toast.LENGTH_LONG).show();
-                    ordersList.clear();
-                    array_of_orderId.clear();
-                   loadingpanelmask.setVisibility(View.GONE);
-                    loadingPanel.setVisibility(View.GONE);
-                    manageOrders_ListView.setVisibility(View.GONE);
-                    orderinstruction.setText("No Order today");
+                    if(array_of_orderId.size()<=0){
+                        loadingpanelmask.setVisibility(View.GONE);
+                        loadingPanel.setVisibility(View.GONE);
+                        manageOrders_ListView.setVisibility(View.GONE);
+                        orderinstruction.setText("No Order today");
 
-                    orderinstruction.setVisibility(View.VISIBLE);
-                    appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                        orderinstruction.setVisibility(View.VISIBLE);
+                        appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                    }
+                    if(todaysdate.equals(todatestring)) {
+                        //   Toast.makeText(GenerateOrderDetailsDump.this, String.valueOf(spinnerselecteditem_Count), Toast.LENGTH_LONG).show();
+                        //    Toast.makeText(GenerateOrderDetailsDump.this, String.valueOf("spinnerselecteditem  "+spinnerselecteditem), Toast.LENGTH_LONG).show();
+
+                        // appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                        DisplayOrderListDatainListView(ordersList);
+                    }
+                    else{
+                        String nextday = getTomorrowsDate(todaysdate);
+                        calculate_the_dateandgetData(nextday,todatestring);
+
+                    }
 
 
-                   
+
+
+
 //
                     showProgressBar(false);
                     error.printStackTrace();

@@ -532,8 +532,8 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         orderIdtext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
         orderStatustext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getOrderstatus()));
         paymentTypetext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getPaymentmode()));
-        slotNametext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotdate()));
-        slotDatetext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotname()));
+        slotNametext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotname()));
+        slotDatetext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotdate()));
 
         delivery_type_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getDeliverytype()));
 

@@ -36,12 +36,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
+import com.meatchop.tmcpartner.Settings.Modal_MenuItem_Settings;
 import com.meatchop.tmcpartner.Settings.SettingsFragment;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -52,6 +54,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -937,32 +940,34 @@ catch (Exception e){
                            }
                            if(json.has("swiggyprice")){
                                modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice"));
-                               if(String.valueOf(json.get("swiggyprice")).equals("")){
+                               if(String.valueOf(json.get("swiggyprice")).contains("\r")) {
+
+                                   modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice")).replaceAll("\\r\\n|\\r|\\n", "");;
+
+                               }
+                                  if(String.valueOf(modal_menuItem.getSwiggyprice()).equals("")){
                                    modal_menuItem.swiggyprice = "0";
-
-                               }else  if(String.valueOf(json.get("swiggyprice")).equals("\r")) {
-
-                                   modal_menuItem.dunzoprice = "0";
 
                                }
 
-                           }
+                               }
                            else{
                                modal_menuItem.swiggyprice = "0";
                                Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " +MenuItemKey );
-
-
                            }
+
 
 
                            if(json.has("bigbasketprice")){
                                modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice"));
-                               if(String.valueOf(json.get("bigbasketprice")).equals("")){
+
+                               if(String.valueOf(json.get("bigbasketprice")).contains("\r")) {
+
+                                   modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice")).replaceAll("\\r\\n|\\r|\\n", "");;
+
+                               }
+                               if(String.valueOf(modal_menuItem.getBigbasketprice()).equals("")){
                                    modal_menuItem.bigbasketprice = "0";
-
-                               }else  if(String.valueOf(json.get("bigbasketprice")).equals("\r")) {
-
-                                   modal_menuItem.dunzoprice = "0";
 
                                }
 
@@ -977,11 +982,12 @@ catch (Exception e){
 
                            if(json.has("dunzoprice")){
                                modal_menuItem.dunzoprice= String.valueOf(json.get("dunzoprice"));
-                               if(String.valueOf(json.get("dunzoprice")).equals("")){
-                                   modal_menuItem.dunzoprice = "0";
+                               if(String.valueOf(json.get("dunzoprice")).contains("\r")) {
 
-                               }else  if(String.valueOf(json.get("dunzoprice")).equals("\r")) {
+                                   modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice")).replaceAll("\\r\\n|\\r|\\n", "");;
 
+                               }
+                               if(String.valueOf(modal_menuItem.getDunzoprice()).equals("")){
                                    modal_menuItem.dunzoprice = "0";
 
                                }
@@ -1318,7 +1324,7 @@ catch (Exception e){
                                saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
                                String MenuList_String = new Gson().toJson(MenuList);
-                               completemenuItem = MenuList_String;
+                             //  completemenuItem = MenuList_String;
                            }
                          //  completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
                        }
@@ -1643,7 +1649,7 @@ catch (Exception e){
                             saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
                             String MenuList_String = new Gson().toJson(MenuList);
-                            completemenuItem = MenuList_String;
+                           // completemenuItem = MenuList_String;
                         }
 
 
@@ -1765,6 +1771,7 @@ catch (Exception e){
            loadingpanelmask.setVisibility(View.GONE);
            loadingPanel.setVisibility(View.GONE);
            bottomNavigationView.setVisibility(View.VISIBLE);
+           completemenuItem = json;
 
                loadMyFragment(new Pos_ManageOrderFragment());
 
@@ -2259,7 +2266,16 @@ catch (Exception e){
                         mfragment = new NewOrders_MenuItem_Fragment();
                         //loadMyFragment(mfragment);
                         FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
-                        transaction1.replace(R.id.frame, NewOrders_MenuItem_Fragment.newInstance(completemenuItem));
+                        final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+                        Gson gson = new Gson();
+                        String json = sharedPreferencesMenuitem.getString("MenuList", "");
+                        if (json.isEmpty()) {
+                            transaction1.replace(R.id.frame, NewOrders_MenuItem_Fragment.newInstance(completemenuItem));
+                        } else {
+                            transaction1.replace(R.id.frame, NewOrders_MenuItem_Fragment.newInstance(json));
+
+                        }
                         transaction1.commit();
                         Toast.makeText(Pos_Dashboard_Screen.this, "Clicked on New Orders Button", Toast.LENGTH_LONG).show();
 

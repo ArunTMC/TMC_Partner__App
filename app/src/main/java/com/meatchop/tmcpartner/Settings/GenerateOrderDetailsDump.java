@@ -116,7 +116,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
     String selectedStartDate = "";
     String selectedEndDate = "";
-        private static String[] columns = {"Order Details Key", "Order Placed Time","OrderType","User Mobile","Slot Name","Slot Date", "Slot Time Range",  "Item Desp","DeliveryType", "Orderid","Payment Mode", "Payable Amount","Coupon Discount Amount","Vendor Key","Delivery Distance","User Address","Order Confirmed Time",
+        private static String[] columns = {"Order Details Key", "Order Placed Time","OrderType","User Mobile","Slot Name","Slot Date", "Slot Time Range",  "Item Desp","DeliveryType", "Orderid","Payment Mode", "Payable Amount","Coupon Discount Amount","Coupon Key","Vendor Key","Delivery Charge","Delivery Distance","User Address","Order Confirmed Time",
                 "Order Ready Time","Order PickedUp Time", "Order Delivered Time ", "Token No", "Order Status"};
         int spinnerselecteditem=1;
         int spinnerselecteditem_Count =1;
@@ -1252,6 +1252,16 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                     }
 
 
+                    if(json.has("couponkey")){
+                        manageOrdersPojoClass.couponkey = String.valueOf(json.get("couponkey"));
+
+                    }
+                    else{
+                        manageOrdersPojoClass.couponkey ="";
+                    }
+
+
+
                     if(json.has("deliverytype")){
                         manageOrdersPojoClass.deliverytype = String.valueOf(json.get("deliverytype"));
 
@@ -1398,6 +1408,32 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
                     }
+
+
+
+                    try {
+                        if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                            if (json.has("deliveryamount")) {
+
+                                String deliveryamount =  String.valueOf(json.get("deliveryamount"));
+                                if(!deliveryamount.equals(null)&&(!deliveryamount.equals("null"))){
+                                    manageOrdersPojoClass.deliveryamount = String.valueOf(json.get("deliveryamount"));
+
+                                }
+                                else {
+                                    manageOrdersPojoClass.deliveryamount ="";
+
+                                }
+                            } else {
+                                manageOrdersPojoClass.deliveryamount = "";
+                            }
+
+                        }
+                    }catch (Exception E){
+                        manageOrdersPojoClass.deliveryamount ="-";
+                        E.printStackTrace();
+                    }
+
 
 
 
@@ -1582,17 +1618,11 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                     row.createCell(11).setCellValue(itemRow.getPayableamount());
                     row.createCell(10).setCellValue(String.valueOf(itemRow.getPaymentmode()));
                     row.createCell(12).setCellValue(String.valueOf(itemRow.getCoupondiscamount()));
-                    row.createCell(13).setCellValue(String.valueOf(itemRow.getVendorkey()));
-                    if(!(String.valueOf(itemRow.getDeliverydistance()).equals("null"))) {
-                        row.createCell(14).setCellValue(String.valueOf(itemRow.getDeliverydistance()));
-                    }
-                    else{
-                        row.createCell(14).setCellValue("");
+                    row.createCell(13).setCellValue(String.valueOf(itemRow.getCouponkey()));
 
-                    }
-
-                        if(!(String.valueOf(itemRow.getUseraddress()).equals("null"))){
-                        row.createCell(15).setCellValue(String.valueOf(itemRow.getUseraddress()));
+                    row.createCell(14).setCellValue(String.valueOf(itemRow.getVendorkey()));
+                    if(!(String.valueOf(itemRow.getDeliveryamount()).equals("null"))) {
+                        row.createCell(15).setCellValue(String.valueOf(itemRow.getDeliveryamount()));
                     }
                     else{
                         row.createCell(15).setCellValue("");
@@ -1600,14 +1630,49 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                     }
 
 
-                    row.createCell(16).setCellValue(itemRow.getOrderconfirmedtime());
-                    row.createCell(17).setCellValue(itemRow.getOrderreadytime());
-                    row.createCell(18).setCellValue(itemRow.getOrderpickeduptime());
-                    row.createCell(19).setCellValue(itemRow.getOrderdeliveredtime());
-                    row.createCell(20).setCellValue(itemRow.getTokenno());
-                    row.createCell(21).setCellValue(String.valueOf(itemRow.getOrderstatus()));
-                    row.createCell(23).setCellValue(String.valueOf(itemRow.getDeliveryPartnerName()));
-                    row.createCell(24).setCellValue(String.valueOf(itemRow.getDeliveryPartnerMobileNo()));
+                    if(!(String.valueOf(itemRow.getDeliverydistance()).equals("null"))) {
+                        row.createCell(16).setCellValue(String.valueOf(itemRow.getDeliverydistance()));
+                    }
+                    else{
+                        row.createCell(16).setCellValue("");
+
+                    }
+
+                        if(!(String.valueOf(itemRow.getUseraddress()).equals("null"))){
+                        row.createCell(17).setCellValue(String.valueOf(itemRow.getUseraddress()));
+                    }
+                    else{
+                        row.createCell(17).setCellValue("");
+
+                    }
+
+
+                    row.createCell(18).setCellValue(itemRow.getOrderconfirmedtime());
+                    row.createCell(19).setCellValue(itemRow.getOrderreadytime());
+                    row.createCell(20).setCellValue(itemRow.getOrderpickeduptime());
+                    row.createCell(21).setCellValue(itemRow.getOrderdeliveredtime());
+                    row.createCell(22).setCellValue(itemRow.getTokenno());
+                    row.createCell(23).setCellValue(String.valueOf(itemRow.getOrderstatus()));
+
+                    if(!(String.valueOf(itemRow.getDeliveryPartnerName()).equals("null"))){
+                        row.createCell(24).setCellValue(String.valueOf(itemRow.getDeliveryPartnerName()));
+                    }
+                    else{
+                        row.createCell(24).setCellValue("");
+
+                    }
+
+
+
+                    if(!(String.valueOf(itemRow.getDeliveryPartnerMobileNo()).equals("null"))){
+                        row.createCell(25).setCellValue(String.valueOf(itemRow.getDeliveryPartnerMobileNo()));
+                    }
+                    else{
+                        row.createCell(25).setCellValue("");
+
+                    }
+
+
 
 
 
@@ -1635,6 +1700,14 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                 sheet.setColumnWidth(15, (10 * 600));
                 sheet.setColumnWidth(16, (10 * 600));
                 sheet.setColumnWidth(17, (10 * 600));
+                sheet.setColumnWidth(18, (10 * 600));
+                sheet.setColumnWidth(19, (10 * 600));
+                sheet.setColumnWidth(20, (10 * 800));
+                sheet.setColumnWidth(21, (10 * 800));
+                sheet.setColumnWidth(22, (10 * 800));
+                sheet.setColumnWidth(23, (10 * 800));
+                sheet.setColumnWidth(24, (10 * 800));
+                sheet.setColumnWidth(25, (10 * 800));
 
 
 
@@ -1835,7 +1908,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         calendar.setTime(date);
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
-        calendar.add(Calendar.DATE, 15);
+        calendar.add(Calendar.DATE, 6);
 
 
 

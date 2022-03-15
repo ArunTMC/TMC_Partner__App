@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+tools:context=".Settings.GenerateUserDetailsReport">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+<!-- TODO: Update blank fragment layout -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <Switch
+        android:id="@+id/switchfor_singleDayDump"
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Get Users Details For Date"
+        android:background="@color/TMC_Orange"
+        android:textColor="@color/TMC_White"
+        android:textSize="20sp"
+        android:thumbTint="@color/TMC_White"
+        android:trackTint="@color/TMC_White"
+        android:buttonTint="@color/TMC_White"
+        android:drawableTint="@color/TMC_White"
+        android:foregroundTint="@color/TMC_White"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="7dp"
+        android:layout_marginEnd="5dp"
+        android:id="@+id/generateDataInstruction"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/open_sans_semibold"
+        android:gravity="center_vertical"
+        android:text="#Note : To Get Total Users Details for All Vendors, Turn oFF the Above Switch"
+        android:textColor="@color/TMC_Orange"
+        android:textSize="12sp" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+
+        android:id="@+id/allusersScreenParentLayout"
+        android:layout_marginTop="5dp"
+        android:orientation="vertical">
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+
+            android:background="@drawable/border_line"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:layout_gravity="center"
+            android:text="Click on FETCH DATA Button to get total User Details Report"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:textSize="14sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="1.1"
+            android:background="@drawable/orange_non_selected_button_background"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center"
+            android:layout_marginStart="8dp"
+
+            android:layout_marginEnd="10dp"
+            android:id="@+id/generateExcelSheet_button"
+            android:text="Generate  Sheet"
+            android:textColor="@color/TMC_Orange"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+
+            <TextView
+                android:id="@+id/fetchUserData_button"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1.1"
+                android:background="@drawable/orange_selected_button_background"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center"
+                android:text="Fetch Data"
+                android:textColor="@color/TMC_White"
+                android:textSize="13sp"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/border_line"
+            />
+
+
+
+        <ListView
+            android:layout_marginTop="10dp"
+            android:id="@+id/userCount_listview"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_height="match_parent"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:visibility="visible"
+        android:layout_height="match_parent"
+
+        android:id="@+id/datewise_Userdetails_ParentLayout"
+        android:orientation="vertical">
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:id="@+id/searchlayout"
+
+            android:orientation="vertical">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+
+                android:background="@drawable/border_line"
+                />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:gravity="clip_vertical"
+                android:orientation="horizontal">
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight=".5"
+
+                    >
+
+                    <LinearLayout
+                        android:id="@+id/dateSelectorLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="13dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Date"
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="12sp" />
+
+
+                        <TextView
+                            android:id="@+id/dateSelector_text"
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="13dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="10 Jan 2021"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/fromdateSelectorLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="200dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="From  date"
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="12sp" />
+
+
+                        <TextView
+                            android:id="@+id/fromdateSelector_text"
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Wed, 10 Jan 2021"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/todateSelectorLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="200dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:gravity="right"
+                        android:orientation="vertical"
+
+                        android:visibility="visible">
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:layout_marginStart="70dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+
+                            android:text="To date"
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="12sp" />
+
+
+                        <TextView
+                            android:id="@+id/todateSelector_text"
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+
+                            android:fontFamily="@font/open_sans_bold"
+                            android:gravity="right"
+                            android:text="Wed, 10 Jan 2021"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/daysCountSpinner_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="13dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="center_vertical"
+                            android:text="Select the No.of.Days You Need the Data"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+
+                        <Spinner
+                            android:id="@+id/daysCountSpinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginBottom="1dp"
+                            android:gravity="center_horizontal"
+                            android:singleLine="true"
+                            android:visibility="visible" />
+
+
+                    </LinearLayout>
+
+
+                    <TextView
+                        android:id="@+id/nameofFacility_Textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="1dp"
+                        android:gravity="center_vertical"
+                        android:singleLine="true"
+                        android:text="@string/Name_Of_the_Vendor_text"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+
+
+                    <EditText
+                        android:id="@+id/search_barEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="1dp"
+                        android:layout_toStartOf="@+id/search_close_btn"
+                        android:background="#00000000"
+                        android:digits="+0123456789"
+                        android:gravity="center_vertical"
+                        android:hint="@string/Enter_the_mobile_no_text"
+                        android:inputType="phone"
+                        android:maxLength="13"
+                        android:text=""
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+
+
+                    <ImageView
+                        android:id="@+id/search_button"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginEnd="3dp"
+                        android:foregroundGravity="center_vertical"
+
+                        android:visibility="gone"
+                        app:srcCompat="@mipmap/search_icon" />
+
+                    <ImageView
+                        android:id="@+id/search_close_btn"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginEnd="3dp"
+                        android:foregroundGravity="bottom"
+                        android:visibility="gone"
+                        app:srcCompat="@mipmap/close_icon" />
+
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:id="@+id/newOrdersSync_Layout"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="9dp"
+                    android:layout_weight=".1"
+                    android:visibility="visible"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="25dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:foregroundGravity="bottom"
+                        android:visibility="visible"
+                        app:srcCompat="@mipmap/neworder_sync_icon" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+
+                android:background="@drawable/border_line"
+                />
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:visibility="gone"
+
+            android:layout_marginTop="115dp"
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="16sp"
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"
+
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:layout_marginStart="13dp"
+                android:text="No.of.New Users  :-  " />
+
+            <TextView
+                android:id="@+id/appOrdersCount_textwidget"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="10dp"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center"
+                android:text="0"
+                android:visibility="gone"
+
+                android:textColor="@color/TMC_Orange"
+                android:textSize="16sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="7dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/open_sans_semibold"
+
+                android:text="#Note : Sheet Contains User Details for all the below mentioned categories"
+                android:textColor="@color/TMC_Secondary_Text_Color"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="300dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:visibility="visible"
+
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="13dp"
+                    android:text="Generate Sheet" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="155dp"
+            android:visibility="gone"
+
+            android:background="@drawable/border_line"
+            />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:layout_weight="1">
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+
+                    >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Datewise User Account Created: "
+                                android:id="@+id/totalAccountCreatedLabel"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:visibility="visible" />
+
+
+                            <TextView
+                                android:id="@+id/totalAccountCreatedtextview"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="2.5"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="center"
+                                android:text="0"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp"
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginBottom="15dp"
+
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+                                android:text="View Sheet"
+                                android:id="@+id/datewise_viewOnlyUserDetails"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:id="@+id/datewise_shareOnlyUserDetails"
+
+                                android:gravity="center"
+                                android:text="Share Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Datewise Users Added Address : "
+                                android:id="@+id/usercreated_withaddress_Label"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/usercreated_withaddress_textview"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="center"
+                                android:text="0"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp"
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginBottom="15dp"
+
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+                                android:text="View Sheet"
+                                android:id="@+id/userWithAddressViewSheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+                                android:visibility="visible" />
+
+
+                            <TextView
+                                android:id="@+id/userWithAddressShareSheet"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+
+                                android:gravity="center"
+                                android:text="Share Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Datewise Users Added \nHasthinapuram Address: "
+                                android:id="@+id/no_of_users_hastinapuram_Label"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/no_of_users_hastinapuram_textview"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="center"
+                                android:text="0"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp"
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginBottom="15dp"
+
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/generate_viewHastinapuramSheet"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+
+                                android:gravity="center"
+                                android:text="View Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/generate_shareHastinapuramSheet"
+
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+                                android:text="Share Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Datewise Users Added \nVelachery Address: "
+                                android:id="@+id/no_of_users_velachery_Label"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/no_of_users_velachery_textview"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="center"
+                                android:text="0"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp"
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginBottom="15dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/generate_viewVelacherySheet"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+
+                                android:text="View Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/generate_shareVelacherySheet"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+                                android:text="Share Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+
+                <TextView
+                    android:id="@+id/orderinstruction"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/No_New_Users_Instruction_text"
+                    android:visibility="gone"
+
+                    />
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
+        <LinearLayout
+            android:id="@+id/loadingpanelmask_dailyItemWisereport"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/TMC_proressbar_mask_Color"
+            android:alpha="0.85"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/loadingPanel_dailyItemWisereport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:visibility="gone">
+
+            <com.wang.avi.AVLoadingIndicatorView
+                android:id="@+id/loadinganim_layout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="visible"
+                android:layout_gravity="center"
+                app:indicatorColor="@color/TMC_Orange"
+                app:indicatorName="BallPulseIndicator" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</FrameLayout>

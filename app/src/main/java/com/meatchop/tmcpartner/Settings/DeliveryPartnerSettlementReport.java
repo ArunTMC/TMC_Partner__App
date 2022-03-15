@@ -189,6 +189,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         preorderpaymentMode_DeliveryChargeOrderid = new ArrayList<>();
         paymentMode_DeliveryChargeOrderid = new ArrayList<>();
 
+
+
         OrderIdCount.clear();
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
@@ -1189,7 +1191,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                                 //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
-                            } catch (Exception e) {
+                            }
+                            catch (Exception e) {
                                 e.printStackTrace();
                             }
 
@@ -1274,7 +1277,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                         }
                                         if (!paymentMode_DiscountOrderid.contains(orderid)) {
                                             paymentMode_DiscountOrderid.add(orderid);
-                                            boolean isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                            boolean isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
                                             if (isAlreadyAvailable) {
                                                 Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
                                                 String discountAmount = modal_orderDetails1.getDiscountAmount();

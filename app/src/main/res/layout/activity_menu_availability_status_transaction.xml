@@ -47,7 +47,7 @@ tools:context=".Settings.MenuAvailabilityStatusTransaction">
     <View
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="80dp"
 
         android:background="@drawable/border_line"
         />
@@ -66,7 +66,7 @@ tools:context=".Settings.MenuAvailabilityStatusTransaction">
             android:layout_height="58dp"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="75dp"
             android:gravity="clip_vertical"
             android:orientation="horizontal">
 
@@ -82,8 +82,8 @@ tools:context=".Settings.MenuAvailabilityStatusTransaction">
                 <LinearLayout
                     android:id="@+id/dateSelectorLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="17dp"
                     android:layout_weight="5"
                     android:orientation="vertical">
 
@@ -96,6 +96,7 @@ tools:context=".Settings.MenuAvailabilityStatusTransaction">
                         android:fontFamily="@font/open_sans_semibold"
                         android:gravity="center_vertical"
                         android:text="Date"
+
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="12sp" />
 
@@ -125,7 +126,7 @@ tools:context=".Settings.MenuAvailabilityStatusTransaction">
                 android:layout_height="match_parent"
                 android:layout_marginStart="6dp"
                 android:layout_marginEnd="5dp"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="16dp"
                 android:layout_weight=".1"
                 android:orientation="horizontal">
 
@@ -144,6 +145,7 @@ tools:context=".Settings.MenuAvailabilityStatusTransaction">
             android:layout_width="match_parent"
             android:layout_height="3dp"
             android:background="@drawable/border_line"
+           android:layout_marginTop="16dp"
             />
     <LinearLayout
         android:layout_width="match_parent"

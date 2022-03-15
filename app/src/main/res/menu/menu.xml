@@ -6,15 +6,29 @@
         android:enabled="true"
         tools:ignore="MenuTitle" />
 
+
+
+
     <item android:id="@+id/new_order_navigatioBar_widget"
         android:icon="@mipmap/add_new_item"
         android:enabled="true"
 
         tools:ignore="MenuTitle" />
 
+
+
+
+
     <item android:id="@+id/settings_navigatioBar_widget"
         android:icon="@mipmap/settings"
         android:enabled="true"
 
+        tools:ignore="MenuTitle" />
+
+
+    <item android:id="@+id/replacement_navigatioBar_widget"
+        android:icon="@mipmap/replacementicon"
+        android:enabled="true"
+        android:visible="true"
         tools:ignore="MenuTitle" />
 </menu>

@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/order_item_list_parentLayout">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="25dp"
+        android:id="@+id/cardLayout"
+
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:layout_marginTop="4dp"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2.5"
+                    android:id="@+id/orderDetailsLayout"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:gravity="center"
+                        android:id="@+id/ordercancellationtimeRefresh_Layout"
+                        android:orientation="horizontal"
+                        >
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Does Order Cancelletion time is Over " />
+
+                        <LinearLayout
+                            android:id="@+id/refreshordercancelationtime_image_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+
+                                android:layout_height="20dp"
+                                app:srcCompat="@mipmap/neworders_sync_icon" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/orderid_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="@string/OrderId_text"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/orderid_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/orderplaceddateLayout"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/orderplaceddate_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Slot_Date :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/orderplaceddate_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/mobileNo_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="5dp"
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="User Mobile No :" />
+
+                        <TextView
+                            android:id="@+id/moblieNo_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="13sp"
+                            android:gravity="right"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:paddingStart="35dp"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="" />
+                    </LinearLayout>
+
+          
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/markeddateLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/markeddate_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Marked Date :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/markeddate_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/statusLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/status_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:layout_marginStart="3dp"
+
+                            android:text="@string/Status"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/status_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/amountusercanavlLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/amountusercanavl_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Total Amt User got:"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/amountusercanavl_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/totalreplacementamountLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/totalreplacementamount_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Replacement Amount :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/totalreplacementamount_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/totalrefundamountLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/totalrefundamount_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Refund Amount :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/totalrefundamount_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/balanceamountLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/balanceamount_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Balance Amt User have :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/balanceamount_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:id="@+id/markedItemDesp_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+
+                            android:layout_marginTop="10dp"
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Orange"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="TextView" />
+                    </LinearLayout>
+
+
+
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_gravity="center"
+                        android:id="@+id/buttonsRelativeLayout"
+                        android:layout_weight="3">
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            >
+
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone"
+                                android:orientation="horizontal"
+                                android:paddingTop="10dp"
+                                android:paddingBottom="8dp"
+                                android:id="@+id/new_Order_Linearlayout"
+                                >
+
+
+                                <Button
+                                    android:id="@+id/accept_Order_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="15sp"
+                                    android:layout_weight="1"
+                                    android:textColor="@color/TMC_White"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/Confirm_Order_text"
+                                    />
+                                <Button
+                                    android:id="@+id/cancel_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:visibility="gone"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="15sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/cancel_Order_text" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone"
+                                android:paddingTop="10dp"
+                                android:paddingBottom="8dp"
+                                android:orientation="horizontal"
+                                android:id="@+id/confirming_order_Linearlayout"
+                                >
+
+
+                                <Button
+                                    android:id="@+id/ready_for_pickup_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="13sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/Ready_For_Pickup_text"/>
+
+
+
+
+
+
+                                <Button
+                                    android:id="@+id/pending_order_assignDeliveryperson_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="13sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/AssignPartner" />
+
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone"
+                                android:orientation="horizontal"
+                                android:paddingTop="10dp"
+                                android:paddingBottom="8dp"
+                                android:id="@+id/ready_Order_Linearlayout"
+                                >
+
+                                <Button
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:id="@+id/other_assignDeliveryperson_button_widget"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="15sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/AssignPartner" />
+                                <Button
+                                    android:id="@+id/ready_for_pickup_delivered_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:visibility="visible"
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="13sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/Deliverd_button_text"/>
+
+
+
+                                <Button
+                                    android:id="@+id/transit_generateTokenNo_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:visibility="gone"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="15sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/Generate_Token_No_text" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone"
+                                android:orientation="horizontal"
+                                android:id="@+id/cancelled_Order_Linearlayout"
+                                >
+
+                                <Button
+                                    android:id="@+id/cancelled_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textSize="15sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/cancelled_Order_text"
+                                    android:textAllCaps="false" />
+
+
+                                <Button
+                                    android:id="@+id/cancelled_assignDeliveryperson_button_widget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="15sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"  />
+
+
+                            </LinearLayout>
+                            <RelativeLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                                <Button
+                                    android:id="@+id/mobileprint_button_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:visibility="gone"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="15sp"
+                                    android:text="@string/Print_text"
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"  />
+                                <Button
+                                    android:id="@+id/generateTokenNo_button_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:visibility="gone"
+
+                                    android:fontFamily="@font/open_sans_bold"
+                                    android:textAllCaps="false"
+                                    android:textSize="13sp"
+
+                                    android:textColor="@color/TMC_White"
+                                    android:background="@drawable/button_background"
+                                    android:text="@string/Generate_Token_No_text" />
+                            </RelativeLayout>
+                        </LinearLayout>
+                        <Button
+                            android:id="@+id/show_paymentTransactionImage_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="5dp"
+                            android:layout_marginEnd="5dp"
+                            android:visibility="gone"
+
+                            android:fontFamily="@font/open_sans_bold"
+                            android:textAllCaps="false"
+                            android:textSize="13sp"
+
+                            android:textColor="@color/TMC_White"
+                            android:background="@drawable/button_background"
+                            android:text="@string/showscreenshot" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+</LinearLayout>
+

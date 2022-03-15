@@ -60,6 +60,7 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
     public static List<Modal_ManageOrders_Pojo_Class> sorted_CreditedOrdersList;
     public static List<Modal_ManageOrders_Pojo_Class> CreditedordersList;
     boolean isChecked = false;
+    boolean isDisplayorderListmethodCalled =false;
 
     TextView appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
@@ -206,13 +207,13 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 closeSearchBarEditText();
                 mobile_search_barEditText.setText("");
                 isSearchButtonClicked = false;
-
+                isDisplayorderListmethodCalled =false;
                 if(showcreditorderscheckbox.isChecked()){
                     isChecked = true;
                     showcreditorderscheckbox.setChecked(false);
                     dateSelectorLayout.setVisibility(View.VISIBLE);
                     creditOrdersTextLayout.setVisibility(View.GONE);
-                    DisplayOrderListDatainListView(ordersList);
+                    DisplayOrderListDatainListView(ordersList,false);
 
                 }
                 else{
@@ -221,7 +222,7 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                     creditOrdersTextLayout.setVisibility(View.VISIBLE);
                     dateSelectorLayout.setVisibility(View.GONE);
                     showcreditorderscheckbox.setChecked(true);
-                    DisplayOrderListDatainListView(CreditedordersList);
+                    DisplayOrderListDatainListView(CreditedordersList,true);
 
                 }
 
@@ -240,12 +241,13 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 isSearchButtonClicked = false;
                // Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 1 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
                 Log.d(Constants.TAG, "checkbox 1 : "+showcreditorderscheckbox.isChecked());
+                isDisplayorderListmethodCalled =false;
 
                 if(showcreditorderscheckbox.isChecked()){
-                    DisplayOrderListDatainListView(CreditedordersList);
+                    DisplayOrderListDatainListView(CreditedordersList,true);
                 }
                 else {
-                    DisplayOrderListDatainListView(ordersList);
+                    DisplayOrderListDatainListView(ordersList,false);
                 }
             }
         });
@@ -428,13 +430,14 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                     try {
                         //Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox 3 : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
                         Log.d(Constants.TAG, "checkbox 3 : "+showcreditorderscheckbox.isChecked());
+                        isDisplayorderListmethodCalled =false;
 
                         if(showcreditorderscheckbox.isChecked()){
-                            DisplayOrderListDatainListView(sorted_CreditedOrdersList);
+                            DisplayOrderListDatainListView(sorted_CreditedOrdersList,true);
 
                         }
                         else{
-                            DisplayOrderListDatainListView(sorted_OrdersList);
+                            DisplayOrderListDatainListView(sorted_OrdersList,false);
 
                         }
 
@@ -736,7 +739,7 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
         try {
             String ordertype="#",orderid="";
             sorted_OrdersList.clear();
-            Adjusting_Widgets_Visibility(true);
+           // Adjusting_Widgets_Visibility(true);
             //converting jsonSTRING into array
             JSONObject jsonObject = new JSONObject(orderDetailsResultjsonString);
             JSONArray JArray  = jsonObject.getJSONArray("content");
@@ -797,9 +800,12 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
                         if(json.has("orderplacedtime")){
                             manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
+                            String orderplacedtime = String.valueOf(json.get("orderplacedtime"));
+                            manageOrdersPojoClass.orderplacedtime_in_long = getLongValuefortheDate(orderplacedtime);
 
                         }
                         else{
+                            manageOrdersPojoClass.orderplacedtime_in_long = "";
                             manageOrdersPojoClass.orderplacedtime ="";
                         }
 
@@ -896,13 +902,19 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                         }
 
 
-                        if(json.has("orderdeliveredtime")){
-                            manageOrdersPojoClass.orderdeliveredtime =  String.valueOf(json.get("orderdeliveredtime"));
+                        if(json.has("orderdeliverytime")){
+                            manageOrdersPojoClass.orderdeliveredtime =  String.valueOf(json.get("orderdeliverytime"));
+
 
                         }
                         else{
+
                             manageOrdersPojoClass.orderdeliveredtime ="";
                         }
+
+
+
+
                         if(json.has("useraddresskey")){
                             manageOrdersPojoClass.useraddresskey =  String.valueOf(json.get("useraddresskey"));
 
@@ -1008,12 +1020,13 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
 
 
-
+                    String slotdate = "";
                     if(json.has("slotdate")){
                             manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
-
+                        slotdate = String.valueOf(json.get("slotdate"));
                         }
                         else{
+                        slotdate = "";
                             manageOrdersPojoClass.slotdate ="";
                         }
 
@@ -1179,13 +1192,15 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                 }
 
                 if(arrayLength - i1 == 1){
+                    isDisplayorderListmethodCalled =false;
+
                     if(showcreditorderscheckbox.isChecked()) {
-                        DisplayOrderListDatainListView(CreditedordersList);
+                        DisplayOrderListDatainListView(CreditedordersList,true);
 
                     }
                     else{
                         if(!isCreditOrdersData) {
-                            DisplayOrderListDatainListView(ordersList);
+                            DisplayOrderListDatainListView(ordersList,false);
                         }
 
                     }
@@ -1199,37 +1214,62 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
 
 
         } catch (JSONException e) {
+            //Adjusting_Widgets_Visibility(false);
+
             e.printStackTrace();
         }
     }
 
-    private void DisplayOrderListDatainListView(List<Modal_ManageOrders_Pojo_Class> ordersList) {
+    private void DisplayOrderListDatainListView(List<Modal_ManageOrders_Pojo_Class> ordersList,boolean isShowCreditOrdersss) {
         try {
-            Adjusting_Widgets_Visibility(true);
+            if(!isDisplayorderListmethodCalled) {
+                isDisplayorderListmethodCalled =true;
 
+                Adjusting_Widgets_Visibility(true);
+            }
             if (ordersList.size() > 0) {
-                Collections.sort(ordersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                    public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                        String tokenNo_1 = object1.getTokenno();
-                        String tokenNo_2 = object2.getTokenno();
+                if(isShowCreditOrdersss){
+                    Collections.sort(ordersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                        public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                            String tokenNo_1 = object1.getOrderplacedtime_in_long();
+                            String tokenNo_2 = object2.getOrderplacedtime_in_long();
 
-                        if((tokenNo_1.equals(""))||(tokenNo_1.equals("null"))||(tokenNo_1.equals(null))){
-                            tokenNo_1=String.valueOf(0);
+                            if ((tokenNo_1.equals("")) || (tokenNo_1.equals("null")) || (tokenNo_1.equals(null))) {
+                                tokenNo_1 = String.valueOf(0);
+                            }
+                            if ((tokenNo_2.equals("")) || (tokenNo_2.equals("null")) || (tokenNo_2.equals(null))) {
+                                tokenNo_2 = String.valueOf(0);
+                            }
+
+                            Long i2 = Long.valueOf(tokenNo_2);
+                            Long i1 = Long.valueOf(tokenNo_1);
+
+                            return i2.compareTo(i1);
                         }
-                        if((tokenNo_2.equals(""))||(tokenNo_2.equals("null"))||(tokenNo_2.equals(null))){
-                            tokenNo_2=String.valueOf(0);
+                    });
+                }
+                else {
+                    Collections.sort(ordersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                        public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                            String tokenNo_1 = object1.getTokenno();
+                            String tokenNo_2 = object2.getTokenno();
+
+                            if ((tokenNo_1.equals("")) || (tokenNo_1.equals("null")) || (tokenNo_1.equals(null))) {
+                                tokenNo_1 = String.valueOf(0);
+                            }
+                            if ((tokenNo_2.equals("")) || (tokenNo_2.equals("null")) || (tokenNo_2.equals(null))) {
+                                tokenNo_2 = String.valueOf(0);
+                            }
+
+                            Long i2 = Long.valueOf(tokenNo_2);
+                            Long i1 = Long.valueOf(tokenNo_1);
+
+                            return i2.compareTo(i1);
                         }
+                    });
 
-                        Long i2 = Long.valueOf(tokenNo_2);
-                        Long i1 = Long.valueOf(tokenNo_1);
+                }
 
-                        return i2.compareTo(i1);
-                    }
-                });
-
-
-
-                appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
                // Toast.makeText(Edit_Or_CancelTheOrders.this, "checkbox : "+showcreditorderscheckbox.isChecked(), Toast.LENGTH_SHORT).show();
 
@@ -1239,6 +1279,7 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                  adapter_edit_or_cancelTheOrders = new Adapter_Edit_Or_CancelTheOrders(Edit_Or_CancelTheOrders.this, ordersList, Edit_Or_CancelTheOrders.this,showcreditorderscheckbox.isChecked());
                 manageOrders_ListView.setAdapter(adapter_edit_or_cancelTheOrders);
 
+                appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
                 loadingpanelmask.setVisibility(View.GONE);
                 loadingPanel.setVisibility(View.GONE);
@@ -1685,6 +1726,48 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
             return "Sat";
         }
         return "";
+    }
+    private String getLongValuefortheDate(String orderplacedtime) {
+        String longvalue = "";
+        try {
+            String time1 = orderplacedtime;
+            //   Log.d(TAG, "time1long  "+orderplacedtime);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            Date date = sdf.parse(time1);
+            long time1long = date.getTime() / 1000;
+            longvalue = String.valueOf(time1long);
+          /*  String time2 = "Sat, 24 Apr 2021 07:50:28";
+            Date date2 = sdf.parse(time2);
+
+            long time2long =  date2.getTime() / 1000;
+            Log.d(TAG, "time1 "+time1long + " time2 "+time2long);
+
+           */
+            //   long differencetime = time2long - time1long;
+            //  Log.d(TAG, "   "+orderplacedtime);
+
+            //   Log.d(TAG, "time1long  "+time1long);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+                String time1 = orderplacedtime;
+                //     Log.d(TAG, "time1long  "+orderplacedtime);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                Date date = sdf.parse(time1);
+                long time1long = date.getTime() / 1000;
+                longvalue = String.valueOf(time1long);
+
+                //   long differencetime = time2long - time1long;
+                //  Log.d(TAG, "   "+orderplacedtime);
+
+                //    Log.d(TAG, "time1long  "+time1long);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return longvalue;
     }
 
 }

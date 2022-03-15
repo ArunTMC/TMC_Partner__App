@@ -139,7 +139,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         //final Button transit_generateTokenNo_button_widget = listViewItem.findViewById(R.id.transit_generateTokenNo_button_widget);
         final Button mobileprint_button_widget = listViewItem.findViewById(R.id.mobileprint_button_widget);
 
-
+        try{
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
       //  //Log.i("Tag","Order Pos:   "+ mobile_manageOrders1.sorted_OrdersList.get(pos));
         try{
@@ -1392,7 +1392,11 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
             }
         });
 
-
+        }
+        catch (Exception e){
+            notifyDataSetChanged();
+            e.printStackTrace();
+        }
 
 
 

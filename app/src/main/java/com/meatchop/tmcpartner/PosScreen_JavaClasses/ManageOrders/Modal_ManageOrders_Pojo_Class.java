@@ -8,7 +8,7 @@ import android.os.Parcelable;
 import org.json.JSONArray;
 
 public class  Modal_ManageOrders_Pojo_Class implements Parcelable {
-public String menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
+public String portionsize,vendorname,menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
 public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
 public   String isdataFetchedFromOrderTrackingDetails="FALSE",subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp;
@@ -16,12 +16,28 @@ public JSONArray itemdesp;
 public boolean isdelayed,isOrderPlacedlessThan3MinsBefore;
       String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
 
+    public String getPortionsize() {
+        return portionsize;
+    }
+
+    public void setPortionsize(String portionsize) {
+        this.portionsize = portionsize;
+    }
+
     public String getMenuitemkey_weight_cut() {
         return menuitemkey_weight_cut;
     }
 
     public void setMenuitemkey_weight_cut(String menuitemkey_weight_cut) {
         this.menuitemkey_weight_cut = menuitemkey_weight_cut;
+    }
+
+    public String getVendorname() {
+        return vendorname;
+    }
+
+    public void setVendorname(String vendorname) {
+        this.vendorname = vendorname;
     }
 
     public String getMenuItemKey() {
@@ -465,8 +481,8 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore;
         subtotalperItem = in.readString();
         ItemFinalPrice = in.readString();
         ItemFinalWeight = in.readString();
-        slotname = in.readString();
         slotdate = in.readString();
+        slotname = in.readString();
         deliverytype = in.readString();
         slottimerange = in.readString();
         useraddress = in.readString();

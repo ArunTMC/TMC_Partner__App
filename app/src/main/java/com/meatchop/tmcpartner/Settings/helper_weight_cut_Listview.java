@@ -44,4 +44,6 @@ public class helper_weight_cut_Listview {
         myListView.setLayoutParams(params);
         // print height of adapter on log
     }
+
+
 }

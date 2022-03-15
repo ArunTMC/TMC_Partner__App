@@ -21,9 +21,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -33,11 +35,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private EditText vendor_login_password_edittext;
-    private String pos_vendorNameString,UserRole;
+    private String pos_vendorNameString,UserRole,vendortype;
     private String pos_password;
     private String pos_userPhoneNumber;
     private String pos_vendorKey;
@@ -52,6 +55,11 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private String pos_vendorStatus, pos_vendorFssaino,pos_vendorLatitude,pos_vendorLongitude;
     LinearLayout loadingPanel,loadingpanelmask;
     private  Boolean inventoryCheckBool = false;
+
+
+    List<Modal_vendor> vendorList=new ArrayList<>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,14 +174,316 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                                 try {
                                     JSONObject json = result.getJSONObject(i1);
 
-                                    pos_vendorNameString = String.valueOf(json.get("name"));
-                                    //Log.d(Constants.TAG, "JsonName: " + pos_vendorNameString);
+                                    try{
+                                        if(json.has("vendortype")) {
+                                            vendortype = String.valueOf(json.get("vendortype")).toUpperCase();
+                                        }
+                                        else{
+                                            vendortype = "";
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        vendortype = "";
+                                        e.printStackTrace();
+                                    }
+                                    if(vendortype.toString().equals(Constants.Store_VendorType)) {
+                                        try {
+                                            pos_vendorNameString = String.valueOf(json.get("name"));
 
-                                    if (!VendorName_arrayList.contains(pos_vendorNameString)) {
-                                        VendorName_arrayList.add(pos_vendorNameString);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        //Log.d(Constants.TAG, "JsonName: " + pos_vendorNameString);
+
+                                        if (!VendorName_arrayList.contains(pos_vendorNameString)) {
+                                            VendorName_arrayList.add(pos_vendorNameString);
+
+                                        }
+
+                                        Modal_vendor modal_vendor = new Modal_vendor();
+
+
+                                        try {
+
+                                            if(json.has("name")){
+
+                                                modal_vendor.setVendorname( String.valueOf(json.get("name")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendorname( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendorname( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+
+                                            if(json.has("vendortype")){
+
+                                                modal_vendor.setVendortype( String.valueOf(json.get("vendortype")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendortype( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendortype( String.valueOf(""));
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+
+                                            if(json.has("vendormobile")){
+
+                                                modal_vendor.setVendormobile( String.valueOf(json.get("vendormobile")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendormobile( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendormobile( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+
+                                            if(json.has("status")){
+                                                modal_vendor.setStatus( String.valueOf(json.get("status")));
+
+
+                                            }
+                                            else{
+                                                modal_vendor.setStatus( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            modal_vendor.setStatus( String.valueOf(""));
+
+                                        }
+
+
+                                        try {
+                                            if(json.has("key")){
+                                                modal_vendor.setKey( String.valueOf(json.get("key")));
+
+
+                                            }
+                                            else{
+                                                modal_vendor.setKey( String.valueOf(""));
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setKey( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+                                            if(json.has("inventorycheck")){
+                                                modal_vendor.setInventorycheck( String.valueOf(json.get("inventorycheck")));
+
+
+                                            }
+                                            else{
+                                                modal_vendor.setInventorycheck( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setInventorycheck( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+                                            if(json.has("istestvendor")){
+
+                                                modal_vendor.setIstestvendor( String.valueOf(json.get("istestvendor")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setIstestvendor( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setIstestvendor( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            if(json.has("pincode")){
+
+                                                modal_vendor.setPincode( String.valueOf(json.get("pincode")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setPincode( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setPincode( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+///////////////////////////////////
+                                        try {
+                                            if(json.has("addressline1")){
+
+                                                modal_vendor.setAddressline1( String.valueOf(json.get("addressline1")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setAddressline1( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setAddressline1( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            if(json.has("addressline2")){
+
+                                                modal_vendor.setAddressline2( String.valueOf(json.get("addressline2")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setAddressline2( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setAddressline2( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        try {
+                                            if(json.has("vendorfssaino")){
+
+                                                modal_vendor.setVendorfssaino( String.valueOf(json.get("vendorfssaino")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendorfssaino( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendorfssaino( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+
+                                        try {
+                                            if(json.has("locationlat")){
+
+                                                modal_vendor.setLocationlat( String.valueOf(json.get("locationlat")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setLocationlat( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setLocationlat( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+
+                                        try {
+                                            if(json.has("locationlong")){
+
+                                                modal_vendor.setLocationlong( String.valueOf(json.get("locationlong")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setLocationlong( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setLocationlong( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        try {
+                                            if(json.has("inventorycheckpos")){
+
+                                                modal_vendor.setInventorycheckpos( String.valueOf(json.get("inventorycheckpos")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setInventorycheckpos( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setInventorycheckpos( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        vendorList.add(modal_vendor);
+
 
                                     }
-
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                     //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
@@ -187,6 +497,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        saveVendorDetailsinSharedPreference(vendorList);
                         pos_spinner_aAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, VendorName_arrayList);
                         pos_vendor_selecting_spinner.setAdapter(pos_spinner_aAdapter);
                         Adjusting_Widgets_Visibility(false);
@@ -242,9 +553,9 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private String getVendorData(int position,String fieldName){
         String data="";
         try {
-            JSONObject json = result.getJSONObject(position);
-            data = json.getString(fieldName);
-        } catch (JSONException e) {
+            Modal_vendor  vendor = vendorList.get(position);
+            data = vendor.getGet(fieldName);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return data;
@@ -493,7 +804,21 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
 
 
 
+    private void saveVendorDetailsinSharedPreference(List<Modal_vendor> vendorList) {
+        try {
+            final SharedPreferences sharedPreferences = getSharedPreferences("VendorList", MODE_PRIVATE);
 
+            Gson gson = new Gson();
+            String json = gson.toJson(vendorList);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("VendorList", json);
+            editor.apply();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
 
 }

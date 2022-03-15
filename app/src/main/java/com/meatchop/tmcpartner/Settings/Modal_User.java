@@ -2,8 +2,15 @@ package com.meatchop.tmcpartner.Settings;
 
 public class Modal_User {
 
-    String authorizationcode="",fcmtoken= "", createdtime="",mobileno= "", appversion="",deviceos= "",email="",key= "", name="",updatedtime= "";
+    String isUserAddedAddress ="NO",authorizationcode="",fcmtoken= "", createdtime="",mobileno= "", appversion="",deviceos= "",email="",key= "", name="",updatedtime= "";
 
+    public String getIsUserAddedAddress() {
+        return isUserAddedAddress;
+    }
+
+    public void setIsUserAddedAddress(String isUserAddedAddress) {
+        this.isUserAddedAddress = isUserAddedAddress;
+    }
 
     public String getAuthorizationcode() {
         return authorizationcode;

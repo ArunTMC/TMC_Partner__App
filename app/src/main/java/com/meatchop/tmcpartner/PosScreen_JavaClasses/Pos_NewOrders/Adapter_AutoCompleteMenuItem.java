@@ -36,11 +36,14 @@ Adapter_AutoCompleteMenuItem extends ArrayAdapter<Modal_NewOrderItems> {
     String menulist;
     private  List<Modal_NewOrderItems> menuListFull=new ArrayList<>();
     private  Context context;
+      List<Modal_NewOrderItems> completemenuItem=new ArrayList<>();
+
     private Handler handler;
     int currentPosition;
-public Adapter_AutoCompleteMenuItem(@NonNull Context context, @NonNull String menuList, int adapterPosition) {
+public Adapter_AutoCompleteMenuItem(@NonNull Context context, @NonNull String menuList, int adapterPosition, List<Modal_NewOrderItems> completemenuItem) {
         super(context, 0);
         this.menulist=menuList;
+        this.completemenuItem= completemenuItem;
         convertMenuStringtoJson(menulist);
         this.currentPosition=adapterPosition;
         this.context=context;
@@ -381,6 +384,38 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
 
 
+
+
+            try{
+                modal_newOrderItems.setDunzoprice(String.valueOf(menuuItem.getDunzoprice()));
+
+            }
+            catch(Exception e ){
+                Toast.makeText(context,"Can't Get Menu Dunzo at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+            }
+
+
+            try{
+                modal_newOrderItems.setBigbasketprice(String.valueOf(menuuItem.getBigbasketprice()));
+
+            }
+            catch(Exception e ){
+                Toast.makeText(context,"Can't Get Menu Bigbasket at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+            }
+
+
+            try{
+                modal_newOrderItems.setSwiggyprice(String.valueOf(menuuItem.getSwiggyprice()));
+
+            }
+            catch(Exception e ){
+                Toast.makeText(context,"Can't Get Menu Swiggy at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+            }
+
+
             try{
                 modal_newOrderItems.setAllownegativestock(String.valueOf(menuuItem.getAllownegativestock()));
 
@@ -603,6 +638,53 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                         e.printStackTrace();
                     }
 
+
+
+                    try{
+                        if(json.has("bigbasketprice")){
+                            newOrdersPojoClass.bigbasketprice =String.valueOf(json.get("bigbasketprice"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.bigbasketprice = "";
+                        }
+                    }
+                    catch (Exception e) {
+                        newOrdersPojoClass.bigbasketprice = "";
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("dunzoprice")){
+                            newOrdersPojoClass.dunzoprice =String.valueOf(json.get("dunzoprice"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.dunzoprice = "";
+                        }
+                    }
+                    catch (Exception e) {
+                        newOrdersPojoClass.dunzoprice = "";
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if(json.has("swiggyprice")){
+                            newOrdersPojoClass.swiggyprice =String.valueOf(json.get("swiggyprice"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.swiggyprice = "";
+                        }
+                    }
+                    catch (Exception e) {
+                        newOrdersPojoClass.swiggyprice = "";
+
+                        e.printStackTrace();
+                    }
 
 
                     try{
@@ -955,10 +1037,10 @@ protected FilterResults performFiltering(CharSequence constraint) {
         FilterResults results = new FilterResults();
        List<Modal_NewOrderItems> suggestions = new ArrayList<>();
         if (constraint == null || constraint.length() == 0) {
-        suggestions.addAll(menuListFull);
+        suggestions.addAll(completemenuItem);
         } else {
         String filterPattern = constraint.toString().toLowerCase().trim();
-        for (Modal_NewOrderItems item : menuListFull) {
+        for (Modal_NewOrderItems item : completemenuItem) {
         if (item.getItemname().toLowerCase().contains(filterPattern)) {
         suggestions.add(item);
         }

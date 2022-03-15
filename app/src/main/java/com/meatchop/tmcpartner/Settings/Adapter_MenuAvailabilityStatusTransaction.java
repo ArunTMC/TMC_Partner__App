@@ -30,7 +30,7 @@ import java.util.List;
 public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Modal_MenuAvailabilityStatusTransaction> {
     Context mContext;
     List<Modal_MenuAvailabilityStatusTransaction> ordersList;
-    String allowNegativeStock = "" , menuItemKey="",status="",mobileNo="",itemname="",transcationstatus ="",transcationtime ="";
+    String issubctgyavailabilitychanged="",allowNegativeStock = "" , menuItemKey="",status="",mobileNo="",itemname="",transcationstatus ="",transcationtime ="";
 
 
 
@@ -59,6 +59,8 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
     @SuppressLint({"UseCompatLoadingForDrawables", "SetTextI18n"})
     public View getView(final int pos, View view, ViewGroup v) {
         @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.menuavailabilityadapter, (ViewGroup) view, false);
+
+        final TextView negativestocklabel = listViewItem.findViewById(R.id.negativestocklabel);
 
         final TextView mobilenumber_textview = listViewItem.findViewById(R.id.mobilenumber_textview);
         final TextView status_textview = listViewItem.findViewById(R.id.status_textview);
@@ -131,6 +133,15 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
             transcationstatus="";
         }
 
+        try {
+            issubctgyavailabilitychanged = modal_menuAvailabilityStatusTransaction.getIssubctgyavailabilitychanged();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            issubctgyavailabilitychanged="";
+        }
+
          try {
              transcationtime = modal_menuAvailabilityStatusTransaction.getTransactiontime();
 
@@ -180,10 +191,7 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
 
         try {
             if ((transcationstatus.equals("SUCCESS"))){
-
-                if (menuItemKey.contains("tmcsubctgy")) {
-
-
+                if(issubctgyavailabilitychanged.toString().toUpperCase().equals("TRUE")) {
 
                     try {
                         subctgyitemInstruction_textview.setVisibility(View.VISIBLE);
@@ -196,17 +204,32 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
                         e.printStackTrace();
                     }
                 }
+                else{
+                    if (menuItemKey.contains("tmcsubctgy")) {
 
-                else {
-                    subctgyitemInstruction_textview.setVisibility(View.GONE);
-                    totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_White));
+
+
+                        try {
+                            subctgyitemInstruction_textview.setVisibility(View.VISIBLE);
+                            totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_PaleOrange));
+
+                            //
+                            //   totalLayout.setBackground(mContext.getResources().getDrawable(R.color.TMC_Orange));
+                            subctgyitemInstruction_textview.setText(new StringBuilder().append("All Items in ").append(itemname).append(" has been Turned ").append(status).toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    else {
+                        subctgyitemInstruction_textview.setVisibility(View.GONE);
+                        totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_White));
+                    }
                 }
+
             }
             else{
-                if (menuItemKey.contains("tmcsubctgy")) {
-
-
-
+                if(issubctgyavailabilitychanged.toString().toUpperCase().equals("TRUE")) {
                     try {
                         subctgyitemInstruction_textview.setVisibility(View.VISIBLE);
                         totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_PaleOrange));
@@ -216,13 +239,30 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 }
+                else{
+                    if (menuItemKey.contains("tmcsubctgy")) {
 
-                else {
-                    subctgyitemInstruction_textview.setVisibility(View.VISIBLE);
-                    totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_White));
-                    subctgyitemInstruction_textview.setText(new StringBuilder().append("Tried to change All ").append(itemname).append(" Item's Availability but  ").append(transcationstatus).toString());
+
+
+                        try {
+                            subctgyitemInstruction_textview.setVisibility(View.VISIBLE);
+                            totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_PaleOrange));
+
+                            //totalLayout.setBackground(mContext.getResources().getDrawable(R.color.TMC_Orange));
+                            subctgyitemInstruction_textview.setText(new StringBuilder().append("Tried to change All  ").append(itemname).append(" Item's Availability but  ").append(transcationstatus).toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                    else {
+                        subctgyitemInstruction_textview.setVisibility(View.VISIBLE);
+                        totalLayout.setBackgroundColor(mContext.getColor(R.color.TMC_White));
+                        subctgyitemInstruction_textview.setText(new StringBuilder().append("Tried to change All ").append(itemname).append(" Item's Availability but  ").append(transcationstatus).toString());
+
+                    }
 
                 }
 
@@ -260,7 +300,14 @@ public class Adapter_MenuAvailabilityStatusTransaction extends ArrayAdapter<Moda
 
 
         try {
-            allowNegativeStock_status_textview.setText(String.format(" %s", "Turned "+allowNegativeStock));
+            if (allowNegativeStock.equals("")) {
+                allowNegativeStock_status_textview.setText(String.format(" %s",  allowNegativeStock));
+                negativestocklabel.setVisibility(View.GONE);
+            } else {
+                negativestocklabel.setVisibility(View.VISIBLE);
+
+                allowNegativeStock_status_textview.setText(String.format(" %s", "Turned " + allowNegativeStock));
+            }
         }
         catch (Exception e){
             e.printStackTrace();

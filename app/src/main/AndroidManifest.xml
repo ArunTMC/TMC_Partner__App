@@ -28,9 +28,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.ConsolidatedRatingReportWeekwise"></activity>
+        <activity android:name=".MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen"></activity>
+        <activity android:name=".Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen" />
+        <activity android:name=".Settings.Add_Replacement_Refund_Order.Add_Replacement_Refund_Screen" />
+        <activity android:name=".Settings.GenerateUserDetailsReport" />
         <activity android:name=".Settings.ChangeMenuItemStatus_AllowNegativeStock_Settings" />
-        <activity android:name=".Settings.changeMenuItemAvailability_allowNegativeStock" />
         <activity android:name=".Settings.ChangeMenuItemWeightAndPriceSecondScreen" />
         <activity android:name=".Settings.OrderAndRatingDetailsScreen" />
         <activity android:name=".Settings.RaisedTicketDetailsForRating" />

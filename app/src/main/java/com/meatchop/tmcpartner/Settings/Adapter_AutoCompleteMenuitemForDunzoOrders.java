@@ -51,14 +51,16 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
             modal_newOrderItems.tmcpriceperkg = modal_menuItem_settings.getTmcprice();
             modal_newOrderItems.gstpercentage = modal_menuItem_settings.getGstpercentage();
             modal_newOrderItems.portionsize = modal_menuItem_settings.getPortionsize();
-            modal_newOrderItems.swiggyAmount = modal_menuItem_settings.getSwiggyprice();
             modal_newOrderItems.pricetypeforpos = modal_menuItem_settings.getPricetypeforpos();
             modal_newOrderItems.itemuniquecode = modal_menuItem_settings.getItemuniquecode();
             modal_newOrderItems.key = modal_menuItem_settings.getKey();
             modal_newOrderItems.tmcsubctgykey = String.valueOf(modal_menuItem_settings.getTmcsubctgykey());
             modal_newOrderItems.menuItemId = String.valueOf(modal_menuItem_settings.getMenuItemId());
-            modal_newOrderItems.dunzoAmount = String.valueOf(modal_menuItem_settings.getDunzoprice());
+            modal_newOrderItems.swiggyprice = modal_menuItem_settings.getSwiggyprice();
+            modal_newOrderItems.bigbasketprice = modal_menuItem_settings.getBigbasketprice();
+            modal_newOrderItems.dunzoprice = modal_menuItem_settings.getDunzoprice();
 
+            modal_newOrderItems.itemavailability = String.valueOf(modal_menuItem_settings.getItemavailability());
 
             modal_newOrderItems.barcode_AvlDetails = String.valueOf(modal_menuItem_settings.getBarcode_AvlDetails());
 
@@ -163,15 +165,15 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
                 }
                 //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
                 //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
-                modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoAmount()))));
-                modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoAmount()))));
+                modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoprice()))));
+                modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoprice()))));
                 //    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
                 modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
 
 
 
                 if (String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
-                    int priceperKg = Integer.parseInt(menuuItem.getDunzoAmount());
+                    int priceperKg = Integer.parseInt(String.valueOf(menuuItem.getDunzoprice()));
                     String weight_string =String.valueOf(menuuItem.getGrossweight());
                     weight_string =weight_string .replaceAll("[^\\d.]", "");
 
@@ -206,6 +208,8 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
 
 
                         priceperKg=0;
+                        priceperKg = Integer.parseInt(menuuItem.getDunzoprice());
+
                         modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(priceperKg)));
                         modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(priceperKg)));
                         // modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
@@ -215,7 +219,7 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
                     }
 
                     if (weight > 1000) {
-                        priceperKg = Integer.parseInt(menuuItem.getDunzoAmount());
+                        priceperKg = Integer.parseInt(menuuItem.getDunzoprice());
 
                         int itemquantity = weight - 1000;
 
@@ -316,13 +320,32 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
                 }
 
                 try {
-                    modal_newOrderItems.setSwiggyAmount(String.valueOf(menuuItem.getDunzoAmount()));
+                    modal_newOrderItems.setSwiggyprice(String.valueOf(menuuItem.getSwiggyAmount()));
 
                 }
                 catch (Exception e){
                     //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                 }
+
+
+                try {
+                    modal_newOrderItems.setBigbasketprice(String.valueOf(menuuItem.getBigbasketAmount()));
+
+                }
+                catch (Exception e){
+                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+                try {
+                    modal_newOrderItems.setDunzoprice(String.valueOf(menuuItem.getDunzoprice()));
+
+                }
+                catch (Exception e){
+                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
 
                 try {
                     modal_newOrderItems.setGrossweight(String.valueOf(menuuItem.getGrossweight()));
@@ -409,7 +432,14 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
                     Toast.makeText(context,"Can't Get Menu Barcode AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                 }
+                try{
+                    modal_newOrderItems.setItemavailability(String.valueOf(menuuItem.getItemavailability()));
 
+                }
+                catch(Exception e ){
+                    Toast.makeText(context,"Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
 
                 try{
                     modal_newOrderItems.setItemavailability_AvlDetails(String.valueOf(menuuItem.getItemavailability_AvlDetails()));
@@ -590,7 +620,7 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
         {
             @Override
             public void run() {
-                AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
             }
         });
 

@@ -116,6 +116,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
     String selectedPaymentMode  ="NONE SELECTED";
+    String selectedOrderType  ="POS Order";
+
     public static BottomSheetDialog bottomSheetDialog;
     BottomNavigationView bottomNavigationView;
     boolean isUpdateCouponTransactionMethodCalled=false;
@@ -234,7 +236,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             //Log.i(TAG, "call adapter cart_Item " + getData());
 
-            //completemenuItem= getMenuItemfromString(MenuItems);
+           completemenuItem= getMenuItemfromString(MenuItems);
             //getMenuItemStockAvlDetailsArrayAndMenuItemFromSharedPreferences();
 
 
@@ -530,16 +532,23 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         TextView toPay_textWidget = bottomSheetDialog.findViewById(R.id.toPay_textWidget);
         Spinner paymentModeSpinner_Widget = bottomSheetDialog.findViewById(R.id.paymentModeSpinner_Widget);
 
+        Spinner orderTypeSpinner_Widget = bottomSheetDialog.findViewById(R.id.orderTypeSpinner_Widget);
+
         Objects.requireNonNull(itemtotal_textWidget).setText(finaltoPayAmount);
         Objects.requireNonNull(toPay_textWidget).setText(finaltoPayAmount);
         Objects.requireNonNull(discountTextWidget).setText("0");
 
-        String[] ordertype=getResources().getStringArray(R.array.PaymentMode);
+        String[] paymentType=getResources().getStringArray(R.array.PaymentMode);
+        String[] ordertype=getResources().getStringArray(R.array.OrderType);
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, ordertype);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> arrayAdapterpaymentType = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, paymentType);
+        arrayAdapterpaymentType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Objects.requireNonNull(paymentModeSpinner_Widget).setAdapter(arrayAdapterpaymentType);
 
-        Objects.requireNonNull(paymentModeSpinner_Widget).setAdapter(arrayAdapter);
+        ArrayAdapter<String> arrayAdapterordertype = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, ordertype);
+        arrayAdapterordertype.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Objects.requireNonNull(orderTypeSpinner_Widget).setAdapter(arrayAdapterordertype);
+
         discountAmount ="0";
         discount_editWidget.setText("0");
         Objects.requireNonNull(userstoreNumberCheckboxWidget).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -575,6 +584,29 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
                 selectedPaymentMode = "NONE SELECTED";
+            }
+        });
+
+
+        Objects.requireNonNull(orderTypeSpinner_Widget).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                selectedOrderType = parent.getItemAtPosition(position).toString().toUpperCase();
+                if(selectedOrderType.equals("PHONEORDER")){
+                    isPhoneOrderSelected = true;
+                }
+                else{
+                    isPhoneOrderSelected = false;
+
+                }
+                //  Toast.makeText(parent.getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+            }
+            @Override
+            public void onNothingSelected(AdapterView <?> parent) {
+                isPhoneOrderSelected = false;
+
+                selectedOrderType = "POS Order";
             }
         });
 
@@ -1070,6 +1102,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         }
 
     }
+
     private Handler newHandler() {
         Handler.Callback callback = new Handler.Callback() {
 
@@ -1091,6 +1124,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         };
         return new Handler(callback);
     }
+
+
     private List<Modal_NewOrderItems> getMenuItemfromString(String menulist) {
         List<Modal_NewOrderItems>MenuList=new ArrayList<>();
         String ItemName = "",tmcsubctgykey="";
@@ -1489,9 +1524,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     }
 
 
-
-
-
     private void getMenuItemStockAvlDetailsArrayAndMenuItemFromSharedPreferences() {
         final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("MenuItemStockAvlDetails", MODE_PRIVATE);
 
@@ -1511,9 +1543,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
       //  completemenuItem= getMenuItemfromString(MenuItems);
     }
-
-
-
 
 
 
@@ -1587,6 +1616,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     cartItem_hashmap.clear();
                                     ispaymentMode_Clicked = false;
                                     isOrderDetailsMethodCalled = false;
+                                    isPhoneOrderSelected = false;
 
                                     isPaymentDetailsMethodCalled = false;
                                     isOrderTrackingDetailsMethodCalled = false;
@@ -2777,6 +2807,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     final double[] Total_outgoingqty_stockOutGngDetails_Double = {0};
                     final double[] receivedStock_AvlDetails_double = {0};
                     final double[] finalStockBalance_double = {0};
+                    final String[] tmcSubCtgyKey_stockOutGngDetails_String = {""};
 
                     final String[] outgoingtype_stockOutGngDetails_String = {""};
                     final String[] stockincomingkey_stockOutGngDetails_String = {""};
@@ -2870,6 +2901,18 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             }
                                             Log.i(TAG, "getStock incoming outgoingtype_stockOutGngDetails_String" + outgoingtype_stockOutGngDetails_String[0]);
 
+
+                                                try {
+                                                    if (json.has("tmcsubctgykey")) {
+                                                        tmcSubCtgyKey_stockOutGngDetails_String[0] = (json.getString("tmcsubctgykey"));
+                                                    } else {
+                                                        tmcSubCtgyKey_stockOutGngDetails_String[0] = "";
+                                                    }
+                                                } catch (Exception e) {
+                                                    tmcSubCtgyKey_stockOutGngDetails_String[0] = "";
+
+                                                    e.printStackTrace();
+                                                }
 
 
 
@@ -3015,24 +3058,26 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                                 if (!allowNegativeStock) {
 
 
-                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], true, false, menuItemKey_avlDetails);
+                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], true, false, menuItemKey_avlDetails,tmcSubCtgyKey_stockOutGngDetails_String[0],itemName);
 
                                                 } else {
-                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails);
+                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails,tmcSubCtgyKey_stockOutGngDetails_String[0],itemName);
 
                                                 }
 
 
                                             } else {
-                                                UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails);
+                                                UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails,tmcSubCtgyKey_stockOutGngDetails_String[0],itemName);
 
                                             }
                                         } else {
-                                            UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails);
+                                            UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails,tmcSubCtgyKey_stockOutGngDetails_String[0],itemName);
 
                                         }
 
                                     } catch (Exception e) {
+                                        UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails,tmcSubCtgyKey_stockOutGngDetails_String[0],itemName);
+
                                         e.printStackTrace();
                                     }
 
@@ -3181,7 +3226,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
 
-    private void UpdateStockBalanceinMenuItemStockAvlDetail(String key_avlDetails, double finalStockBalance_double, boolean changeItemAvailability, boolean isitemAvailable, String menuItemKey_avlDetails) {
+    private void UpdateStockBalanceinMenuItemStockAvlDetail(String key_avlDetails, double finalStockBalance_double, boolean changeItemAvailability, boolean isitemAvailable, String menuItemKey_avlDetails, String tmcSubCtgyKey, String itemName) {
 
 
         showProgressBar(true);
@@ -3208,6 +3253,16 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 @Override
                 public void onResponse(@NonNull JSONObject response) {
                     //Log.d(Constants.TAG, "Response: " + response);
+
+                    String message ="";
+                    Log.d(TAG, "change menu Item " + response.length());
+                    try {
+                        message = response.getString("message");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                     if(changeItemAvailability) {
                         for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < completemenuItem.size(); iterator_menuitemStockAvlDetails++) {
 
@@ -3217,6 +3272,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                             if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
                                 modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                uploadMenuAvailabilityStatusTranscationinDB(usermobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorKey,Currenttime,menuItemKey_avlDetails,message, "", false, "");
+                                savedMenuIteminSharedPrefrences(completemenuItem,iterator_menuitemStockAvlDetails);
 
                             }
 
@@ -3358,6 +3415,110 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
 
+
+
+    }
+
+
+    private void savedMenuIteminSharedPrefrences(List<Modal_NewOrderItems> menuItem, int iterator_menuitemStockAvlDetails) {
+        final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("MenuList", MODE_PRIVATE);
+
+
+        Gson gson = new Gson();
+        String json = gson.toJson(menuItem);
+        SharedPreferences.Editor editor = sharedPreferencesMenuitem.edit();
+        editor.putString("MenuList",json );
+        editor.apply();
+        try {
+            adapterNewOrderScreenFragmentMobile.notifyDataSetChanged();
+            adapterNewOrderScreenFragmentMobile.notify();
+            adapterNewOrderScreenFragmentMobile.notifyItemChanged(iterator_menuitemStockAvlDetails);
+
+            adapterNewOrderScreenFragmentMobile.notifyAll();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, boolean availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message, String menuItemStockAvlDetailskey, boolean allowNegative, String itemStockAvlDetailskey) {
+
+
+        //Log.d(TAG, " uploaduserDatatoDB.");
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("itemname", menuItemName);
+            jsonObject.put("status", availability);
+            jsonObject.put("subCtgykey", menuItemSubCtgykey);
+            jsonObject.put("transactiontime", dateandtime);
+            jsonObject.put("mobileno", userPhoneNumber);
+            jsonObject.put("vendorkey", vendorkey);
+            jsonObject.put("menuitemkey", menuItemKey);
+            jsonObject.put("transcationstatus", message);
+            try {
+                if (!menuItemStockAvlDetailskey.equals("")) {
+                    jsonObject.put("menuitemstockavldetailskey", menuItemStockAvlDetailskey);
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                if ((!menuItemStockAvlDetailskey.equals("")) ) {
+                    jsonObject.put("allownegativestock", allowNegative);
+
+                }
+
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addMenuavailabilityTransaction,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                //Log.d(Constants.TAG, "Response: " + response);
+                //  showProgressBar(false);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                showProgressBar(false);
+
+                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+
+
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
 
     }
@@ -4149,7 +4310,6 @@ showProgressBar(true);
 
 
 
-
                 cart_Item_List.clear();
                 cartItem_hashmap.clear();
                 ispaymentMode_Clicked = false;
@@ -4168,6 +4328,7 @@ showProgressBar(true);
 
                 finaltoPayAmount = "0";
                 new_totalAmount_withoutGst =0;
+                isPhoneOrderSelected = false;
 
                 isPrintedSecondTime = false;
                 isUpdateCouponTransactionMethodCalled=false;
@@ -4177,6 +4338,8 @@ showProgressBar(true);
                 selectedPaymentMode="";
                 sTime=0;
                 finaltoPayAmountinmethod="";
+                isStockOutGoingAlreadyCalledForthisItem = false;
+                StockBalanceChangedForThisItemList.clear();
 
                 showProgressBar(false);
                 return;
@@ -4187,14 +4350,6 @@ showProgressBar(true);
 
 
     }
-
-
-
-
-
-
-
-
 
 
 
@@ -4714,8 +4869,6 @@ showProgressBar(true);
 
 
     }
-
-
 
 
     private void setupChat() {

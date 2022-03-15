@@ -72,7 +72,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
-   public String coupondiscountAmount;
+     public String coupondiscountAmount;
     public String orderid;
     public String vendorLongitude;
     public String customerlatitude;
@@ -83,7 +83,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     public String paymentmode;
     public String paymentModeString;
     public String payableAmount;
-    public String userkey;
+    public String userkey,UserRole,UserPhoneNumber;
 
     public String tokenNo;
     public String deliverydistance;
@@ -170,9 +170,12 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
             vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
             vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
+            UserPhoneNumber = (shared.getString("UserPhoneNumber", "+91"));
 
            vendorKey = (shared.getString("VendorKey", ""));
             vendorUserMobileno = (shared.getString("UserPhoneNumber", ""));
+            UserRole = shared.getString("userrole", "");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -185,8 +188,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-        OrderdItems_desp = new ArrayList<>();
 
+
+        cancelOrder_button.setVisibility(View.GONE);
+
+        OrderdItems_desp = new ArrayList<>();
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -304,8 +310,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                             }
 
 
-                                            if(json.has("orderdeliveredtime")){
-                                                modal_manageOrders_pojo_class.orderdeliveredtime =  String.valueOf(json.get("orderdeliveredtime"));
+                                            if(json.has("orderdeliverytime")){
+                                                modal_manageOrders_pojo_class.orderdeliveredtime =  String.valueOf(json.get("orderdeliverytime"));
 
                                             }
                                             else{
@@ -2884,8 +2890,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         try {
             orderStatustext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getOrderstatus()));
 
-            slotNametext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotdate()));
-            slotDatetext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotname()));
+            slotNametext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotname()));
+            slotDatetext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getSlotdate()));
 
             delivery_type_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getDeliverytype()));
         }catch (Exception e){
@@ -2957,9 +2963,32 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         }
         else{
             changeDeliveryPartner.setVisibility(View.VISIBLE);
+            if(ordertype.equals(Constants.APPORDER)) {
+                if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.equals(Constants.ADMIN_ROLENAME))) {
+                    if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME))) {
+                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+918939189102"))) {
+                            cancelOrder_button.setVisibility(View.VISIBLE);
+                        } else {
+                            cancelOrder_button.setVisibility(View.GONE);
+
+                        }
+                    } else {
+                        cancelOrder_button.setVisibility(View.VISIBLE);
+
+                    }
+                } else {
+                    cancelOrder_button.setVisibility(View.GONE);
+
+                }
+            }
+            else{
+                cancelOrder_button.setVisibility(View.GONE);
+                if ((UserRole.equals(Constants.ADMIN_ROLENAME))) {
+                    cancelOrder_button.setVisibility(View.VISIBLE);
+                }
+            }
 
             changePaymentMode_button.setVisibility(View.VISIBLE);
-            cancelOrder_button.setVisibility(View.VISIBLE);
         }
         if (ordertype.equals(Constants.POSORDER)) {
             showlocation.setVisibility(View.GONE);
@@ -3257,8 +3286,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                         else{
                                             modal_manageOrders_pojo_class.usermobile ="";
                                         }
-                                        if(json.has("orderdeliveredtime")){
-                                            modal_manageOrders_pojo_class.orderdeliveredtime =  String.valueOf(json.get("orderdeliveredtime"));
+                                        if(json.has("orderdeliverytime")){
+                                            modal_manageOrders_pojo_class.orderdeliveredtime =  String.valueOf(json.get("orderdeliverytime"));
 
                                         }
                                         else{

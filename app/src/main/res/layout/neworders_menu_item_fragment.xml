@@ -355,9 +355,8 @@
 
                                     <CheckBox
                                         android:id="@+id/useStoreNumberCheckBox"
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="200dp"
                                         android:layout_height="match_parent"
-                                        android:layout_weight="1"
                                         android:textSize="15sp"
                                         android:fontFamily="@font/open_sans_bold"
                                         android:layout_marginStart="15dp"
@@ -369,7 +368,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:visibility="visible"
+                                    android:visibility="gone"
                                     android:id="@+id/discountAmountLayout"
                                     android:orientation="horizontal">
 
@@ -379,7 +378,7 @@
                                         android:layout_marginStart="10dp"
                                         android:fontFamily="@font/open_sans_bold"
                                         android:layout_marginBottom="5dp"
-                                        android:text="Discount Amount"
+                                        android:text="Discount  Amount"
 
                                         android:textColor="@color/TMC_Primary_Text_Color"
                                         android:textColorHint=" @color/TMC_Hint_Color"
@@ -398,6 +397,7 @@
                                         android:inputType="phone"
                                         android:maxLength="10"
                                         android:text="0"
+
                                         android:layout_marginTop="5dp"
                                         android:gravity="center"
                                         android:textColor="@color/TMC_Primary_Text_Color"
@@ -486,17 +486,17 @@
 
                                 <Button
                                     android:id="@+id/discount_widget"
-                                    android:layout_width="170dp"
-                                    android:layout_height="50dp"
+                                    android:layout_width="180dp"
+                                    android:layout_height="55dp"
                                     android:layout_marginStart="50dp"
-                                    android:layout_marginTop="35dp"
+                                    android:layout_marginTop="30dp"
                                     android:layout_marginBottom="30dp"
 
                                     android:background="@drawable/button_background"
-                                    android:text="Discount"
+                                    android:text="Apply Discount"
                                     android:textAllCaps="false"
                                     android:textColor="@color/TMC_White"
-                                    android:textSize="25sp"
+                                    android:textSize="20sp"
                                     android:visibility="visible" />
                                 <Button
                                     android:id="@+id/check_redeemPoints_widget"

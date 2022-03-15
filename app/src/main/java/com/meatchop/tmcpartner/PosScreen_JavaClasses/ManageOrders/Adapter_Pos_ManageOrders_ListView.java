@@ -2216,9 +2216,41 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Quantity : "+quantity +"\n");
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
+            try {
+                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal, cutname);
+            }
+            catch (Exception exception){
+                exception.printStackTrace();
+                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.PrintFailed_Instruction,
+                        R.string.OK_Text,R.string.Empty_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                                try {
+                                    Thread t = new Thread() {
+                                        public void run() {
+                                            printRecipt(selectedBillDetails);
+                                        }
+                                    };
+                                    t.start();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
 
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight,quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal,cutname);
+                                    new_to_pay_Amount = 0;
+                                    old_taxes_and_charges_Amount = 0;
+                                    old_total_Amount = 0;
 
+                                }
+                            }
+
+                            @Override
+                            public void onNo() {
+                                new_to_pay_Amount = 0;
+                                old_taxes_and_charges_Amount = 0;
+                                old_total_Amount = 0;
+                            }
+                        });
+            }
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
         int new_total_subtotal = (int) Math.ceil(total_subtotal);

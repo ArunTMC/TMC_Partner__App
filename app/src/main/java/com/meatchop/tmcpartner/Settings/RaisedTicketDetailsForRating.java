@@ -111,7 +111,10 @@ public class RaisedTicketDetailsForRating extends AppCompatActivity {
 
         generateReport.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {showProgressBar(true);
+            public void onClick(View v) {
+
+
+                showProgressBar(true);
                 getDetailsAboutTicketsCLosedTodayFromDB();
             }
         });
@@ -288,8 +291,7 @@ public class RaisedTicketDetailsForRating extends AppCompatActivity {
     private void getDetailsAboutTicketsCLosedTodayFromDB() {
 
 
-    String CurrentDate ="Sat, 18 Dec 2021";
-            //getDate();
+    String CurrentDate =getDate();
 
         Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
         closedTicketsRatingDetailsArray.clear();
@@ -679,7 +681,7 @@ public class RaisedTicketDetailsForRating extends AppCompatActivity {
     private void exportReport(ArrayList<Modal_RaisedTicketsRatingDetails> raisedTicketsRatingDetailsArray, ArrayList<Modal_RaisedTicketsRatingDetails> closedTicketsRatingDetailsArray) {
 
 
-        if ((raisedTicketsRatingDetailsArray == null) || (raisedTicketsRatingDetailsArray.size() <= 0)) {
+        if (((raisedTicketsRatingDetailsArray == null) || (raisedTicketsRatingDetailsArray.size() <= 0))&&(((closedTicketsRatingDetailsArray == null) || (closedTicketsRatingDetailsArray.size() <= 0)) )) {
             return;
         }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
@@ -724,6 +726,7 @@ public class RaisedTicketDetailsForRating extends AppCompatActivity {
 
                 startActivityForResult(intent, OPENPDF_ACTIVITY_REQUEST_CODE);
             } catch (ActivityNotFoundException e) {
+                e.printStackTrace();
                 // Instruct the user to install a PDF reader here, or something
             }
             // }
@@ -891,10 +894,19 @@ public class RaisedTicketDetailsForRating extends AppCompatActivity {
                 userFeedBackcell.setBorder(Rectangle.NO_BORDER);
                 userFeedBackcell.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
                 userFeedBackcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                userFeedBackcell.setFixedHeight(25);
                 userFeedBackcell.setPaddingRight(20);
                 tablePaymentModetitle1.addCell(userFeedBackcell);
 
+
+                PdfPCell emptyUserFeedBackcell;
+                emptyUserFeedBackcell = new PdfPCell(new Phrase(""));
+                emptyUserFeedBackcell.setBorder(Rectangle.NO_BORDER);
+                emptyUserFeedBackcell.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+                emptyUserFeedBackcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                emptyUserFeedBackcell.setFixedHeight(5);
+
+                emptyUserFeedBackcell.setPaddingRight(20);
+                tablePaymentModetitle1.addCell(emptyUserFeedBackcell);
 
 
                 PdfPCell TicketRaisedTimecell;
@@ -924,7 +936,6 @@ public class RaisedTicketDetailsForRating extends AppCompatActivity {
                 Dscriptioncell.setBorder(Rectangle.NO_BORDER);
                 Dscriptioncell.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
                 Dscriptioncell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                Dscriptioncell.setFixedHeight(25);
                 Dscriptioncell.setPaddingRight(20);
                 tablePaymentModetitle1.addCell(Dscriptioncell);
 

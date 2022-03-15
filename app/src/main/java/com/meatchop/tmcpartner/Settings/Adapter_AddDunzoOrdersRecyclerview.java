@@ -215,7 +215,7 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                         String weight_string = holder.itemWeight_edittextwidget.getText().toString();
                         weight_string =weight_string .replaceAll("[^\\d.]", "");
                         modal_newOrderItems.setIstmcpriceperkgitemedited("TRUE");
-                        int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                        int priceperKg = Integer.parseInt(modal_newOrderItems.getDunzoprice());
 
                         int weight = Integer.parseInt(weight_string);
                         if (weight < 1000) {
@@ -260,7 +260,7 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
 
                             //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
 
-                            AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                            AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
 
                         }
 
@@ -293,12 +293,12 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
 
-                            AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                            AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
 
                         }
 
                         if (weight > 1000) {
-                            priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                            priceperKg = Integer.parseInt(modal_newOrderItems.getDunzoprice());
 
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -344,7 +344,7 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                             modal_newOrderItems.setGrossweight((String.valueOf(weight)));
 
                             //  holder.itemWeight_edittextwidget.setText(String.valueOf(total));
-                            AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                            AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
 
                         }
 
@@ -519,13 +519,6 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                         newOrders_menuItem_fragment.add_amount_ForBillDetails();
 
 
-                       /* if((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0"))||(!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))){
-                            newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
-                            newOrders_menuItem_fragment.discount_rs_text_widget.setText("0.00");
-                            newOrders_menuItem_fragment.discountAmount="0";
-                        }
-
-                        */
 
                     } else {
                         Toast.makeText(context, "To Remove the Item Click the Delete Icon", Toast.LENGTH_LONG).show();
@@ -678,7 +671,7 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                     String weight_string = modal_newOrderItems.getItemFinalWeight();
                     weight_string =weight_string .replaceAll("[^\\d.]", "");
 
-                    int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                    int priceperKg = Integer.parseInt(modal_newOrderItems.getDunzoprice());
 
                     int weight = Integer.parseInt(weight_string);
                     if (weight < 1000) {
@@ -708,7 +701,7 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                         {
                             @Override
                             public void run() {
-                                AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                                AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
                             }
                         });
 
@@ -729,13 +722,13 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                         {
                             @Override
                             public void run() {
-                                AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                                AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
                             }
                         });
                     }
 
                     if (weight > 1000) {
-                        priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                        priceperKg = Integer.parseInt(modal_newOrderItems.getDunzoprice());
 
                         //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -765,7 +758,7 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
                         {
                             @Override
                             public void run() {
-                                AddDunzoOrders.adapter_addSwiggyOrdersRecyclerview.notifyDataSetChanged();
+                                AddDunzoOrders.adapter_addDunzoOrdersRecyclerview.notifyDataSetChanged();
                             }
                         });
 

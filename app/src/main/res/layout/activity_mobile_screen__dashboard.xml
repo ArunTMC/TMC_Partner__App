@@ -34,7 +34,7 @@ tools:context=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard">
         android:elevation="8dp"
         android:foregroundGravity="center_vertical"
         app:itemIconSize="30dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:itemRippleColor="@color/TMC_Orange"
         app:menu="@menu/menu" />
     <LinearLayout

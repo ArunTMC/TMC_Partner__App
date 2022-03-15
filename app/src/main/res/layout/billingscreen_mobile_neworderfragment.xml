@@ -298,43 +298,220 @@
                 android:text=" rs" />
         </LinearLayout>
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/paymentMode_selectionLayout"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:visibility="visible"
+
+                android:layout_weight="1"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/TMC_Orange"
             android:textSize="13sp"
             android:layout_marginTop="15dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="1dp"
             android:gravity="center_vertical"
             android:fontFamily="@font/open_sans"
-            android:text="Select Any Payment Mode" />
-        <LinearLayout
+            android:text="Select  Payment Type" />
+
+        <Spinner
+            android:id="@+id/paymentModeSpinner_Widget"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal">
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="1dp"
+            android:layout_marginTop="6dp"
 
+            android:textAlignment="viewStart" />
+            </LinearLayout>
 
-            <Spinner
-                android:id="@+id/paymentModeSpinner_Widget"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="7dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/replacementPaymentMode_Layout"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:visibility="gone"
 
-                android:layout_weight=".5"
-                android:textAlignment="viewStart" />
-
-            <Button
-                android:id="@+id/checkout_button_Widget"
                 android:layout_weight="1"
-                android:background="@drawable/orange_selected_button_background"
-                android:textColor="@color/TMC_White"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="15sp"
+                    android:layout_marginTop="15dp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="1dp"
+                    android:textAlignment="viewStart"
+                    android:fontFamily="@font/open_sans"
+                    android:text="Payment Mode"
+                    />
+
+                <TextView
+                    android:id="@+id/replacementPaymentModetextview_Widget"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="1dp"
+                    android:layout_marginTop="6dp"
+                    android:text="Cash On Delivery"
+                    android:textSize="15sp"
+
+                    android:textAlignment="viewStart" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:text="@string/Check_out" />
+                android:layout_height="wrap_content"
+                android:paddingStart="6dp"
+                android:layout_weight="1"
+                android:id="@+id/orderMode_selectionLayout"
+                android:visibility="visible"
+
+                android:paddingEnd="3dp"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="13sp"
+                    android:layout_marginTop="15dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:gravity="center_vertical"
+                    android:fontFamily="@font/open_sans"
+                    android:text="Select  Order Type" />
+
+                <Spinner
+                    android:id="@+id/orderTypeSpinner_Widget"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginTop="6dp"
+                    android:textAlignment="viewStart" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/replacementOrderType_Layout"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:layout_weight="1"
+                android:visibility="gone"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="15sp"
+                    android:layout_marginTop="15dp"
+                    android:paddingStart="2dp"
+                    android:layout_gravity="end"
+                    android:paddingEnd="1dp"
+                    android:fontFamily="@font/open_sans"
+                    android:text="Order Type" />
+
+                <TextView
+                    android:id="@+id/replacementOrderTypetextview_Widget"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:textSize="15sp"
+
+                    android:layout_marginEnd="1dp"
+                    android:layout_marginTop="6dp"
+                    android:text="POS Order"
+                    android:textAlignment="viewEnd" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/reason_for_replacement_Layout"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:visibility="gone"
+
+                android:layout_weight="1"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="15sp"
+                    android:layout_marginTop="5dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="1dp"
+                    android:textAlignment="viewStart"
+                    android:fontFamily="@font/open_sans"
+                    android:text="Reason For Replacement "
+                    />
+
+
+                <EditText
+                    android:id="@+id/reason_replacementtextview_Widget"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:hint="Enter the reason"
+                    android:ems="10"
+                    android:padding="3dp"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/orange_non_selected_button_background"
+                    android:gravity="start|top"
+                    android:inputType="textMultiLine" />
+
+
+            </LinearLayout>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/checkout_button_Widget"
+            android:background="@drawable/orange_selected_button_background"
+            android:textColor="@color/TMC_White"
+            android:layout_width="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_height="wrap_content"
+            android:text="@string/Check_out" />
         <View
             android:layout_width="match_parent"
             android:layout_height="3dp"

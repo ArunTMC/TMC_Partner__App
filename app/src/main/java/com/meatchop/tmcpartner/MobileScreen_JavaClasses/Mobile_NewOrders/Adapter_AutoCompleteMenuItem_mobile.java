@@ -209,7 +209,36 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                     }
 
+                    try{
+                        modal_newOrderItems.setSwiggyprice(String.valueOf(menuuItem.getSwiggyprice()));
 
+                    }
+                    catch(Exception e){
+                        modal_newOrderItems.setSwiggyprice("0");
+                        Toast.makeText(context,"Can't Get Menu Item ID at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try{
+                        modal_newOrderItems.setDunzoprice(String.valueOf(menuuItem.getDunzoprice()));
+
+                    }
+                    catch(Exception e){
+                        modal_newOrderItems.setDunzoprice("0");
+                        Toast.makeText(context,"Can't Get Menu Item ID at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try{
+                        modal_newOrderItems.setBigbasketprice(String.valueOf(menuuItem.getBigbasketprice()));
+
+                    }
+                    catch(Exception e){
+                        modal_newOrderItems.setBigbasketprice("0");
+                        Toast.makeText(context,"Can't Get Menu Item ID at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
 
                     try{
                         modal_newOrderItems.setMenuItemId(String.valueOf(menuuItem.getMenuItemId()));
@@ -386,6 +415,15 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                     }
                     catch(Exception e ){
                         Toast.makeText(context,"Can't Get Menu vendorkey AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try{
+                        modal_newOrderItems.setAllownegativestock(String.valueOf(menuuItem.getAllownegativestock()));
+
+                    }
+                    catch(Exception e ){
+                        Toast.makeText(context,"Can't Get Menu allownegative AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                     }
 
@@ -593,6 +631,51 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                             e.printStackTrace();
                         }
 
+                        try{
+                            if(json.has("swiggyprice")){
+                                newOrdersPojoClass.swiggyprice =String.valueOf(json.get("swiggyprice"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.swiggyprice = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.swiggyprice = "0";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("dunzoprice")){
+                                newOrdersPojoClass.dunzoprice =String.valueOf(json.get("dunzoprice"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.dunzoprice = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.dunzoprice = "0";
+
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            if(json.has("bigbasketprice")){
+                                newOrdersPojoClass.bigbasketprice =String.valueOf(json.get("bigbasketprice"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.bigbasketprice = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.bigbasketprice = "0";
+
+                            e.printStackTrace();
+                        }
 
 
                         try{

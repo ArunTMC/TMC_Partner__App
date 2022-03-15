@@ -1,6 +1,11 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuItem_Settings extends Throwable {
+
+    String menuItemKeyFromInventoryDetails="",itemnameFromInventoryDetails ="",relationtypeFromInventoryDetails ="";
+    String grossweightinGramsFromInventoryDetails, netweightingramsFromInventoryDetails;
+    boolean isshowavailabilityFromInventoryDetails = false;
+
     public String showinapp,allownegativestock, barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
             inventorydetails,itemcutdetails,itemweightdetails,totalnoofmenuitem,noofmenuitemavailable,noofmenuitemavailableinpercentage,bigbasketprice,dunzoprice,swiggyprice,reportname,marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
             vendorname,displayno, grossweight,grossweightingrams,pricetypeforpos
@@ -8,6 +13,55 @@ public class Modal_MenuItem_Settings extends Throwable {
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage,tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
     private String editTextValue;
     boolean isMarinadeItem;
+
+    public String getMenuItemKeyFromInventoryDetails() {
+        return menuItemKeyFromInventoryDetails;
+    }
+
+    public void setMenuItemKeyFromInventoryDetails(String menuItemKeyFromInventoryDetails) {
+        this.menuItemKeyFromInventoryDetails = menuItemKeyFromInventoryDetails;
+    }
+
+    public String getItemnameFromInventoryDetails() {
+        return itemnameFromInventoryDetails;
+    }
+
+    public void setItemnameFromInventoryDetails(String itemnameFromInventoryDetails) {
+        this.itemnameFromInventoryDetails = itemnameFromInventoryDetails;
+    }
+
+    public String getRelationtypeFromInventoryDetails() {
+        return relationtypeFromInventoryDetails;
+    }
+
+    public void setRelationtypeFromInventoryDetails(String relationtypeFromInventoryDetails) {
+        this.relationtypeFromInventoryDetails = relationtypeFromInventoryDetails;
+    }
+
+    public String getGrossweightinGramsFromInventoryDetails() {
+        return grossweightinGramsFromInventoryDetails;
+    }
+
+    public void setGrossweightinGramsFromInventoryDetails(String grossweightinGramsFromInventoryDetails) {
+        this.grossweightinGramsFromInventoryDetails = grossweightinGramsFromInventoryDetails;
+    }
+
+    public String getNetweightingramsFromInventoryDetails() {
+        return netweightingramsFromInventoryDetails;
+    }
+
+    public void setNetweightingramsFromInventoryDetails(String netweightingramsFromInventoryDetails) {
+        this.netweightingramsFromInventoryDetails = netweightingramsFromInventoryDetails;
+    }
+
+    public boolean isIsshowavailabilityFromInventoryDetails() {
+        return isshowavailabilityFromInventoryDetails;
+    }
+
+    public void setIsshowavailabilityFromInventoryDetails(boolean isshowavailabilityFromInventoryDetails) {
+        this.isshowavailabilityFromInventoryDetails = isshowavailabilityFromInventoryDetails;
+    }
+
     public String getKeyforHashmap() {
         return keyforHashmap;
     }

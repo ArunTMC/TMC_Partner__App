@@ -52,7 +52,9 @@ public class Adapter_AutoCompleteMenuitemForBigbasketOrders  extends ArrayAdapte
             modal_newOrderItems.tmcpriceperkg = modal_menuItem_settings.getTmcprice();
             modal_newOrderItems.gstpercentage = modal_menuItem_settings.getGstpercentage();
             modal_newOrderItems.portionsize = modal_menuItem_settings.getPortionsize();
-            modal_newOrderItems.bigbasketAmount = modal_menuItem_settings.getBigbasketprice();
+            modal_newOrderItems.swiggyprice = modal_menuItem_settings.getSwiggyprice();
+            modal_newOrderItems.bigbasketprice = modal_menuItem_settings.getBigbasketprice();
+            modal_newOrderItems.dunzoprice = modal_menuItem_settings.getDunzoprice();
             modal_newOrderItems.pricetypeforpos = modal_menuItem_settings.getPricetypeforpos();
             modal_newOrderItems.itemuniquecode = modal_menuItem_settings.getItemuniquecode();
             modal_newOrderItems.key = modal_menuItem_settings.getKey();
@@ -160,14 +162,14 @@ public class Adapter_AutoCompleteMenuitemForBigbasketOrders  extends ArrayAdapte
                 }
                 //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
                 //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
-                modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getBigbasketAmount()))));
-                modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getBigbasketAmount()))));
+                modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getBigbasketprice()))));
+                modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getBigbasketprice()))));
                 //    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
                 modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
 
 
                 if (String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
-                    int priceperKg = Integer.parseInt(menuuItem.getBigbasketAmount());
+                    int priceperKg = Integer.parseInt(menuuItem.getBigbasketprice());
                     String weight_string = String.valueOf(menuuItem.getGrossweight());
                     weight_string = weight_string.replaceAll("[^\\d.]", "");
 
@@ -210,7 +212,7 @@ public class Adapter_AutoCompleteMenuitemForBigbasketOrders  extends ArrayAdapte
                     }
 
                     if (weight > 1000) {
-                        priceperKg = Integer.parseInt(menuuItem.getBigbasketAmount());
+                        priceperKg = Integer.parseInt(menuuItem.getBigbasketprice());
 
                         int itemquantity = weight - 1000;
 
@@ -300,13 +302,31 @@ public class Adapter_AutoCompleteMenuitemForBigbasketOrders  extends ArrayAdapte
                 }
 
                 try {
-                    modal_newOrderItems.setBigbasketAmount(String.valueOf(menuuItem.getBigbasketAmount()));
+                    modal_newOrderItems.setSwiggyprice(String.valueOf(menuuItem.getSwiggyprice()));
 
-                } catch (Exception e) {
-                    //    Toast.makeText(context,"Can't Get Menu Item bigbasket Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+                }
+                catch (Exception e){
+                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                 }
 
+
+                try {
+                    modal_newOrderItems.setBigbasketprice(String.valueOf(menuuItem.getBigbasketprice()));
+
+                }
+                catch (Exception e){
+                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+                try {
+                    modal_newOrderItems.setDunzoprice(String.valueOf(menuuItem.getDunzoprice()));
+
+                }
+                catch (Exception e){
+                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
                 try {
                     modal_newOrderItems.setGrossweight(String.valueOf(menuuItem.getGrossweight()));
 

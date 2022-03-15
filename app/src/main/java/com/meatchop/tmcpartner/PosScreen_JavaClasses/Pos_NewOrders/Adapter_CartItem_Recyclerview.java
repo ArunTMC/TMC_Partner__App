@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
@@ -43,13 +44,14 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
     int price_per_kg, taxes_and_charges;
     NewOrders_MenuItem_Fragment newOrders_menuItem_fragment;
     public static HashMap<String,Modal_NewOrderItems> itemInCart = new HashMap();
+    public static List<Modal_NewOrderItems> completemenuItem;
 
-    public Adapter_CartItem_Recyclerview(Context context, HashMap<String, Modal_NewOrderItems> itemInCart, String menuItems, NewOrders_MenuItem_Fragment newOrders_menuItem_fragment) {
+    public Adapter_CartItem_Recyclerview(Context context, HashMap<String, Modal_NewOrderItems> itemInCart, String menuItems, NewOrders_MenuItem_Fragment newOrders_menuItem_fragment, List<Modal_NewOrderItems> completemenuItem) {
 
         //Log.e(TAG, "Auto call adapter itemInCart itemInCart" + itemInCart.size());
         this.newOrders_menuItem_fragment = newOrders_menuItem_fragment;
         this.context = context;
-
+        this.completemenuItem = completemenuItem;
         this.itemInCart = itemInCart;
 
         this.Menulist = menuItems;
@@ -440,7 +442,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
 
-             adapter = new Adapter_AutoCompleteMenuItem(context, Menulist,getPosition());
+             adapter = new Adapter_AutoCompleteMenuItem(context, Menulist,getPosition(),completemenuItem);
              adapter.setHandler(newHandler());
 
 
@@ -584,6 +586,38 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.stockbalance_AvlDetails =String.valueOf(modal_newOrderItems.getStockbalance_AvlDetails());
                             newItem_newOrdersPojoClass.stockincomingkey_AvlDetails =String.valueOf(modal_newOrderItems.getStockincomingkey_AvlDetails());
                             newItem_newOrdersPojoClass.vendorkey_AvlDetails =String.valueOf(modal_newOrderItems.getVendorkey_AvlDetails());
+                          try{
+
+                              newItem_newOrdersPojoClass.dunzoprice = (modal_newOrderItems.getDunzoprice());
+
+                          }
+                          catch (Exception e){
+                              newItem_newOrdersPojoClass.dunzoprice = "";
+                                      e.printStackTrace();
+                          }
+
+                            try{
+                                newItem_newOrdersPojoClass.bigbasketprice = (modal_newOrderItems.getBigbasketprice());
+
+
+                            }
+                            catch (Exception e){
+                                newItem_newOrdersPojoClass.bigbasketprice = "";
+                                        e.printStackTrace();
+                            }
+
+
+                            try{
+                                newItem_newOrdersPojoClass.swiggyprice = (modal_newOrderItems.getSwiggyprice());
+
+
+                            }
+                            catch (Exception e){
+                                newItem_newOrdersPojoClass.swiggyprice = "";
+                                e.printStackTrace();
+                            }
+
+
 
                             newItem_newOrdersPojoClass.barcode =String.valueOf(modal_newOrderItems.getBarcode());
                             newItem_newOrdersPojoClass.tmcctgykey =String.valueOf(modal_newOrderItems.getTmcctgykey());
@@ -699,7 +733,36 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         newItem_newOrdersPojoClass.keyforHashmap = barcode;
                         newItem_newOrdersPojoClass.key = modal_newOrderItems.getKey();
                         newItem_newOrdersPojoClass.itemavailability = (modal_newOrderItems.getItemavailability());
+                        try{
 
+                            newItem_newOrdersPojoClass.dunzoprice = (modal_newOrderItems.getDunzoprice());
+
+                        }
+                        catch (Exception e){
+                            newItem_newOrdersPojoClass.dunzoprice = "";
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            newItem_newOrdersPojoClass.bigbasketprice = (modal_newOrderItems.getBigbasketprice());
+
+
+                        }
+                        catch (Exception e){
+                            newItem_newOrdersPojoClass.bigbasketprice = "";
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            newItem_newOrdersPojoClass.swiggyprice = (modal_newOrderItems.getSwiggyprice());
+
+
+                        }
+                        catch (Exception e){
+                            newItem_newOrdersPojoClass.swiggyprice = "";
+                            e.printStackTrace();
+                        }
 
                         newItem_newOrdersPojoClass.allownegativestock =String.valueOf(modal_newOrderItems.getAllownegativestock());
                         newItem_newOrdersPojoClass.barcode_AvlDetails =String.valueOf(modal_newOrderItems.getBarcode_AvlDetails());

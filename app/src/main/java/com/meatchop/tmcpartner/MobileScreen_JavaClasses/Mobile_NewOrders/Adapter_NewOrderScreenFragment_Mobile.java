@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_AutoCompleteMenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_CartItem_Recyclerview;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
@@ -47,14 +48,26 @@ public class Adapter_NewOrderScreenFragment_Mobile extends RecyclerView.Adapter<
     String Menulist;
     public static HashMap<String,Modal_NewOrderItems> itemInCart_Hashmap = new HashMap();
     private Handler handler;
-
+    String fromActivity="";
+    AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen;
     public Adapter_NewOrderScreenFragment_Mobile(Context mContext, HashMap<String, Modal_NewOrderItems> itemInCart_hashmap, String menuItems, NewOrderScreenFragment_mobile newOrderScreenFragment_mobile) {
 
         this.newOrderScreenFragment_mobile = newOrderScreenFragment_mobile;
         this.context = mContext;
 
         this.itemInCart_Hashmap = itemInCart_hashmap;
+        this.fromActivity = "FromNewOrders";
 
+        this.Menulist = menuItems;
+
+    }
+    public Adapter_NewOrderScreenFragment_Mobile(Context mContext, HashMap<String, Modal_NewOrderItems> itemInCart_hashmap, String menuItems, AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen, String fromActivity) {
+
+        this.addReplacement_refund_ordersScreen = addReplacement_refund_ordersScreen;
+        this.context = mContext;
+
+        this.itemInCart_Hashmap = itemInCart_hashmap;
+        this.fromActivity = fromActivity;
         this.Menulist = menuItems;
 
     }

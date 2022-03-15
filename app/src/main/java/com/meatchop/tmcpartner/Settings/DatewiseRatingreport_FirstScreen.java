@@ -585,7 +585,7 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        File file = new File(dir, "Consolidated Report "+ System.currentTimeMillis()  +".xls");
+        File file = new File(dir, "Consolidated Rating Report "+ System.currentTimeMillis()  +".xls");
 
 
         //   File file = new File(getExternalFilesDir(null), "Onlineorderdetails.xls");
@@ -1042,95 +1042,92 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
                             JSONArray contentArray = response.getJSONArray("content");
                             if(contentArray.length()==0){
-                                if(ratingList.size()<=0) {
+                                if(todaysdate.equals(todatestring)) {
+                                    showProgressBar(false);
+                                    SetProgressBarAndCount("MakeZero");
+
+                                    return;
+                                }
+                                else{
+                                    String nextday = getTomorrowsDate(todaysdate);
+                                    calculate_the_dateandgetData(nextday,todatestring);
+
+                                }
+                             /*   if(ratingList.size()<=0) {
                                     //    showProgressBar(false);
                                     showProgressBar(false);
                                     SetProgressBarAndCount("MakeZero");
 
                                     return;
                                 }
-                            }
-                            else
-                                {
 
-                                for(;i1<(contentArray.length());i1++) {
+                              */
+                            }
+                            else {
+
+                                for (; i1 < (contentArray.length()); i1++) {
                                     JSONObject json = contentArray.getJSONObject(i1);
                                     Modal_RatingOrderDetails modal_ratingOrderDetails = new Modal_RatingOrderDetails();
-                                    try{
-                                        if(json.has("createdtime")){
+                                    try {
+                                        if (json.has("createdtime")) {
                                             modal_ratingOrderDetails.createdtime = json.getString("createdtime");
 
 
-                                        }
-                                        else{
+                                        } else {
 
                                             modal_ratingOrderDetails.createdtime = "";
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                         modal_ratingOrderDetails.createdtime = "";
                                     }
 
 
-
-
-                                    try{
-                                        if(json.has("feedback")){
+                                    try {
+                                        if (json.has("feedback")) {
                                             modal_ratingOrderDetails.feedback = json.getString("feedback");
 
 
-                                        }
-                                        else{
+                                        } else {
                                             modal_ratingOrderDetails.feedback = "";
 
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         modal_ratingOrderDetails.feedback = "";
                                         e.printStackTrace();
                                     }
 
 
-
-
-
-
-                                    try{
-                                        if(json.has("orderid")){
+                                    try {
+                                        if (json.has("orderid")) {
                                             modal_ratingOrderDetails.orderid = json.getString("orderid");
                                             orderid = json.getString("orderid");
-                                        }
-                                        else{
+                                        } else {
                                             orderid = "";
-                                            modal_ratingOrderDetails.orderid ="";
+                                            modal_ratingOrderDetails.orderid = "";
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         orderid = "";
 
-                                        modal_ratingOrderDetails.orderid ="";
+                                        modal_ratingOrderDetails.orderid = "";
                                         e.printStackTrace();
                                     }
 
 
+                                    try {
+                                        if (json.has("itemrating")) {
 
-                                    try{
-                                        if(json.has("itemrating")){
-
-                                            String itemName="";
+                                            String itemName = "";
                                             String itemrating = "";
                                             itemrating = json.getString("itemrating");
-                                            if(itemrating.equals("")||itemrating.equals(null)){
+                                            if (itemrating.equals("") || itemrating.equals(null)) {
 
                                                 //    new GetItemdetailsfromOrderDetailsNew(orderid).execute();
 
 
-
-                                                modal_ratingOrderDetails.itemname = itemnamefromOrderDetails ;
-                                                itemName =  itemnamefromOrderDetails ;
-                                            }
-                                            else {
+                                                modal_ratingOrderDetails.itemname = itemnamefromOrderDetails;
+                                                itemName = itemnamefromOrderDetails;
+                                            } else {
 
                                                 modal_ratingOrderDetails.itemrating_json = itemrating;
                                                 JSONArray itemratingarray = new JSONArray(itemrating);
@@ -1184,114 +1181,97 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
                                                 }
                                             }
-                                        }
-                                        else{
+                                        } else {
                                             modal_ratingOrderDetails.itemrating_json = " - ";
-                                            modal_ratingOrderDetails.itemname =" - ";
+                                            modal_ratingOrderDetails.itemname = " - ";
 
                                         }
-                                    }
-                                    catch(Exception e){
-                                        modal_ratingOrderDetails.itemname =" - ";
+                                    } catch (Exception e) {
+                                        modal_ratingOrderDetails.itemname = " - ";
 
                                         modal_ratingOrderDetails.itemrating_json = " - ";
                                         e.printStackTrace();
                                     }
 
 
-                                    try{
-                                        if(json.has("key")){
+                                    try {
+                                        if (json.has("key")) {
                                             modal_ratingOrderDetails.key = json.getString("key");
 
-                                        }
-                                        else{
+                                        } else {
 
                                             modal_ratingOrderDetails.key = "";
 
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         modal_ratingOrderDetails.key = "";
                                         e.printStackTrace();
                                     }
 
 
-
-                                    try{
-                                        if(json.has("userkey")){
+                                    try {
+                                        if (json.has("userkey")) {
                                             modal_ratingOrderDetails.userkey = json.getString("userkey");
 
 
-                                        }
-                                        else{
+                                        } else {
                                             modal_ratingOrderDetails.userkey = "";
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         modal_ratingOrderDetails.userkey = "";
                                         e.printStackTrace();
                                     }
 
 
-                                    try{
-                                        if(json.has("usermobileno")){
+                                    try {
+                                        if (json.has("usermobileno")) {
                                             modal_ratingOrderDetails.usermobileno = json.getString("usermobileno");
 
-                                        }
-                                        else{
+                                        } else {
 
                                             modal_ratingOrderDetails.usermobileno = "";
 
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         modal_ratingOrderDetails.usermobileno = "";
                                         e.printStackTrace();
                                     }
 
 
-
-                                    try{
-                                        if(json.has("vendorkey")){
+                                    try {
+                                        if (json.has("vendorkey")) {
                                             modal_ratingOrderDetails.vendorkey = json.getString("vendorkey");
 
-                                        }
-                                        else{
+                                        } else {
 
                                             modal_ratingOrderDetails.vendorkey = "";
 
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         modal_ratingOrderDetails.vendorkey = "";
                                         e.printStackTrace();
                                     }
 
 
-                                    try{
-                                        if(json.has("vendorname")){
+                                    try {
+                                        if (json.has("vendorname")) {
                                             modal_ratingOrderDetails.vendorname = json.getString("vendorname");
 
-                                        }
-                                        else{
+                                        } else {
 
                                             modal_ratingOrderDetails.vendorname = "";
 
                                         }
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         modal_ratingOrderDetails.vendorname = "";
                                         e.printStackTrace();
                                     }
 
 
-
-
-
-                                    try{
-                                        if(json.has("deliveryrating")){
+                                    try {
+                                        if (json.has("deliveryrating")) {
                                             String deliveryRating = json.getString("deliveryrating");
-                                            if(deliveryRating.equals("")||deliveryRating.equals("null")||deliveryRating.equals(null)){
+                                            if (deliveryRating.equals("") || deliveryRating.equals("null") || deliveryRating.equals(null)) {
                                                 deliveryRating = "0";
                                             }
                                             modal_ratingOrderDetails.deliveryrating = deliveryRating;
@@ -1300,25 +1280,23 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                                             //deliveryrating_double = Double.parseDouble(deliveryRating);
 
 
-                                        }
-                                        else{
+                                        } else {
 
-                                            String  deliveryRating = "0";
+                                            String deliveryRating = "0";
                                             modal_ratingOrderDetails.deliveryrating = "0";
 
                                             //deliveryrating_double = Double.parseDouble(deliveryRating);
 
                                             //   deliveryRatingArray.add(deliveryRating);
                                         }
-                                    }
-                                    catch(Exception e){
-                                        modal_ratingOrderDetails.deliveryrating  = "0";
+                                    } catch (Exception e) {
+                                        modal_ratingOrderDetails.deliveryrating = "0";
                                         e.printStackTrace();
                                     }
-                                    try{
-                                        if(json.has("qualityrating")){
+                                    try {
+                                        if (json.has("qualityrating")) {
                                             String qualityrating = json.getString("qualityrating");
-                                            if(qualityrating.equals("")||qualityrating.equals("null")||qualityrating.equals(null)){
+                                            if (qualityrating.equals("") || qualityrating.equals("null") || qualityrating.equals(null)) {
                                                 qualityrating = "0";
                                             }
                                             modal_ratingOrderDetails.qualityrating = qualityrating;
@@ -1328,22 +1306,18 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
 
                                             //   qualityrating_double = Double.parseDouble(qualityrating);
 
-                                        }
-                                        else{
+                                        } else {
                                             modal_ratingOrderDetails.qualityrating = "0";
 
-                                            String  qualityrating = "0";
+                                            String qualityrating = "0";
                                             //qualityrating_double = Double.parseDouble(qualityrating);
 
                                             //   qualityRatingArray.add(qualityrating);
                                         }
-                                    }
-                                    catch(Exception e){
-                                        modal_ratingOrderDetails.qualityrating  = "0";
+                                    } catch (Exception e) {
+                                        modal_ratingOrderDetails.qualityrating = "0";
                                         e.printStackTrace();
                                     }
-
-
 
 
                                     ratingList.add(modal_ratingOrderDetails);
@@ -1351,24 +1325,21 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
                                 }
 
 
-                                    //Log.d(Constants.TAG, "ratingList:   " +ratingList.size());
-
-                            }
+                                //Log.d(Constants.TAG, "ratingList:   " +ratingList.size());
 
 
+                                if (todaysdate.equals(todatestring)) {
+                                    //Log.d(Constants.TAG, "ratingList: 2  " +ratingList.size());
+                                    FilterDatawithVendorKey(vendorKey);
 
-                            if(todaysdate.equals(todatestring)) {
-                                //Log.d(Constants.TAG, "ratingList: 2  " +ratingList.size());
-                                FilterDatawithVendorKey(vendorKey);
+                                    //calculateRatingPercentage();
+                                    // GetItemdetailsfromOrderDetailsNeww(vendorKey);
+                                    // new GetItemdetailsfromOrderDetailsNew(orderid).execute();
+                                } else {
+                                    String nextday = getTomorrowsDate(todaysdate);
+                                    calculate_the_dateandgetData(nextday, todatestring);
 
-                                //calculateRatingPercentage();
-                               // GetItemdetailsfromOrderDetailsNeww(vendorKey);
-                                // new GetItemdetailsfromOrderDetailsNew(orderid).execute();
-                            }
-                            else{
-                                String nextday = getTomorrowsDate(todaysdate);
-                                calculate_the_dateandgetData(nextday,todatestring);
-
+                                }
                             }
 
                         }

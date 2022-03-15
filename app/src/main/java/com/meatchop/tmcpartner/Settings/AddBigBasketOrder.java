@@ -35,7 +35,6 @@ import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
@@ -118,7 +117,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
-            usermobileNo = (shared.getString("UserPhoneNumber", "+91"));
+            usermobileNo = (shared.getString("UserPhoneNumber", "+"));
             StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
@@ -158,6 +157,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
                             if (checkAllPriceperkgItemWeightWasEdited()){
                                 long sTime = System.currentTimeMillis();
                                 Currenttime = getDate_and_time();
+                                usermobileNo = "+91"+customermobileno_edittextwidget.getText().toString();
                                 PlaceOrdersinDatabaseaAndPrintRecipt(Constants.BIGBASKETORDER_PAYMENTMODE, sTime, Currenttime, cart_Item_List);
                             }
                             else {
@@ -1078,7 +1078,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
                                                                 try {
                                                                     JSONObject json_InventoryDetails_secondItem = jsonArray_secondItem.getJSONObject(jsonArrayIterator_secondItem);
                                                                     menuItemKeyFromInventoryDetails_secondItem = "";
-                                                                    grossweightinGramsFromInventoryDetails = 0;
+                                                                    //grossweightinGramsFromInventoryDetails = 0;
                                                                     netweightingramsFromInventoryDetails = 0;
 
                                                                     try {
@@ -1312,6 +1312,14 @@ public class AddBigBasketOrder extends AppCompatActivity {
                                                 e.printStackTrace();
                                             }
 
+                                            boolean itemAvailability_avlDetail=true;
+
+                                            try {
+                                                itemAvailability_avlDetail = Boolean.parseBoolean(String.valueOf(modal_menuItemStockAvlDetails.getItemavailability_AvlDetails()));
+                                            } catch (Exception e) {
+                                                itemAvailability_avlDetail = true;
+                                                e.printStackTrace();
+                                            }
 
                                             try {
                                                 Key_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getKey_AvlDetails());
@@ -1385,16 +1393,16 @@ public class AddBigBasketOrder extends AppCompatActivity {
                                                     //  }
 
 
-                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, totalgrossweightingrams_doubleFromLoop, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, isitemAvailable, allowNegativeStock);
+                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, totalgrossweightingrams_doubleFromLoop, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
 
 
                                                 } else {
-                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossWeightWithQuantity_double, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, isitemAvailable, allowNegativeStock);
+                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossWeightWithQuantity_double, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
 
                                                 }
 
                                             } else {
-                                                getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossweightinGramsFromInventoryDetails, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, isitemAvailable, allowNegativeStock);
+                                                getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossweightinGramsFromInventoryDetails, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
 
                                             }
 
@@ -1641,11 +1649,47 @@ public class AddBigBasketOrder extends AppCompatActivity {
                     if (message.equals("success")) {
                         // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                         // startTwice.main();
-                        //printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,"0",ordertype);
+                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,"0",ordertype);
+                        /*cart_Item_List.clear();
 
+                        cartItem_hashmap.clear();
+                        StockBalanceChangedForThisItemList.clear();
+
+                        new_to_pay_Amount = 0;
+                        old_taxes_and_charges_Amount = 0;
+                        old_total_Amount = 0;
+                        createEmptyRowInListView("empty");
+                        CallAdapter();
+                        //discountAmount = "0";
+
+                        // discount_Edit_widget.setText("0");
+                        finaltoPayAmount = "0";
+                        //  discount_rs_text_widget.setText(discountAmount);
+                        OrderTypefromSpinner = "POS Order";
+                        //   orderTypeSpinner.setSelection(0);
+                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+
+
+                        customermobileno_edittextwidget.setText("");
+                        bigbasketOrdersCustomermobileno.setText("");
+                        isPrintedSecondTime = false;
+                        ispaymentMode_Clicked = false;
+                        isOrderDetailsMethodCalled = false;
+
+                        isPaymentDetailsMethodCalled = false;
+                        isOrderTrackingDetailsMethodCalled = false;
+                        totalAmounttopay=0;
+                        finalamounttoPay=0;
                         showProgressBar(false);
-                       // Toast.makeText(getApplicationContext(),"OrderDetails is  updated in DB",Toast.LENGTH_SHORT).show();
 
+
+                       //Toast.makeText(getApplicationContext(),"OrderDetails is  updated in DB",Toast.LENGTH_SHORT).show();
+
+
+                         */
                     }
                     else{
 
@@ -1695,6 +1739,85 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
     }
 
+    private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, boolean availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message, String menuItemStockAvlDetailskey, boolean allowNegative, String itemStockAvlDetailskey) {
+
+
+        //Log.d(TAG, " uploaduserDatatoDB.");
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("itemname", menuItemName);
+            jsonObject.put("status", availability);
+            jsonObject.put("subCtgykey", menuItemSubCtgykey);
+            jsonObject.put("transactiontime", dateandtime);
+            jsonObject.put("mobileno", userPhoneNumber);
+            jsonObject.put("vendorkey", vendorkey);
+            jsonObject.put("menuitemkey", menuItemKey);
+            jsonObject.put("transcationstatus", message);
+            try {
+                if (!menuItemStockAvlDetailskey.equals("")) {
+                    jsonObject.put("menuitemstockavldetailskey", menuItemStockAvlDetailskey);
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                if ((!menuItemStockAvlDetailskey.equals("")) ) {
+                    jsonObject.put("allownegativestock", allowNegative);
+
+                }
+
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addMenuavailabilityTransaction,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                //Log.d(Constants.TAG, "Response: " + response);
+                //  showProgressBar(false);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                showProgressBar(false);
+
+                Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+
+
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(AddBigBasketOrder.this).add(jsonObjectRequest);
+
+
+    }
 
 
     private void getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(String stockIncomingKey_avlDetails, String key_avlDetails, String menuItemKey_avlDetails, String receivedStock_AvlDetails, double currentBillingItemWeight_double, String itemName, String barcode, String orderid, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey, boolean isitemAvailable, boolean allowNegativeStock) {
@@ -1709,6 +1832,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
                     final double[] Total_outgoingqty_stockOutGngDetails_Double = {0};
                     final double[] receivedStock_AvlDetails_double = {0};
                     final double[] finalStockBalance_double = {0};
+                    final String[] tmcSubCtgyKey_stockOutGngDetails_String = {""};
 
                     final String[] outgoingtype_stockOutGngDetails_String = {""};
                     final String[] stockincomingkey_stockOutGngDetails_String = {""};
@@ -1788,6 +1912,17 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
                                                 Log.i(TAG, "getStock incoming stocktype_stockOutGngDetails_String" + stocktype_stockOutGngDetails_String[0]);
 
+                                                try {
+                                                    if (json.has("tmcsubctgykey")) {
+                                                        tmcSubCtgyKey_stockOutGngDetails_String[0] = (json.getString("tmcsubctgykey"));
+                                                    } else {
+                                                        tmcSubCtgyKey_stockOutGngDetails_String[0] = "";
+                                                    }
+                                                } catch (Exception e) {
+                                                    tmcSubCtgyKey_stockOutGngDetails_String[0] = "";
+
+                                                    e.printStackTrace();
+                                                }
 
                                                 try {
                                                     if (json.has("outgoingtype")) {
@@ -1947,20 +2082,20 @@ public class AddBigBasketOrder extends AppCompatActivity {
                                                 if (!allowNegativeStock) {
 
 
-                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], true, false, menuItemKey_avlDetails);
+                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], true, false, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
 
                                                 } else {
-                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails);
+                                                    UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
 
                                                 }
 
 
                                             } else {
-                                                UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails);
+                                                UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
 
                                             }
                                         } else {
-                                            UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails);
+                                            UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
 
                                         }
 
@@ -2219,7 +2354,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
     }
 
 
-    private void UpdateStockBalanceinMenuItemStockAvlDetail(String key_avlDetails, double finalStockBalance_double, boolean changeItemAvailability, boolean isitemAvailable, String menuItemKey_avlDetails) {
+    private void UpdateStockBalanceinMenuItemStockAvlDetail(String key_avlDetails, double finalStockBalance_double, boolean changeItemAvailability, boolean isitemAvailable, String menuItemKey_avlDetails, String tmcSubCtgyKey, String itemName) {
 
 
         showProgressBar(true);
@@ -2233,7 +2368,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
                 jsonObject2.put("key", menuItemKey_avlDetails);
 
 
-                jsonObject2.put("itemavailability", isitemAvailable);
+                jsonObject2.put("itemavailability", String.valueOf(isitemAvailable).toUpperCase());
 
 
             } catch (JSONException e) {
@@ -2246,6 +2381,11 @@ public class AddBigBasketOrder extends AppCompatActivity {
                 @Override
                 public void onResponse(@NonNull JSONObject response) {
                     //Log.d(Constants.TAG, "Response: " + response);
+                    String message = "";
+                    try {
+                        message = response.getString("message");
+
+
                     if(changeItemAvailability) {
                         for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < MenuItem.size(); iterator_menuitemStockAvlDetails++) {
 
@@ -2255,12 +2395,16 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
                             if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
                                 modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                uploadMenuAvailabilityStatusTranscationinDB(usermobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorKey,Currenttime,menuItemKey_avlDetails,message, "", false, "");
+                                savedMenuIteminSharedPrefrences(MenuItem,iterator_menuitemStockAvlDetails);
 
                             }
 
                         }
                     }
-
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     showProgressBar(false);
 
                 }
@@ -2351,11 +2495,38 @@ public class AddBigBasketOrder extends AppCompatActivity {
                 try {
 
                      String message =  response.getString("message");
-                    if(message.equals("success")) {
-                        //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
-                        showProgressBar(false);
-                    }
+                     if(changeItemAvailability){
 
+                     }
+
+                    if(message.equals("success")) {
+
+
+                        for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < MenuItem.size(); iterator_menuitemStockAvlDetails++) {
+
+                            Modal_MenuItem_Settings modal_menuItemStockAvlDetails = MenuItem.get(iterator_menuitemStockAvlDetails);
+
+                            String menuItemKeyFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getMenuitemkey_AvlDetails());
+
+                            if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
+                                if (changeItemAvailability) {
+
+                                    modal_menuItemStockAvlDetails.setItemavailability_AvlDetails(String.valueOf(isitemAvailable));
+                                    modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                    modal_menuItemStockAvlDetails.setStockbalance_AvlDetails(String.valueOf(finalStockBalance_double));
+
+                                    savedMenuIteminSharedPrefrences(MenuItem,iterator_menuitemStockAvlDetails);
+
+                                }
+                                else {
+                                    modal_menuItemStockAvlDetails.setStockbalance_AvlDetails(String.valueOf(finalStockBalance_double));
+
+                                    savedMenuIteminSharedPrefrences(MenuItem, iterator_menuitemStockAvlDetails);
+                                }
+                            }
+
+                        }
+                    }
 
                 } catch (JSONException e) {
                     // showProgressBar(false);
@@ -2400,6 +2571,30 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
     }
 
+    private void savedMenuIteminSharedPrefrences(List<Modal_MenuItem_Settings> menuItem, int iterator_menuitemStockAvlDetails) {
+        final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+
+        Gson gson = new Gson();
+        String json = gson.toJson(menuItem);
+        SharedPreferences.Editor editor = sharedPreferencesMenuitem.edit();
+        editor.putString("MenuList",json );
+        editor.apply();
+
+        try {
+            adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
+            adapter_addBigBasketOrdersRecyclerview.notify();
+            adapter_addBigBasketOrdersRecyclerview.notifyItemChanged(iterator_menuitemStockAvlDetails);
+
+            adapter_addBigBasketOrdersRecyclerview.notifyAll();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+    }
 
 
 

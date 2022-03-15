@@ -3,7 +3,6 @@ package com.meatchop.tmcpartner.Settings;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
@@ -20,7 +19,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,16 +30,16 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,8 +47,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class testActivty extends AppCompatActivity {
-    public TextView ponits_redeemed_text_widget;
-    Button connect_device_button_widget,checkout_widget,redeemPoints_button_widget,print_button_widget;
+    public TextView ponits_redeemed_text_widget,end_text_widget,error_text_widget,result_text_widget;
+    public TextView ponits_redeemed_text_widgetnew,end_text_widgetnew,error_text_widgetnew,result_text_widgetnew;
+    Button uploadNotesnew,kalyanNotes,ACNotes,kalyanNotesnew,ACNotesnew,orderdetailsorderidold,orderdetailsmobilenoold,ordertrackdetailsmobilenoold;
+    Button uploadNotes,connect_device_button_widget,checkout_widget,redeemPoints_button_widget,print_button_widget;
     String totalbillAmount = "500",vendorKey,vendorname,finaltoPayAmountwithRedeemPoints,maxpointsinaday_String,minordervalueforredeem_String,
             pointsfor100rs_String,redeemPoints_String,redeemKey,mobileno_redeemKey,discountAmountalreadyusedtoday
     ,totalpointsredeemedalreadybyuser,totalordervalue_tillnow,totalredeempointsuserhave;
@@ -66,7 +66,7 @@ public class testActivty extends AppCompatActivity {
     // Member object for the chat services
     private BluetoothPrintDriver mChatService = null;
 
-
+    String starttime="",endtime="";
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
     public static final int MESSAGE_READ = 2;
@@ -94,8 +94,25 @@ public class testActivty extends AppCompatActivity {
         checkout_widget = findViewById(R.id.checkout_widget);
         printEditText_widget = findViewById(R.id.printEditText_widget);
         connect_device_button_widget = findViewById(R.id.connect_device_button_widget);
+        uploadNotes = findViewById(R.id.uploadNotes);
+        error_text_widget = findViewById(R.id.error_text_widget);
+        end_text_widget = findViewById(R.id.end_text_widget);
         print_button_widget = findViewById(R.id.print_button_widget);
-        try{
+        result_text_widget = findViewById(R.id.result_text_widget);
+        ACNotes  = findViewById(R.id.ACNotes);
+        kalyanNotes  = findViewById(R.id.kalyanNotes);
+
+        uploadNotesnew = findViewById(R.id.uploadNotesnew);
+        error_text_widgetnew = findViewById(R.id.error_text_widgetnew);
+        end_text_widgetnew = findViewById(R.id.end_text_widgetnew);
+        ponits_redeemed_text_widgetnew = findViewById(R.id.ponits_redeemed_text_widgetnew);
+        result_text_widgetnew = findViewById(R.id.result_text_widgetnew);
+        ACNotesnew  = findViewById(R.id.ACNotesnew);
+        kalyanNotesnew  = findViewById(R.id.kalyanNotesnew);
+        orderdetailsorderidold = findViewById(R.id.orderdetailsorderidold);
+        orderdetailsmobilenoold  = findViewById(R.id.orderdetailsmobilenoold);
+        ordertrackdetailsmobilenoold =  findViewById(R.id.ordertrackdetailsmobilenoold);
+        /*try{
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             // If the adapter is null, then Bluetooth is not supported
             if (mBluetoothAdapter == null) {
@@ -113,6 +130,8 @@ public class testActivty extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+
+         */
         try {
             SharedPreferences sharedd = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = (sharedd.getString("VendorKey", "vendor_1"));
@@ -129,6 +148,154 @@ public class testActivty extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+        getNotesData();
+
+
+        ACNotesnew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //fetchOrderDetailsnewusingmobileno("7010779096");
+
+            }
+        });
+
+        kalyanNotesnew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //fetchOrderDetailsnewusingmobileno("9790935376");
+                fetchorderFromOrderTrackdetailsmobilenoindex();
+
+
+
+            }
+        });
+        ordertrackdetailsmobilenoold.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchorderFromOrderTrackdetailsmobilenoold();
+
+            }
+        });
+
+        uploadNotesnew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               // fetchOrderDetailsnewusingmobileno("9597580128");
+              //  fetchOrderDetailsnewusingmobileno("pt_orderid_idx");
+                fetchOrderDetailsfrompaymentOrderid();
+
+            }
+        });
+
+
+
+        orderdetailsmobilenoold .setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchorderFromOrderdetailsmobilenoold();
+
+            }
+        });
+
+
+        ACNotes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //fetchOrderDetailsnewDumpusingmobileno("7010779096");
+                fetchorderFromOrderdetailsmobilenoindex();
+
+            }
+        });
+        orderdetailsorderidold.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchorderFromOrderdetailsorderidold();
+
+            }
+        });
+
+        kalyanNotes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchorderFromOrderdetailsorderidindex();
+              //  fetchOrderDetailsnewDumpusingmobileno("9790935376");
+
+            }
+        });
+        uploadNotes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+              //  fetchOrderDetailsnewDumpusingmobileno("9597580128");
+                //fetchOrderDetailsnewDumpusingmobileno("pt_attr4_orderid_idx");
+              //  fetchOrderDetailsfrompaymentOrderidwithIndex("Paymenttransactions_orderid_idx1");
+
+                fetchorderFromOrderdetailsorderidindex();
+
+                
+            /*
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("mobileno", "+919597580128");
+                    jsonObject.put("notes", "1.LEARN THE MOVES. Each chess piece can move only a certain way. \n 2.OPEN WITH A PAWN. \n 3.Move the pawn in front of either the king or queen two squares forward. \n 4.GET THE KNIGHTS AND BISHOPS OUT. \n 4.WATCH YOUR BACK! \n 5.DON'T WASTE TIME. \n 6.“CASTLE” EARLY. \n 7.ATTACK IN THE “MIDDLEGAME” \n 8.LOSE PIECES WISELY..");
+                    jsonObject.put("createdtime", "Wed, 19 Jan 2022 10:25:36");
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, "https://3xs79s0rob.execute-api.us-west-1.amazonaws.com/dev/notes/add",
+                        jsonObject, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+                        try {
+                            String message = response.getString("message");
+                            if (message.equals("success")) {
+
+                            }
+                            else{
+
+                            }
+                        } catch (JSONException e) {
+
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull VolleyError error) {
+
+                        error.printStackTrace();
+                    }
+                }) {
+                    @NonNull
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        final Map<String, String> params = new HashMap<>();
+                        params.put("Content-Type", "application/json");
+
+                        return params;
+                    }
+                };
+                // Make the request
+                jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+                Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+
+
+             */
+            }
+        });
+
+
         print_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -341,6 +508,936 @@ public class testActivty extends AppCompatActivity {
 
         });
     }
+
+    private void fetchOrderDetailsfrompaymentOrderid() {
+
+
+
+        ponits_redeemed_text_widgetnew.setText("");
+        result_text_widgetnew.setText("");
+        error_text_widgetnew.setText("");
+        end_text_widgetnew.setText("");
+        Log.d("Constants.TAG", "orderdetailsnew starting: " + getDate_and_time());
+        ponits_redeemed_text_widgetnew.setText(" starting:   " + getDate_and_time());
+        String starttimenew = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_forReport_AppOrders_and_PosOrders + "?slotdate=Sep 2021&vendorkey=vendor_3&previousdaydate=Aug 2021",
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widgetnew.setText("OrderTrackd ending:   " + getDate_and_time());
+                String endtimenew = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widgetnew.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnew error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnew error: " + error);
+                error_text_widgetnew.setText("OrderTrackdetailsmobileno error:   " + getDate_and_time()+"   -      "+ error.toString());
+                String endtimenew = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+
+    }
+
+    private void fetchOrderDetailsfrompaymentOrderidwithIndex(String indexname) {
+        //////dumpfirst
+        ponits_redeemed_text_widget.setText("");
+        result_text_widget.setText("");
+        error_text_widget.setText("");
+        end_text_widget.setText("");
+
+        Log.d("Constants.TAG", "orderdetailsnewDump starting: " + getDate_and_time());
+        ponits_redeemed_text_widget.setText("OrderdetailsorderidDump starting:   " + getDate_and_time());
+        starttime = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/paymenttransactionwithorderidtest?orderid=1637987694012&indexname="+indexname,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widget.setText("OrderdetailsorderidDump ending:   " + getDate_and_time());
+                endtime = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widget.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + error);
+                error_text_widget.setText("OrderdetailsorderidDump error:   " + getDate_and_time()+"   -      "+ error.toString());
+                endtime = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void fetchorderFromOrderTrackdetailsmobilenoold() {
+
+        ponits_redeemed_text_widgetnew.setText("");
+        result_text_widgetnew.setText("");
+        error_text_widgetnew.setText("");
+        end_text_widgetnew.setText("");
+        Log.d("Constants.TAG", "orderdetailsnew starting: " + getDate_and_time());
+        ponits_redeemed_text_widgetnew.setText("OrderTrackdetailsmobileno starting:   " + getDate_and_time());
+        String starttimenew = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+        String deliveryUserMobileNumberEncoded  = "";
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode("+91"+"7010779096", "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/ordertrackingdetailsusigmobileno?mobileno="+deliveryUserMobileNumberEncoded,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widgetnew.setText("OrderTrackdetailsmobileno ending:   " + getDate_and_time());
+                String endtimenew = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+
+                try{
+                    JSONArray JArray = response.getJSONArray("content");
+                    result_text_widget.setText(new StringBuilder().append(res).append("      ").append(JArray.length()).toString());
+
+                }
+                catch (Exception e){
+                    result_text_widget.setText(res+"  err  ");
+
+                    e.printStackTrace();
+                }
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widgetnew.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnew error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnew error: " + error);
+                error_text_widgetnew.setText("OrderTrackdetailsmobileno error:   " + getDate_and_time()+"   -      "+ error.toString());
+                String endtimenew = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void fetchorderFromOrderdetailsmobilenoold() {
+
+        ponits_redeemed_text_widget.setText("");
+        result_text_widget.setText("");
+        error_text_widget.setText("");
+        end_text_widget.setText("");
+
+        Log.d("Constants.TAG", "orderdetailsnewDump starting: " + getDate_and_time());
+        ponits_redeemed_text_widget.setText("Orderdetailsorderidold starting:   " + getDate_and_time());
+        starttime = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        String deliveryUserMobileNumberEncoded  = "";
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode("+91"+"7010779096", "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetailsusingmobileno?mobileno="+deliveryUserMobileNumberEncoded,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "Orderdetailsorderidold ending: " + getDate_and_time());
+                end_text_widget.setText("Orderdetailsorderidold ending:   " + getDate_and_time());
+                endtime = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+
+
+                try{
+                    JSONArray JArray = response.getJSONArray("content");
+                    result_text_widget.setText(new StringBuilder().append(res).append("      ").append(JArray.length()).toString());
+
+                }
+                catch (Exception e){
+                    result_text_widget.setText(res+"  err  ");
+
+                    e.printStackTrace();
+                }
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widget.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + error);
+                error_text_widget.setText("Orderdetailsorderidold error:   " + getDate_and_time()+"   -      "+ error.toString());
+                endtime = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+    }
+
+    private void fetchorderFromOrderdetailsorderidold() {
+        ponits_redeemed_text_widget.setText("");
+        result_text_widget.setText("");
+        error_text_widget.setText("");
+        end_text_widget.setText("");
+
+        Log.d("Constants.TAG", "orderdetailsnewDump starting: " + getDate_and_time());
+        ponits_redeemed_text_widget.setText("Orderdetailsorderidold starting:   " + getDate_and_time());
+        starttime = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetails?orderid=1632378708492",
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "Orderdetailsorderidold ending: " + getDate_and_time());
+                end_text_widget.setText("Orderdetailsorderidold ending:   " + getDate_and_time());
+                endtime = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+                try{
+                    JSONArray JArray = response.getJSONArray("content");
+                    result_text_widget.setText(new StringBuilder().append(res).append(JArray.length()).toString());
+
+                }
+                catch (Exception e){
+                    result_text_widget.setText(res+"  err  ");
+
+                    e.printStackTrace();
+                }
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widget.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + error);
+                error_text_widget.setText("Orderdetailsorderidold error:   " + getDate_and_time()+"   -      "+ error.toString());
+                endtime = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+    }
+
+    private void fetchorderFromOrderTrackdetailsmobilenoindex() {
+
+        ponits_redeemed_text_widgetnew.setText("");
+        result_text_widgetnew.setText("");
+        error_text_widgetnew.setText("");
+        end_text_widgetnew.setText("");
+        Log.d("Constants.TAG", "orderdetailsnew starting: " + getDate_and_time());
+        ponits_redeemed_text_widgetnew.setText("OrderTrackdetailsmobileno starting:   " + getDate_and_time());
+        String starttimenew = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+        String deliveryUserMobileNumberEncoded  = "";
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode("+91"+"7010779096", "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/loaadtestdatacrt?mobileno="+deliveryUserMobileNumberEncoded+"&indexname=Ordertrackingdetails_mobileno_idx",
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widgetnew.setText("OrderTrackdetailsmobileno ending:   " + getDate_and_time());
+                String endtimenew = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widgetnew.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnew error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnew error: " + error);
+                error_text_widgetnew.setText("OrderTrackdetailsmobileno error:   " + getDate_and_time()+"   -      "+ error.toString());
+                String endtimenew = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void fetchorderFromOrderdetailsmobilenoindex() {
+        //////dumpfirst
+        ponits_redeemed_text_widget.setText("");
+        result_text_widget.setText("");
+        error_text_widget.setText("");
+        end_text_widget.setText("");
+
+        Log.d("Constants.TAG", "orderdetailsnewDump starting: " + getDate_and_time());
+        ponits_redeemed_text_widget.setText("OrderdetailsmobilenoDump starting:   " + getDate_and_time());
+        starttime = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        String deliveryUserMobileNumberEncoded  = "";
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode("+91"+"7010779096", "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/loadtestdata?mobileno="+deliveryUserMobileNumberEncoded+"&indexname=Orderdetails_usermobile_idx",
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widget.setText("OrderdetailsmobilenoDump ending:   " + getDate_and_time());
+                endtime = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widget.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + error);
+                error_text_widget.setText("OrderdetailsmobilenoDump error:   " + getDate_and_time()+"   -      "+ error.toString());
+                endtime = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void fetchorderFromOrderdetailsorderidindex() {
+        //////dumpfirst
+        ponits_redeemed_text_widget.setText("");
+        result_text_widget.setText("");
+        error_text_widget.setText("");
+        end_text_widget.setText("");
+
+        Log.d("Constants.TAG", "orderdetailsnewDump starting: " + getDate_and_time());
+        ponits_redeemed_text_widget.setText("OrderdetailsorderidDump starting:   " + getDate_and_time());
+        starttime = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+//slotdate=Sat- 22 Jan 2022&vendorkey=vendor_3
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/vendororderdetails?slotdate=Sat- 22 Jan 2022&vendorkey=vendor_3",
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widget.setText("OrderdetailsorderidDump ending:   " + getDate_and_time());
+                endtime = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widget.setText(response.toString());
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+                    error_text_widget.setText(response.toString());
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnewDump error: " + error);
+                error_text_widget.setText("OrderdetailsorderidDump error:   " + getDate_and_time()+"   -      "+ error.toString());
+                endtime = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttime,endtime);
+                result_text_widget.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void fetchOrderDetailsnewusingmobileno(String mobileno) {
+        ponits_redeemed_text_widgetnew.setText("");
+        result_text_widgetnew.setText("");
+        error_text_widgetnew.setText("");
+        Log.d("Constants.TAG", "orderdetailsnew starting: " + getDate_and_time());
+        ponits_redeemed_text_widgetnew.setText("orderdetailsnew starting:   " + getDate_and_time());
+        String starttimenew = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        String deliveryUserMobileNumberEncoded  = mobileno;
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode("+91"+mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        //https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getpaymenttransationfororderid
+//https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/loadtestdata?mobileno=
+//https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/paymenttransactionwithorderidtest?orderid=716398656404256&indexname="+mobileno
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getpaymenttransationfororderid?orderid=716398656404256",
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                end_text_widgetnew.setText("orderdetailsnewDump ending:   " + getDate_and_time());
+               String endtimenew = getDate_and_time();
+                String res =   checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        error_text_widgetnew.setText(response.getString("content"));
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d("Constants.TAG", "orderdetailsnew error: " + getDate_and_time());
+                Log.d("Constants.TAG", "orderdetailsnew error: " + error);
+                error_text_widgetnew.setText("orderdetailsnewDump error:   " + getDate_and_time()+"   -      "+ error.toString());
+               String endtimenew = getDate_and_time();
+
+                String res =  checkDeliveredStatusOftheOrder(starttimenew,endtimenew);
+                result_text_widgetnew.setText(res);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void fetchOrderDetailsnewDumpusingmobileno(String mobileno) {
+        ponits_redeemed_text_widget.setText("");
+        result_text_widget.setText("");
+        error_text_widget.setText("");
+        Log.d("Constants.TAG", "orderdetailsnewDump starting: " + getDate_and_time());
+        ponits_redeemed_text_widget.setText("orderdetailsnewDump starting:   " + getDate_and_time());
+        starttime = getDate_and_time();
+        JSONObject jsonObject = new JSONObject();
+                //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        String deliveryUserMobileNumberEncoded  = mobileno;
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode("+91"+mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/paymenttransactionwithorderidtest?orderid=716398656404256&indexname="+mobileno,
+
+               // JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/resource?mobileno="+deliveryUserMobileNumberEncoded,
+                        jsonObject, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        Log.d("Constants.TAG", "orderdetailsnewDump ending: " + getDate_and_time());
+                        end_text_widget.setText("orderdetailsnewDump ending:   " + getDate_and_time());
+                        endtime = getDate_and_time();
+                       String res =   checkDeliveredStatusOftheOrder(starttime,endtime);
+                        result_text_widget.setText(res);
+                        try {
+                            String message = response.getString("message");
+                            if (message.equals("success")) {
+                                error_text_widget.setText(response.getString("content"));
+                            }
+                            else{
+
+                            }
+                        } catch (JSONException e) {
+
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull VolleyError error) {
+                        Log.d("Constants.TAG", "orderdetailsnewDump error: " + getDate_and_time());
+                        Log.d("Constants.TAG", "orderdetailsnewDump error: " + error);
+                        error_text_widget.setText("orderdetailsnewDump error:   " + getDate_and_time()+"   -      "+ error.toString());
+                        endtime = getDate_and_time();
+
+                        String res =  checkDeliveredStatusOftheOrder(starttime,endtime);
+                        result_text_widget.setText(res);
+
+                        error.printStackTrace();
+                    }
+                }) {
+                    @NonNull
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        final Map<String, String> params = new HashMap<>();
+                        params.put("Content-Type", "application/json");
+
+                        return params;
+                    }
+                };
+                // Make the request
+                jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+                Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+    private String checkDeliveredStatusOftheOrder(String orderdeliveredtime, String slottime) {
+        String result = "";
+        try {
+
+
+            String endtm = slottime.toString();
+            //       System.out.println("slottime before parse DATE"+endtm);
+
+            String sttime = orderdeliveredtime.toString();
+            //        System.out.println("orderdeliveredtime before parse DATE"+sttime);
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            Date date1 = simpleDateFormat.parse(sttime);
+            Date date2 = simpleDateFormat.parse(endtm);
+
+            long difference = date2.getTime() - date1.getTime();
+            int days = (int) (difference / (1000 * 60 * 60 * 24));
+            int hours = (int) ((difference - (1000 * 60 * 60 * 24 * days)) / (1000 * 60 * 60 * 24));
+            int min = (int) (difference - (1000 * 60 * 60 * 24 * days) - (1000 * 60 * 60 * hours)) / (1000 * 60);
+
+            //     Log.i("=== Hours "," :: "+hours+":");
+            //     Log.i("=== Hours days "," :: "+hours+":"+days);
+
+            hours = (hours < 0 ? -hours : hours);
+            //    Log.i("=== Hours  "," :: "+hours+":"+min);
+            result = String.valueOf(difference);
+
+
+        } catch (Exception j) {
+            j.printStackTrace();
+            try {
+
+
+                String endtm = slottime.toString();
+                //         System.out.println("slottime before parse DATE"+endtm);
+
+                String sttime = orderdeliveredtime.toString();
+                //        System.out.println("orderdeliveredtime before parse DATE"+sttime);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+
+                Date date1 = sdf.parse(sttime);
+                Date date2 = simpleDateFormat.parse(endtm);
+
+                long difference = date2.getTime() - date1.getTime();
+                int days = (int) (difference / (1000 * 60 * 60 * 24));
+                int hours = (int) ((difference - (1000 * 60 * 60 * 24 * days)) / (1000 * 60 * 60 * 24));
+                int min = (int) (difference - (1000 * 60 * 60 * 24 * days) - (1000 * 60 * 60 * hours)) / (1000 * 60);
+                ////        Log.i("=== Hours "," :: "+hours+":");
+                //       Log.i("=== Hours days "," :: "+hours+":"+days);
+
+                hours = (hours < 0 ? -hours : hours);
+                //         Log.i("=== Hours  "," :: "+hours+":"+min);
+                result = String.valueOf(difference);
+
+            } catch (Exception jx) {
+                jx.printStackTrace();
+
+            }
+        }
+        return result;
+/*
+        long orderplacedtimelong =Long.parseLong(orderdeliveredtime_in_long);
+        long slottimelong = Long.parseLong(slottime_in_long);
+        long millis  = slottimelong-orderplacedtimelong;
+        long seconds = (millis / 1000) % 60;
+        long minutes = (millis / (1000 * 60)) % 60;
+        long hours = millis / (1000 * 60 * 60);
+
+        StringBuilder b = new StringBuilder();
+        b.append(hours == 0 ? "00" : hours < 10 ? String.valueOf("0" + hours) :
+                String.valueOf(hours));
+        b.append(":");
+        b.append(minutes == 0 ? "00" : minutes < 10 ? String.valueOf("0" + minutes) :
+                String.valueOf(minutes));
+        b.append(":");
+        b.append(seconds == 0 ? "00" : seconds < 10 ? String.valueOf("0" + seconds) :
+                String.valueOf(seconds));
+
+        Log.d(TAG, "slottime b orderdeliveredtime_in_long  "+orderdeliveredtime_in_long);
+        Log.d(TAG, "slottime b orderdeliveredtime "+orderdeliveredtime);
+
+        Log.d(TAG, "slottime b slottime_in_long  "+slottime_in_long);
+        Log.d(TAG, "slottime b slottime_  "+slottime);
+        Log.d(TAG, "slottime b  "+b);
+        return  result;
+
+ */
+    }
+
+
+
+    private void getNotesData() {
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://3xs79s0rob.execute-api.us-west-1.amazonaws.com/dev/notes/get?mobileno=%2B919597580128",null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        //Log.d(Constants.TAG, "Response: " + response);
+
+
+                        try {
+                            String orderid = "", deliverytype = "";
+                            double discount_double = 0, discountfromHashmap_double = 0;
+                            //converting jsonSTRING into array
+                            JSONArray JArray = response.getJSONArray("content");
+                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            int arrayLength = JArray.length();
+                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                            for (int i1 = 0; i1 < JArray.length(); i1++) {
+
+                                try {
+                                    JSONObject json = JArray.getJSONObject(i1);
+                                    try{
+                                        String notes = json.getString("notes");
+                                       // ponits_redeemed_text_widget.setText(notes);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                },new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        })
+        {
+
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(testActivty.this).add(jsonObjectRequest);
+
+    }
+
+
 
 
     @Override
@@ -721,7 +1818,7 @@ public class testActivty extends AppCompatActivity {
                                 isProcedtochecckoutClicked = true;
                                 finaltoPayAmountwithRedeemPoints = finalAmounttopay_textwidget.getText().toString();
                                 redeemPoints_String =  pointsenteredToredeem ;
-                                ponits_redeemed_text_widget.setText(redeemPoints_String);
+                              //  ponits_redeemed_text_widget.setText(redeemPoints_String);
                                 totalpointsredeemedalreadybyuser=String.valueOf(pointsalreadyredeemedInteger);
                                 totalredeempointsuserhave = String.valueOf(totalpointsuserhave_afterapplypoints);
                                 dialog.cancel();
@@ -803,7 +1900,7 @@ public class testActivty extends AppCompatActivity {
         CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss:SSS");
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;

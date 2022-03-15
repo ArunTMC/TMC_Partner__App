@@ -788,6 +788,8 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
     }
+
+    /*
     private void getOrderDetailsUsingApi(String date, String vendorKey, String selectedStatus) {
         if(isnewOrdersSyncButtonClicked){
             return;
@@ -858,7 +860,7 @@ public class Mobile_ManageOrders1 extends Fragment {
 
     }
 
-
+*/
     private void setDataForSpinner() {
         slotnameChoosingSpinnerData.clear();
         String TodaysDate = getDatewithNameoftheDay();

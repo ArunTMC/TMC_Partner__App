@@ -257,8 +257,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
         addDatatoOrderTypeSpinner();
         redeemPointsLayout.setVisibility(View.GONE);
-        discountAmountLayout.setVisibility(View.VISIBLE);
+        //discountlayout visible
+        discountAmountLayout.setVisibility(View.GONE);
         String dummytime = getDate_and_time();
+             add_amount_ForBillDetails();
+
         useStoreNumberCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -831,8 +834,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 try {
                     if (cart_Item_List.size() > 0 && cartItem_hashmap.size() > 0) {
                         if((redeemed_points_text_widget.getText().toString().equals(""))||(redeemed_points_text_widget.getText().toString().equals("0"))){
+                             finaltoPayAmount =total_item_Rs_text_widget.getText().toString();
+                            double toPayAmtdouble = Double.parseDouble(finaltoPayAmount);
 
-                            if ((!total_item_Rs_text_widget.getText().toString().equals("0")) || (!total_Rs_to_Pay_text_widget.getText().toString().equals("0")) || (!total_item_Rs_text_widget.getText().toString().equals("0.00")) || (!total_Rs_to_Pay_text_widget.getText().toString().equals("0.00"))) {
+                            //Toast.makeText(mContext, "total  "+finaltoPayAmount, Toast.LENGTH_LONG).show();
+
+                            if (toPayAmtdouble>0) {
 
                                 discountAmount = discount_Edit_widget.getText().toString();
                                 if (!discountAmount.equals("") &&(!discountAmount.equals("0"))) {
@@ -853,10 +860,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                     }
                                 }
                                 else{
+                               //     add_amount_ForBillDetails();
                                     discountAmount ="0";
                                     isDiscountApplied=false;
                                     discount_rs_text_widget.setText("0");
+                                    checkIfNewUser();
                                 }
+                            }
+                            else{
+                                AlertDialogClass.showDialog(getActivity(), Constants.CantApplyDiscountbelowzeroOrdervalueInstruction, 0);
+
                             }
                         }
                         else{
@@ -901,7 +914,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
                             }
-                            GetStockBalanceForEachIteminCart();
+                            //GetStockBalanceForEachIteminCart();
                             long sTime = System.currentTimeMillis();
                             Currenttime = getDate_and_time();
 
@@ -1130,6 +1143,195 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     }
 
+    private void checkIfNewUser() {
+        discountAmount ="0";
+        isDiscountApplied=false;
+        final String[] Count = {"0"};
+        discount_rs_text_widget.setText("0");
+        String deliveryUserMobileNumber ="";
+        deliveryUserMobileNumber = "+91"+mobileNo_Edit_widget.getText().toString();
+        if (deliveryUserMobileNumber.length() == 13) {
+            String deliveryUserMobileNumberEncoded  = deliveryUserMobileNumber;
+            try {
+                deliveryUserMobileNumberEncoded = URLEncoder.encode(deliveryUserMobileNumber, "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            showProgressBar(true);
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingMobileno_vendorkey +"?usermobile="+deliveryUserMobileNumberEncoded, null,
+                    new com.android.volley.Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(@NonNull JSONObject response) {
+
+
+                            try {
+                                String jsonString = response.toString();
+                                Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                                JSONObject jsonObject = new JSONObject(jsonString);
+
+                                String message = jsonObject.getString("message").toString().toUpperCase();
+                                JSONArray JArray = jsonObject.getJSONArray("content");
+                                 Count[0] = jsonObject.getString("contentlength");
+
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1 = 0;
+                                int arrayLength = JArray.length();
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                if ((message.equals("SUCCESS"))&&(arrayLength>0)){
+
+
+                                    OpenDiscountDialogScreen(false, Count[0]);
+
+
+                                }
+
+                                else{
+
+                                    OpenDiscountDialogScreen(true, Count[0]);
+
+                                  //  AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsIsNotExistedInstruction , 0);
+                                    showProgressBar(false);
+
+                                }
+
+
+
+                            } catch (Exception e) {
+                                showProgressBar(false);
+                                discountAmount ="0";
+                                isDiscountApplied=false;
+                                discount_rs_text_widget.setText("0");
+                                OpenDiscountDialogScreen(true, Count[0]);
+
+                                e.printStackTrace();
+                            }
+
+
+                        }
+
+                    }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
+                    OpenDiscountDialogScreen(true, Count[0]);
+
+                    showProgressBar(false);
+
+                    Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
+                    Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
+
+                    error.printStackTrace();
+                }
+            }) {
+                @Override
+                public Map<String, String> getParams() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("modulename", "Mobile");
+                    //params.put("orderplacedtime", "12/26/2020");
+
+                    return params;
+                }
+
+
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> header = new HashMap<>();
+                    header.put("Content-Type", "application/json");
+
+                    return header;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+            // Make the request
+            Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+        } else {
+            AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_mobile_no_text);
+
+        }
+    }
+
+    private void OpenDiscountDialogScreen(boolean isnewUser, String count) {
+
+        runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              try {
+                                  Dialog dialog = new Dialog(getActivity());
+                                  dialog.setContentView(R.layout.apply_discount_layout);
+                                  showProgressBar(false);
+                                  TextView usermobileno_textwidget = (TextView) dialog.findViewById(R.id.usermobileno_textwidget);
+                                  TextView orderid_count_textwidget = (TextView) dialog.findViewById(R.id.orderid_count_textwidget);
+                                  TextView couponDiscount_detailsTextWidget = (TextView) dialog.findViewById(R.id.couponDiscount_detailsTextWidget);
+                                  TextView storeDiscount_detailsTextWidget = (TextView) dialog.findViewById(R.id.storeDiscount_detailsTextWidget);
+                                  Button applyDiscountButton = (Button) dialog.findViewById(R.id.applyDiscountButton);
+                                  EditText discount_edit_textwidget = (EditText) dialog.findViewById(R.id.discount_edit_textwidget);
+
+                                  orderid_count_textwidget.setText(count);
+                                  if(isnewUser){
+                                      couponDiscount_detailsTextWidget.setVisibility(View.VISIBLE);
+                                      storeDiscount_detailsTextWidget.setVisibility(View.GONE);
+
+                                  }
+                                  else{
+                                      couponDiscount_detailsTextWidget.setVisibility(View.GONE);
+                                      storeDiscount_detailsTextWidget.setVisibility(View.VISIBLE);
+
+                                  }
+
+                                  usermobileno_textwidget.setText(mobileNo_Edit_widget.getText().toString());
+
+
+                                  applyDiscountButton.setOnClickListener(new View.OnClickListener() {
+                                      @Override
+                                      public void onClick(View v) {
+                                          discountAmount = discount_edit_textwidget.getText().toString();
+                                          double discountAmountdouble = Double.parseDouble(discountAmount);
+                                          finaltoPayAmount =total_item_Rs_text_widget.getText().toString();
+                                          double toPayAmt = Double.parseDouble(finaltoPayAmount);
+                                          // Toast.makeText(mContext, "total  "+finaltoPayAmount, Toast.LENGTH_LONG).show();
+
+                                          if (toPayAmt > discountAmountdouble) {
+                                              toPayAmt = toPayAmt - discountAmountdouble;
+                                              int toPayAmountInt = (int) Math.round((toPayAmt));
+                                              totalAmounttopay = toPayAmt;
+                                              isDiscountApplied=true;
+                                              discount_rs_text_widget.setText(discountAmount);
+
+                                              total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
+
+                                              dialog.cancel();
+
+                                          }
+                                          else{
+                                              AlertDialogClass.showDialog(getActivity(), Constants.DiscountAmountInstruction, 0);
+                                              discountAmount ="0";
+                                              isDiscountApplied=false;
+                                              discount_rs_text_widget.setText("0");
+                                          }
+                                      }
+                                  });
+
+
+
+                                  dialog.show();
+                              } catch (WindowManager.BadTokenException e) {
+                                  showProgressBar(false);
+                                  discountAmount ="0";
+                                  isDiscountApplied=false;
+                                  discount_rs_text_widget.setText("0");
+                                  e.printStackTrace();
+                              }
+                          }
+        });
+
+
+    }
+
     private void GetStockBalanceForEachIteminCart() {
 
         for (int i = 0; i < cart_Item_List.size(); i++) {
@@ -1262,7 +1464,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                     totalredeempointsuserhave="0";
                                     pointsalreadyredeemDouble=0;
                                     isProceedtoCheckoutinRedeemdialogClicked=false;
-                                    discountAmountLayout.setVisibility(View.VISIBLE);
+                                    //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
                                     redeemPointsLayout.setVisibility(View.GONE);
                                 }
                                 total_Rs_to_Pay_text_widget.setText(finaltoPayAmountwithRedeemPoints);
@@ -1310,6 +1513,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             return;
         }
         else {
+            usermobileNo = "+91" + mobileNo_Edit_widget.getText().toString();
 
             ispaymentMode_Clicked = true;
             String payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
@@ -1388,7 +1592,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                                     redeemed_points_text_widget.setText("");
                                     redeemPointsLayout.setVisibility(View.GONE);
-                                    discountAmountLayout.setVisibility(View.VISIBLE);
+                                    //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
                                     return;
 
                                 }
@@ -2283,6 +2488,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             @Override
                             public void onNo() {
                                 StockBalanceChangedForThisItemList.clear();
+                                isStockOutGoingAlreadyCalledForthisItem =false;
 
 
                                 cart_Item_List.clear();
@@ -2322,7 +2528,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 isUpdateRedeemPointsWithoutKeyMethodCalled=false;
                                 totalAmounttopay=0;
                                 finalamounttoPay=0;
-
                                 pointsalreadyredeemDouble=0;
                                 totalpointsuserhave_afterapplypoints=0;
                                 pointsenteredToredeem_double=0;
@@ -2339,7 +2544,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                                 redeemed_points_text_widget.setText("");
                                 redeemPointsLayout.setVisibility(View.GONE);
-                                discountAmountLayout.setVisibility(View.VISIBLE);
+                                //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
 
                             }
                         });
@@ -2348,6 +2554,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             } else {
                 cart_Item_List.clear();
                 StockBalanceChangedForThisItemList.clear();
+                StockBalanceChangedForThisItemList.clear();
+                isStockOutGoingAlreadyCalledForthisItem =false;
 
                 cart_Item_hashmap.clear();
                 cart_item_list.clear();
@@ -2405,7 +2613,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                 redeemed_points_text_widget.setText("");
                 redeemPointsLayout.setVisibility(View.GONE);
-                discountAmountLayout.setVisibility(View.VISIBLE);
+                //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
                 showProgressBar(false);
 
             }
@@ -2626,7 +2835,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         try {
             jsonObject.put("orderid", orderid);
 
-           // jsonObject.put("vendordiscountamount", Double.parseDouble(coupondiscountamount));
+            jsonObject.put("vendordiscountamount", Double.parseDouble(coupondiscountamount));
 
             jsonObject.put("coupondiscountamount", Double.parseDouble(coupondiscountamount));
             jsonObject.put("coupontype", coupontype);
@@ -2707,7 +2916,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         redeemPoints_String =  "0" ;
         redeemed_points_text_widget.setText(redeemPoints_String);
 
-            discountAmountLayout.setVisibility(View.VISIBLE);
+            //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
             redeemPointsLayout.setVisibility(View.GONE);
 
 
@@ -2763,7 +2973,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
       //  adapter_cartItem_listview= new Adapter_CartItem_Listview(mContext,cartItem_hashmap, MenuItems,NewOrders_MenuItem_Fragment.this);
       //  listview.setAdapter(adapter_cartItem_listview);
-        adapter_cartItem_recyclerview = new Adapter_CartItem_Recyclerview(mContext,cartItem_hashmap, MenuItems,NewOrders_MenuItem_Fragment.this);
+        adapter_cartItem_recyclerview = new Adapter_CartItem_Recyclerview(mContext,cartItem_hashmap, MenuItems,NewOrders_MenuItem_Fragment.this,completemenuItem);
         adapter_cartItem_recyclerview.setHandler(newHandler());
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         int last_index=NewOrders_MenuItem_Fragment.cartItem_hashmap.size()-1;
@@ -3049,6 +3259,25 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                         }
 
 
+                        if(json.has("itemavailability")){
+                            try{
+                                newOrdersPojoClass.itemavailability= String.valueOf(json.get("itemavailability"));
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                                newOrdersPojoClass.itemavailability= "nil";
+
+                            }
+
+                        }
+                        else{
+                            newOrdersPojoClass.itemavailability = "nil";
+                            Log.d(Constants.TAG, "There is no itemavailability for this Menu: "  );
+
+
+                        }
+
                         if(json.has("itemcutdetails")){
                             try{
                                 newOrdersPojoClass.itemcutdetails= String.valueOf(json.get("itemcutdetails"));
@@ -3090,6 +3319,40 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             Toast.makeText(mContext,"TMC menuItemId Json is Missing",Toast.LENGTH_LONG).show();
 
                         }
+
+
+                        if(json.has("swiggyprice")){
+                            newOrdersPojoClass.swiggyprice= String.valueOf(json.get("swiggyprice"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.swiggyprice = "0";
+                            Toast.makeText(mContext,"TMC swiggyprice Json is Missing",Toast.LENGTH_LONG).show();
+
+                        }
+
+                        if(json.has("dunzoprice")){
+                            newOrdersPojoClass.dunzoprice= String.valueOf(json.get("dunzoprice"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.dunzoprice = "0";
+                            Toast.makeText(mContext,"TMC dunzoprice Json is Missing",Toast.LENGTH_LONG).show();
+
+                        }
+
+                        if(json.has("bigbasketprice")){
+                            newOrdersPojoClass.bigbasketprice= String.valueOf(json.get("bigbasketprice"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.bigbasketprice = "0";
+                            Toast.makeText(mContext,"TMC bigbasketprice Json is Missing",Toast.LENGTH_LONG).show();
+
+                        }
+
+
+
 
                         if(json.has("inventorydetails")){
                             try{
@@ -3611,7 +3874,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
             String CouponDiscountAmount = "";
         if(isDiscountApplied) {
-            CouponDiscountAmount = discount_Edit_widget.getText().toString();
+            CouponDiscountAmount = discount_rs_text_widget.getText().toString();
         }
         else{
             CouponDiscountAmount ="0";
@@ -3716,10 +3979,13 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                       totalpointsredeemedalreadybyuser="";
                                       totalordervalue_tillnow="";
                                       totalredeempointsuserhave="";
-
+                                      useStoreNumberCheckBox.setChecked(false);
+                                      StockBalanceChangedForThisItemList.clear();
+                                      isStockOutGoingAlreadyCalledForthisItem =false;
                                       redeemed_points_text_widget.setText("");
                                       redeemPointsLayout.setVisibility(View.GONE);
-                                      discountAmountLayout.setVisibility(View.VISIBLE);
+                                      //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
                                       return;
 
                                   }
@@ -4228,7 +4494,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                                             try {
                                                             JSONObject json_InventoryDetails_secondItem = jsonArray_secondItem.getJSONObject(jsonArrayIterator_secondItem);
                                                             menuItemKeyFromInventoryDetails_secondItem = "";
-                                                            grossweightinGramsFromInventoryDetails = 0;
+                                                           // grossweightinGramsFromInventoryDetails = 0;
                                                             netweightingramsFromInventoryDetails = 0;
 
                                                             try {
@@ -4450,7 +4716,6 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                                 }
                                                 ////////for same inventoryDetails Item - Ending
 
-
                                                 String stockIncomingKey_avlDetail = "", Key_avlDetail = "", receivedStock_avlDetail = "", grossWeight_avlDetail_InventoryDetails = "", itemName_avlDetail_inventoryDetails = "", barcode_avlDetail = "", priceTypeForPOS_avlDetail = "",
                                                         tmcSubCtgy_avlDetail = "", tmcCtgy_avlDetail = "";
                                                 double grossWeightWithQuantityDouble_avlDetail_InventoryDetails = 0, grossWeightDouble_avlDetail_InventoryDetails = 0;
@@ -4461,7 +4726,14 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                                     stockIncomingKey_avlDetail = "nil";
                                                     e.printStackTrace();
                                                 }
+                                                boolean itemAvailability_avlDetail=true;
 
+                                                try {
+                                                    itemAvailability_avlDetail = Boolean.parseBoolean(String.valueOf(modal_menuItemStockAvlDetails.getItemavailability_AvlDetails()));
+                                                } catch (Exception e) {
+                                                    itemAvailability_avlDetail = true;
+                                                    e.printStackTrace();
+                                                }
 
                                                 try {
                                                     Key_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getKey_AvlDetails());
@@ -4535,16 +4807,16 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                                         //  }
 
 
-                                                        getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, totalgrossweightingrams_doubleFromLoop, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, isitemAvailable, allowNegativeStock);
+                                                        getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, totalgrossweightingrams_doubleFromLoop, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
 
 
                                                     } else {
-                                                        getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossWeightWithQuantity_double, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, isitemAvailable, allowNegativeStock);
+                                                        getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossWeightWithQuantity_double, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
 
                                                     }
 
                                                 } else {
-                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossweightinGramsFromInventoryDetails, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, isitemAvailable, allowNegativeStock);
+                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossweightinGramsFromInventoryDetails, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
 
                                                 }
 
@@ -4757,8 +5029,68 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         if (message.equals("success")) {
                             // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                             // startTwice.main();
-                           printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount,ordertype);
-                            //showProgressBar(false);
+                            printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount,ordertype);
+
+
+/*
+                            StockBalanceChangedForThisItemList.clear();
+                            cart_Item_List.clear();
+                            cartItem_hashmap.clear();
+                            ispaymentMode_Clicked = false;
+                            isOrderDetailsMethodCalled = false;
+
+                            isPaymentDetailsMethodCalled = false;
+                            isOrderTrackingDetailsMethodCalled = false;
+                            new_to_pay_Amount = 0;
+                            old_taxes_and_charges_Amount = 0;
+                            old_total_Amount = 0;
+                            createEmptyRowInListView("empty");
+                            CallAdapter();
+                            discountAmount = "0";
+                            useStoreNumberCheckBox.setChecked(false);
+                            discount_Edit_widget.setText("0");
+                            finaltoPayAmount = "0";
+                            discount_rs_text_widget.setText(discountAmount);
+                            OrderTypefromSpinner = "POS Order";
+                            orderTypeSpinner.setSelection(0);
+                            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                            mobileNo_Edit_widget.setText("");
+                            isPrintedSecondTime = false;
+                            showProgressBar(false);
+
+                            ispointsApplied_redeemClicked=false;
+                            isProceedtoCheckoutinRedeemdialogClicked =false;
+                            isRedeemDialogboxOpened=false;
+                            isUpdateRedeemPointsMethodCalled=false;
+                            isUpdateCouponTransactionMethodCalled=false;
+                            isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                            totalAmounttopay=0;
+                            finalamounttoPay=0;
+
+                            pointsalreadyredeemDouble=0;
+                            totalpointsuserhave_afterapplypoints=0;
+                            pointsenteredToredeem_double=0;
+                            pointsenteredToredeem="";
+
+                            finaltoPayAmountwithRedeemPoints="";
+                            redeemPoints_String="";
+                            redeemKey="";
+                            mobileno_redeemKey="";
+                            discountAmountalreadyusedtoday="";
+                            totalpointsredeemedalreadybyuser="";
+                            totalordervalue_tillnow="";
+                            totalredeempointsuserhave="";
+
+                            redeemed_points_text_widget.setText("");
+                            redeemPointsLayout.setVisibility(View.GONE);
+                            //discountlayout visible
+                                    discountAmountLayout.setVisibility(View.GONE);
+*/
+
+
 
                         }
                         else{
@@ -4811,7 +5143,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
     private void getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(String stockIncomingKey_avlDetails, String key_avlDetails, String menuItemKey_avlDetails, String receivedStock_AvlDetails, double currentBillingItemWeight_double, String itemName, String barcode, String orderid, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey, boolean isitemAvailable, boolean allowNegativeStock) {
         if((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" - ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil"))) {
-
+            showProgressBar(true);
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
@@ -4988,7 +5320,6 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                             e.printStackTrace();
                                         }
 
-                                        usermobileNo = "+91" + mobileNo_Edit_widget.getText().toString();
 
                                         AddDataInStockBalanceTransactionHistory(finalStockBalance_double[0], stockBalanceBeforeMinusCurrentItem, menuItemKey_avlDetails, stockIncomingKey_avlDetails, itemName, barcode, menuItemKey_avlDetails);
 
@@ -5199,7 +5530,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
             jsonObject2.put("key", menuItemKey_avlDetails);
 
 
-            jsonObject2.put("itemavailability", isitemAvailable);
+            jsonObject2.put("itemavailability", String.valueOf(isitemAvailable).toUpperCase());
 
 
         } catch (JSONException e) {
@@ -5229,6 +5560,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
                             modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
                             uploadMenuAvailabilityStatusTranscationinDB(usermobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorKey,Currenttime,menuItemKey_avlDetails,message, "", false, "");
+                            savedMenuIteminSharedPrefrences(completemenuItem,iterator_menuitemStockAvlDetails);
 
                         }
 
@@ -5311,8 +5643,6 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
                     String message =  response.getString("message");
                         //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
-                        if(changeItemAvailability) {
-                            uploadMenuAvailabilityStatusTranscationinDB(usermobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorKey,Currenttime,menuItemKey_avlDetails,message, key_avlDetails, false, key_avlDetails);
 
                             if(message.equals("success")) {
 
@@ -5322,18 +5652,29 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                 Modal_NewOrderItems modal_menuItemStockAvlDetails = completemenuItem.get(iterator_menuitemStockAvlDetails);
 
                                 String menuItemKeyFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getMenuitemkey_AvlDetails());
+                                if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
 
-                                if (key_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
-                                    modal_menuItemStockAvlDetails.setItemavailability_AvlDetails(String.valueOf(isitemAvailable));
-                                    modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                    if(changeItemAvailability) {
+                                    uploadMenuAvailabilityStatusTranscationinDB(usermobileNo, itemName, isitemAvailable, tmcSubCtgyKey, vendorKey, Currenttime, menuItemKey_avlDetails, message, key_avlDetails, false, key_avlDetails);
 
+                                        modal_menuItemStockAvlDetails.setItemavailability_AvlDetails(String.valueOf(isitemAvailable));
+                                        modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                        modal_menuItemStockAvlDetails.setStockbalance_AvlDetails(String.valueOf(finalStockBalance_double));
+
+                                        savedMenuIteminSharedPrefrences(completemenuItem,iterator_menuitemStockAvlDetails);
+
+                                    }
+                                    else{
+                                        modal_menuItemStockAvlDetails.setStockbalance_AvlDetails(String.valueOf(finalStockBalance_double));
+
+                                        savedMenuIteminSharedPrefrences(completemenuItem,iterator_menuitemStockAvlDetails);
+                                    }
                                 }
-
                             }
                         }
 
                                 showProgressBar(false);
-                    }
+
 
 
 
@@ -5379,6 +5720,30 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
     }
+
+    private void savedMenuIteminSharedPrefrences(List<Modal_NewOrderItems> menuItem, int iterator_menuitemStockAvlDetails) {
+        final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("MenuList", MODE_PRIVATE);
+
+
+        Gson gson = new Gson();
+        String json = gson.toJson(menuItem);
+        SharedPreferences.Editor editor = sharedPreferencesMenuitem.edit();
+        editor.putString("MenuList",json );
+        editor.apply();
+        try {
+            adapter_cartItem_recyclerview.notifyDataSetChanged();
+            adapter_cartItem_recyclerview.notify();
+            adapter_cartItem_recyclerview.notifyItemChanged(iterator_menuitemStockAvlDetails);
+
+            adapter_cartItem_recyclerview.notifyAll();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+
     private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, boolean availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message, String menuItemStockAvlDetailskey, boolean allowNegative, String itemStockAvlDetailskey) {
 
 
@@ -5386,7 +5751,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("itemname", menuItemName);
-            jsonObject.put("Status", availability);
+            jsonObject.put("status", availability);
             jsonObject.put("subCtgykey", menuItemSubCtgykey);
             jsonObject.put("transactiontime", dateandtime);
             jsonObject.put("mobileno", userPhoneNumber);

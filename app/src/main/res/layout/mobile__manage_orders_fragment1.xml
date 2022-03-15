@@ -108,7 +108,8 @@
                         android:layout_marginEnd="3dp"
 
                         android:foregroundGravity="center_vertical"
-                        app:srcCompat="@mipmap/search_icon" />
+                        app:srcCompat="@mipmap/search_icon"
+                        />
 
                     <ImageView
                         android:id="@+id/search_close_btn"

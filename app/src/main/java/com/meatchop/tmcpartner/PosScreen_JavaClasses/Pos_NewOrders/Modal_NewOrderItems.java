@@ -7,7 +7,31 @@ public class Modal_NewOrderItems extends Throwable implements Serializable {
     inventorydetails, stockincomingkey,istmcpriceperkgitemedited,dunzoAmount,bigbasketAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
-    private String editTextValue;
+    public String editTextValue,bigbasketprice,swiggyprice,dunzoprice;
+
+    public String getBigbasketprice() {
+        return bigbasketprice;
+    }
+
+    public void setBigbasketprice(String bigbasketprice) {
+        this.bigbasketprice = bigbasketprice;
+    }
+
+    public String getSwiggyprice() {
+        return swiggyprice;
+    }
+
+    public void setSwiggyprice(String swiggyprice) {
+        this.swiggyprice = swiggyprice;
+    }
+
+    public String getDunzoprice() {
+        return dunzoprice;
+    }
+
+    public void setDunzoprice(String dunzoprice) {
+        this.dunzoprice = dunzoprice;
+    }
 
     public String getAllownegativestock() {
         return allownegativestock;

@@ -154,7 +154,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
     Workbook wb;
     Sheet sheet = null;
-    private static String[] columns = {"S.No","SubCtgy Name and Total ","Item Name","Quantity","Weight or Packs","Price"};
+    private static String[] columns = {"S.No","SubCtgy Name and Total ","Item Name","Packs","Gross Weight","Price"};
 
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
 
@@ -1541,6 +1541,8 @@ swiggyOrders_couponDiscountOrderidArray.clear();
         double newweight,gstAmount = 0,tmcprice=0,finalweight_double=0;
         String menuitemidd = "",subCtgyKey="",itemname="",quantityString ="",tmcprice_string="",finalWeight="";
         int quantity=0;
+        String pricetypeoftheItem ="";
+
         try {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
 
@@ -1579,7 +1581,6 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                                }
 
                                String reportname = String.valueOf(modal_menuItemSettings.getReportname());
-                                String pricetypeoftheItem ="";
                                if (menuItemId.equals(menuitemidd)) {
                                    isItemFoundinMenu =true;
                                    pricetypeoftheItem = String.valueOf(modal_menuItemSettings.getPricetypeforpos());
@@ -2296,16 +2297,20 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
 
                     try {
-                        if ((subCtgyKey.equals("tmcsubctgy_13")) || (subCtgyKey.equals("tmcsubctgy_4")) || (subCtgyKey.equals("tmcsubctgy_5")) || (subCtgyKey.equals("tmcsubctgy_7")) || (subCtgyKey.equals("tmcsubctgy_11"))|| (subCtgyKey.equals("tmcsubctgy_8"))|| (subCtgyKey.equals("tmcsubctgy_16")) || (subCtgyKey.equals("tmcsubctgy_9"))) {
+                      //  if ((subCtgyKey.equals("tmcsubctgy_13")) || (subCtgyKey.equals("tmcsubctgy_4")) || (subCtgyKey.equals("tmcsubctgy_5")) || (subCtgyKey.equals("tmcsubctgy_7")) || (subCtgyKey.equals("tmcsubctgy_11"))|| (subCtgyKey.equals("tmcsubctgy_8"))|| (subCtgyKey.equals("tmcsubctgy_16")) || (subCtgyKey.equals("tmcsubctgy_9")) || (itemname.equals("Goat Spleen"))) {
+                           if(pricetypeoftheItem.toString().toUpperCase().equals("TMCPRICE")){
+                               tmcprice = tmcprice + gstAmount;
+                               tmcprice = tmcprice * quantity;
+                           }
 
 
-                            tmcprice = tmcprice + gstAmount;
-                            tmcprice = tmcprice * quantity;
 //                            finalweight_double = Double.parseDouble(finalWeight)*quantity;
 
-                        }else {
+                        //}
+                        else {
                             tmcprice = tmcprice + gstAmount;
                             tmcprice = tmcprice * quantity;
+
                             finalweight_double = Double.parseDouble(finalWeight) * quantity;
 
                         }//Log.i(Constants.TAG, "Consolidated Report new itemDespAmountwithquantity  " + tmcprice);
@@ -3715,9 +3720,9 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                             weightinGrams = 0;
                         }
                         double kilogram = weightinGrams * 0.001;
-                        String KilogramString = String.valueOf(decimalFormat.format(kilogram) + "Kg");
+                        String KilogramString = String.valueOf(decimalFormat.format(kilogram) );
 
-                        if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg")))) {
+                        if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.contains("0.00")))) {
                             row.createCell(4).setCellValue(KilogramString);
 
                         } else {

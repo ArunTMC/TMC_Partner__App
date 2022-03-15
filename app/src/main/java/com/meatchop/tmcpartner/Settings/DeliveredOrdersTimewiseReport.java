@@ -508,6 +508,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
         deliveredtimeChoosingSpinnerData.add("0 - 30 Mins Late ");
         deliveredtimeChoosingSpinnerData.add("30 - 60 Mins Late ");
         deliveredtimeChoosingSpinnerData.add(" > 60 Mins Late ");
+
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(DeliveredOrdersTimewiseReport.this, android.R.layout.simple_spinner_item, deliveredtimeChoosingSpinnerData);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         deliverytimeSelector_spinner.setAdapter(arrayAdapter);
@@ -640,7 +641,12 @@ if(sorted_OrdersList.size()>0){
             Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum:  1  " + rowNum);
 
             if (generateSheet) {
-                if (rowNum == sorted_OrdersList.size()) {
+                int size = sorted_OrdersList.size();
+                if(size==1){
+
+                }
+
+                if (rowNum == size+1) {
                     Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
                     Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
 
@@ -690,8 +696,12 @@ if(sorted_OrdersList.size()>0){
                                 ;
                             }
                         }
-                    }                } else {
-                    //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
+                    }
+                }
+                else {
+                     // Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
+                    Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
+                    Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
 
                 }
             }
@@ -758,7 +768,7 @@ else{
     }
 
     else{
-        //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
+        //..  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
 
     }
 }

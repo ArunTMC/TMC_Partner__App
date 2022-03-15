@@ -2,6 +2,7 @@ package com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -43,6 +44,7 @@ import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderScreenFragment_mobile;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Replacement_RefundClasses.ReplacementRefundListFragment;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
@@ -99,6 +101,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     Dialog dialog ;
     Button restartAgain;
     TextView title;
+    MenuView.ItemView replacement_navigatioBar_widget;
 
 
     @Override
@@ -116,6 +119,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         SavePrinterConnectionDatainSharedPreferences();
         newOrders_menuItem_fragment = new NewOrders_MenuItem_Fragment();
         mobile_manageOrders1  = new Mobile_ManageOrders1();
+        replacement_navigatioBar_widget = findViewById(R.id.replacement_navigatioBar_widget);
+       // ((View) replacement_navigatioBar_widget).setVisibility(View.GONE);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -134,14 +139,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     restartAgain = (Button) dialog.findViewById(R.id.printAgain);
                     title = (TextView) dialog.findViewById(R.id.title);
 
-                    if(UserRole.equals(Constants.REPORTSVIEWER_ROLENAME)){
-                        loadMyFragment(new SettingsFragment());
 
-                    }
-                    else{
-                        loadMyFragment(new Mobile_ManageOrders1());
-
-                    }
               //      getDatafromMobileApp();
 
                     tmcSubctgykey = getIntent().getStringExtra("tmcSubctgykey");
@@ -192,6 +190,30 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     }
 
                         break;
+                    case R.id.replacement_navigatioBar_widget:
+                        try{
+                            if(!completemenuItem.isEmpty()) {
+
+
+                                if ((UserRole.equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.ADMIN_ROLENAME))) {
+                                    mfragment = new NewOrderScreenFragment_mobile();
+                                    //loadMyFragment(mfragment);
+                                    FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+                                    transaction1.replace(R.id.frame, new ReplacementRefundListFragment());
+
+                                    transaction1.commit();
+                                }
+                                else{
+                                    Toast.makeText(MobileScreen_Dashboard.this,"You Don't have Access to replace/refund the Order",Toast.LENGTH_LONG).show();
+
+                                }
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        break;
+
                     case R.id.new_order_navigatioBar_widget:
                         try{
 
@@ -203,7 +225,21 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     mfragment = new NewOrderScreenFragment_mobile();
                                     //loadMyFragment(mfragment);
                                     FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
-                                    transaction1.replace(R.id.frame, NewOrderScreenFragment_mobile.newInstance(completemenuItem));
+
+                                    final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+                                    Gson gson = new Gson();
+                                    String json = sharedPreferencesMenuitem.getString("MenuList", "");
+                                    if (json.isEmpty()) {
+                                        transaction1.replace(R.id.frame, NewOrderScreenFragment_mobile.newInstance(completemenuItem));
+                                    } else {
+                                        transaction1.replace(R.id.frame, NewOrderScreenFragment_mobile.newInstance(json));
+
+                                    }
+
+
+
+                                    //transaction1.replace(R.id.frame, NewOrderScreenFragment_mobile.newInstance(completemenuItem));
                                     transaction1.commit();
 
                                 }
@@ -253,6 +289,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
+
                         break;
 
                 }
@@ -294,7 +331,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 String time = getDate_and_time();
                 getDatafromVendorTable(vendorEntryKey);
                Log.i("1111111111Statrt time ",getDate_and_time());
-           //     completemenuItemStockAvlDetails =   getMenuItemStockAvlDetails();
+               completemenuItemStockAvlDetails =   getMenuItemStockAvlDetails();
 
                 getDatafromMobileApp();
                 //  ConnectPrinter();
@@ -1786,14 +1823,16 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 if(json.has("swiggyprice")){
                                     modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice"));
-                                    if(String.valueOf(json.get("swiggyprice")).equals("")){
-                                        modal_menuItem.swiggyprice = "0";
+                                    if(String.valueOf(json.get("swiggyprice")).contains("\r")) {
 
-                                    }else  if(String.valueOf(json.get("swiggyprice")).equals("\r")) {
+                                        modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice")).replaceAll("\\r\\n|\\r|\\n", "");;
 
+                                    }
+                                    if(String.valueOf(modal_menuItem.getSwiggyprice()).equals("")){
                                         modal_menuItem.swiggyprice = "0";
 
                                     }
+
 
                                 }
                                 else{
@@ -1806,15 +1845,15 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 if(json.has("bigbasketprice")){
                                     modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice"));
-                                    if(String.valueOf(json.get("bigbasketprice")).equals("")){
-                                        modal_menuItem.bigbasketprice = "0";
+                                    if(String.valueOf(json.get("bigbasketprice")).contains("\r")) {
 
-                                    }else  if(String.valueOf(json.get("bigbasketprice")).equals("\r")) {
-
-                                        modal_menuItem.dunzoprice = "0";
+                                        modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice")).replaceAll("\\r\\n|\\r|\\n", "");;
 
                                     }
+                                    if(String.valueOf(modal_menuItem.getBigbasketprice()).equals("")){
+                                        modal_menuItem.bigbasketprice = "0";
 
+                                    }
                                 }
                                 else{
                                     modal_menuItem.bigbasketprice = "0";
@@ -1826,11 +1865,12 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 if(json.has("dunzoprice")){
                                     modal_menuItem.dunzoprice= String.valueOf(json.get("dunzoprice"));
-                                    if(String.valueOf(json.get("dunzoprice")).equals("")){
-                                        modal_menuItem.dunzoprice = "0";
+                                    if(String.valueOf(json.get("dunzoprice")).contains("\r")) {
 
-                                    }else  if(String.valueOf(json.get("dunzoprice")).equals("\r")) {
+                                        modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice")).replaceAll("\\r\\n|\\r|\\n", "");;
 
+                                    }
+                                    if(String.valueOf(modal_menuItem.getDunzoprice()).equals("")){
                                         modal_menuItem.dunzoprice = "0";
 
                                     }
@@ -2150,8 +2190,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
                                     String MenuList_String = new Gson().toJson(MenuList);
-                                    completemenuItem = MenuList_String;
+                                   // completemenuItem = MenuList_String;
                                 }
+
 
                             }
                         }
@@ -2475,7 +2516,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
                             String MenuList_String = new Gson().toJson(MenuList);
-                            completemenuItem = MenuList_String;
+                           // completemenuItem = MenuList_String;
                         }
 
 
@@ -2994,7 +3035,17 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         editor.putString(Constants.REPORTSVIEWER_ROLENAME, reportsviewer_role);
         editor.putString(Constants.STOREMANAGER_ROLENAME,storemanager_role );
         editor.apply();
+       /* if(UserRole.equals(Constants.REPORTSVIEWER_ROLENAME)){
+            loadMyFragment(new SettingsFragment());
+            bottomNavigationView.setSelectedItemId(R.id.settings_navigatioBar_widget);
+        }
+        else{
+            loadMyFragment(new Mobile_ManageOrders1());
+            bottomNavigationView.setSelectedItemId(R.id.manage_order_navigatioBar_widget);
 
+        }
+
+        */
 
     }
 
@@ -3065,18 +3116,29 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("MenuList", json);
             editor.apply();
+            completemenuItem = json;
+
             isMenuListSavedLocally = true;
-          //  loadMyFragment(new Mobile_ManageOrders1());
-            bottomNavigationView.setSelectedItemId(R.id.manage_order_navigatioBar_widget);
+            if(UserRole.equals(Constants.REPORTSVIEWER_ROLENAME)){
+                CurrentFragment = new SettingsFragment();
 
-           /* loadingpanelmask.setVisibility(View.GONE);
-            loadingPanel.setVisibility(View.GONE);
-            bottomNavigationView.setVisibility(View.VISIBLE);
+                loadMyFragment(new SettingsFragment());
+                bottomNavigationView.setSelectedItemId(R.id.settings_navigatioBar_widget);
+            }
+            else{
+                CurrentFragment = new Mobile_ManageOrders1();
 
-            */
+                loadMyFragment(new Mobile_ManageOrders1());
+                bottomNavigationView.setSelectedItemId(R.id.manage_order_navigatioBar_widget);
+
+            }
+
+
+
+
+
             Adjusting_Widgets_Visibility(false);
 
-            CurrentFragment = new Mobile_ManageOrders1();
         }
         catch (Exception e){
             e.printStackTrace();

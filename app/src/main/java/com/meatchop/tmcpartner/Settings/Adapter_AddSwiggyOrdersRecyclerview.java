@@ -220,7 +220,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                         String weight_string = holder.itemWeight_edittextwidget.getText().toString();
                         weight_string =weight_string .replaceAll("[^\\d.]", "");
                         modal_newOrderItems.setIstmcpriceperkgitemedited("TRUE");
-                        int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                        int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyprice());
 
                         int weight = Integer.parseInt(weight_string);
                         if (weight < 1000) {
@@ -305,7 +305,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                         }
 
                         if (weight > 1000) {
-                            priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                            priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyprice());
 
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -685,7 +685,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                     String weight_string = modal_newOrderItems.getItemFinalWeight();
                     weight_string =weight_string .replaceAll("[^\\d.]", "");
 
-                    int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                    int priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyprice());
 
                     int weight = Integer.parseInt(weight_string);
                     if (weight < 1000) {
@@ -742,7 +742,7 @@ public class Adapter_AddSwiggyOrdersRecyclerview extends RecyclerView.Adapter<Ad
                     }
 
                     if (weight > 1000) {
-                        priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyAmount());
+                        priceperKg = Integer.parseInt(modal_newOrderItems.getSwiggyprice());
 
                         //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 

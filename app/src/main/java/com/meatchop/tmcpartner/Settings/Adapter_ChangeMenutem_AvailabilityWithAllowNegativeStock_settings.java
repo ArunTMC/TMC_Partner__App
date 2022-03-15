@@ -1,7 +1,8 @@
-package com.meatchop.tmcpartner.Settings;
+ package com.meatchop.tmcpartner.Settings;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings extends ArrayAdapter<Modal_MenuItem_Settings> {
@@ -24,18 +31,24 @@ public class Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings e
     boolean isCalledFromchangeMenuItemStatus_Settings =false;
     boolean isoverlaplayoutClicked =false;
     boolean isoverlaplayoutAllowNegativeClicked =false;
+    RecyclerView recycler;
+    RecyclerView.LayoutManager manager;
+    boolean isinventorycheck = false;
 
+
+    Adapter_ChangeMenuItemAvail_InventoryDetailsJson adapter;
     int total_no_of_item=0;
     int total_no_of_item_Available = 0 ;
     double total_no_of_item_Available_inPercentage = 0;
     List<Modal_MenuItem_Settings> menuList;
+    List<Modal_MenuItem_Settings> menuitem_InventoryDetailsJson = new ArrayList<>();
     ChangeMenuItemStatus_AllowNegativeStock_Settings changeMenuItemStatus_allowNegativeStock_settings;
-    public Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings(Context mContext, List<Modal_MenuItem_Settings> menuList, ChangeMenuItemStatus_AllowNegativeStock_Settings changeMenuItemStatus_allowNegativeStock_settingsd) {
-        super(mContext, R.layout.settings_toggle_switch_child, menuList);
+    public Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings(Context mContext, List<Modal_MenuItem_Settings> menuList, ChangeMenuItemStatus_AllowNegativeStock_Settings changeMenuItemStatus_allowNegativeStock_settingsd, boolean isinventorycheck) {
+        super(mContext, R.layout.settings_toggle_switch_with_allow_negativestock_child, menuList);
         this.changeMenuItemStatus_allowNegativeStock_settings=changeMenuItemStatus_allowNegativeStock_settingsd;
         this.mContext=mContext;
         this.menuList = menuList;
-
+        this.isinventorycheck = isinventorycheck;
         isCalledFromchangeMenuItemStatus_Settings = true;
 
     }
@@ -63,6 +76,11 @@ public class Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings e
         final LinearLayout overlapLayout_allowNegativeToggle = listViewItem.findViewById(R.id.overlapLayout_allowNegativeToggle);
 
         final LinearLayout negativeStckSwitch_parentLayout = listViewItem.findViewById(R.id.negativeStckSwitch_parentLayout);
+        recycler = listViewItem.findViewById(R.id.recyclerView);
+        recycler.setHasFixedSize(true);
+        manager = new GridLayoutManager(mContext, 1, GridLayoutManager.VERTICAL, false);
+        recycler.setLayoutManager(manager);
+        recycler.setVisibility(View.GONE);
 
         final TextView itemName_widget = listViewItem.findViewById(R.id.child);
         final LinearLayout overlapLayout = listViewItem.findViewById(R.id.overlapLayout);
@@ -130,9 +148,219 @@ public class Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings e
             menuItemNegativeStockAvailabiltySwitch . setChecked(false);
 
         }
+        String stockbalance ="0";
+        double stockbalance_double =0 ;
+        try{
+             stockbalance = modal_manageOrders_pojo_class.getStockbalance_AvlDetails().toString();
+
+        }
+        catch (Exception e ){
+            e.printStackTrace();
+        }
+        try{
+            stockbalance_double = Double.parseDouble(stockbalance);
+        }
+        catch ( Exception e){
+            stockbalance_double=0;
+            e.printStackTrace();
+        }
+        if ((stockbalance_double<=0) && (isinventorycheck)){
+            menuItemNegativeStockAvailabiltySwitch.setTextColor(Color.RED);
+            menuItemAvailabiltySwitch.setTextColor(Color.RED);
+        }
+        else{
+            menuItemAvailabiltySwitch.setTextColor(Color.BLACK);
+            menuItemNegativeStockAvailabiltySwitch.setTextColor(Color.BLACK);
+
+        }
+        String inventoryDetails = modal_manageOrders_pojo_class.getInventorydetails().toString();
+
+        if(!inventoryDetails.equals("") &&(! inventoryDetails.toString().equals("nil") )  ) {
+          //  recycler.setVisibility(View.VISIBLE);
+            //menuitem_InventoryDetailsJson.clear();
+            String menuItemKeyFromInventoryDetails="",itemnameFromInventoryDetails ="",relationtypeFromInventoryDetails ="";
+            double grossweightinGramsFromInventoryDetails=0, netweightingramsFromInventoryDetails = 0;
+            boolean isshowavailabilityFromInventoryDetails = false;
+            menuitem_InventoryDetailsJson.clear();
+
+            try{
+                JSONArray jsonArray = new JSONArray(String.valueOf(inventoryDetails));
+                int jsonArrayIterator = 0;
+                int jsonArrayCount = jsonArray.length();
+                for (; jsonArrayIterator < (jsonArrayCount); jsonArrayIterator++) {
+                   // menuitem_InventoryDetailsJson.clear();
+                    try {
+                        JSONObject json_InventoryDetails = jsonArray.getJSONObject(jsonArrayIterator);
+                         menuItemKeyFromInventoryDetails="";isshowavailabilityFromInventoryDetails=false;itemnameFromInventoryDetails ="";relationtypeFromInventoryDetails ="";
+                         grossweightinGramsFromInventoryDetails=0; netweightingramsFromInventoryDetails=0;
+
+                        menuItemKeyFromInventoryDetails = "";
+                        grossweightinGramsFromInventoryDetails = 0;
+                        netweightingramsFromInventoryDetails = 0;
+                        try {
+
+                            if(json_InventoryDetails.has("relationtype")){
+                                relationtypeFromInventoryDetails = json_InventoryDetails.getString("relationtype");
+
+                            }
+                            else{
+                                relationtypeFromInventoryDetails = "CHILD";
+                            }
+
+
+                        } catch (Exception e) {
+                            relationtypeFromInventoryDetails = "CHILD";
+                            e.printStackTrace();
+                        }
+
+
+                        if(!relationtypeFromInventoryDetails.toUpperCase().equals("PARENT")) {
+                            try {
+                                if (json_InventoryDetails.has("menuitemkey")) {
+                                    menuItemKeyFromInventoryDetails = json_InventoryDetails.getString("menuitemkey");
+
+                                } else {
+                                    menuItemKeyFromInventoryDetails = "";
+                                }
+                            } catch (Exception e) {
+                                menuItemKeyFromInventoryDetails = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+
+                                if (json_InventoryDetails.has("grossweightingrams")) {
+                                    grossweightinGramsFromInventoryDetails = Double.parseDouble(String.valueOf(json_InventoryDetails.getString("grossweightingrams")));
+
+                                } else {
+                                    grossweightinGramsFromInventoryDetails = 0;
+                                }
+
+
+                            } catch (Exception e) {
+                                grossweightinGramsFromInventoryDetails = 0;
+                                e.printStackTrace();
+                            }
+
+                            try {
+
+                                if (json_InventoryDetails.has("isshowavailability")) {
+                                    isshowavailabilityFromInventoryDetails = Boolean.parseBoolean(json_InventoryDetails.getString("isshowavailability"));
+
+                                } else {
+                                    isshowavailabilityFromInventoryDetails = false;
+                                }
+
+
+                            } catch (Exception e) {
+                                isshowavailabilityFromInventoryDetails = false;
+                                e.printStackTrace();
+                            }
+
+                            try {
+
+
+                                if (json_InventoryDetails.has("itemname")) {
+                                    itemnameFromInventoryDetails = json_InventoryDetails.getString("itemname");
+
+                                } else {
+                                    itemnameFromInventoryDetails = "";
+                                }
+
+
+                            } catch (Exception e) {
+                                itemnameFromInventoryDetails = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+
+
+                                if (json_InventoryDetails.has("netweightingrams")) {
+                                    netweightingramsFromInventoryDetails = Double.parseDouble(String.valueOf(json_InventoryDetails.getString("netweightingrams")));
+
+                                } else {
+                                    netweightingramsFromInventoryDetails = 0;
+                                }
+
+                            } catch (Exception e) {
+                                netweightingramsFromInventoryDetails = 0;
+                                e.printStackTrace();
+                            }
+
+
+                            try {
+                                Modal_MenuItem_Settings modal_menuItem_settings = new Modal_MenuItem_Settings();
+
+                                for (int i = 0; i < changeMenuItemStatus_allowNegativeStock_settings.MenuItem.size(); i++) {
+
+                                    String MenuItemKey = "";
+
+                                    try {
+                                        MenuItemKey = changeMenuItemStatus_allowNegativeStock_settings.MenuItem.get(i).getMenuItemId().toString();
+
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    try {
+                                        if (MenuItemKey.equals(menuItemKeyFromInventoryDetails)) {
+                                            if(!relationtypeFromInventoryDetails.toUpperCase().equals("PARENT")) {
+
+                                                modal_menuItem_settings = changeMenuItemStatus_allowNegativeStock_settings.MenuItem.get(i);
+                                                modal_menuItem_settings.setNetweightingramsFromInventoryDetails(String.valueOf(netweightingramsFromInventoryDetails));
+                                                modal_menuItem_settings.setNetweightingramsFromInventoryDetails(String.valueOf(grossweightinGramsFromInventoryDetails));
+                                                modal_menuItem_settings.setRelationtypeFromInventoryDetails(relationtypeFromInventoryDetails);
+                                                modal_menuItem_settings.setItemnameFromInventoryDetails(itemnameFromInventoryDetails);
+                                                modal_menuItem_settings.setIsshowavailabilityFromInventoryDetails(isshowavailabilityFromInventoryDetails);
+                                                modal_menuItem_settings.setMenuItemKeyFromInventoryDetails(menuItemKeyFromInventoryDetails);
+                                                menuitem_InventoryDetailsJson.add(modal_menuItem_settings);
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            if (jsonArrayCount - jsonArrayIterator == 1) {
+                                if(!relationtypeFromInventoryDetails.toUpperCase().equals("PARENT")) {
+                                    recycler.setVisibility(View.VISIBLE);
+                                    adapter = new Adapter_ChangeMenuItemAvail_InventoryDetailsJson(menuitem_InventoryDetailsJson, mContext, changeMenuItemStatus_allowNegativeStock_settings);
+                                    recycler.setAdapter(adapter);
+
+                                } else {
+                                    recycler.setVisibility(View.GONE);
+
+                                }
+
+                            }else{
+                                recycler.setVisibility(View.GONE);
+
+                            }
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
 
 
+        }
+
+        else{
+            recycler.setVisibility(View.GONE);
+        }
 
 
 
@@ -482,6 +710,7 @@ public class Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings e
 
 
 
+      //  changeMenuItemStatus_allowNegativeStock_settings.Adjusting_Widgets_Visibility(false);
 
 
         return  listViewItem ;

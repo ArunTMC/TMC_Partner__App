@@ -1,7 +1,15 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuAvailabilityStatusTransaction {
-    String allownegativestock="", itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus ="",transactionTimeLong="";
+    String issubctgyavailabilitychanged="",allownegativestock="", itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus ="",transactionTimeLong="";
+
+    public String getIssubctgyavailabilitychanged() {
+        return issubctgyavailabilitychanged;
+    }
+
+    public void setIssubctgyavailabilitychanged(String issubctgyavailabilitychanged) {
+        this.issubctgyavailabilitychanged = issubctgyavailabilitychanged;
+    }
 
     public String getTranscationstatus() {
         return transcationstatus;

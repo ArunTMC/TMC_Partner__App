@@ -792,7 +792,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
     }
-    private void getOrderDetailsUsingApi(String date, String vendorKey, String selectedStatus) {
+ /*   private void getOrderDetailsUsingApi(String date, String vendorKey, String selectedStatus) {
        if(isnewOrdersSyncButtonClicked){
            return;
        }
@@ -812,7 +812,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate="+date+"&vendorkey="+vendorKey,null,
+     //   JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetailsforDate_Vendorkey + "?orderplaceddate="+date+"&vendorkey="+vendorKey,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -865,7 +865,7 @@ public class Pos_ManageOrderFragment extends Fragment {
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
     }
-
+*/
 
     private void initiateSocketConnection() {
         //Log.i("SocketConnection","t   ");

@@ -541,7 +541,7 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
 
                                         netweight_bottomsheetDialog = firstSubString + "g - " + secondSubString ;
 
-
+                                        //configureDatabeforeAdd(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, Selected_weightkey_bottomsheetDialog);
                                         changeDataInLocalArray(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, Selected_weightkey_bottomsheetDialog);
                                     } catch (Exception e) {
                                         e.printStackTrace();
@@ -550,6 +550,8 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                                     try {
                                         netweight_bottomsheetDialog = Objects.requireNonNull(edit_netweight).getText().toString();
                                         changeDataInLocalArray(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, Selected_weightkey_bottomsheetDialog);
+                                       // configureDatabeforeAdd(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, Selected_weightkey_bottomsheetDialog);
+
                                     }
                                     catch (Exception e){
                                         e.printStackTrace();
@@ -604,11 +606,12 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                                 netweight_bottomsheetDialog = netweightfromString;
                                 if(ifweightDetailSpinnerClicked) {
                                     changeDataInLocalArray(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, Selected_weightkey_bottomsheetDialog);
+                                   // configureDatabeforeAdd(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, Selected_weightkey_bottomsheetDialog);
 
                                 }
                                 else{
                                     changeDataInLocalArray(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog,weightkey_bottomsheetDialog);
-
+                                   // configureDatabeforeAdd(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog,weightkey_bottomsheetDialog);
 
                                 }
 
@@ -748,6 +751,8 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
 
         return convertView;
     }
+
+
     private String getMenuItemWeightData(int position, String fieldName) {
         String data="";
         try {
@@ -778,79 +783,103 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
         return data;
     }
 
+    private void configureDatabeforeAdd(String grossweight_bottomsheetDialog, String netweight_bottomsheetDialog, String portionsize_bottomsheetDialog, String isdefault_bottomsheetDialog, String weightkey_bottomsheetDialog, String selected_weightkey_bottomsheetDialog) {
+        boolean isArrayContainsdefault = false;
+        if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+            for (int i = 0; i < changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size(); i++) {
+                String isdefaultCutdetailsarraylist = "";
+                isdefaultCutdetailsarraylist = changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).getIsdefault().toString();
+                if (isdefaultCutdetailsarraylist.toUpperCase().equals("TRUE")) {
+                    isArrayContainsdefault = true;
+                }
+            }
+            if (isArrayContainsdefault) {
+                Toast.makeText(changeMenuItemWeightAndPriceSecondScreen, "Already Have an default item in Array", Toast.LENGTH_SHORT).show();
+            } else {
+                  changeDataInLocalArray(grossweight_bottomsheetDialog, netweight_bottomsheetDialog, portionsize_bottomsheetDialog, isdefault_bottomsheetDialog, weightkey_bottomsheetDialog, selected_weightkey_bottomsheetDialog);
+
+            }
+
+
+        }
+    }
 
     private void changeDataInLocalArray(String grossweight_bottomsheetDialog, String netweight_bottomsheetDialog, String portionsize_bottomsheetDialog, String isdefault_bottomsheetDialog, String weightkeyOld_bottomsheetDialog, String weightkeyNew_bottomsheetDialog2) {
+        boolean isArrayContainsdefault = false;
+        if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+            for (int i = 0; i < changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size(); i++) {
+                String isdefaultCutdetailsarraylist = "";
+                isdefaultCutdetailsarraylist = changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).getIsdefault().toString();
+                if (isdefaultCutdetailsarraylist.toUpperCase().equals("TRUE")) {
+                    if (changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size()>1) {
 
-        if((changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("PCS"))||(changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("PC"))){
-            try{
-
-                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog+"Pcs");
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        if((changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("G"))||(changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("GRAMS"))||(changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("GMS"))){
-            try{
-                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog+"g");
-
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        if((changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("G"))||(changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("GRAMS"))||(changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("GMS"))){
-            try{
-                grossweight_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog+"g");
-
-
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        if((changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("PCS"))||(changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("PC"))){
-            try{
-                if(!portionsize_bottomsheetDialog.equals("")) {
-
-                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog );
+                        isArrayContainsdefault = true;
+                    }
                 }
+            }
+            if (isArrayContainsdefault) {
+                Toast.makeText(changeMenuItemWeightAndPriceSecondScreen, "Already Have an default item in Array", Toast.LENGTH_SHORT).show();
+            } else {
 
-            } catch (Exception e){
+
+        if ((changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("PCS")) || (changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("PC"))) {
+            try {
+
+                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "Pcs");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        else  if((changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("G"))||(changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("GRAMS"))||(changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("GMS"))){
-            try{
-                if(!portionsize_bottomsheetDialog.equals("")) {
+        if ((changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("G")) || (changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("GRAMS")) || (changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("GMS"))) {
+            try {
+                netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "g");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ((changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("G")) || (changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("GRAMS")) || (changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("GMS"))) {
+            try {
+                grossweight_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog + "g");
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ((changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("PCS")) || (changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("PC"))) {
+            try {
+                if (!portionsize_bottomsheetDialog.equals("")) {
 
                     portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
                 }
 
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        else{
+        } else if ((changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("G")) || (changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("GRAMS")) || (changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("GMS"))) {
+            try {
+                if (!portionsize_bottomsheetDialog.equals("")) {
+
+                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
             portionsize_bottomsheetDialog.trim();
-            if(!portionsize_bottomsheetDialog.equals("")) {
+            if (!portionsize_bottomsheetDialog.equals("")) {
 
                 portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
             }
         }
 
 
-
-
-
-
-
-
-
-
-
-        String grossweightingrams_bottomsheetDialog="",netweightingrams_bottomsheetDialog="";
+        String grossweightingrams_bottomsheetDialog = "", netweightingrams_bottomsheetDialog = "";
 
 
         try {
@@ -866,7 +895,6 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
         try {
 
             if (netweight_bottomsheetDialog.contains("to") || netweight_bottomsheetDialog.contains("-")) {
-
 
 
                 if (netweight_bottomsheetDialog.contains("to")) {
@@ -898,8 +926,7 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
             }
 
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         try {
@@ -911,10 +938,9 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
         }
 
 
-
         try {
-            if(!weightkeyOld_bottomsheetDialog.equals(weightkeyNew_bottomsheetDialog2)){
-                if(!changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.contains(weightkeyNew_bottomsheetDialog2)){
+            if (!weightkeyOld_bottomsheetDialog.equals(weightkeyNew_bottomsheetDialog2)) {
+                if (!changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.contains(weightkeyNew_bottomsheetDialog2)) {
                     changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.remove(weightkeyOld_bottomsheetDialog);
                     changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.add(weightkeyNew_bottomsheetDialog2);
                     for (int i = 0; i < changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size(); i++) {
@@ -932,10 +958,8 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                             changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setNetweight(netweight_bottomsheetDialog);
                             changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setPortionsize(portionsize_bottomsheetDialog);
                             changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setIsdefault(isdefault_bottomsheetDialog);
-                            try{
-                               /* if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
-
-
+                            try {
+                                if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
 
 
                                     try {
@@ -946,13 +970,12 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                                         e.printStackTrace();
                                     }
 
-                                    try{
+                                    try {
 
                                         changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = String.valueOf(grossweightingrams_bottomsheetDialog);
 
-                                    }
-                                    catch (Exception e){
-                                        changeMenuItemWeightAndPriceSecondScreen.grossweightingrams ="";
+                                    } catch (Exception e) {
+                                        changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = "";
                                         e.printStackTrace();
                                     }
 
@@ -985,47 +1008,39 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                                     }
 
 
-                                    try{
+                                    try {
                                         changeMenuItemWeightAndPriceSecondScreen.isPosPrice_PricePerKgChanged = false;
-                                        changeMenuItemWeightAndPriceSecondScreen.  isAppPrice_PricePerKgChanged = true;
-                                        changeMenuItemWeightAndPriceSecondScreen.  computeAppandPosPrice.performClick();
+                                        changeMenuItemWeightAndPriceSecondScreen.isAppPrice_PricePerKgChanged = true;
+                                        changeMenuItemWeightAndPriceSecondScreen.computeAppandPosPrice.performClick();
 
-                                    }
-                                    catch (Exception e){
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                     }
 
 
+                                } else {
 
 
+                                    changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
 
-                                        } else {
-
-                                */
-                                //changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
-
-                                bottomSheetDialog.cancel();
+                                    bottomSheetDialog.cancel();
 
                                     notifyDataSetChanged();
-                               // }
-                            }
-                            catch (Exception e) {
+                                }
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
-
 
 
                         }
 
 
                     }
-                }
-                else{
+                } else {
                     Toast.makeText(changeMenuItemWeightAndPriceSecondScreen, "This Weight item Already Added in the list  ", Toast.LENGTH_SHORT).show();
                 }
-            }
-            else{
-                for(int i=0;i<changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size();i++) {
+            } else {
+                for (int i = 0; i < changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size(); i++) {
                     String weightkeyfromWeightdetailsarraylist = "";
                     weightkeyfromWeightdetailsarraylist = changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).getWeightkey().toString();
                     if (weightkeyfromWeightdetailsarraylist.equals(weightkeyOld_bottomsheetDialog)) {
@@ -1040,8 +1055,8 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                         changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setNetweight(netweight_bottomsheetDialog);
                         changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setPortionsize(portionsize_bottomsheetDialog);
                         changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setIsdefault(isdefault_bottomsheetDialog);
-                        try{
-                          /*  if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+                        try {
+                            if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
                                 try {
                                     changeMenuItemWeightAndPriceSecondScreen.grossweight = String.valueOf(grossweight_bottomsheetDialog);
 
@@ -1049,13 +1064,12 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                                     changeMenuItemWeightAndPriceSecondScreen.grossweight = "";
                                     e.printStackTrace();
                                 }
-                                try{
+                                try {
 
                                     changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = String.valueOf(grossweightingrams_bottomsheetDialog);
 
-                                }
-                                catch (Exception e){
-                                    changeMenuItemWeightAndPriceSecondScreen.grossweightingrams ="";
+                                } catch (Exception e) {
+                                    changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = "";
                                     e.printStackTrace();
                                 }
 
@@ -1086,31 +1100,28 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
                                 }
 
 
-                                try{
+                                try {
                                     changeMenuItemWeightAndPriceSecondScreen.isPosPrice_PricePerKgChanged = false;
-                                    changeMenuItemWeightAndPriceSecondScreen.  isAppPrice_PricePerKgChanged = true;
-                                    changeMenuItemWeightAndPriceSecondScreen.  computeAppandPosPrice.performClick();
+                                    changeMenuItemWeightAndPriceSecondScreen.isAppPrice_PricePerKgChanged = true;
+                                    changeMenuItemWeightAndPriceSecondScreen.computeAppandPosPrice.performClick();
 
-                                }
-                                catch (Exception e){
+                                } catch (Exception e) {
                                     e.printStackTrace();
                                 }
 
 
                             } else {
 
-                           */
-                         //   changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
 
-                            notifyDataSetChanged();
+                                changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
+
+                                notifyDataSetChanged();
                                 bottomSheetDialog.cancel();
 
-                        //    }
-                        }
-                        catch (Exception e) {
+                            }
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
-
 
 
                     }
@@ -1118,16 +1129,333 @@ public class Adapter_MenuItemWeightDetails extends ArrayAdapter<Modal_MenuItemWe
 
             }
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
 
+            }
+
+
+        }
+        else{
+            if ((changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("PCS")) || (changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("PC"))) {
+                try {
+
+                    netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "Pcs");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if ((changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("G")) || (changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("GRAMS")) || (changeMenuItemWeightAndPriceSecondScreen.netweight.toUpperCase().contains("GMS"))) {
+                try {
+                    netweight_bottomsheetDialog = String.valueOf(netweight_bottomsheetDialog + "g");
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if ((changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("G")) || (changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("GRAMS")) || (changeMenuItemWeightAndPriceSecondScreen.grossweight.toUpperCase().contains("GMS"))) {
+                try {
+                    grossweight_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog + "g");
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if ((changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("PCS")) || (changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("PC"))) {
+                try {
+                    if (!portionsize_bottomsheetDialog.equals("")) {
+
+                        portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if ((changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("G")) || (changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("GRAMS")) || (changeMenuItemWeightAndPriceSecondScreen.portionsize.toUpperCase().contains("GMS"))) {
+                try {
+                    if (!portionsize_bottomsheetDialog.equals("")) {
+
+                        portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                portionsize_bottomsheetDialog.trim();
+                if (!portionsize_bottomsheetDialog.equals("")) {
+
+                    portionsize_bottomsheetDialog = String.valueOf(portionsize_bottomsheetDialog);
+                }
+            }
+
+
+            String grossweightingrams_bottomsheetDialog = "", netweightingrams_bottomsheetDialog = "";
+
+
+            try {
+                grossweightingrams_bottomsheetDialog = String.valueOf(grossweight_bottomsheetDialog);
+                grossweightingrams_bottomsheetDialog = grossweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+
+            } catch (Exception e) {
+                grossweightingrams_bottomsheetDialog = "";
+                e.printStackTrace();
+            }
+
+
+            try {
+
+                if (netweight_bottomsheetDialog.contains("to") || netweight_bottomsheetDialog.contains("-")) {
+
+
+                    if (netweight_bottomsheetDialog.contains("to")) {
+                        String[] split = netweight_bottomsheetDialog.split("to");
+                        String firstSubString = split[0];
+                        String secondSubString = split[1];
+                        firstSubString = firstSubString.trim();
+                        secondSubString = secondSubString.trim();
+                        netweightingrams_bottomsheetDialog = secondSubString;
+
+                    } else {
+                        String[] split = netweight_bottomsheetDialog.split("-");
+                        String firstSubString = split[0];
+                        String secondSubString = split[1];
+                        firstSubString = firstSubString.trim();
+                        secondSubString = secondSubString.trim();
+                        netweightingrams_bottomsheetDialog = secondSubString;
+
+
+                    }
+
+
+                } else {
+
+
+                    netweightingrams_bottomsheetDialog = netweight_bottomsheetDialog;
+
+
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                netweightingrams_bottomsheetDialog = netweightingrams_bottomsheetDialog.replaceAll("[^\\d.]", "");
+
+            } catch (Exception e) {
+                netweightingrams_bottomsheetDialog = "";
+                e.printStackTrace();
+            }
+
+
+            try {
+                if (!weightkeyOld_bottomsheetDialog.equals(weightkeyNew_bottomsheetDialog2)) {
+                    if (!changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.contains(weightkeyNew_bottomsheetDialog2)) {
+                        changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.remove(weightkeyOld_bottomsheetDialog);
+                        changeMenuItemWeightAndPriceSecondScreen.weightDetailsKey_arrayList.add(weightkeyNew_bottomsheetDialog2);
+                        for (int i = 0; i < changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size(); i++) {
+                            String cutkeyfromCutdetailsarraylist = "";
+                            cutkeyfromCutdetailsarraylist = changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).getWeightkey().toString();
+                            if (cutkeyfromCutdetailsarraylist.equals(weightkeyOld_bottomsheetDialog)) {
+
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setGrossweightingrams(grossweightingrams_bottomsheetDialog);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setWeightdisplayno(weightDetailDisplayno);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setNetweightingrams(netweightingrams_bottomsheetDialog);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setWeight(grossweight_bottomsheetDialog);
+
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setWeightkey(weightkeyNew_bottomsheetDialog2);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setGrossweight(grossweight_bottomsheetDialog);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setNetweight(netweight_bottomsheetDialog);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setPortionsize(portionsize_bottomsheetDialog);
+                                changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setIsdefault(isdefault_bottomsheetDialog);
+                                try {
+                                    if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+
+
+                                        try {
+                                            changeMenuItemWeightAndPriceSecondScreen.grossweight = String.valueOf(grossweight_bottomsheetDialog);
+
+                                        } catch (Exception e) {
+                                            changeMenuItemWeightAndPriceSecondScreen.grossweight = "";
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+
+                                            changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = String.valueOf(grossweightingrams_bottomsheetDialog);
+
+                                        } catch (Exception e) {
+                                            changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = "";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            changeMenuItemWeightAndPriceSecondScreen.portionsize = String.valueOf(portionsize_bottomsheetDialog);
+
+                                        } catch (Exception e) {
+                                            changeMenuItemWeightAndPriceSecondScreen.portionsize = "";
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+                                            changeMenuItemWeightAndPriceSecondScreen.netweight = String.valueOf(netweight_bottomsheetDialog);
+
+                                        } catch (Exception e) {
+                                            changeMenuItemWeightAndPriceSecondScreen.netweight = "";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            notifyDataSetChanged();
+                                            bottomSheetDialog.cancel();
+
+                                            changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
+                                            ;
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            changeMenuItemWeightAndPriceSecondScreen.isPosPrice_PricePerKgChanged = false;
+                                            changeMenuItemWeightAndPriceSecondScreen.isAppPrice_PricePerKgChanged = true;
+                                            changeMenuItemWeightAndPriceSecondScreen.computeAppandPosPrice.performClick();
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+
+                                    } else {
+
+
+                                        changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
+
+                                        bottomSheetDialog.cancel();
+
+                                        notifyDataSetChanged();
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+
+
+                        }
+                    } else {
+                        Toast.makeText(changeMenuItemWeightAndPriceSecondScreen, "This Weight item Already Added in the list  ", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    for (int i = 0; i < changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.size(); i++) {
+                        String weightkeyfromWeightdetailsarraylist = "";
+                        weightkeyfromWeightdetailsarraylist = changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).getWeightkey().toString();
+                        if (weightkeyfromWeightdetailsarraylist.equals(weightkeyOld_bottomsheetDialog)) {
+
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setGrossweightingrams(grossweightingrams_bottomsheetDialog);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setWeightdisplayno(weightDetailDisplayno);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setNetweightingrams(netweightingrams_bottomsheetDialog);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setWeight(grossweight_bottomsheetDialog);
+
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setWeightkey(weightkeyNew_bottomsheetDialog2);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setGrossweight(grossweight_bottomsheetDialog);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setNetweight(netweight_bottomsheetDialog);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setPortionsize(portionsize_bottomsheetDialog);
+                            changeMenuItemWeightAndPriceSecondScreen.weightDetailsArray.get(i).setIsdefault(isdefault_bottomsheetDialog);
+                            try {
+                                if (isdefault_bottomsheetDialog.toUpperCase().equals("TRUE")) {
+                                    try {
+                                        changeMenuItemWeightAndPriceSecondScreen.grossweight = String.valueOf(grossweight_bottomsheetDialog);
+
+                                    } catch (Exception e) {
+                                        changeMenuItemWeightAndPriceSecondScreen.grossweight = "";
+                                        e.printStackTrace();
+                                    }
+                                    try {
+
+                                        changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = String.valueOf(grossweightingrams_bottomsheetDialog);
+
+                                    } catch (Exception e) {
+                                        changeMenuItemWeightAndPriceSecondScreen.grossweightingrams = "";
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try {
+                                        changeMenuItemWeightAndPriceSecondScreen.portionsize = String.valueOf(portionsize_bottomsheetDialog);
+
+                                    } catch (Exception e) {
+                                        changeMenuItemWeightAndPriceSecondScreen.portionsize = "";
+                                        e.printStackTrace();
+                                    }
+
+                                    try {
+                                        changeMenuItemWeightAndPriceSecondScreen.netweight = String.valueOf(netweight_bottomsheetDialog);
+
+                                    } catch (Exception e) {
+                                        changeMenuItemWeightAndPriceSecondScreen.netweight = "";
+                                        e.printStackTrace();
+                                    }
+                                    try {
+                                        notifyDataSetChanged();
+                                        bottomSheetDialog.cancel();
+
+                                        changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
+                                        ;
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try {
+                                        changeMenuItemWeightAndPriceSecondScreen.isPosPrice_PricePerKgChanged = false;
+                                        changeMenuItemWeightAndPriceSecondScreen.isAppPrice_PricePerKgChanged = true;
+                                        changeMenuItemWeightAndPriceSecondScreen.computeAppandPosPrice.performClick();
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                }
+                                else {
+
+
+                                    changeMenuItemWeightAndPriceSecondScreen.FormatAndDisplaytheDataa();
+
+                                    notifyDataSetChanged();
+                                    bottomSheetDialog.cancel();
+
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    }
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
 
 
+
+        }
 
 
 

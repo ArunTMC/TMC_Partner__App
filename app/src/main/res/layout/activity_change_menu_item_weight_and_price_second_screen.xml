@@ -68,7 +68,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/open_sans_semibold"
-
+                            android:visibility="gone"
                             android:text="Default Values : "
                             android:textSize="11sp" />
 
@@ -505,7 +505,7 @@
                                     android:focusedByDefault="false"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:gravity="center"
-                                    android:imeOptions="actionNext"
+                                    android:imeOptions="actionDone"
                                     android:inputType="phone"
                                     android:paddingEnd="25dp"
                                     android:text="  "
@@ -1298,7 +1298,7 @@
                                     android:focusedByDefault="false"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:gravity="center_vertical|center"
-                                    android:imeOptions="actionNext"
+                                    android:imeOptions="actionDone"
 
                                     android:inputType="phone"
                                     android:paddingStart="8dp"

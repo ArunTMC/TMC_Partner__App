@@ -25,7 +25,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
@@ -161,7 +160,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
 
         }
         try {
-            getOrderForSelectedDate(menuItemKey,DateString, vendorkey,subctgykey);
+            getTransactionForSelectedDate(menuItemKey,DateString, vendorkey,subctgykey);
         }
         catch (Exception e ){
             e.printStackTrace();
@@ -181,7 +180,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                 listviewInstruction.setVisibility(View.VISIBLE);
                 DateString =  dateSelector_text.getText().toString();
 
-                getOrderForSelectedDate(menuItemKey,DateString, vendorkey,subctgykey);
+                getTransactionForSelectedDate(menuItemKey,DateString, vendorkey,subctgykey);
 
             }
         });
@@ -272,7 +271,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                             //getOrderForSelectedDate(DateString, vendorKey);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
 
-                            getOrderForSelectedDate(menuItemKey,DateString, vendorkey,subctgykey);
+                            getTransactionForSelectedDate(menuItemKey,DateString, vendorkey,subctgykey);
 
                         }
                         catch (Exception e ){
@@ -283,7 +282,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
         datepicker.show();
     }
 
-    private void getOrderForSelectedDate(String menuItemKey, String transactiontime, String vendorKey, String subctgykey) {
+    private void getTransactionForSelectedDate(String menuItemKey, String transactiontime, String vendorKey, String subctgykey) {
 
         displaying_menuItems.clear();
         menuTransaction_array.clear();
@@ -397,7 +396,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                     try {
                         JSONObject json = JArray.getJSONObject(i1);
                         //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
-                        String  allownegativestock = "" , itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus="";
+                        String  allownegativestock = "" , itemname = "",key ="",menuItemKeyfromdb="",mobileno="",status="",subCtgykey="",transactiontime="",vendorkeyfromdb="",transcationstatus="",issubctgyavailabilitychanged="";
                         try {
                             if (json.has("itemname")) {
                                 itemname = String.valueOf(json.get("itemname"));
@@ -433,7 +432,19 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                                         menuItemKeyfromdb = String.valueOf(json.get("menuItemKey"));
 
                                     } else {
-                                        menuItemKeyfromdb = "";
+                                        try{
+                                            if (json.has("menuitemkey")) {
+                                                menuItemKeyfromdb = String.valueOf(json.get("menuitemkey"));
+
+                                            } else {
+                                                menuItemKeyfromdb = "";
+                                            }
+
+                                        }
+                                        catch (Exception e){
+                                            menuItemKeyfromdb = "";
+                                            e.printStackTrace();
+                                        }
                                     }
 
                                 }
@@ -476,8 +487,19 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                                 subCtgykey = String.valueOf(json.get("subCtgykey"));
 
                             } else {
-                                subCtgykey = "";
-                            }
+                                try{
+                                    if (json.has("tmcsubctgykey")) {
+                                        subCtgykey = String.valueOf(json.get("tmcsubctgykey"));
+
+                                    } else {
+                                        subCtgykey = "";
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    subCtgykey = "";
+                                    e.printStackTrace();
+                                }                            }
 
                         }
                         catch (Exception e){
@@ -541,7 +563,21 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                             allownegativestock = "";
                             e.printStackTrace();
                         }
-                                //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
+
+                        try{
+                            if (json.has("issubctgyavailabilitychanged")) {
+                                issubctgyavailabilitychanged = String.valueOf(json.get("issubctgyavailabilitychanged"));
+
+                            } else {
+                                issubctgyavailabilitychanged = "false";
+                            }
+
+                        }
+                        catch (Exception e){
+                            issubctgyavailabilitychanged = "false";
+                            e.printStackTrace();
+                        }
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
 
 
                         Modal_MenuAvailabilityStatusTransaction modal_menuAvailabilityStatusTransaction = new Modal_MenuAvailabilityStatusTransaction();
@@ -551,6 +587,7 @@ public class MenuAvailabilityStatusTransaction extends AppCompatActivity {
                         modal_menuAvailabilityStatusTransaction.mobileno = mobileno;
                         modal_menuAvailabilityStatusTransaction.status = status;
                         modal_menuAvailabilityStatusTransaction.allownegativestock = allownegativestock;
+                        modal_menuAvailabilityStatusTransaction.issubctgyavailabilitychanged = issubctgyavailabilitychanged;
 
                         modal_menuAvailabilityStatusTransaction.subCtgykey = subCtgykey;
                         modal_menuAvailabilityStatusTransaction.transactiontime = transactiontime;

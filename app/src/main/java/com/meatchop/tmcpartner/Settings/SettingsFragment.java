@@ -53,6 +53,7 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScree
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Add_Replacement_Refund_Screen;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -100,7 +101,7 @@ public class SettingsFragment extends Fragment {
             changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout;
+    LinearLayout changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -259,6 +260,7 @@ public class SettingsFragment extends Fragment {
         addBigbasketOrders_placing_layout = view.findViewById(R.id.addBigbasketOrders_placing_layout);
         manageRaisedTickets = view.findViewById(R.id.manageRaisedTickets);
         changeMenuItemPrice_weight = view.findViewById(R.id.changeMenuItemPrice_weight);
+        add_refund_replace_order_layout= view.findViewById(R.id.add_refund_replace_order_layout);
         changeMenuItemAvail_allowNegativeStock  = view.findViewById(R.id.changeMenuItemAvail_allowNegativeStock);
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
@@ -654,13 +656,22 @@ public class SettingsFragment extends Fragment {
             addBigbasketOrders_placing_layout.setVisibility(GONE);
             addDunzoOrders_Placing_layout.setVisibility(GONE);
             swiggyOrderPlacing_layout.setVisibility(GONE);
+
+            if((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))){
+                editPaymentModeOftheOrder.setVisibility(VISIBLE);
+
+            }
+            else{
+                editPaymentModeOftheOrder.setVisibility(GONE);
+
+            }
+
             if(UserRole.equals(Constants.DELIVERYMANAGER_ROLENAME)){
-                salesLinearLayout.setVisibility(VISIBLE);
+                    salesLinearLayout.setVisibility(VISIBLE);
                     consolidatedSalesReport.setVisibility(GONE);
                     PosSalesReport.setVisibility(GONE);
                     AppSalesReport.setVisibility(GONE);
                     consolidatedSalesReportWeekwise.setVisibility(GONE);
-                    deliveryPartnerSettlementReport.setVisibility(GONE);
                     delivered_orders_timewiseReport.setVisibility(VISIBLE);
 
 
@@ -668,7 +679,8 @@ public class SettingsFragment extends Fragment {
         }
 
 
-            if (UserPhoneNumber.equals("+919597580128")) {
+
+            if (UserPhoneNumber.equals("+919597580128") || UserPhoneNumber.equals("+917010779096")) {
                 changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
             testlayout.setVisibility(VISIBLE);
              changeMenuItemPrice_weight.setVisibility(VISIBLE);
@@ -691,11 +703,30 @@ public class SettingsFragment extends Fragment {
         if (UserPhoneNumber.equals("+919597580128")) {
             changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(VISIBLE);
-
+            generateUserDetailsButton.setVisibility(VISIBLE);
         }
 
         if (UserPhoneNumber.equals("+918451023780")) {
             generateUserDetailsLayout.setVisibility(VISIBLE);
+        }
+        //919655212898
+
+        if (UserPhoneNumber.equals("+919655212898")) {
+            managemenuLayout.setVisibility(VISIBLE);
+            changeDeliverySlotdetails.setVisibility(VISIBLE);
+            changeMenuItemStatus.setVisibility(GONE);
+            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            changeMenuItemPrice.setVisibility(GONE);
+            changeMenuItemVisibilityinTv.setVisibility(GONE);
+            changeMenuItemPrice_weight.setVisibility(GONE);
+            MenuTransactionDetailsLayout.setVisibility(GONE);
+            deliveryPartnerSettlementReport.setVisibility(VISIBLE);
+
+            menuItemAvailabiltyStatusReport.setVisibility(GONE);
+            testlayout.setVisibility(GONE);
+
+
+
         }
 
 
@@ -720,7 +751,13 @@ public class SettingsFragment extends Fragment {
         } else {
             // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
-
+        add_refund_replace_order_layout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, Add_Replacement_Refund_Screen.class);
+                startActivity(intent);
+            }
+        });
 
         manageRaisedTickets.setOnClickListener(new OnClickListener() {
             @Override
@@ -798,7 +835,14 @@ public class SettingsFragment extends Fragment {
                 startActivity(intent);
             }
         });
+        generateUserDetailsLayout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, GenerateUserDetailsReport.class);
 
+                startActivity(intent);
+            }
+        });
         generateUserDetailsButton.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -2057,7 +2101,7 @@ public class SettingsFragment extends Fragment {
             String AddresskeyFromAddressArray = modal_address.getKey().toString();
 
             if(!AddedUserKey.contains(AddresskeyFromAddressArray)) {
-                if (vendorFromAddressArray.equals(vendorkey_velachery)) {
+                if (vendorFromAddressArray.equals(vendorkey)) {
                     for (int j = 0; j < UserTableArray.size(); j++) {
                         Modal_User modal_user = UserTableArray.get(j);
                         String userKeyFromUserArray = modal_user.getKey().toString();

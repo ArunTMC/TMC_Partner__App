@@ -33,6 +33,7 @@
     <string name="Showing_Tickets_That_Not_Closed_Yet">Showing Tickets thats not Closed Yet</string>
 
     <string name="ShowCreditedOrdersOnly">Show Credit Orders Only </string>
+    <string name="PrintFailed_Instruction">Print Failed . Click Ok to Print Again</string>
 
     <string name="Exit_Instruction">Are you sure do you want to Close TMCPartner App now? </string>
     <string name="ResetToken_Instruction">Click Yes to Reset the Token No for your Store </string>
@@ -62,6 +63,9 @@
     <string name="Settings_text">Settings </string>
     <string name="Cart_is_empty">Cart is Empty So Add the Items</string>
     <string name="Orders_weight_Cant_be_leave_unedited">Please Add Weight and click next button to all the Orders</string>
+    <string name="netweight_Cant_be_Zero">Please Add NetWeight and click Update Changes button </string>
+    <string name="Cant_place_Refundorder">Cannot Place Order while Bill amount is greater than balance amount </string>
+    <string name="Enter_Reason_For_Replacement">Enter Reason For Replacement</string>
 
     <string name="Cant_place_order">Cannot Place Order while Bill amount is 0</string>
     <string name="TodaysOrderText">Todays Order </string>
@@ -72,6 +76,8 @@
     <string name="PointusercanRedeemtoday">You Cant redeem more than  : </string>
     <string name="Name_Of_the_Vendor_text">TMC Hasthinapuram , Chromepet</string>
     <string name="No_Orders_Instruction_text">No Orders Available. </string>
+    <string name="No_New_Users_Instruction_text">No New User Account Created on this Date. </string>
+
     <string name="New_button_text">New</string>
     <string name="Confirmed_button_text">Confirmed</string>
     <string name="Ready_For_Pickup_text">Ready for Pickup </string>
@@ -200,8 +206,10 @@
 
     <string name="PosOrdersList">Pos Orders List </string>
     <string name="CancelledOrdersList">Cancelled Orders List </string>
-    <string name="DatewiseRatingDetails">Datewise Rating Details Report </string>
+    <string name="ConsolidatedRatingDetails">Consolidated Rating Details Report </string>
     <string name="RaisedTicketsdetails">Raised Tickets For Rating</string>
+
+    <string name="AddRefundReplaceOrder">Add Refund / Replace Order  </string>
 
     <string name="EditPaymentModeoftheOrder">Edit  Orders  </string>
     <string name="DeliveredOrdersTimewise_report">Delivered Orders Timewise Report </string>
@@ -261,7 +269,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.0.1(2) </string>
+    <string name="Version_No">Version No : 1.9.0.5(3) </string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>
