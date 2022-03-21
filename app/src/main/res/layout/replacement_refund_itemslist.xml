@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:id="@+id/order_item_list_parentLayout">
 
     <androidx.cardview.widget.CardView
@@ -17,6 +18,7 @@
             android:layout_height="match_parent"
             android:padding="10dp"
             android:layout_marginTop="4dp"
+            android:id="@+id/cardView_parentLayout"
             android:orientation="vertical">
             <LinearLayout
                 android:layout_width="match_parent"

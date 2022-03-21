@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -49,6 +50,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
@@ -91,7 +93,7 @@ import static android.os.Build.VERSION.SDK_INT;
 public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     LinearLayout getData,endDateSelectorLayout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker,enddatepicker;
-    TextView vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView refundAmount_textwidget, replacementAmount_textwidget,vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorname,deliveryamount="0",vendorKey, ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -100,6 +102,12 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     public static HashMap<String, String> FinalBill_hashmap = new HashMap();
     Adapter_ConsolidatedSalesReport_listview adapater_pos_sales_report;
     double oldpayableamount = 0;
+
+
+
+    public static List<String> replacementTransactiontypeArray = new ArrayList<>();
+    public static HashMap<String, List<Modal_ReplacementTransactionDetails>> replacementTransactiontypeHashmap = new HashMap();
+
 
     public static List<String> ordertypeArray;
     public static HashMap<String, Modal_OrderDetails> ordertypeHashmap = new HashMap();
@@ -136,7 +144,11 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
     public static List<String> SubCtgywiseTotalArray;
     public static HashMap<String, String> SubCtgywiseTotalHashmap = new HashMap();
-    ;
+
+
+
+
+
     public static List<String> tmcSubCtgykey;
     List<ListData> dataList = new ArrayList<>();
     boolean isgetPreOrderForSelectedDateCalled = false;
@@ -144,9 +156,15 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     boolean isgetDataButtonClicked = false;
 
 
+    boolean isgetReplacementOrderForSelectedDateCalled = false;
+
+    boolean isOrderDetailsResponseReceivedForSelectedDate = false;
+
+    boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+
     ScrollView scrollView;
     double itemDespTotalAmount = 0;
-    String todatestring,fromdatestring,CurrentDate, CouponDiscout, pos_CouponDiscount,Swiggy_CouponDiscount,PhoneOrder_CouponDiscount,BigBasket_CouponDiscount,DunzoOrder_CouponDiscount,PreviousDateString;
+    String replacementOrderDetailsString, startDateString_forReplacementransaction = "", endDateString_forReplacementransaction = "", todatestring,fromdatestring,CurrentDate, CouponDiscout, pos_CouponDiscount,Swiggy_CouponDiscount,PhoneOrder_CouponDiscount,BigBasket_CouponDiscount,DunzoOrder_CouponDiscount,PreviousDateString;
     ListView consolidatedSalesReport_Listview;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -191,7 +209,11 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         totalSales_headingText = findViewById(R.id.totalRating_headingText);
         scrollView = findViewById(R.id.scrollView);
         endDateSelector_text = findViewById(R.id.endDateSelector_text);
-      //  getdatainstruction = findViewById(R.id.getdatainstruction);
+        refundAmount_textwidget = findViewById(R.id.refundAmount_textwidget);
+        replacementAmount_textwidget = findViewById(R.id.replacementAmount_textwidget);
+
+
+        //  getdatainstruction = findViewById(R.id.getdatainstruction);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         bigBasketSales = findViewById(R.id.bigBasketSales);
@@ -235,6 +257,9 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         deliveryCharge_hashmap.clear();
         deliveryChargeOrderidArray.clear();
 
+        replacementTransactiontypeHashmap.clear();
+        replacementTransactiontypeArray.clear();
+
         CurrentDate = getDate_and_time();
         dateSelector_text.setText(CurrentDate);
         DisplayMetrics dm = new DisplayMetrics();
@@ -263,6 +288,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         dateSelector_text.setText(DateString);
         endDateSelector_text.setText(DateString);
         vendorName.setText(vendorname);
+        startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
+        endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
 
         getMenuItemArrayFromSharedPreferences();
 
@@ -303,7 +330,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             SubCtgywiseTotalHashmap.clear();
             dataList.clear();
             tmcSubCtgykey.clear();
+            replacementTransactiontypeHashmap.clear();
+            replacementTransactiontypeArray.clear();
 
+            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
             getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
 
@@ -367,6 +397,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     swiggyOrders_couponDiscount_hashmap.clear();
                     dunzoOrders_couponDiscount_hashmap.clear();
 
+                    replacementTransactiontypeHashmap.clear();
+                    replacementTransactiontypeArray.clear();
+
+                    getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
                     calculate_the_dateandgetData(fromdatestring, todatestring);
 
@@ -520,7 +554,325 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
 
     }
+    private void getdataFromReplacementTransaction(String startdateString_forReplacementransaction, String enddateString_forReplacementransaction, String vendorKey) {
+        if (isgetReplacementOrderForSelectedDateCalled) {
+            return;
+        }
+        isgetReplacementOrderForSelectedDateCalled = true;
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        Adjusting_Widgets_Visibility(true);
 
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetReplacementTransactionDetailsForTransactionTimeVendorkey + "?transactiontime1=" + startdateString_forReplacementransaction + "&vendorkey=" + vendorKey + "&transactiontime2=" + enddateString_forReplacementransaction, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            JSONArray JArray = response.getJSONArray("content");
+                            if (JArray.length() > 0) {
+                                replacementOrderDetailsString = JArray.toString();
+                                convertReplacementTransactionDetailsJsonIntoArray(replacementOrderDetailsString);
+                            } else {
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            }
+
+                        } catch (JSONException e) {
+                            isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(ConsolidatedSalesReportWeekwise.this, "There is no Orders Yet ", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                isgetReplacementOrderForSelectedDateCalled = false;
+                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorKey);
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(ConsolidatedSalesReportWeekwise.this).add(jsonObjectRequest);
+
+
+    }
+
+    private void convertReplacementTransactionDetailsJsonIntoArray(String stringOfArray) {
+
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        try {
+            JSONArray JArray = new JSONArray(stringOfArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            int arrayLength = JArray.length();
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+            for (int i1 = 0; i1 < arrayLength; i1++) {
+                Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = new Modal_ReplacementTransactionDetails();
+                String transactionStatus = "", transactionType = "";
+                List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = new ArrayList<>();
+
+
+                try {
+                    JSONObject json = JArray.getJSONObject(i1);
+                    try {
+                        if (json.has("discountamount")) {
+                            modal_replacementTransactionDetails.setDiscountamount(String.valueOf(json.getString("discountamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setDiscountamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setDiscountamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("markeditemdesp")) {
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String(String.valueOf(json.getString("markeditemdesp")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("mobileno")) {
+                            modal_replacementTransactionDetails.setMobileno(String.valueOf(json.getString("mobileno")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setMobileno("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setMobileno("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("orderid")) {
+                            modal_replacementTransactionDetails.setOrderid(String.valueOf(json.getString("orderid")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setOrderid("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setOrderid("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("refundamount")) {
+                            modal_replacementTransactionDetails.setRefundamount(String.valueOf(json.getString("refundamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setRefundamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setRefundamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("replacementitemdesp")) {
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string(String.valueOf(json.getString("replacementitemdesp")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("replacementorderamount")) {
+                            modal_replacementTransactionDetails.setReplacementorderamount(String.valueOf(json.getString("replacementorderamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("replacementorderid")) {
+                            modal_replacementTransactionDetails.setReplacementorderid(String.valueOf(json.getString("replacementorderid")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactionstatus")) {
+                            modal_replacementTransactionDetails.setTransactionstatus(String.valueOf(json.getString("transactionstatus")));
+                            transactionStatus = String.valueOf(json.getString("transactionstatus"));
+                        } else {
+                            transactionStatus = "";
+                            modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        }
+                    } catch (Exception e) {
+                        transactionStatus = "";
+
+                        modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactiontime")) {
+                            modal_replacementTransactionDetails.setTransactiontime(String.valueOf(json.getString("transactiontime")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setTransactiontime("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setTransactiontime("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactiontype")) {
+                            modal_replacementTransactionDetails.setTransactiontype(String.valueOf(json.getString("transactiontype")));
+                            transactionType = String.valueOf(json.getString("transactiontype").toString().toUpperCase());
+
+                        } else {
+                            modal_replacementTransactionDetails.setTransactiontype("");
+                            transactionType = "";
+
+                        }
+                    } catch (Exception e) {
+                        transactionType = "";
+
+                        modal_replacementTransactionDetails.setTransactiontype("");
+
+                        e.printStackTrace();
+                    }
+                    try {
+                        if (json.has("vendorkey")) {
+                            modal_replacementTransactionDetails.setVendorkey(String.valueOf(json.getString("vendorkey")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setVendorkey("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setVendorkey("");
+
+                        e.printStackTrace();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Log.i("TransactionDetailsArray", String.valueOf(replacementTransactionDetailsArray.size()));
+                    Log.i("TransactiontypeArray", String.valueOf(replacementTransactiontypeArray.size()));
+                    Log.i("TransactiontypeHashmap", String.valueOf(replacementTransactiontypeHashmap.size()));
+                    Log.i("transactionArray", String.valueOf(replacementTransactionDetailsArray.size()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    if (transactionStatus.toString().toUpperCase().equals("SUCCESS")) {
+                        try {
+                            replacementTransactionDetailsArray.add(modal_replacementTransactionDetails);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+
+                            if (replacementTransactiontypeArray.contains(transactionType)) {
+                                replacementTransactiontypeHashmap.get(transactionType).add(modal_replacementTransactionDetails);
+                            } else {
+                                replacementTransactiontypeArray.add(transactionType);
+                                replacementTransactiontypeHashmap.put(transactionType, replacementTransactionDetailsArray);
+                            }
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            if (arrayLength - 1 == i1) {
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
 
     private void openEndDatePicker() {
@@ -568,6 +920,9 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                             isgetOrderForSelectedDateCalled = false;
                             isgetDataButtonClicked=false;
 
+                            isgetReplacementOrderForSelectedDateCalled = false;
+
+                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
 
                             //getOrderForSelectedDate(DateString, vendorKey);
                             //  getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
@@ -805,6 +1160,8 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                             //getOrderForSelectedDate(DateString, vendorKey);
                           //  getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
                             fromdatestring = dateSelector_text.getText().toString();
+                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
+
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -1463,11 +1820,17 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                 catch (Exception e){
                     e.printStackTrace();
                 }
+
+                isOrderDetailsResponseReceivedForSelectedDate = true;
+                runthread();
+/*
                 Adjusting_Widgets_Visibility(false);
                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                 prepareContent();
                 setAdapter();
 
+
+ */
 
 
                                /* adapater_pos_sales_report = new Adapter_ConsolidatedSalesReport_listview(ConsolidatedReportSubCtgywise.this, Order_Item_List, OrderItem_hashmap);
@@ -2722,6 +3085,10 @@ swiggyOrders_couponDiscountOrderidArray.clear();
         double bigBasketOrders_discountAmount =0;
 
 
+        double totalRefundAmount = 0;
+        double totalReplacementAmount = 0;
+
+
         double GST = 0;
         double totalAmount = 0;
         double posorder_Amount = 0;
@@ -2731,6 +3098,79 @@ swiggyOrders_couponDiscountOrderidArray.clear();
         double dunzoorder_Amount = 0;
 
         double bigBasketorder_Amount = 0;
+
+
+        try {
+            for (String transactionType : replacementTransactiontypeArray) {
+
+                List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = replacementTransactiontypeHashmap.get(transactionType);
+
+                for (int i = 0; i < replacementTransactionDetailsArray.size(); i++) {
+                    double refundAmount = 0;
+                    double replacementAmount = 0;
+
+                    Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = replacementTransactionDetailsArray.get(i);
+
+                    if (modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REFUND")) {
+                        String refundAmountString = "0";
+                        try {
+                            refundAmountString = modal_replacementTransactionDetails.getRefundamount().toString();
+
+                        } catch (Exception e) {
+                            refundAmountString = "0";
+                            e.printStackTrace();
+                        }
+                        try {
+                            refundAmount = Double.parseDouble(refundAmountString);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+
+                            totalRefundAmount = refundAmount + totalRefundAmount;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+
+                    if (modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REPLACEMENT")) {
+                        String replacementAmountString = "0";
+                        try {
+                            replacementAmountString = modal_replacementTransactionDetails.getReplacementorderamount().toString();
+
+                        } catch (Exception e) {
+                            replacementAmountString = "0";
+                            e.printStackTrace();
+                        }
+                        try {
+                            replacementAmount = Double.parseDouble(replacementAmountString);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+
+                            totalReplacementAmount = replacementAmount + totalReplacementAmount;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+                }
+
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         try {
             for (String orderid : couponDiscountOrderidArray) {
@@ -2844,20 +3284,33 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                 }
 
             }
+
+
+            try {
+                posorder_Amount = posorder_Amount - (totalReplacementAmount + totalRefundAmount);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
             double totalAmountWithoutGst = totalAmountWithhGst-GST;
             discountAmount = discountAmount+pos_discountAmount+swiggyDiscount_amount+phoneOrders_discountAmount+dunzoOrders_discountAmount+bigBasketOrders_discountAmount;
             double totalAmt_with_CouponDiscount_double = totalAmountWithoutGst-discountAmount;
             double totalAmt_with_CouponDiscount__deliverycharge = totalAmt_with_CouponDiscount_double+deliveryChargee;
-            double totalAmt_with_CouponDiscount__deliverycharge_GST = totalAmt_with_CouponDiscount__deliverycharge-GST;
+            double totalAmt_with_CouponDiscount__deliverycharge_refund_replacement = totalAmt_with_CouponDiscount__deliverycharge - totalRefundAmount - totalReplacementAmount;
+
+            double totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement = totalAmt_with_CouponDiscount__deliverycharge_refund_replacement-GST;
             totalAmt_without_GST.setText(String.valueOf(decimalFormat.format(totalAmountWithoutGst)));
 
             //Log.i(Constants.TAG, "Consolidated Report  new totalAmt_with_CouponDiscount__Gstdouble   " + String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__Gstdouble)));
 
+            replacementAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalReplacementAmount)));
+            refundAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalRefundAmount)));
 
             totalCouponDiscount_Amt.setText(String.valueOf(decimalFormat.format(discountAmount)));
-            totalAmt_with_CouponDiscount.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge)));
+            totalAmt_with_CouponDiscount.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             totalGST_Amt.setText(String.valueOf(decimalFormat.format(GST)));
-            final_sales.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
+            final_sales.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
             appsales.setText(String.valueOf(decimalFormat.format(apporder_Amount)));
             possales.setText(String.valueOf(decimalFormat.format(posorder_Amount)));
             swiggySales.setText(String.valueOf(decimalFormat.format(swiggyorder_Amount)));
@@ -2865,20 +3318,24 @@ swiggyOrders_couponDiscountOrderidArray.clear();
             bigBasketSales.setText(String.valueOf(decimalFormat.format(bigBasketorder_Amount)));
             deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee)));
             phoneOrderSales.setText(String.valueOf(decimalFormat.format(phoneorder_Amount)));
-            totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
+            totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
 
             finalBillDetails.add("TOTAL : ");
             FinalBill_hashmap.put("TOTAL : ", String.valueOf(decimalFormat.format(totalAmountWithoutGst)));
             finalBillDetails.add("DISCOUNT : ");
             FinalBill_hashmap.put("DISCOUNT : ", String.valueOf(decimalFormat.format(discountAmount)));
-            finalBillDetails.add("Delivery Charges : ");
-            FinalBill_hashmap.put("Delivery Charges : ", String.valueOf(deliveryamount));
+            finalBillDetails.add("REFUND : ");
+            FinalBill_hashmap.put("REFUND : ", String.valueOf(decimalFormat.format(totalRefundAmount)));
+            finalBillDetails.add("REPLACEMENT : ");
+            FinalBill_hashmap.put("REPLACEMENT : ", String.valueOf(decimalFormat.format(totalReplacementAmount)));
+            finalBillDetails.add("DELIVERY CHARGES  : ");
+            FinalBill_hashmap.put("DELIVERY CHARGES  : ", String.valueOf(deliveryamount));
             finalBillDetails.add("SUBTOTAL : ");
-            FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount_double)));
+            FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             finalBillDetails.add("GST : ");
             FinalBill_hashmap.put("GST : ", String.valueOf(decimalFormat.format(GST)));
             finalBillDetails.add("FINAL SALES : ");
-            FinalBill_hashmap.put("FINAL SALES : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
+            FinalBill_hashmap.put("FINAL SALES : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
             //   sort_list_tmcSubCtgyWise(Order_Item_List, OrderItem_hashmap);
         }
         catch (Exception e ){
@@ -3198,6 +3655,8 @@ swiggyOrders_couponDiscountOrderidArray.clear();
     private void setAdapter() {
         try {
            // getdatainstruction.setVisibility(View.GONE);
+            Adjusting_Widgets_Visibility(false);
+
             consolidatedSalesReport_Listview.setVisibility(View.VISIBLE);
             isgetDataButtonClicked = false;
             isgetOrderForSelectedDateCalled = false;
@@ -3536,6 +3995,35 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
         return yesterdayAsString;
     }
+    private String convertNormalDateintoReplacementTransactionDetailsDate(String sDate, String Time) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+
+        Date c1 = calendar.getTime();
+
+
+        SimpleDateFormat df = new SimpleDateFormat();
+        if (Time.equals("STARTTIME")) {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        } else {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+
+        }
+
+        String Date = df.format(c1);
+        return Date;
+    }
 
 
 
@@ -3578,6 +4066,54 @@ swiggyOrders_couponDiscountOrderidArray.clear();
 
         return CurrentDate;
     }
+
+    public String getstartDate_and_time_TransactionTable() {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
+    public String getendDate_and_time_TransactionTable() {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
+
+    private void runthread() {
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isReplacementTransacDetailsResponseReceivedForSelectedDate && isgetReplacementOrderForSelectedDateCalled) {
+                            addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                            prepareContent();
+                            setAdapter();
+                        } else {
+                            runthread();
+                        }
+                    }
+                });
+            }
+        }, 15);
+    }
+
 
 
     private void AddDatatoExcelSheet(List<String> order_item_list) {
@@ -4204,6 +4740,8 @@ swiggyOrders_couponDiscountOrderidArray.clear();
             }
 
             for(String ordertype :ordertypeArray){
+                String replacmentFromTextview = "",refundFromTextview = "";
+                double replacment_doubleFromTextview = 0,refund_doubleFromTextview = 0;
 
                 Modal_OrderDetails modal_orderDetails = ordertypeHashmap.get(ordertype);
                 try {
@@ -4224,7 +4762,47 @@ swiggyOrders_couponDiscountOrderidArray.clear();
                     if ((ordertype.toUpperCase().equals(Constants.POSORDER)) || (ordertype.equals("posorder"))) {
                         posorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getPosSales())));
                         ////Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
-                        posorder_Amount = posorder_Amount-posorder_discountAmount;
+
+
+                        try{
+                            replacmentFromTextview = replacementAmount_textwidget.getText().toString();
+                        }
+                        catch (Exception e){
+                            replacmentFromTextview="0";
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            refundFromTextview = refundAmount_textwidget.getText().toString();
+
+                        }
+                        catch (Exception e){
+                            refundFromTextview = "0";
+                            e.printStackTrace();
+                        }
+                        try{
+                            replacment_doubleFromTextview = Math.round(Double.parseDouble(replacmentFromTextview));
+                        }
+                        catch (Exception e){
+                            replacment_doubleFromTextview =0;
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            refund_doubleFromTextview = Math.round(Double.parseDouble(refundFromTextview));
+
+                        }
+                        catch (Exception e){
+                            refund_doubleFromTextview = 0;
+                            e.printStackTrace();
+                        }
+
+
+
+                        posorder_Amount = posorder_Amount - (posorder_discountAmount +refund_doubleFromTextview +replacment_doubleFromTextview);
+
+
+                        //posorder_Amount = posorder_Amount-posorder_discountAmount;
 
                         paymentModeitemkeycell = new PdfPCell(new Phrase("POSORDER  : "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);

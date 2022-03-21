@@ -2631,7 +2631,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                             //  showProgressBar(false);
                         }
                         else{
+                            if(isinventorycheck){
                             turnoffProgressBarAndResetArray();
+                            }
+
                         }
 
 
@@ -3373,6 +3376,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     if(message.equals("success")) {
                         //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
                         showProgressBar(false);
+                        turnoffProgressBarAndResetArray();
+
                     }
 
 

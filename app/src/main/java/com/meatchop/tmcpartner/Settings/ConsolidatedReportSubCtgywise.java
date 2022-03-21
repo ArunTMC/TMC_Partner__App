@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -15,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -42,12 +42,15 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPCellEvent;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
@@ -82,8 +85,8 @@ import static android.os.Build.VERSION.SDK_INT;
 public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     LinearLayout generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView noofOrders,noofPacks,vendorName, deliveryChargeAmount_textwidget,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,bigbasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorKey, vendorname,ordertype, slotname, DateString;
+    TextView refundAmount_textwidget, replacementAmount_textwidget, noofOrders, noofPacks, vendorName, deliveryChargeAmount_textwidget, totalSales_headingText, appsales, possales, swiggySales, dunzoSales, bigbasketSales, phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String vendorKey, vendorname, ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     double screenInches;
@@ -94,7 +97,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
     public static List<String> ordertypeArray;
     public static HashMap<String, Modal_OrderDetails> ordertypeHashmap = new HashMap();
-    ;
+
+    public static List<String> replacementTransactiontypeArray = new ArrayList<>();
+    public static HashMap<String, List<Modal_ReplacementTransactionDetails>> replacementTransactiontypeHashmap = new HashMap();
+
 
     public static List<Modal_OrderDetails> SubCtgyKey_List;
     public static HashMap<String, Modal_OrderDetails> SubCtgyKey_hashmap = new HashMap();
@@ -130,11 +136,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     boolean isgetPreOrderForSelectedDateCalled = false;
     boolean isgetOrderForSelectedDateCalled = false;
 
-    int no_of_orders=0;
-    int no_of_ItemCount=0;
+    boolean isgetReplacementOrderForSelectedDateCalled = false;
+
+    boolean isOrderDetailsResponseReceivedForSelectedDate = false;
+
+    boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+
+    int no_of_orders = 0;
+    int no_of_ItemCount = 0;
     ScrollView scrollView;
     double itemDespTotalAmount = 0;
-    String CurrentDate, CouponDiscout, pos_CouponDiscount,Swiggy_CouponDiscount,Dunzo_CouponDiscount,BigBasket_CouponDiscount,PhoneOrder_CouponDiscount, PreviousDateString,deliveryamount="0";
+    String replacementOrderDetailsString, startDateString_forReplacementransaction = "", endDateString_forReplacementransaction = "", CurrentDate, CouponDiscout, pos_CouponDiscount, Swiggy_CouponDiscount, Dunzo_CouponDiscount, BigBasket_CouponDiscount, PhoneOrder_CouponDiscount, PreviousDateString, deliveryamount = "0";
     ListView consolidatedSalesReport_Listview;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -143,6 +155,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,6 +171,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         generateReport_Layout = findViewById(R.id.generateReport_Layout);
         totalAmt_without_GST = findViewById(R.id.totalAmt_without_GST);
         totalCouponDiscount_Amt = findViewById(R.id.totalCouponDiscount_Amt);
+        refundAmount_textwidget = findViewById(R.id.refundAmount_textwidget);
+        replacementAmount_textwidget = findViewById(R.id.replacementAmount_textwidget);
+
         totalAmt_with_CouponDiscount = findViewById(R.id.totalAmt_with_CouponDiscount);
         totalGST_Amt = findViewById(R.id.totalGST_Amt);
         final_sales = findViewById(R.id.final_sales);
@@ -213,16 +229,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
         tmcSubCtgykey.clear();
-        no_of_ItemCount=0;
-        no_of_orders=0;
-
-
-
-
-
-
-
-        
+        no_of_ItemCount = 0;
+        no_of_orders = 0;
 
 
         CurrentDate = getDate_and_time();
@@ -249,7 +257,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
         DateString = getDate_and_time();
         PreviousDateString = getDatewithNameofthePreviousDay();
-
+        startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
+        endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
         dateSelector_text.setText(DateString);
         try {
             Order_Item_List.clear();
@@ -266,6 +275,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             phoneOrders_couponDiscountOrderidArray.clear();
             swiggyOrders_couponDiscount_hashmap.clear();
             swiggyOrders_couponDiscountOrderidArray.clear();
+
+            replacementTransactiontypeHashmap.clear();
+            replacementTransactiontypeArray.clear();
+
             dunzoOrders_couponDiscount_hashmap.clear();
             dunzoOrders_couponDiscountOrderidArray.clear();
             bigBasketOrders_couponDiscountOrderidArray.clear();
@@ -276,9 +289,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             tmcSubCtgykey.clear();
             deliveryCharge_hashmap.clear();
             deliveryChargeOrderidArray.clear();
-            no_of_ItemCount=0;
-            no_of_orders=0;
+            no_of_ItemCount = 0;
+            no_of_orders = 0;
             getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
+            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -312,7 +326,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                 if (SDK_INT >= Build.VERSION_CODES.R) {
 
-                    if(Environment.isExternalStorageManager()){
+                    if (Environment.isExternalStorageManager()) {
                         try {
                             exportReport();
 
@@ -320,18 +334,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             e.printStackTrace();
                             ;
                         }
-                    }
-                    else{
-                    try {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                        intent.addCategory("android.intent.category.DEFAULT");
-                        intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
-                        startActivityForResult(intent, 2296);
-                    } catch (Exception e) {
-                        Intent intent = new Intent();
-                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                        startActivityForResult(intent, 2296);
-                    }
+                    } else {
+                        try {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                            intent.addCategory("android.intent.category.DEFAULT");
+                            intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+                            startActivityForResult(intent, 2296);
+                        } catch (Exception e) {
+                            Intent intent = new Intent();
+                            intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                            startActivityForResult(intent, 2296);
+                        }
                     }
 
                 } else {
@@ -361,6 +374,326 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
     }
 
+    private void getdataFromReplacementTransaction(String startdateString_forReplacementransaction, String enddateString_forReplacementransaction, String vendorKey) {
+        if (isgetReplacementOrderForSelectedDateCalled) {
+            return;
+        }
+        isgetReplacementOrderForSelectedDateCalled = true;
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        Adjusting_Widgets_Visibility(true);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetReplacementTransactionDetailsForTransactionTimeVendorkey + "?transactiontime1=" + startdateString_forReplacementransaction + "&vendorkey=" + vendorKey + "&transactiontime2=" + enddateString_forReplacementransaction, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            JSONArray JArray = response.getJSONArray("content");
+                            if (JArray.length() > 0) {
+                                replacementOrderDetailsString = JArray.toString();
+                                convertReplacementTransactionDetailsJsonIntoArray(replacementOrderDetailsString);
+                            } else {
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            }
+
+                        } catch (JSONException e) {
+                            isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Orders Yet ", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                isgetReplacementOrderForSelectedDateCalled = false;
+                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorKey);
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(ConsolidatedReportSubCtgywise.this).add(jsonObjectRequest);
+
+
+    }
+
+    private void convertReplacementTransactionDetailsJsonIntoArray(String stringOfArray) {
+
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        try {
+            JSONArray JArray = new JSONArray(stringOfArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            int arrayLength = JArray.length();
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+            for (int i1 = 0; i1 < arrayLength; i1++) {
+                Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = new Modal_ReplacementTransactionDetails();
+                String transactionStatus = "", transactionType = "";
+                List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = new ArrayList<>();
+
+
+                try {
+                    JSONObject json = JArray.getJSONObject(i1);
+                    try {
+                        if (json.has("discountamount")) {
+                            modal_replacementTransactionDetails.setDiscountamount(String.valueOf(json.getString("discountamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setDiscountamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setDiscountamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("markeditemdesp")) {
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String(String.valueOf(json.getString("markeditemdesp")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("mobileno")) {
+                            modal_replacementTransactionDetails.setMobileno(String.valueOf(json.getString("mobileno")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setMobileno("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setMobileno("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("orderid")) {
+                            modal_replacementTransactionDetails.setOrderid(String.valueOf(json.getString("orderid")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setOrderid("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setOrderid("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("refundamount")) {
+                            modal_replacementTransactionDetails.setRefundamount(String.valueOf(json.getString("refundamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setRefundamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setRefundamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("replacementitemdesp")) {
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string(String.valueOf(json.getString("replacementitemdesp")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("replacementorderamount")) {
+                            modal_replacementTransactionDetails.setReplacementorderamount(String.valueOf(json.getString("replacementorderamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("replacementorderid")) {
+                            modal_replacementTransactionDetails.setReplacementorderid(String.valueOf(json.getString("replacementorderid")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactionstatus")) {
+                            modal_replacementTransactionDetails.setTransactionstatus(String.valueOf(json.getString("transactionstatus")));
+                            transactionStatus = String.valueOf(json.getString("transactionstatus"));
+                        } else {
+                            transactionStatus = "";
+                            modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        }
+                    } catch (Exception e) {
+                        transactionStatus = "";
+
+                        modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactiontime")) {
+                            modal_replacementTransactionDetails.setTransactiontime(String.valueOf(json.getString("transactiontime")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setTransactiontime("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setTransactiontime("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactiontype")) {
+                            modal_replacementTransactionDetails.setTransactiontype(String.valueOf(json.getString("transactiontype")));
+                            transactionType = String.valueOf(json.getString("transactiontype").toString().toUpperCase());
+
+                        } else {
+                            modal_replacementTransactionDetails.setTransactiontype("");
+                            transactionType = "";
+
+                        }
+                    } catch (Exception e) {
+                        transactionType = "";
+
+                        modal_replacementTransactionDetails.setTransactiontype("");
+
+                        e.printStackTrace();
+                    }
+                    try {
+                        if (json.has("vendorkey")) {
+                            modal_replacementTransactionDetails.setVendorkey(String.valueOf(json.getString("vendorkey")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setVendorkey("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setVendorkey("");
+
+                        e.printStackTrace();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Log.i("TransactionDetailsArray", String.valueOf(replacementTransactionDetailsArray.size()));
+                    Log.i("TransactiontypeArray", String.valueOf(replacementTransactiontypeArray.size()));
+                    Log.i("TransactiontypeHashmap", String.valueOf(replacementTransactiontypeHashmap.size()));
+                    Log.i("transactionArray", String.valueOf(replacementTransactionDetailsArray.size()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    if (transactionStatus.toString().toUpperCase().equals("SUCCESS")) {
+                        try {
+                            replacementTransactionDetailsArray.add(modal_replacementTransactionDetails);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+
+                            if (replacementTransactiontypeArray.contains(transactionType)) {
+                                replacementTransactiontypeHashmap.get(transactionType).add(modal_replacementTransactionDetails);
+                            } else {
+                                replacementTransactiontypeArray.add(transactionType);
+                                replacementTransactiontypeHashmap.put(transactionType, replacementTransactionDetailsArray);
+                            }
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            if (arrayLength - 1 == i1) {
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -376,8 +709,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     }
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void F(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 2296) {
             if (SDK_INT >= Build.VERSION_CODES.R) {
@@ -440,9 +772,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         deliveryChargeOrderidArray.clear();
         bigBasketOrders_couponDiscountOrderidArray.clear();
         bigBasketOrders_couponDiscount_hashmap.clear();
+
+        replacementTransactiontypeHashmap.clear();
+        replacementTransactiontypeArray.clear();
+
+
         dataList.clear();
-        no_of_ItemCount=0;
-        no_of_orders=0;
+        no_of_ItemCount = 0;
+        no_of_orders = 0;
+
+
         final Calendar cldr = Calendar.getInstance();
         int day = cldr.get(Calendar.DAY_OF_MONTH);
         int month = cldr.get(Calendar.MONTH);
@@ -480,8 +819,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             deliveryChargeOrderidArray.clear();
                             bigBasketOrders_couponDiscountOrderidArray.clear();
                             bigBasketOrders_couponDiscount_hashmap.clear();
-                            no_of_ItemCount=0;
-                            no_of_orders=0;
+
+                            replacementTransactiontypeHashmap.clear();
+                            replacementTransactiontypeArray.clear();
+
+
+                            no_of_ItemCount = 0;
+                            no_of_orders = 0;
+                            noofOrders.setText(String.valueOf(no_of_orders));
+                            noofPacks.setText(String.valueOf(no_of_ItemCount));
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear + 1);
                             String datestring = String.valueOf(dayOfMonth);
@@ -503,12 +849,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                             String CurrentDateString = datestring + monthstring + String.valueOf(year);
                             PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay(CurrentDateString);
+                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
+                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
                             dateSelector_text.setText(CurrentDay + ", " + dayOfMonth + " " + month_in_String + " " + year);
                             DateString = (CurrentDay + ", " + dayOfMonth + " " + month_in_String + " " + year);
                             isgetPreOrderForSelectedDateCalled = false;
                             isgetOrderForSelectedDateCalled = false;
+                            isgetReplacementOrderForSelectedDateCalled = false;
                             //getOrderForSelectedDate(DateString, vendorKey);
                             getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
+                            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -520,31 +870,25 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     }
 
 
-
-
-
-
-
-
     private void getOrderForSelectedDate(String previousDateString, String dateString, String vendorKey) {
 
-        if(isgetOrderForSelectedDateCalled){
+        if (isgetOrderForSelectedDateCalled) {
             return;
         }
-      //  dateString ="May 2021";
-      //  previousDateString = "Fri, 30 Apr 2021";
-      //  dateSelector_text.setText("May 2021");
+        //  dateString ="May 2021";
+        //  previousDateString = "Fri, 30 Apr 2021";
+        //  dateSelector_text.setText("May 2021");
         isgetOrderForSelectedDateCalled = true;
         Adjusting_Widgets_Visibility(true);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_forReport_AppOrders_and_PosOrders + "?slotdate="+dateString+"&vendorkey="+vendorKey+"&previousdaydate="+previousDateString,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_forReport_AppOrders_and_PosOrders + "?slotdate=" + dateString + "&vendorkey=" + vendorKey + "&previousdaydate=" + previousDateString, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
                         Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         try {
-                            String orderid = "",deliverytype="";
-                            double discount_double=0,discountfromHashmap_double=0;
+                            String orderid = "", deliverytype = "";
+                            double discount_double = 0, discountfromHashmap_double = 0;
                             //converting jsonSTRING into array
                             JSONArray JArray = response.getJSONArray("content");
                             //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
@@ -552,7 +896,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
-                            for (int i1 =0 ; i1 < JArray.length(); i1++) {
+                            for (int i1 = 0; i1 < JArray.length(); i1++) {
 
                                 try {
                                     JSONObject json = JArray.getJSONObject(i1);
@@ -561,18 +905,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                     JSONArray itemdesp;
 
 
-
                                     if (json.has("itemdesp")) {
 
-                                        try{
+                                        try {
 
                                             itemdesp = json.getJSONArray("itemdesp");
                                             modal_orderDetails.itemdesp = itemdesp;
 
                                             //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived" );
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
 
@@ -583,21 +925,18 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                     }
 
-                                    if(json.has("orderid"))
-                                    {
-                                        try{
+                                    if (json.has("orderid")) {
+                                        try {
                                             modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
-                                            orderid =  String.valueOf(json.get("orderid"));
+                                            orderid = String.valueOf(json.get("orderid"));
                                             //Log.d(Constants.TAG, "orderid: " + String.valueOf(json.get("orderid")));
                                             no_of_orders++;
-                                        }catch (Exception e){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
 
                                         }
 
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         modal_orderDetails.orderid = "There is no orderid";
                                         //Log.d(Constants.TAG, "There is no orderid: " + String.valueOf(json.get("orderid")));
 
@@ -605,15 +944,14 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                     }
 
 
-
-                                    if(json.has("payableamount")){
-                                        try{
+                                    if (json.has("payableamount")) {
+                                        try {
 
                                             double newpayableamount = Double.parseDouble(String.valueOf(json.get("payableamount")));
 
                                             //Log.i(Constants.TAG,"Consolidated Report old oldpayableamount  "+String.valueOf(oldpayableamount));
 
-                                            oldpayableamount = newpayableamount+oldpayableamount;
+                                            oldpayableamount = newpayableamount + oldpayableamount;
                                             //Log.i(Constants.TAG,"Consolidated Report  new payableAmountorderid            "+orderid  );
 
                                             //Log.i(Constants.TAG,"Consolidated Report  new payableamount   "+newpayableamount);
@@ -621,76 +959,67 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                             //Log.i(Constants.TAG,"Consolidated Report  old 2 oldpayableamount  "  +oldpayableamount);
                                             //Log.i(Constants.TAG,"Consolidated Report  old 2                                          "  );
 
-                                        }catch(Exception e){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
                                     }
 
 
-
-
-                                    if(json.has("slotname")) {
-                                        try{
-                                            slotname =  String.valueOf(json.get("slotname")).toUpperCase();
+                                    if (json.has("slotname")) {
+                                        try {
+                                            slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                             modal_orderDetails.slotname = String.valueOf(json.get("slotname")).toUpperCase();
                                             //Log.d(Constants.TAG, "OrderType: " + slotname);
 
-                                        }catch(Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
 
-                                    }
-                                    else {
+                                    } else {
                                         modal_orderDetails.slotname = "There is no slotname";
                                         //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
 
                                     }
 
-                                    if(json.has("ordertype")) {
-                                        try{
-                                            ordertype =  String.valueOf(json.get("ordertype")).toUpperCase();
+                                    if (json.has("ordertype")) {
+                                        try {
+                                            ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                             modal_orderDetails.ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                             //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
-                                        }catch(Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
 
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         modal_orderDetails.ordertype = "There is no OrderType";
                                         //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
-                                    if(json.has("paymentmode"))
-                                    {
-                                        try{
+                                    if (json.has("paymentmode")) {
+                                        try {
                                             modal_orderDetails.paymentmode = String.valueOf(json.get("paymentmode"));
 
-                                        }catch(Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
                                         //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         modal_orderDetails.paymentmode = "There is no payment mode";
                                         //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
                                     try {
-                                        if(ordertype.equals(Constants.APPORDER)){
+                                        if (ordertype.equals(Constants.APPORDER)) {
 
-                                            if(json.has("deliveryamount")) {
-                                                try{
+                                            if (json.has("deliveryamount")) {
+                                                try {
 
-                                                        deliveryamount = String.valueOf(json.get("deliveryamount"));
-                                                        modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
-
+                                                    deliveryamount = String.valueOf(json.get("deliveryamount"));
+                                                    modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
 
 
                                                     //Log.d(Constants.TAG, "OrderType: " + slotname);
@@ -708,37 +1037,32 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                                         }
                                                     }
-                                                }catch(Exception e ){
+                                                } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
 
-                                            }
-                                            else {
+                                            } else {
                                                 modal_orderDetails.deliveryamount = "0.00";
                                                 //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
 
                                             }
 
 
-                                            if(json.has("deliverytype"))
-                                            {
-                                                try{
+                                            if (json.has("deliverytype")) {
+                                                try {
                                                     modal_orderDetails.deliverytype = String.valueOf(json.get("deliverytype"));
-                                                    deliverytype =  String.valueOf(json.get("deliverytype"));
-
+                                                    deliverytype = String.valueOf(json.get("deliverytype"));
 
 
                                                     //Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
 
-                                                }catch (Exception e){
+                                                } catch (Exception e) {
                                                     e.printStackTrace();
                                                     //Log.d(Constants.TAG, "deliverytype:2 " + String.valueOf(json.get("orderid")));
 
                                                 }
 
-                                            }
-                                            else
-                                            {
+                                            } else {
                                                 modal_orderDetails.deliverytype = "There is no deliverytype";
                                                 //Log.d(Constants.TAG, " deliverytype3: " + String.valueOf(json.get("orderid")));
 
@@ -746,7 +1070,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                             }
 
 
-                                            if ((slotname.equals(Constants.PREORDER_SLOTNAME))|| (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME))) {
+                                            if ((slotname.equals(Constants.PREORDER_SLOTNAME)) || (slotname.equals(Constants.SPECIALDAYPREORDER_SLOTNAME))) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -780,9 +1104,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                                 getItemDetailsFromItemDespArray(modal_orderDetails, ordertype, orderid);
 
-                                            }
-
-                                            else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) ||slotname.equals("") || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
+                                            } else if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals("") || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
                                                 if (json.has("coupondiscount")) {
@@ -816,9 +1138,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                                             }
-                                        }
-
-                                        else if((ordertype.equals(Constants.PhoneOrder))){
+                                        } else if ((ordertype.equals(Constants.PhoneOrder))) {
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
@@ -853,8 +1173,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                                             }
-                                        }
-                                        else if((ordertype.equals(Constants.SwiggyOrder))){
+                                        } else if ((ordertype.equals(Constants.SwiggyOrder))) {
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
@@ -889,8 +1208,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                                             }
-                                        }
-                                        else if((ordertype.equals(Constants.DunzoOrder))){
+                                        } else if ((ordertype.equals(Constants.DunzoOrder))) {
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
@@ -925,8 +1243,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                                             }
-                                        }
-                                        else if((ordertype.equals(Constants.BigBasket))){
+                                        } else if ((ordertype.equals(Constants.BigBasket))) {
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
@@ -961,8 +1278,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                                             }
-                                        }
-                                        else {
+                                        } else {
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
 
 
@@ -1000,14 +1316,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                         }
 
 
-
-                                    }catch(Exception e ){
+                                    } catch (Exception e) {
                                         e.printStackTrace();
-                                        Toast.makeText(ConsolidatedReportSubCtgywise.this,"can't Process this ItemDesp ",Toast.LENGTH_LONG).show();
+                                        Toast.makeText(ConsolidatedReportSubCtgywise.this, "can't Process this ItemDesp ", Toast.LENGTH_LONG).show();
                                     }
-
-
-
 
 
                                 } catch (JSONException e) {
@@ -1034,26 +1346,29 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             try {
 
 
-                                try{
+                                try {
                                     try {
                                         Collections.sort(Order_Item_List, new Comparator<String>() {
                                             public int compare(final String object1, final String object2) {
                                                 return object1.compareTo(object2);
                                             }
                                         });
-                                    }
-                                    catch(Exception e){
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                     }
 
-                                }
-                                catch (Exception e){
+                                } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                                Adjusting_Widgets_Visibility(false);
-                                addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-                                prepareContent();
-                                setAdapter();
+
+
+                                isOrderDetailsResponseReceivedForSelectedDate = true;
+                                runthread();
+
+
+                                //addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                                // prepareContent();
+                                // setAdapter();
 
                                /* adapater_pos_sales_report = new Adapter_ConsolidatedSalesReport_listview(ConsolidatedReportSubCtgywise.this, Order_Item_List, OrderItem_hashmap);
                                 consolidatedSalesReport_Listview.setAdapter(adapater_pos_sales_report);
@@ -1066,12 +1381,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                 //sort_the_array_CtgyWise();
                                 //  prepareContent();
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                        }
-
-                        else{
+                        } else {
                             Order_Item_List.clear();
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
@@ -1087,7 +1400,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             phoneOrders_couponDiscount_hashmap.clear();
                             phoneOrders_couponDiscountOrderidArray.clear();
                             swiggyOrders_couponDiscount_hashmap.clear();
-                           swiggyOrders_couponDiscountOrderidArray.clear();
+                            swiggyOrders_couponDiscountOrderidArray.clear();
                             dunzoOrders_couponDiscount_hashmap.clear();
                             dunzoOrders_couponDiscountOrderidArray.clear();
                             SubCtgywiseTotalArray.clear();
@@ -1098,12 +1411,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             deliveryChargeOrderidArray.clear();
                             bigBasketOrders_couponDiscountOrderidArray.clear();
                             bigBasketOrders_couponDiscount_hashmap.clear();
-                            no_of_ItemCount=0;
-                            no_of_orders=0;
+                            no_of_ItemCount = 0;
+                            no_of_orders = 0;
                             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
-
+                            //runthread();
                             Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                             Adjusting_Widgets_Visibility(false);
 
@@ -1115,7 +1428,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
                 Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
-                Adjusting_Widgets_Visibility(false);
 
 
                 if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
@@ -1126,13 +1438,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                     return object1.compareTo(object2);
                                 }
                             });
-                        }
-                        catch(Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        runthread();
 
-                        Adjusting_Widgets_Visibility(false);
-                        addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                        //addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                        /* adapater_pos_sales_report = new Adapter_ConsolidatedSalesReport_listview(ConsolidatedReportSubCtgywise.this, Order_Item_List, OrderItem_hashmap);
                         consolidatedSalesReport_Listview.setAdapter(adapater_pos_sales_report);
                         ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
@@ -1142,14 +1453,13 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                         //sort_the_array_CtgyWise();
-                        prepareContent();
-                         setAdapter();
-                    }catch (Exception e){
+                        // prepareContent();
+                        //setAdapter();
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-
-                else{ Order_Item_List.clear();
+                } else {
+                    Order_Item_List.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
                     FinalBill_hashmap.clear();
@@ -1173,13 +1483,14 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     bigBasketOrders_couponDiscount_hashmap.clear();
                     dataList.clear();
                     tmcSubCtgykey.clear();
-                    no_of_ItemCount=0;
-                    no_of_orders=0;
+                    no_of_ItemCount = 0;
+                    no_of_orders = 0;
                     deliveryCharge_hashmap.clear();
                     deliveryChargeOrderidArray.clear();
                     ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
                     addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                    // runthread();
 
                     Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                     Adjusting_Widgets_Visibility(false);
@@ -1221,22 +1532,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     }
 
 
-
-
-
-
-
     private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String ordertype, String orderid) {
 
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
         // String newOrderWeightInGrams;
-        double newweight,gstAmount = 0,tmcprice=0;
-        String menuitemidd = "",subCtgyKey="",itemname="",quantityString ="",tmcprice_string="";
-        int quantity=0;
+        double newweight, gstAmount = 0, tmcprice = 0;
+        String menuitemidd = "", subCtgyKey = "", itemname = "", quantityString = "", tmcprice_string = "";
+        int quantity = 0;
         try {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
 
-            for(int i=0; i < jsonArray.length(); i++) {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 //Log.d(Constants.TAG, "this  jsonArray.length()" + jsonArray.length());
 
                 JSONObject json = jsonArray.getJSONObject(i);
@@ -1254,7 +1560,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     try {
 
                         String ItemName = "";
-                        if(json.has("itemname")){
+                        if (json.has("itemname")) {
                             ItemName = String.valueOf(json.get("itemname"));
                         }
 
@@ -1262,26 +1568,24 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             for (int menuiterator = 0; menuiterator < MenuItem.size(); menuiterator++) {
                                 Modal_MenuItem_Settings modal_menuItemSettings = MenuItem.get(menuiterator);
                                 String menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
-                                if(menuitemidd.equals("")){
+                                if (menuitemidd.equals("")) {
                                     String ItemNamefromMenu = String.valueOf(modal_menuItemSettings.getItemname().toString());
-                                    if(ItemName.equals(ItemNamefromMenu)){
-                                        menuitemidd=menuItemId;
-                                        modal_orderDetails_ItemDesp.menuitemid=menuitemidd;
+                                    if (ItemName.equals(ItemNamefromMenu)) {
+                                        menuitemidd = menuItemId;
+                                        modal_orderDetails_ItemDesp.menuitemid = menuitemidd;
                                     }
                                 }
-
 
 
                                 String reportname = String.valueOf(modal_menuItemSettings.getReportname());
 
                                 if (menuItemId.equals(menuitemidd)) {
-                                    isItemFoundinMenu =true;
+                                    isItemFoundinMenu = true;
 
-                                    if ((!reportname.equals(""))&&(!reportname.equals("null"))&&(!reportname.equals("\r"))) {
+                                    if ((!reportname.equals("")) && (!reportname.equals("null")) && (!reportname.equals("\r"))) {
                                         modal_orderDetails_ItemDesp.itemname = String.valueOf(reportname);
                                         itemname = String.valueOf(reportname);
-                                    }
-                                    else{
+                                    } else {
                                         modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
                                         itemname = String.valueOf(json.get("itemname"));
                                     }
@@ -1289,15 +1593,14 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                 }
 
                             }
-                            if(!isItemFoundinMenu){
+                            if (!isItemFoundinMenu) {
                                 modal_orderDetails_ItemDesp.pricetypeforpos = String.valueOf("tmcprice");
 
                                 modal_orderDetails_ItemDesp.itemname = String.valueOf(json.get("itemname"));
                                 itemname = String.valueOf(json.get("itemname"));
 
                             }
-                        }
-                        catch(Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 
@@ -1322,7 +1625,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
 
 
-
                     try {
                         if (json.has("tmcsubctgykey")) {
                             subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
@@ -1339,8 +1641,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
                             subCtgyKey = String.valueOf("Miscellaneous");
                         }
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
 
                         modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
@@ -1364,11 +1665,11 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                         try {
                             quantity = Integer.parseInt(String.valueOf(json.get("quantity")));
-                            if(quantity>1){
-                                no_of_ItemCount = (no_of_ItemCount-1);
-                                no_of_ItemCount = (no_of_ItemCount+quantity);
+                            if (quantity > 1) {
+                                no_of_ItemCount = (no_of_ItemCount - 1);
+                                no_of_ItemCount = (no_of_ItemCount + quantity);
                             }
-                            quantityString =String.valueOf(json.get("quantity"));
+                            quantityString = String.valueOf(json.get("quantity"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -1412,18 +1713,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         }
                         if (marinadesObject.has("quantity")) {
                             try {
-                                int marinadequantityInt=0;
+                                int marinadequantityInt = 0;
                                 marinadesObjectquantity = Double.parseDouble(String.valueOf(json.get("quantity")));
-                                try{
+                                try {
                                     marinadequantityInt = Integer.parseInt(String.valueOf(json.get("quantity")));
-                                }
-                                catch (Exception e){
-                                    marinadequantityInt = Integer.parseInt(String.valueOf((int)marinadesObjectquantity));
+                                } catch (Exception e) {
+                                    marinadequantityInt = Integer.parseInt(String.valueOf((int) marinadesObjectquantity));
                                     e.printStackTrace();
                                 }
-                                if(marinadesObjectquantity>1){
-                                    no_of_ItemCount = (no_of_ItemCount-1);
-                                    no_of_ItemCount = (no_of_ItemCount+marinadequantityInt);
+                                if (marinadesObjectquantity > 1) {
+                                    no_of_ItemCount = (no_of_ItemCount - 1);
+                                    no_of_ItemCount = (no_of_ItemCount + marinadequantityInt);
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -1441,14 +1741,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         }
 
 
-
-
                         String marinadesubCtgyKey = "";
                         try {
                             if (marinadesObject.has("tmcsubctgykey")) {
                                 marinadesubCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
                                 if (marinadesubCtgyKey.equals("") || marinadesubCtgyKey.equals("0")) {
-                                    marinade_modal_orderDetails_ItemDesp.tmcsubctgykey =String.valueOf("Miscellaneous");
+                                    marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
                                     marinadesubCtgyKey = String.valueOf("Miscellaneous");
                                 } else {
                                     marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
@@ -1460,8 +1758,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                 marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
                                 marinadesubCtgyKey = String.valueOf("Miscellaneous");
                             }
-                        }
-                        catch(Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
 
                             marinade_modal_orderDetails_ItemDesp.tmcsubctgykey = String.valueOf("Miscellaneous");
@@ -1475,9 +1772,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         marinade_modal_orderDetails_ItemDesp.tmcprice = (String.valueOf(marinadesObjectpayableAmount));
                         marinade_modal_orderDetails_ItemDesp.gstamount = String.valueOf(marinadesObjectgstAmount);
                         marinade_modal_orderDetails_ItemDesp.quantity = String.valueOf(json.get("quantity"));
-                        marinade_modal_orderDetails_ItemDesp.itemname = marinadeitemName+" - Marinade ";
+                        marinade_modal_orderDetails_ItemDesp.itemname = marinadeitemName + " - Marinade ";
                         try {
-                            if(SubCtgywiseTotalArray.contains(marinadesubCtgyKey)) {
+                            if (SubCtgywiseTotalArray.contains(marinadesubCtgyKey)) {
                                 boolean isAlreadyAvailabe = false;
 
                                 try {
@@ -1488,24 +1785,21 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                 }
                                 if (isAlreadyAvailabe) {
-                                    String  SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(marinadesubCtgyKey);
+                                    String SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(marinadesubCtgyKey);
                                     double SubCtgywisetotalDouble = Double.parseDouble(SubCtgywisetotalString);
-                                    SubCtgywisetotalDouble = SubCtgywisetotalDouble+marinadesObjectpayableAmount;
+                                    SubCtgywisetotalDouble = SubCtgywisetotalDouble + marinadesObjectpayableAmount;
                                     SubCtgywisetotalString = String.valueOf(SubCtgywisetotalDouble);
                                     if (SDK_INT >= Build.VERSION_CODES.N) {
-                                        SubCtgywiseTotalHashmap.replace(marinadesubCtgyKey,SubCtgywisetotalString);
-                                    }
-                                    else{
+                                        SubCtgywiseTotalHashmap.replace(marinadesubCtgyKey, SubCtgywisetotalString);
+                                    } else {
                                         SubCtgywiseTotalHashmap.remove(marinadesubCtgyKey);
-                                        SubCtgywiseTotalHashmap.put(marinadesubCtgyKey,SubCtgywisetotalString);
+                                        SubCtgywiseTotalHashmap.put(marinadesubCtgyKey, SubCtgywisetotalString);
                                     }
-                                }
-                                else{
-                                    SubCtgywiseTotalHashmap.put(marinadesubCtgyKey,String.valueOf(marinadesObjectpayableAmount));
+                                } else {
+                                    SubCtgywiseTotalHashmap.put(marinadesubCtgyKey, String.valueOf(marinadesObjectpayableAmount));
 
                                 }
-                            }
-                            else{
+                            } else {
                                 SubCtgywiseTotalArray.add(marinadesubCtgyKey);
                                 boolean isAlreadyAvailabe = false;
 
@@ -1517,28 +1811,25 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                 }
                                 if (isAlreadyAvailabe) {
-                                    String  SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(marinadesubCtgyKey);
+                                    String SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(marinadesubCtgyKey);
                                     double SubCtgywisetotalDouble = Double.parseDouble(SubCtgywisetotalString);
-                                    SubCtgywisetotalDouble = SubCtgywisetotalDouble+marinadesObjectpayableAmount;
+                                    SubCtgywisetotalDouble = SubCtgywisetotalDouble + marinadesObjectpayableAmount;
                                     SubCtgywisetotalString = String.valueOf(SubCtgywisetotalDouble);
                                     if (SDK_INT >= Build.VERSION_CODES.N) {
-                                        SubCtgywiseTotalHashmap.replace(marinadesubCtgyKey,SubCtgywisetotalString);
-                                    }
-                                    else{
+                                        SubCtgywiseTotalHashmap.replace(marinadesubCtgyKey, SubCtgywisetotalString);
+                                    } else {
                                         SubCtgywiseTotalHashmap.remove(marinadesubCtgyKey);
-                                        SubCtgywiseTotalHashmap.put(marinadesubCtgyKey,SubCtgywisetotalString);
+                                        SubCtgywiseTotalHashmap.put(marinadesubCtgyKey, SubCtgywisetotalString);
                                     }
-                                }
-                                else{
+                                } else {
 
-                                    SubCtgywiseTotalHashmap.put(marinadesubCtgyKey,String.valueOf(marinadesObjectpayableAmount));
+                                    SubCtgywiseTotalHashmap.put(marinadesubCtgyKey, String.valueOf(marinadesObjectpayableAmount));
 
                                 }
                             }
 
 
-                        }
-                        catch(Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 
@@ -1573,8 +1864,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                                 }
-
-
 
 
                                 if (ordertype.equals(Constants.PhoneOrder) || ordertype.equals("Phone Order")) {
@@ -1743,14 +2032,13 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         }
 
 
-                    }
-                    else {
+                    } else {
                         //Log.i(Constants.TAG, "There is no Marinade ItemDesp  ");
-                        if(String.valueOf(ordertype).equals(Constants.APPORDER)) {
+                        if (String.valueOf(ordertype).equals(Constants.APPORDER)) {
                             if (itemname.contains("Chicken Curry Cut (Skinless)")) {
                                 Log.d(Constants.TAG, "Chicken Curry log orderid" + orderid.toString());
                                 Log.d(Constants.TAG, "Chicken Curry log quantityString" + quantityString.toString());
-                                Log.d(Constants.TAG, "Chicken Curry log tmcprice" +  String.valueOf(tmcprice));
+                                Log.d(Constants.TAG, "Chicken Curry log tmcprice" + String.valueOf(tmcprice));
 
                                 //  Log.d(Constants.TAG, "Chicken Curry log menuitemid" + String.valueOf(menuItemId));
 
@@ -1800,7 +2088,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
 
                     try {
-                        if(SubCtgywiseTotalArray.contains(subCtgyKey)) {
+                        if (SubCtgywiseTotalArray.contains(subCtgyKey)) {
                             boolean isAlreadyAvailabe = false;
 
                             try {
@@ -1811,24 +2099,21 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                             }
                             if (isAlreadyAvailabe) {
-                                String  SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(subCtgyKey);
+                                String SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(subCtgyKey);
                                 double SubCtgywisetotalDouble = Double.parseDouble(SubCtgywisetotalString);
-                                SubCtgywisetotalDouble = SubCtgywisetotalDouble+tmcprice;
+                                SubCtgywisetotalDouble = SubCtgywisetotalDouble + tmcprice;
                                 SubCtgywisetotalString = String.valueOf(SubCtgywisetotalDouble);
                                 if (SDK_INT >= Build.VERSION_CODES.N) {
-                                    SubCtgywiseTotalHashmap.replace(subCtgyKey,SubCtgywisetotalString);
-                                }
-                                else{
+                                    SubCtgywiseTotalHashmap.replace(subCtgyKey, SubCtgywisetotalString);
+                                } else {
                                     SubCtgywiseTotalHashmap.remove(subCtgyKey);
-                                    SubCtgywiseTotalHashmap.put(subCtgyKey,SubCtgywisetotalString);
+                                    SubCtgywiseTotalHashmap.put(subCtgyKey, SubCtgywisetotalString);
                                 }
-                            }
-                            else{
-                                SubCtgywiseTotalHashmap.put(subCtgyKey,String.valueOf(tmcprice));
+                            } else {
+                                SubCtgywiseTotalHashmap.put(subCtgyKey, String.valueOf(tmcprice));
 
                             }
-                        }
-                        else{
+                        } else {
                             SubCtgywiseTotalArray.add(subCtgyKey);
                             boolean isAlreadyAvailabe = false;
 
@@ -1840,27 +2125,24 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                             }
                             if (isAlreadyAvailabe) {
-                                String  SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(subCtgyKey);
+                                String SubCtgywisetotalString = SubCtgywiseTotalHashmap.get(subCtgyKey);
                                 double SubCtgywisetotalDouble = Double.parseDouble(SubCtgywisetotalString);
-                                SubCtgywisetotalDouble = SubCtgywisetotalDouble+tmcprice;
+                                SubCtgywisetotalDouble = SubCtgywisetotalDouble + tmcprice;
                                 SubCtgywisetotalString = String.valueOf(SubCtgywisetotalDouble);
                                 if (SDK_INT >= Build.VERSION_CODES.N) {
-                                    SubCtgywiseTotalHashmap.replace(subCtgyKey,SubCtgywisetotalString);
-                                }
-                                else{
+                                    SubCtgywiseTotalHashmap.replace(subCtgyKey, SubCtgywisetotalString);
+                                } else {
                                     SubCtgywiseTotalHashmap.remove(subCtgyKey);
-                                    SubCtgywiseTotalHashmap.put(subCtgyKey,SubCtgywisetotalString);
+                                    SubCtgywiseTotalHashmap.put(subCtgyKey, SubCtgywisetotalString);
                                 }
-                            }
-                            else{
-                                SubCtgywiseTotalHashmap.put(subCtgyKey,String.valueOf(tmcprice));
+                            } else {
+                                SubCtgywiseTotalHashmap.put(subCtgyKey, String.valueOf(tmcprice));
 
                             }
                         }
 
 
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -1904,7 +2186,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                 modal_orderDetails.setPhoneOrderSales(String.valueOf((newTotalphoneOrderAmount)));
 
 
-
                             }
 
 
@@ -1915,7 +2196,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                 modal_orderDetails.setSwiggySales(String.valueOf((newTotalswiggyOrderAmount)));
 
 
-
                             }
 
 
@@ -1924,7 +2204,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                 double dunzoOrder_amount = tmcprice + dunzoOrder_amount_fromhashmap;
                                 double newTotaldunzoOrderAmount = dunzoOrder_amount;
                                 modal_orderDetails.setDunzoSales(String.valueOf((newTotaldunzoOrderAmount)));
-
 
 
                             }
@@ -1988,7 +2267,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
                         }
-
 
 
                         if (ordertype.equals(Constants.SwiggyOrder) || ordertype.equals("Swiggy Order")) {
@@ -2100,20 +2378,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
 
 
-
-                    try{
-                        if(OrderItem_hashmap.size()>1){
-                            try{
+                    try {
+                        if (OrderItem_hashmap.size() > 1) {
+                            try {
                                 OrderItem_hashmap = sortByComparator(OrderItem_hashmap);
-                            }
-                            catch (Exception e){
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
 
                         }
 
-                    }
-                    catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -2128,33 +2403,27 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         }
 
 
-
-
-
     }
 
 
+    public static HashMap<String, Modal_OrderDetails> sortByComparator(
+            HashMap<String, Modal_OrderDetails> unsortMap) {
 
-    public static HashMap<String,Modal_OrderDetails> sortByComparator(
-            HashMap<String,Modal_OrderDetails> unsortMap) {
-
-        List<Map.Entry<String,Modal_OrderDetails>> list = new LinkedList<Map.Entry<String,Modal_OrderDetails>>(
+        List<Map.Entry<String, Modal_OrderDetails>> list = new LinkedList<Map.Entry<String, Modal_OrderDetails>>(
                 unsortMap.entrySet());
 
-        Collections.sort(list, new Comparator<Map.Entry<String,Modal_OrderDetails>> () {
-            public int compare(Map.Entry<String,Modal_OrderDetails> o1, Map.Entry<String,Modal_OrderDetails> o2) {
+        Collections.sort(list, new Comparator<Map.Entry<String, Modal_OrderDetails>>() {
+            public int compare(Map.Entry<String, Modal_OrderDetails> o1, Map.Entry<String, Modal_OrderDetails> o2) {
                 return o1.getValue().getItemname().compareTo(o2.getValue().getItemname());
             }
         });
 
-        HashMap<String,Modal_OrderDetails> sortedMap = new LinkedHashMap<String,Modal_OrderDetails>();
-        for (Map.Entry<String,Modal_OrderDetails> entry : list) {
+        HashMap<String, Modal_OrderDetails> sortedMap = new LinkedHashMap<String, Modal_OrderDetails>();
+        for (Map.Entry<String, Modal_OrderDetails> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
         return sortedMap;
     }
-
-
 
 
     private void addOrderedItemAmountDetails(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
@@ -2177,6 +2446,81 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         double swiggyorder_Amount = 0;
         double dunzoorder_Amount = 0;
         double bigBasketorder_Amount = 0;
+
+        double totalRefundAmount = 0;
+        double totalReplacementAmount = 0;
+
+
+        try {
+            for (String transactionType : replacementTransactiontypeArray) {
+
+                List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = replacementTransactiontypeHashmap.get(transactionType);
+
+                for (int i = 0; i < replacementTransactionDetailsArray.size(); i++) {
+                    double refundAmount = 0;
+                    double replacementAmount = 0;
+
+                    Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = replacementTransactionDetailsArray.get(i);
+
+                    if (modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REFUND")) {
+                        String refundAmountString = "0";
+                        try {
+                            refundAmountString = modal_replacementTransactionDetails.getRefundamount().toString();
+
+                        } catch (Exception e) {
+                            refundAmountString = "0";
+                            e.printStackTrace();
+                        }
+                        try {
+                            refundAmount = Double.parseDouble(refundAmountString);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+
+                            totalRefundAmount = refundAmount + totalRefundAmount;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+
+                    if (modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REPLACEMENT")) {
+                        String replacementAmountString = "0";
+                        try {
+                            replacementAmountString = modal_replacementTransactionDetails.getReplacementorderamount().toString();
+
+                        } catch (Exception e) {
+                            replacementAmountString = "0";
+                            e.printStackTrace();
+                        }
+                        try {
+                            replacementAmount = Double.parseDouble(replacementAmountString);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+
+                            totalReplacementAmount = replacementAmount + totalReplacementAmount;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+                }
+
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         try {
             for (String orderid : couponDiscountOrderidArray) {
@@ -2203,7 +2547,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             }
 
 
-
             for (String orderid : swiggyOrders_couponDiscountOrderidArray) {
                 String swiggyOrdersDiscount_Amount = swiggyOrders_couponDiscount_hashmap.get(orderid);
                 double CouponDiscount_double = Double.parseDouble(swiggyOrdersDiscount_Amount);
@@ -2227,15 +2570,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             }
 
 
-
-
             for (String orderid : deliveryChargeOrderidArray) {
-               String DeliveryChargeString =deliveryCharge_hashmap.get(orderid);
+                String DeliveryChargeString = deliveryCharge_hashmap.get(orderid);
                 double deliveryCharge_double = Double.parseDouble(DeliveryChargeString);
                 deliveryChargee = deliveryChargee + deliveryCharge_double;
 
             }
-
 
 
             for (int i = 0; i < order_item_list.size(); i++) {
@@ -2248,116 +2588,125 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 String ordertype = (modal_orderDetails_amountDetails.getOrdertype());
 
 
-
-
-
             }
-            for(String ordertype :ordertypeArray){
+            for (String ordertype : ordertypeArray) {
                 Modal_OrderDetails modal_orderDetails = ordertypeHashmap.get(ordertype);
                 try {
                     if ((ordertype.toUpperCase().equals(Constants.POSORDER)) || (ordertype.equals("posorder"))) {
                         posorder_Amount = Double.parseDouble(((Objects.requireNonNull(modal_orderDetails).getPosSales())));
                         ////Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
-                        posorder_Amount = posorder_Amount-pos_discountAmount;
+                        posorder_Amount = posorder_Amount - pos_discountAmount;
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.APPORDER))||(ordertype.equals("apporder"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.APPORDER)) || (ordertype.equals("apporder"))) {
                         apporder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getAppSales()));
-                        apporder_Amount = apporder_Amount-discountAmount;
-                        apporder_Amount =apporder_Amount+deliveryChargee;
+                        apporder_Amount = apporder_Amount - discountAmount;
+                        apporder_Amount = apporder_Amount + deliveryChargee;
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.PhoneOrder))||(ordertype.equals("Phone Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.PhoneOrder)) || (ordertype.equals("Phone Order"))) {
                         phoneorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getPhoneOrderSales()));
-                        phoneorder_Amount = phoneorder_Amount-phoneOrders_discountAmount;
+                        phoneorder_Amount = phoneorder_Amount - phoneOrders_discountAmount;
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.equals("Swiggy Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.SwiggyOrder)) || (ordertype.equals("Swiggy Order"))) {
                         swiggyorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getSwiggySales()));
-                        swiggyorder_Amount = swiggyorder_Amount-swiggyDiscount_amount;
+                        swiggyorder_Amount = swiggyorder_Amount - swiggyDiscount_amount;
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.equals("Dunzo Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.DunzoOrder)) || (ordertype.equals("Dunzo Order"))) {
                         dunzoorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getDunzoSales()));
-                        dunzoorder_Amount = dunzoorder_Amount-dunzoDiscount_amount;
+                        dunzoorder_Amount = dunzoorder_Amount - dunzoDiscount_amount;
                     }
 
 
-                    if ((ordertype.toUpperCase().equals(Constants.BigBasket))||(ordertype.equals("BigBasket Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.BigBasket)) || (ordertype.equals("BigBasket Order"))) {
                         bigBasketorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getBigBasketSales()));
-                        bigBasketorder_Amount = bigBasketorder_Amount-bigBasketDiscount_amount;
+                        bigBasketorder_Amount = bigBasketorder_Amount - bigBasketDiscount_amount;
                     }
 
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
             }
-            double totalAmountWithoutGst = totalAmountWithhGst-GST;
-            discountAmount = discountAmount+pos_discountAmount+swiggyDiscount_amount+phoneOrders_discountAmount+dunzoDiscount_amount+bigBasketDiscount_amount;
-            double totalAmt_with_CouponDiscount_double = totalAmountWithoutGst-discountAmount;
-            double totalAmt_with_CouponDiscount__deliverycharge = totalAmt_with_CouponDiscount_double+deliveryChargee;
-            double totalAmt_with_CouponDiscount__deliverycharge_GST = totalAmt_with_CouponDiscount__deliverycharge-GST;
+            try {
+                posorder_Amount = posorder_Amount - (totalReplacementAmount + totalRefundAmount);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            double totalAmountWithoutGst = totalAmountWithhGst - GST;
+            discountAmount = discountAmount + pos_discountAmount + swiggyDiscount_amount + phoneOrders_discountAmount + dunzoDiscount_amount + bigBasketDiscount_amount;
+            double totalAmt_with_CouponDiscount_double = totalAmountWithoutGst - discountAmount;
+            double totalAmt_with_CouponDiscount__deliverycharge = totalAmt_with_CouponDiscount_double + deliveryChargee;
+            double totalAmt_with_CouponDiscount__deliverycharge_refund_replacement = totalAmt_with_CouponDiscount__deliverycharge - totalRefundAmount - totalReplacementAmount;
+            double totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement = totalAmt_with_CouponDiscount__deliverycharge_refund_replacement - GST;
+
+
             totalAmt_without_GST.setText(String.valueOf(decimalFormat.format(totalAmountWithoutGst)));
 
             //Log.i(Constants.TAG, "Consolidated Report  new totalAmt_with_CouponDiscount__Gstdouble   " + String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__Gstdouble)));
 
+            replacementAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalReplacementAmount)));
+            refundAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalRefundAmount)));
 
             totalCouponDiscount_Amt.setText(String.valueOf(decimalFormat.format(discountAmount)));
-            totalAmt_with_CouponDiscount.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge)));
+            totalAmt_with_CouponDiscount.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             totalGST_Amt.setText(String.valueOf(decimalFormat.format(GST)));
-            final_sales.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
+            final_sales.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
             appsales.setText(String.valueOf(decimalFormat.format(apporder_Amount)));
             possales.setText(String.valueOf(decimalFormat.format(posorder_Amount)));
             swiggySales.setText(String.valueOf(decimalFormat.format(swiggyorder_Amount)));
             dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoorder_Amount)));
             bigbasketSales.setText(String.valueOf(decimalFormat.format(bigBasketorder_Amount)));
-            deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee)));
+            deliveryChargeAmount_textwidget.setText(String.valueOf(decimalFormat.format(deliveryChargee)));
             phoneOrderSales.setText(String.valueOf(decimalFormat.format(phoneorder_Amount)));
-            totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
+            totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
 
             finalBillDetails.add("TOTAL : ");
             FinalBill_hashmap.put("TOTAL : ", String.valueOf(decimalFormat.format(totalAmountWithoutGst)));
             finalBillDetails.add("DISCOUNT : ");
             FinalBill_hashmap.put("DISCOUNT : ", String.valueOf(decimalFormat.format(discountAmount)));
-            finalBillDetails.add("Delivery Charges : ");
-            FinalBill_hashmap.put("Delivery Charges : ", String.valueOf(deliveryamount));
+            finalBillDetails.add("REFUND : ");
+            FinalBill_hashmap.put("REFUND : ", String.valueOf(decimalFormat.format(totalRefundAmount)));
+            finalBillDetails.add("REPLACEMENT : ");
+            FinalBill_hashmap.put("REPLACEMENT : ", String.valueOf(decimalFormat.format(totalReplacementAmount)));
+            finalBillDetails.add("DELIVERY CHARGES  : ");
+            FinalBill_hashmap.put("DELIVERY CHARGES  : ", String.valueOf(deliveryamount));
             finalBillDetails.add("SUBTOTAL : ");
-            FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount_double)));
+            FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             finalBillDetails.add("GST : ");
             FinalBill_hashmap.put("GST : ", String.valueOf(decimalFormat.format(GST)));
             finalBillDetails.add("FINAL SALES : ");
-            FinalBill_hashmap.put("FINAL SALES : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST)));
+            FinalBill_hashmap.put("FINAL SALES : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
             //   sort_list_tmcSubCtgyWise(Order_Item_List, OrderItem_hashmap);
-        }
-        catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void getTmcSubCtgyList(String vendorKey){
+    private void getTmcSubCtgyList(String vendorKey) {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofSubCtgy,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofSubCtgy, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
                         //Log.d(Constants.TAG, "Response: " + response);
                         try {
 
-                            JSONArray result  = response.getJSONArray("content");
+                            JSONArray result = response.getJSONArray("content");
                             //Log.d(Constants.TAG, "Response: " + result);
-                            int i1=0;
+                            int i1 = 0;
                             int arrayLength = result.length();
                             //Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
-                            for(;i1<=(arrayLength-1);i1++) {
+                            for (; i1 <= (arrayLength - 1); i1++) {
 
                                 try {
                                     JSONObject json = result.getJSONObject(i1);
 
-                                    String subCtgyKey  = String.valueOf(json.get("key"));
+                                    String subCtgyKey = String.valueOf(json.get("key"));
                                     //Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
                                     String subCtgyName = String.valueOf(json.get("subctgyname"));
                                     //Log.d(Constants.TAG, "subCtgyName: " + subCtgyName);
@@ -2365,7 +2714,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                     modal_orderDetails.tmcsubctgykey = subCtgyKey;
                                     modal_orderDetails.tmcsubctgyname = subCtgyName;
                                     //  tmcSubCtgykey.add(subCtgyKey);
-                                    SubCtgyKey_hashmap.put(subCtgyKey,modal_orderDetails);
+                                    SubCtgyKey_hashmap.put(subCtgyKey, modal_orderDetails);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                     //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
@@ -2374,16 +2723,14 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                                 }
                                 Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
-                                String subCtgyKey  = String.valueOf("Miscellaneous");
+                                String subCtgyKey = String.valueOf("Miscellaneous");
                                 //Log.d(Constants.TAG, "subCtgyKey: " + subCtgyKey);
                                 String subCtgyName = String.valueOf("Miscellaneous Item");
 
                                 modal_orderDetails.tmcsubctgykey = subCtgyKey;
                                 modal_orderDetails.tmcsubctgyname = subCtgyName;
                                 //  tmcSubCtgykey.add(subCtgyKey);
-                                SubCtgyKey_hashmap.put(subCtgyKey,modal_orderDetails);
-
-
+                                SubCtgyKey_hashmap.put(subCtgyKey, modal_orderDetails);
 
 
                             }
@@ -2393,7 +2740,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                     }
 
-                },new Response.ErrorListener() {
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
@@ -2403,8 +2750,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                 error.printStackTrace();
             }
-        })
-        {
+        }) {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
@@ -2428,11 +2774,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         Volley.newRequestQueue(this).add(jsonObjectRequest);
 
 
-
-
-
-
-
     }
 
 
@@ -2454,27 +2795,25 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         return object1.compareTo(object2);
                     }
                 });
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
 
             for (String SubCtgykey : tmcSubCtgykey) {
                 int i_value = 0;
-                String subCtgyTotal ="0";
+                String subCtgyTotal = "0";
                 double subCtgyTotaldouble = 0;
                 //    Log.d(Constants.TAG, "SubCtgykey " + SubCtgykey);
 
                 String SubCtgyName = "", ItemName_Quantity_weight, Price, menuid;
                 Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
-                try{
+                try {
                     subCtgyTotal = SubCtgywiseTotalHashmap.get(SubCtgykey);
                     subCtgyTotaldouble = Double.parseDouble(subCtgyTotal);
                     subCtgyTotal = decimalFormat.format(subCtgyTotaldouble);
-                }
-                catch (Exception e){
-                    subCtgyTotal= "0";
+                } catch (Exception e) {
+                    subCtgyTotal = "0";
                     e.printStackTrace();
                 }
                 try {
@@ -2486,28 +2825,24 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 }
 
                 try {
-                  Order_Item_List = getSortedIdFromHashMap(Order_Item_List,OrderItem_hashmap);
-                }
-                catch(Exception e){
+                    Order_Item_List = getSortedIdFromHashMap(Order_Item_List, OrderItem_hashmap);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
 
 
                 for (int j = 0; j < Order_Item_List.size(); j++) {
                     menuid = Order_Item_List.get(j);
                     //  Log.d(Constants.TAG, "SubCtgykey menuid " + menuid);
                     //  Log.d(Constants.TAG, "SubCtgykey w " + SubCtgykey);
-                    Log.d(Constants.TAG, "menuitemid:hash4 :"+"#"+String.valueOf(menuid)+"#");
+                    Log.d(Constants.TAG, "menuitemid:hash4 :" + "#" + String.valueOf(menuid) + "#");
 
                     Modal_OrderDetails itemDetailsfromHashmap = OrderItem_hashmap.get(menuid);
                     // Log.d(Constants.TAG, "SubCtgykey itemDetailsfromHashmap " + itemDetailsfromHashmap.getItemname());
-                    String subCtgyKey_fromHashmap ="";
+                    String subCtgyKey_fromHashmap = "";
                     try {
                         subCtgyKey_fromHashmap = itemDetailsfromHashmap.getTmcsubctgykey();
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     //        Log.d(Constants.TAG, "SubCtgykey subCtgyKey_fromHashmap " + subCtgyKey_fromHashmap );
@@ -2536,8 +2871,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             }
                             String itemname = String.valueOf(itemDetailsfromHashmap.getItemname());
 
-                            if(itemname.equals("Fresh Goat Meat - Curry Cut")){
-                                Log.i("TAG", "Key : "+ String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
+                            if (itemname.equals("Fresh Goat Meat - Curry Cut")) {
+                                Log.i("TAG", "Key : " + String.valueOf(itemDetailsfromHashmap.getMenuitemid()));
                             }
                             double kilogram = weightinGrams * 0.001;
                             String KilogramString = String.valueOf(decimalFormat.format(kilogram) + "Kg");
@@ -2598,26 +2933,26 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
  */
 
-           // setAdapter();
+            // setAdapter();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private List<String> getSortedIdFromHashMap(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
-       order_item_list.clear();
+        order_item_list.clear();
         order_item_list.addAll(orderItem_hashmap.keySet());
         return order_item_list;
     }
 
     private void setAdapter() {
+        Adjusting_Widgets_Visibility(false);
         try {
-            Adapter_Pos_Sales_Report  adapter = new Adapter_Pos_Sales_Report(ConsolidatedReportSubCtgywise.this, dataList,false);
+            Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report(ConsolidatedReportSubCtgywise.this, dataList, false);
             consolidatedSalesReport_Listview.setAdapter(adapter);
 
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -2625,14 +2960,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
             scrollView.fullScroll(View.FOCUS_UP);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
     }
-
 
 
     private void getMenuItemArrayFromSharedPreferences() {
@@ -2652,9 +2985,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     }
 
 
-
-
-
     private boolean checkIfSubCtgywiseTotalisAlreadyAvailableInArray(String menuitemid) {
         return SubCtgywiseTotalHashmap.containsKey(menuitemid);
     }
@@ -2663,59 +2993,59 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     private boolean checkIfPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
         return ordertypeHashmap.containsKey(menuitemid);
     }
+
     private boolean checkIfMenuItemisAlreadyAvailableInArray(String menuitemid) {
         return OrderItem_hashmap.containsKey(menuitemid);
     }
 
 
     void Adjusting_Widgets_Visibility(boolean show) {
-        if(show) {
+        if (show) {
             loadingPanel.setVisibility(View.VISIBLE);
             loadingpanelmask.setVisibility(View.VISIBLE);
 
-        }
-        else{
+        } else {
             loadingPanel.setVisibility(View.GONE);
             loadingpanelmask.setVisibility(View.GONE);
 
         }
 
     }
+
     private String getMonthString(int value) {
         if (value == 0) {
             return "Jan";
         } else if (value == 1) {
             return "Feb";
-        } else if (value ==2) {
+        } else if (value == 2) {
             return "Mar";
-        } else if (value ==3) {
+        } else if (value == 3) {
             return "Apr";
-        } else if (value ==4) {
+        } else if (value == 4) {
             return "May";
-        } else if (value ==5) {
+        } else if (value == 5) {
             return "Jun";
-        } else if (value ==6) {
+        } else if (value == 6) {
             return "Jul";
-        } else if (value ==7) {
+        } else if (value == 7) {
             return "Aug";
-        } else if (value ==8) {
+        } else if (value == 8) {
             return "Sep";
-        } else if (value ==9) {
+        } else if (value == 9) {
             return "Oct";
-        } else if (value ==10) {
+        } else if (value == 10) {
             return "Nov";
-        } else if (value ==11) {
+        } else if (value == 11) {
             return "Dec";
         }
         return "";
     }
 
 
-
     private String getDayString(int value) {
         if (value == 1) {
             return "Sun";
-        }  else if (value == 2) {
+        } else if (value == 2) {
             return "Mon";
         } else if (value == 3) {
             return "Tue";
@@ -2725,23 +3055,18 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             return "Thu";
         } else if (value == 6) {
             return "Fri";
-        }
-        else if (value == 7) {
+        } else if (value == 7) {
             return "Sat";
         }
         return "";
     }
 
 
-
-
     private String getDatewithNameofthePreviousDay() {
         Calendar calendar = Calendar.getInstance();
 
 
-
-        calendar.add(Calendar.DATE,-1);
-
+        calendar.add(Calendar.DATE, -1);
 
 
         Date c1 = calendar.getTime();
@@ -2750,18 +3075,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         String PreviousdayDay = previousday.format(c1);
 
 
-
         SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
+        String PreviousdayDate = df1.format(c1);
 
         System.out.println("todays Date  " + CurrentDate);
         System.out.println("PreviousdayDate Date  " + PreviousdayDate);
-        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        String yesterdayAsString = PreviousdayDay + ", " + PreviousdayDate;
 
 
         return yesterdayAsString;
     }
-
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {
@@ -2781,27 +3104,52 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         calendar.add(Calendar.DATE, -1);
 
 
-
-
         Date c1 = calendar.getTime();
 
         SimpleDateFormat previousday = new SimpleDateFormat("EEE");
         String PreviousdayDay = previousday.format(c1);
 
 
-
         SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        String PreviousdayDate = df1.format(c1);
+        String yesterdayAsString = PreviousdayDay + ", " + PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
 
         return yesterdayAsString;
     }
 
+    private String convertNormalDateintoReplacementTransactionDetailsDate(String sDate, String Time) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
 
-    public String getDate_and_time()
-    {
+        Date c1 = calendar.getTime();
+
+
+        SimpleDateFormat df = new SimpleDateFormat();
+        if (Time.equals("STARTTIME")) {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        } else {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+
+        }
+
+        String Date = df.format(c1);
+        return Date;
+    }
+
+
+    public String getDate_and_time() {
 
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
@@ -2810,52 +3158,98 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         String Currentday = dayname.format(c);
 
 
-
-
         SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
         String CurrentDate = df.format(c);
-        String date = Currentday+", "+CurrentDate;
+        String date = Currentday + ", " + CurrentDate;
 
 
         return date;
     }
 
 
+    public String getstartDate_and_time_TransactionTable() {
 
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
+    public String getendDate_and_time_TransactionTable() {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
+
+    private void runthread() {
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isReplacementTransacDetailsResponseReceivedForSelectedDate && isgetReplacementOrderForSelectedDateCalled) {
+                            addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                            prepareContent();
+                            setAdapter();
+                        } else {
+                            runthread();
+                        }
+                    }
+                });
+            }
+        }, 15);
+    }
 
 
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
 
         SimpleDateFormat day = new SimpleDateFormat("EEE");
-        String  CurrentDay = day.format(c);
+        String CurrentDay = day.format(c);
 
         SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy");
         CurrentDate = df.format(c);
 
-        CurrentDate = CurrentDay+", "+CurrentDate;
+        CurrentDate = CurrentDay + ", " + CurrentDate;
         System.out.println("todays Date  " + CurrentDate);
 
 
         return CurrentDate;
     }
+
     public void exportReport() {
-        if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) { return; }
+        if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) {
+            return;
+        }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();
         String state = Environment.getExternalStorageState();
         //Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
-        String  path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
 
         File folder = new File(path);
-      //  File folder = new File(fol, "pdf");
+        //  File folder = new File(fol, "pdf");
         if (!folder.exists()) {
             boolean bool = folder.mkdirs();
         }
         try {
-            String filename = "Consolidated Sales Report_" + System.currentTimeMillis()  +".pdf";
+            String filename = "Consolidated Sales Report_" + System.currentTimeMillis() + ".pdf";
             final File file = new File(folder, filename);
             file.createNewFile();
-            try{
+            try {
                 FileOutputStream fOut = new FileOutputStream(file);
                 Document layoutDocument = new Document();
                 PdfWriter.getInstance(layoutDocument, fOut);
@@ -2864,15 +3258,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 addItemRows(layoutDocument);
 
                 layoutDocument.close();
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
             // if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
             // document = new PdfDocument(new PdfWriter("MyFirstInvoice.pdf"));
-
-
 
 
             Adjusting_Widgets_Visibility(false);
@@ -2881,7 +3272,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             StrictMode.setVmPolicy(builder.build());
 
             Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
-            pdfViewIntent.setDataAndType(Uri.fromFile(file),"application/pdf");
+            pdfViewIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
             pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             pdfViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
@@ -2912,7 +3303,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     = getSharedPreferences("VendorLoginData",
                     MODE_PRIVATE);
 
-            String Vendorname  = sharedPreferences.getString("VendorName","");
+            String Vendorname = sharedPreferences.getString("VendorName", "");
 
             com.itextpdf.text.Font boldFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 22, Font.BOLDITALIC);
             com.itextpdf.text.Paragraph titlepara = new com.itextpdf.text.Paragraph("CONSOLIDATED SALES REPORT");
@@ -2939,7 +3330,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
     private void addItemRows(Document layoutDocument) {
         try {
-            String rsunit = "Rs.",tmcprice;
+            String rsunit = "Rs.", tmcprice;
             PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
 
@@ -2969,18 +3360,19 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             pricecell.setPaddingRight(10);
             table.addCell(pricecell);
 
-            PdfPCell itemnamecell = null; PdfPCell itemqtycell = null;
+            PdfPCell itemnamecell = null;
+            PdfPCell itemqtycell = null;
             PdfPCell itempricecell = null;
             for (String SubCtgykey : tmcSubCtgykey) {
                 int i_value = 0;
-                String subCtgyTotal ="0";
+                String subCtgyTotal = "0";
                 double subCtgyTotaldouble = 0;
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
-                String SubCtgyName="", menuid;
+                String SubCtgyName = "", menuid;
                 Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
                 try {
-                    if(!subCtgyName_object.equals(null)) {
+                    if (!subCtgyName_object.equals(null)) {
                         SubCtgyName = Objects.requireNonNull(subCtgyName_object).getTmcsubctgyname();
                     }
                 } catch (Exception e) {
@@ -2992,10 +3384,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 for (int j = 0; j < Order_Item_List.size(); j++) {
                     menuid = Order_Item_List.get(j);
                     Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
-                    String itemName ="";
+                    String itemName = "";
                     try {
-                        if(!itemRow.equals(null)) {
-                            itemName =  itemRow.getItemname();
+                        if (!itemRow.equals(null)) {
+                            itemName = itemRow.getItemname();
                         }
                     } catch (Exception e) {
                         itemName = "";
@@ -3005,7 +3397,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
                     String subCtgyKey_fromHashmap = "";
                     try {
-                        if(!itemRow.equals(null)) {
+                        if (!itemRow.equals(null)) {
                             subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
                         }
                     } catch (Exception e) {
@@ -3015,54 +3407,49 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                     }
 
-                    try{
+                    try {
                         subCtgyTotal = SubCtgywiseTotalHashmap.get(SubCtgykey);
                         subCtgyTotaldouble = Double.parseDouble(subCtgyTotal);
                         subCtgyTotal = decimalFormat.format(subCtgyTotaldouble);
-                    }
-                    catch (Exception e){
-                        subCtgyTotal= "0";
+                    } catch (Exception e) {
+                        subCtgyTotal = "0";
                         e.printStackTrace();
                     }
-
 
 
                     if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
 
                         if (i_value != 0) {
-                itemnamecell = new PdfPCell(new Phrase((itemName)));
-                itemnamecell.setBorder(Rectangle.BOTTOM);
-                itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
-                itemnamecell.setMinimumHeight(30);
-                itemnamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                itemnamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                itemnamecell.setPaddingLeft(10);
-                String Quantity = itemRow.getQuantity();
-                itemqtycell = new PdfPCell(new Phrase("" +Quantity ));
-                itemqtycell.setBorder(Rectangle.BOTTOM);
-                itemqtycell.setBorderColor(BaseColor.LIGHT_GRAY);
-                itemqtycell.setMinimumHeight(30);
-                itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itemnamecell = new PdfPCell(new Phrase((itemName)));
+                            itemnamecell.setBorder(Rectangle.BOTTOM);
+                            itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itemnamecell.setMinimumHeight(30);
+                            itemnamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            itemnamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itemnamecell.setPaddingLeft(10);
+                            String Quantity = itemRow.getQuantity();
+                            itemqtycell = new PdfPCell(new Phrase("" + Quantity));
+                            itemqtycell.setBorder(Rectangle.BOTTOM);
+                            itemqtycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itemqtycell.setMinimumHeight(30);
+                            itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                            itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-                double totalval = Double.parseDouble( itemRow.getTmcprice());
-                tmcprice =  decimalFormat.format(totalval);
-                tmcprice = rsunit + tmcprice;
-                itempricecell = new PdfPCell(new Phrase(tmcprice));
-                itempricecell.setBorder(Rectangle.BOTTOM);
-                itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
-                itempricecell.setMinimumHeight(30);
-                itempricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                itempricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                itempricecell.setPaddingRight(10);
-
-
+                            double totalval = Double.parseDouble(itemRow.getTmcprice());
+                            tmcprice = decimalFormat.format(totalval);
+                            tmcprice = rsunit + tmcprice;
+                            itempricecell = new PdfPCell(new Phrase(tmcprice));
+                            itempricecell.setBorder(Rectangle.BOTTOM);
+                            itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itempricecell.setMinimumHeight(30);
+                            itempricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            itempricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itempricecell.setPaddingRight(10);
 
 
-
-                table.addCell(itemnamecell);
-                table.addCell(itemqtycell);
-                table.addCell(itempricecell);
+                            table.addCell(itemnamecell);
+                            table.addCell(itemqtycell);
+                            table.addCell(itempricecell);
                         }
                     }
                     if (i_value == 0) {
@@ -3102,10 +3489,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             layoutDocument.add(table);
 
 
-
-
-
-
             PdfPTable tablePaymentMode = new PdfPTable(4);
             tablePaymentMode.setWidthPercentage(100);
             tablePaymentMode.setSpacingBefore(20);
@@ -3129,6 +3512,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             double bigBasketorder_Amount = 0;
             String Payment_Amount = "0";
             double discountAmount = 0;
+
+
+
             for (String orderid : couponDiscountOrderidArray) {
                 String Discount_amount = couponDiscount_hashmap.get(orderid);
                 double CouponDiscount_double = Double.parseDouble(Discount_amount);
@@ -3179,7 +3565,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             }
 
 
-            for(String ordertype :ordertypeArray){
+            for (String ordertype : ordertypeArray) {
+                String replacmentFromTextview = "",refundFromTextview = "";
+                double replacment_doubleFromTextview = 0,refund_doubleFromTextview = 0;
 
                 Modal_OrderDetails modal_orderDetails = ordertypeHashmap.get(ordertype);
                 try {
@@ -3200,7 +3588,43 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     if ((ordertype.toUpperCase().equals(Constants.POSORDER)) || (ordertype.equals("posorder"))) {
                         posorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getPosSales())));
                         ////Log.i(Constants.TAG,"Consolidated Report  new posorder_Amount   " +posorder_Amount);
-                        posorder_Amount = posorder_Amount-posorder_discountAmount;
+
+                        try{
+                            replacmentFromTextview = replacementAmount_textwidget.getText().toString();
+                        }
+                        catch (Exception e){
+                            replacmentFromTextview="0";
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            refundFromTextview = refundAmount_textwidget.getText().toString();
+
+                        }
+                        catch (Exception e){
+                            refundFromTextview = "0";
+                            e.printStackTrace();
+                        }
+                        try{
+                            replacment_doubleFromTextview = Math.round(Double.parseDouble(replacmentFromTextview));
+                        }
+                        catch (Exception e){
+                            replacment_doubleFromTextview =0;
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            refund_doubleFromTextview = Math.round(Double.parseDouble(refundFromTextview));
+
+                        }
+                        catch (Exception e){
+                            refund_doubleFromTextview = 0;
+                            e.printStackTrace();
+                        }
+
+
+
+                        posorder_Amount = posorder_Amount - (posorder_discountAmount +refund_doubleFromTextview +replacment_doubleFromTextview);
 
                         paymentModeitemkeycell = new PdfPCell(new Phrase("POSORDER  : "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
@@ -3221,9 +3645,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         tablePaymentMode.addCell(paymentModeitemValueCell);
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.APPORDER))||(ordertype.equals("apporder"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.APPORDER)) || (ordertype.equals("apporder"))) {
                         apporder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getAppSales())));
-                        apporder_Amount = apporder_Amount-apporder_discountAmount;
+                        apporder_Amount = apporder_Amount - apporder_discountAmount;
                         paymentModeitemkeycell = new PdfPCell(new Phrase("APPORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -3243,9 +3667,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         tablePaymentMode.addCell(paymentModeitemValueCell);
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.PhoneOrder))||(ordertype.equals("Phone Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.PhoneOrder)) || (ordertype.equals("Phone Order"))) {
                         phoneorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getPhoneOrderSales())));
-                        phoneorder_Amount = phoneorder_Amount-phoneorder_discountAmount;
+                        phoneorder_Amount = phoneorder_Amount - phoneorder_discountAmount;
                         paymentModeitemkeycell = new PdfPCell(new Phrase("PHONE ORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -3266,9 +3690,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
 
 
-                    if ((ordertype.toUpperCase().equals(Constants.SwiggyOrder))||(ordertype.equals("Swiggy Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.SwiggyOrder)) || (ordertype.equals("Swiggy Order"))) {
                         swiggyorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales())));
-                        swiggyorder_Amount = swiggyorder_Amount-swiggyorder_discountAmount;
+                        swiggyorder_Amount = swiggyorder_Amount - swiggyorder_discountAmount;
                         paymentModeitemkeycell = new PdfPCell(new Phrase("SWIGGY ORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -3288,9 +3712,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         tablePaymentMode.addCell(paymentModeitemValueCell);
                     }
 
-                    if ((ordertype.toUpperCase().equals(Constants.DunzoOrder))||(ordertype.equals("Dunzo Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.DunzoOrder)) || (ordertype.equals("Dunzo Order"))) {
                         dunzoorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales())));
-                        dunzoorder_Amount = dunzoorder_Amount-dunzoorder_discountAmount;
+                        dunzoorder_Amount = dunzoorder_Amount - dunzoorder_discountAmount;
                         paymentModeitemkeycell = new PdfPCell(new Phrase("DUNZO ORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -3311,10 +3735,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
 
 
-
-                    if ((ordertype.toUpperCase().equals(Constants.BigBasket))||(ordertype.equals("BigBasket Order"))) {
+                    if ((ordertype.toUpperCase().equals(Constants.BigBasket)) || (ordertype.equals("BigBasket Order"))) {
                         bigBasketorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales())));
-                        bigBasketorder_Amount = bigBasketorder_Amount-bigBasketorder_discountAmount;
+                        bigBasketorder_Amount = bigBasketorder_Amount - bigBasketorder_discountAmount;
                         paymentModeitemkeycell = new PdfPCell(new Phrase("BIGBASKET ORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -3334,36 +3757,24 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         tablePaymentMode.addCell(paymentModeitemValueCell);
                     }
 
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
-
-
-
-
-
-
-
-
-
 
 
             }
             layoutDocument.add(tablePaymentMode);
 
 
-
-
             PdfPTable table1 = new PdfPTable(4);
             table1.setWidthPercentage(100);
             table1.setSpacingBefore(20);
-            PdfPCell emptycell; PdfPCell emptycellone; PdfPCell emptycelltwo;
-            for (int i=0; i<finalBillDetails.size(); i++) {
+            PdfPCell emptycell;
+            PdfPCell emptycellone;
+            PdfPCell emptycelltwo;
+            for (int i = 0; i < finalBillDetails.size(); i++) {
                 String key = finalBillDetails.get(i);
-                String value= FinalBill_hashmap.get(key);
+                String value = FinalBill_hashmap.get(key);
                 //Log.d("ExportReportActivity", "itemTotalRowsList name "+key);
 
                 //Log.d("ExportReportActivity", "itemTotalRowsList value "+value);
@@ -3388,7 +3799,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 itemqtycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 table1.addCell(itemqtycell);
-                itempricecell = new PdfPCell(new Phrase("Rs. "+value));
+
+
+                itempricecell = new PdfPCell(new Phrase("Rs. " + value));
                 itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
                 itempricecell.setBorder(Rectangle.NO_BORDER);
                 itempricecell.setMinimumHeight(25);
@@ -3406,6 +3819,23 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             ex.printStackTrace();
         }
 
+
+}
+   /* RoundRectangle roundRectange = new RoundRectangle();
+                itempricecell.setCellEvent(roundRectange);
+    public class RoundRectangle implements PdfPCellEvent {
+        public void cellLayout(PdfPCell cell, Rectangle rect,
+                               PdfContentByte[] canvas) {
+            PdfContentByte cb = canvas[PdfPTable.LINECANVAS];
+            cb.roundRectangle(
+                    rect.getLeft() + 1.5f, rect.getBottom() + 1.5f, rect.getWidth() - 3,
+                    rect.getHeight() - 3, 4);
+            cb.stroke();
+        }
     }
+
+
+    */
+
 
 }

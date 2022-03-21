@@ -555,7 +555,7 @@
 
 
                     <Button
-                        android:id="@+id/fetchOrders_buttonWidget"
+                        android:id="@+id/addRefund_buttonWidget"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
                         android:background="@drawable/button_background"
@@ -792,7 +792,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/newOrders_recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
 
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp">

@@ -40,9 +40,23 @@ import android.widget.Toast;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPCellEvent;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
@@ -64,7 +78,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,10 +96,11 @@ import okhttp3.WebSocket;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
+import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlots;
 
 public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     TextView count_AllOrders, count_onTimeDeliveryOrders, count_30MinsLateOrders, count_60MinsLateOrders, count_moreThan60MinsLateOrders, appOrdersCount_textwidget, dateSelector_text, mobile_orderinstruction, mobile_nameofFacility_Textview;
-    LinearLayout listview_Layout, timeslotButtonss_layout, show_allOrders, show_onTimeDeliveryOrders, show_30MinsLateOrders, show_60MinsLateOrders, show_moreThan60MinsLateOrders;
+    LinearLayout generateSlotwise_Report_Layout,listview_Layout, timeslotButtonss_layout, show_allOrders, show_onTimeDeliveryOrders, show_30MinsLateOrders, show_60MinsLateOrders, show_moreThan60MinsLateOrders;
     Button mobile_new_Order_widget, mobile_confirmed_Order_widget, mobile_ready_Order_widget, mobile_transist_Order_widget, mobile_delivered_Order_widget;
     ImageView mobile_search_button, mobile_search_close_btn, applaunchimage;
     EditText mobile_search_barEditText;
@@ -125,8 +139,12 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     public static List<String> array_of_orderId;
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     Spinner deliverytimeSelector_spinner;
-    boolean isdelayed;
-    List<String> deliveredtimeChoosingSpinnerData;
+    boolean isdelayed,isPDF_FIle = false;
+    List<String> deliveredtimeArray;
+    List<String> slotrangetimeArray = new ArrayList<>();
+    String deliveryTimeForExpr_Delivery ="" ;
+    HashMap<String,HashMap<String,Integer>> hashMap_sorted_OrdersList = new HashMap<>();
+
     String selecteddeliveredtime_spinner = "All";
     int spinner_check = 0;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -156,7 +174,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
         double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
         double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
         screenInches = Math.sqrt(x + y);
-        deliveredtimeChoosingSpinnerData = new ArrayList<>();
+        deliveredtimeArray = new ArrayList<>();
 
 
         //
@@ -170,9 +188,10 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
         mobile_orderinstruction = findViewById(R.id.orderinstruction);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
-        generateReport_Layout = findViewById(R.id.generateReport_Layout);
+        generateReport_Layout = findViewById(R.id.generatedelayedTimewiseReport_Layout);
         timeslotButtonss_layout = findViewById(R.id.timeslotButtonss_layout);
         listview_Layout = findViewById(R.id.listview_Layout);
+        generateSlotwise_Report_Layout = findViewById(R.id.generateSlotwise_Report_Layout);
         //
         mobile_nameofFacility_Textview = findViewById(R.id.nameofFacility_Textview);
         mobile_search_button = findViewById(R.id.search_button);
@@ -192,8 +211,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
         count_moreThan60MinsLateOrders = findViewById(R.id.count_moreThan60MinsLateOrders);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
-        Adjusting_Widgets_Visibility(true);
-
+        getslotTimeFromDB();
         setDataForSpinner();
         mobile_nameofFacility_Textview.setText(vendorname);
 
@@ -214,6 +232,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
             array_of_orderId.clear();
             selecteddeliveredtime_spinner = "All";
             dateSelector_text.setText(Todaysdate);
+
             getOrderDetailsUsingOrderSlotDate(PreviousDateString, Todaysdate, vendorKey, orderStatus);
 
 
@@ -241,7 +260,66 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
             }
         });
+        generateSlotwise_Report_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
 
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if (Environment.isExternalStorageManager()) {
+                            try {
+
+                                prepareDataForPDF();
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        } else {
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    } else {
+
+
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(DeliveredOrdersTimewiseReport.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(DeliveredOrdersTimewiseReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            Adjusting_Widgets_Visibility(true);
+                            try {
+                                prepareDataForPDF();
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
 
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -301,18 +379,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
         generateReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              /*  ordersList.clear();
-                sorted_OrdersList.clear();
-                array_of_orderId.clear();
 
-                Adjusting_Widgets_Visibility(true);
-                String Todaysdate = dateSelector_text.getText().toString();
-                PreviousDateString = getDatewithNameofthePreviousDay();
-
-                isSearchButtonClicked = false;
-                orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
-                getOrderDetailsUsingOrderSlotDate(PreviousDateString,Todaysdate, vendorKey, orderStatus);
-           */
                 Adjusting_Widgets_Visibility(true);
 
            //     AddDatatoExcelSheet(sorted_OrdersList, type, generateSheet);
@@ -490,6 +557,425 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
     }
 
+    private void getslotTimeFromDB() {
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, api_GetDeliverySlots+"?storeid="+vendorKey,
+                null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+
+                    JSONArray content = (JSONArray) response.get("content");
+                    JSONArray jArray = (JSONArray) content;
+                    if (jArray != null) {
+                        slotrangetimeArray.add("All");
+                        slotrangetimeArray.add(Constants.EXPRESS_DELIVERY_SLOTNAME);
+                        for (int i = 0; i < jArray.length(); i++) {
+                            try {
+                                JSONObject json = content.getJSONObject(i);
+
+                                String slotName = String.valueOf(json.get("slotname").toString().toUpperCase());
+                                String slotdateType = String.valueOf(json.get("slotdatetype"));
+                                if(slotdateType.equals("TODAY")) {
+                                    if ((slotName.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotName.equals(Constants.EXPRESSDELIVERY_SLOTNAME))) {
+                                        deliveryTimeForExpr_Delivery = String.valueOf(json.get("deliverytime")).toUpperCase();
+
+                                    }
+                                    else {
+                                        String slotEndTime = String.valueOf(json.get("slotendtime"));
+                                        String slotStartTime = String.valueOf(json.get("slotstarttime"));
+                                        String timeRange = slotStartTime + " - " + slotEndTime;
+                                        if(!timeRange.equals(" - ")) {
+                                            slotrangetimeArray.add(timeRange);
+                                        }
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+
+
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(DeliveredOrdersTimewiseReport.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void prepareDataForPDF() {
+        hashMap_sorted_OrdersList.clear();
+        isPDF_FIle = true;
+        Log.d(Constants.TAG, "prepareDataFor PDF Response: " );
+
+        boolean generatePdf = false;
+
+        Log.d(Constants.TAG, "prepareDataFor PDF size: " + deliveredtimeArray.size() );
+        Log.d(Constants.TAG, "prepareDataFor PDF ordersList size: " +ordersList.size() );
+
+        for (int j = 0; j< slotrangetimeArray.size(); j++) {
+            String slotrangetime = slotrangetimeArray.get(j);
+            Log.d(Constants.TAG, "prepareDataFor PDF type: " + slotrangetime);
+
+              HashMap<String, Integer> deliverytypewise_ordersHashmap = new HashMap<>();
+
+            for (int k = 0; k < ordersList.size(); k++) {
+                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(k);
+                String slotTimeRangeFromOrderDetails = modal_manageOrders_pojo_class.getSlottimerange();
+                if(slotTimeRangeFromOrderDetails.equals("120 mins")){
+                    slotTimeRangeFromOrderDetails = Constants.EXPRESS_DELIVERY_SLOTNAME;
+                }
+                if(slotrangetime.equals("120 mins")){
+                    slotTimeRangeFromOrderDetails = Constants.EXPRESS_DELIVERY_SLOTNAME;
+                }
+                String deliverytype = modal_manageOrders_pojo_class.getTypebasedonDeliveredTime();
+
+                if(slotrangetime.equals(slotTimeRangeFromOrderDetails)){
+                    if(deliverytypewise_ordersHashmap.containsKey(deliverytype)){
+                        int count = deliverytypewise_ordersHashmap.get(deliverytype);
+                        count = count +1 ;
+                        deliverytypewise_ordersHashmap.put(deliverytype,count);
+                    }
+                    else{
+                        deliverytypewise_ordersHashmap.put(deliverytype,1);
+                    }
+                }
+                if(slotrangetime.equals("All")){
+                    if(deliverytypewise_ordersHashmap.containsKey(deliverytype)){
+                        int count = deliverytypewise_ordersHashmap.get(deliverytype);
+                        count = count +1 ;
+                        deliverytypewise_ordersHashmap.put(deliverytype,count);
+                    }
+                    else{
+                        deliverytypewise_ordersHashmap.put(deliverytype,1);
+                    }
+                }
+                try {
+                    if (ordersList.size()  - k == 1) {
+                        if(hashMap_sorted_OrdersList.containsKey(slotrangetime)){
+                            HashMap<String, Integer> deliverytypewise_ordersHashmap_1 = hashMap_sorted_OrdersList.get(slotrangetime);
+                            if(deliverytypewise_ordersHashmap_1.containsKey(deliverytype)){
+                                int count = deliverytypewise_ordersHashmap_1.get(deliverytype);
+                                count = count +1 ;
+                                deliverytypewise_ordersHashmap_1.put(deliverytype,count);
+                            }
+                            else{
+                                deliverytypewise_ordersHashmap_1.put(deliverytype,1);
+                            }
+                        }
+                        else{
+                            hashMap_sorted_OrdersList.put(slotrangetime, deliverytypewise_ordersHashmap);
+
+                        }
+
+
+                        /*
+                        if(sorted_OrdersHashmap.containsKey(deliverytype)){
+                          int count =   sorted_OrdersHashmap.get(deliverytype);
+                            count = count + sorted_OrdersList.size();
+                            sorted_OrdersHashmap.put(deliverytype, count);
+
+                        }
+                        else {
+                            sorted_OrdersHashmap.put(deliverytype, sorted_OrdersList.size());
+                        }
+
+
+                         */
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+            }
+            if(slotrangetimeArray.size() -j ==1){
+                Log.d(Constants.TAG, "prepareDataFor PDF hashMap_sorted_OrdersList: " + hashMap_sorted_OrdersList.size());
+                Log.d(Constants.TAG, "prepareDataFor PDF sorted_OrdersList: " + sorted_OrdersList.size());
+                Log.d(Constants.TAG, "prepareDataFor PDF slotrangetime: " + slotrangetime);
+               // Adjusting_Widgets_Visibility(false);
+             //   hashMap_sorted_OrdersList.put(slotrangetime,sorted_OrdersHashmap);
+                AddDatatoPDFFile();
+            }
+        }
+        Adjusting_Widgets_Visibility(false);
+
+
+
+            }
+
+    private void AddDatatoPDFFile() {
+        if ((hashMap_sorted_OrdersList == null)) {
+            return;
+        }
+        String extstoragedir = Environment.getExternalStorageDirectory().toString();
+        String state = Environment.getExternalStorageState();
+        //Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+        File folder = new File(path);
+        //  File folder = new File(fol, "pdf");
+        if (!folder.exists()) {
+            boolean bool = folder.mkdirs();
+        }
+        try {
+            String filename = "Delivered Orders Slotwise" + System.currentTimeMillis() + ".pdf";
+            final File file = new File(folder, filename);
+            file.createNewFile();
+            try {
+                FileOutputStream fOut = new FileOutputStream(file);
+                Document layoutDocument = new Document();
+                PdfWriter.getInstance(layoutDocument, fOut);
+                layoutDocument.open();
+                addVendorDetails(layoutDocument);
+                addItemRows(layoutDocument);
+
+                layoutDocument.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            // document = new PdfDocument(new PdfWriter("MyFirstInvoice.pdf"));
+
+
+            Adjusting_Widgets_Visibility(false);
+
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+
+            Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
+            pdfViewIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+            pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            pdfViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            Intent intent = Intent.createChooser(pdfViewIntent, "Open File");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            try {
+                Adjusting_Widgets_Visibility(false);
+
+                startActivityForResult(intent, OPENPDF_ACTIVITY_REQUEST_CODE);
+            } catch (ActivityNotFoundException e) {
+                // Instruct the user to install a PDF reader here, or something
+            }
+            // }
+        } catch (IOException e) {
+            Adjusting_Widgets_Visibility(false);
+
+            Log.i("error", e.getLocalizedMessage());
+        } catch (Exception ex) {
+            Adjusting_Widgets_Visibility(false);
+
+            ex.printStackTrace();
+        }
+
+    }
+
+    private void addItemRows(Document layoutDocument) {
+        RoundRectangle roundRectange = new RoundRectangle();
+        if(hashMap_sorted_OrdersList.size()>0){
+
+
+
+            PdfPTable inner_table = new PdfPTable(deliveredtimeArray.size()+1);
+            inner_table.setHeaderRows(1);
+            inner_table.setWidthPercentage(95);
+
+
+
+
+
+
+            PdfPCell slotrangetimecell = new PdfPCell(new Phrase(""));
+
+            slotrangetimecell.setBorder(Rectangle.NO_BORDER);
+            slotrangetimecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            slotrangetimecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            slotrangetimecell.setPaddingLeft(10);
+            slotrangetimecell.setFixedHeight(30);
+            slotrangetimecell.setBorderWidthBottom(01);
+            inner_table.addCell(slotrangetimecell);
+
+
+
+            for(int i =0 ;i<deliveredtimeArray.size();i++) {
+                String deliveryType = deliveredtimeArray.get(i);
+                PdfPCell slotrangetimecel11 = new PdfPCell(new Phrase(deliveryType));
+                slotrangetimecel11.setBorder(Rectangle.NO_BORDER);
+                slotrangetimecel11.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                slotrangetimecel11.setHorizontalAlignment(Element.ALIGN_LEFT);
+                slotrangetimecel11.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                    if(deliveredtimeArray.size()-i !=1) {
+                        slotrangetimecel11.setBorderWidthRight(01);
+                    }
+
+                slotrangetimecel11.setFixedHeight(30);
+                slotrangetimecel11.setNoWrap(true);
+                slotrangetimecel11.setBorderWidthBottom(01);
+
+                inner_table.addCell(slotrangetimecel11);
+
+
+
+            }
+
+
+
+
+
+
+
+            for (int j = 0; j< slotrangetimeArray.size(); j++) {
+                String slotrangetime = slotrangetimeArray.get(j);
+
+                if(hashMap_sorted_OrdersList.containsKey(slotrangetime)){
+                    PdfPCell slotrangetimecell2 = new PdfPCell(new Phrase(slotrangetime));
+                    slotrangetimecell2.setBorder(Rectangle.NO_BORDER);
+                    slotrangetimecell2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    slotrangetimecell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    slotrangetimecell2.setPaddingLeft(10);
+                    slotrangetimecell2.setPaddingRight(20);
+                    slotrangetimecell2.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    slotrangetimecell2.setBorderWidthBottom(01);
+                    slotrangetimecell2.setBorderWidthRight(01);
+                    slotrangetimecell2.setFixedHeight(30);
+                    inner_table.addCell(slotrangetimecell2);
+
+
+                    HashMap<String, Integer> deliverytypewise_ordersHashmap_1 = hashMap_sorted_OrdersList.get(slotrangetime);
+
+                    for(int i =0 ;i<deliveredtimeArray.size();i++) {
+                        String deliveryType = deliveredtimeArray.get(i);
+
+                        if (deliverytypewise_ordersHashmap_1.containsKey(deliveryType)) {
+
+                            int count = deliverytypewise_ordersHashmap_1.get(deliveryType);
+                            PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(count)));
+                            deliveryTypecell.setBorder(Rectangle.NO_BORDER);
+                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            deliveryTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            deliveryTypecell.setPaddingLeft(10);
+                            deliveryTypecell.setFixedHeight(30);
+                            deliveryTypecell.setBorderWidthBottom(01);
+                            if(deliveredtimeArray.size()-i !=1) {
+                                deliveryTypecell.setBorderWidthRight(01);
+                            }
+                            inner_table.addCell(deliveryTypecell);
+
+
+                        }
+                        else{
+                            int count = 0;
+                            PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(count)));
+                            deliveryTypecell.setBorder(Rectangle.NO_BORDER);
+                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            deliveryTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            deliveryTypecell.setPaddingLeft(10);
+                            deliveryTypecell.setFixedHeight(30);
+                            deliveryTypecell.setBorderWidthBottom(01);
+                            if(deliveredtimeArray.size()-i !=1) {
+                                deliveryTypecell.setBorderWidthRight(01);
+                            }
+                            inner_table.addCell(deliveryTypecell);
+                        }
+                    }
+
+                    }
+
+                if(slotrangetimeArray.size() -1 == j){
+                    try {
+                       PdfPTable outertable = new PdfPTable(1);
+                        PdfPCell  outercell = new PdfPCell(inner_table);
+                        outercell.setCellEvent(roundRectange);
+                        outercell.setBorder(Rectangle.NO_BORDER);
+                        outercell.setPadding(8);
+                        outertable.addCell(outercell);
+                        outertable.setWidthPercentage(100);
+
+
+                        layoutDocument.add(outertable);
+
+                    } catch (DocumentException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+            }
+        }
+    }
+
+    private void addVendorDetails(Document layoutDocument) {
+        try {
+            SharedPreferences sharedPreferences
+                    = getSharedPreferences("VendorLoginData",
+                    MODE_PRIVATE);
+
+            String Vendorname = sharedPreferences.getString("VendorName", "");
+
+            com.itextpdf.text.Font boldFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 22, Font.BOLDITALIC);
+            com.itextpdf.text.Paragraph titlepara = new com.itextpdf.text.Paragraph("DELIVERED ORDERS SLOTWISE REPORT");
+            titlepara.setSpacingBefore(5);
+            titlepara.setFont(boldFont);
+            titlepara.setAlignment(Element.ALIGN_CENTER);
+            layoutDocument.add(titlepara);
+
+            String vendorname = "Vendor: " + Vendorname;
+            com.itextpdf.text.Paragraph vendorpara = new com.itextpdf.text.Paragraph(vendorname);
+            vendorpara.setSpacingBefore(20);
+            vendorpara.setAlignment(Element.ALIGN_LEFT);
+            layoutDocument.add(vendorpara);
+
+            com.itextpdf.text.Paragraph datepara = new com.itextpdf.text.Paragraph("Date: " + getDate());
+            datepara.setAlignment(Element.ALIGN_LEFT);
+            datepara.setSpacingBefore(5);
+            datepara.setSpacingAfter(20);
+            layoutDocument.add(datepara);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     private void showslotbuttons(boolean show) {
         if (!show) {
@@ -504,12 +990,12 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     private void setDataForSpinner() {
        // deliveredtimeChoosingSpinnerData.add("All");
 
-        deliveredtimeChoosingSpinnerData.add("On Time Delivery ");
-        deliveredtimeChoosingSpinnerData.add("0 - 30 Mins Late ");
-        deliveredtimeChoosingSpinnerData.add("30 - 60 Mins Late ");
-        deliveredtimeChoosingSpinnerData.add(" > 60 Mins Late ");
+        deliveredtimeArray.add("On Time Delivery ");
+        deliveredtimeArray.add("0 - 30 Mins Late ");
+        deliveredtimeArray.add("30 - 60 Mins Late ");
+        deliveredtimeArray.add(" > 60 Mins Late ");
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(DeliveredOrdersTimewiseReport.this, android.R.layout.simple_spinner_item, deliveredtimeChoosingSpinnerData);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(DeliveredOrdersTimewiseReport.this, android.R.layout.simple_spinner_item, deliveredtimeArray);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         deliverytimeSelector_spinner.setAdapter(arrayAdapter);
         selecteddeliveredtime_spinner = "All";
@@ -518,14 +1004,15 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     }
     private void prepareDataForExcelSheet() {
         Log.d(Constants.TAG, "prepareDataForExcelSheet Response: " );
+        isPDF_FIle = false;
 
         boolean generateSheet = false;
         sorted_OrdersList.clear();
-        Log.d(Constants.TAG, "prepareDataForExcelSheet size: " +deliveredtimeChoosingSpinnerData.size() );
+        Log.d(Constants.TAG, "prepareDataForExcelSheet size: " + deliveredtimeArray.size() );
         Log.d(Constants.TAG, "prepareDataForExcelSheet ordersList size: " +ordersList.size() );
 
-        for (int j =0; j<deliveredtimeChoosingSpinnerData.size();j++){
-            String type = deliveredtimeChoosingSpinnerData.get(j);
+        for (int j = 0; j< deliveredtimeArray.size(); j++){
+            String type = deliveredtimeArray.get(j);
             Log.d(Constants.TAG, "prepareDataForExcelSheet type: " +type );
 
             sorted_OrdersList.clear();
@@ -540,14 +1027,14 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
                     sorted_OrdersList.add(modal_manageOrders_pojo_class);
                 }
             }
-            if(j == deliveredtimeChoosingSpinnerData.size()-1){
+            if(j == deliveredtimeArray.size()-1){
                 generateSheet =true;
                 Log.d(Constants.TAG, "prepareDataForExcelSheet true: "  );
 
             }
 
             Log.d(Constants.TAG, "prepareDataForExcelSheet sorted_OrdersList size: " +sorted_OrdersList.size() );
-            Log.d(Constants.TAG, "prepareDataForExcelSheet sorted_OrdersList size: " +deliveredtimeChoosingSpinnerData.size() );
+            Log.d(Constants.TAG, "prepareDataForExcelSheet sorted_OrdersList size: " + deliveredtimeArray.size() );
             Log.d(Constants.TAG, "prepareDataForExcelSheet sorted_OrdersList size: " +j );
 
             AddDatatoExcelSheet(sorted_OrdersList,type,generateSheet);
@@ -801,13 +1288,26 @@ else{
             if (SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
                     // perform action when allow permission success
-                    try {
-                        GenerateExcelSheet();
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        ;
+                    if(isPDF_FIle) {
+                        try {
+                            GenerateExcelSheet();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            ;
+                        }
                     }
+                    else{
+                        try {
+                            AddDatatoPDFFile();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+
                 } else {
                     Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
                 }
@@ -1399,6 +1899,30 @@ else{
 
 
                         }
+                        try {
+                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+
+
+                                if (json.has("deliverydistance")) {
+
+                                    String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                    if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                        manageOrdersPojoClass.deliverydistance = String.valueOf(json.get("deliverydistance"));
+
+                                    } else {
+                                        manageOrdersPojoClass.deliverydistance = "0";
+
+                                    }
+                                } else {
+                                    manageOrdersPojoClass.deliverydistance = "0";
+                                }
+
+
+                            }
+                        } catch (Exception E) {
+                            manageOrdersPojoClass.deliverydistance = "0";
+                            E.printStackTrace();
+                        }
 
 
                         if (isdelayed) {
@@ -1446,13 +1970,13 @@ else{
 
                             ordersList.add(manageOrdersPojoClass);
                         }
-                        //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
+
+
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+
 
                 }
 
@@ -1770,6 +2294,7 @@ else{
                     modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                     modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                     modal_manageOrders_forOrderDetailList1.typebasedonDeliveredTime = selectedTimeRange_spinner;
+                    modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
 
                     modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                     modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -1826,7 +2351,8 @@ else{
                         modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                         modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                         modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
-;
+                        modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+
 
                         modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                         modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -1892,7 +2418,8 @@ else{
                             modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                             modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                             modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
-    ;
+                           modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+
 
                             modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                             modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -1960,7 +2487,8 @@ else{
                             modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                             modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                             modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
-    ;
+                            modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+
 
                             modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                             modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -2029,7 +2557,8 @@ else{
                             modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                             modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                             modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
-    ;
+                            modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+
 
                             modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                             modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -2441,7 +2970,16 @@ else{
         }
         return "";
     }
-
+     public class RoundRectangle implements PdfPCellEvent {
+        public void cellLayout(PdfPCell cell, Rectangle rect,
+                               PdfContentByte[] canvas) {
+            PdfContentByte cb = canvas[PdfPTable.LINECANVAS];
+            cb.roundRectangle(
+                    rect.getLeft() + 1.5f, rect.getBottom() + 1.5f, rect.getWidth() - 3,
+                    rect.getHeight() - 3, 4);
+            cb.stroke();
+        }
+    }
     @Override
     public void onBackPressed() {
         if(listview_Layout.getVisibility()==View.VISIBLE){

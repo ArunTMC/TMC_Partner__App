@@ -34,6 +34,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -182,10 +184,17 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
                                             if (json.has("orderplacedtime")) {
                                                 manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
-
+                                                try{
+                                                    manageOrdersPojoClass.orderplacedtime_in_long = getLongValuefortheDate(String.valueOf(json.get("orderplacedtime")));
+                                                }
+                                                catch (Exception e){
+                                                    manageOrdersPojoClass.orderplacedtime_in_long = "0";
+                                                }
                                             } else {
                                                 manageOrdersPojoClass.orderplacedtime = "";
                                             }
+
+
 
 
                                             if (json.has("orderplaceddate")) {
@@ -389,8 +398,12 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
                                     }
-
-                                    Adapter_Refund_Replacement_Listview adapter_replacement_refundProcess = new Adapter_Refund_Replacement_Listview(Add_Replacement_Refund_Screen.this                      , ordersList, Add_Replacement_Refund_Screen.this);
+                                    Collections.sort(ordersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                                        public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                                            return object2.getOrderplacedtime_in_long().compareTo(object1.getOrderplacedtime_in_long());
+                                        }
+                                    });
+                                    Adapter_Refund_Replacement_Listview adapter_replacement_refundProcess = new Adapter_Refund_Replacement_Listview(Add_Replacement_Refund_Screen.this, ordersList, Add_Replacement_Refund_Screen.this);
                                     orders_listview.setAdapter(adapter_replacement_refundProcess);
 
 

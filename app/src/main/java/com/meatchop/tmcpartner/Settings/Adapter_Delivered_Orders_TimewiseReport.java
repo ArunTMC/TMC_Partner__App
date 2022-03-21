@@ -50,7 +50,7 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
     String portName = "USB";
     int portSettings=0,totalGstAmount=0;
     List<Modal_ManageOrders_Pojo_Class> ordersList;
-    String changestatusto,orderStatus,OrderKey,deliveryPersonName="";
+    String changestatusto,orderStatus,OrderKey,deliveryPersonName="",orderplacedtime="";
     String Currenttime,MenuItems,orderStatusFromArray,FormattedTime,CurrentDate,formattedDate,CurrentDay,deliverytype,delayedtime;
     public searchOrdersUsingMobileNumber mobile_manageOrders1;
     public  Pos_Orders_List Pos_Orders_List;
@@ -98,11 +98,14 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
         final TextView slotdate_text_widget = listViewItem.findViewById(R.id.slotdate_text_widget);
         final TextView orderstatus_text_widget = listViewItem.findViewById(R.id.orderstatus_text_widget);
         final TextView delayedtime_label_widget = listViewItem.findViewById(R.id.delayedtime_text_widget);
+        final TextView orderplacedtime_label_widget = listViewItem.findViewById(R.id.orderplacedtime_label_widget);
+        final TextView orderplacedtime_text_widget = listViewItem.findViewById(R.id.orderplacedtime_text_widget);
 
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
         final LinearLayout delayedtimeLayout =listViewItem.findViewById(R.id.delayedtimeLayout);
         final LinearLayout ordertypeLayout =listViewItem.findViewById(R.id.ordertypeLayout);
+        final LinearLayout orderplacedtimeLayout =listViewItem.findViewById(R.id.orderplacedtimeLayout);
 
            ordertypeLayout.setVisibility(View.GONE);
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
@@ -120,14 +123,20 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
 
 
         try{
+            orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime().toString();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            orderplacedtime="";
+        }
+
+        try{
             deliveryPersonName = modal_manageOrders_pojo_class.getDeliveryPartnerName().toString();
         }
         catch (Exception e){
             e.printStackTrace();
             deliveryPersonName="";
         }
-
-
 
 
 
@@ -215,6 +224,12 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
         }
 
 
+        try {
+            orderplacedtime_text_widget.setText(String.format(" %s", orderplacedtime));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
         try {

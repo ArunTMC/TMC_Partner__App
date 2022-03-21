@@ -66,6 +66,14 @@ public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_Man
 
     try {
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
+        boolean isItemMarkedForReplacement = false;
+    try {
+        isItemMarkedForReplacement = Boolean.valueOf(String.valueOf(modal_manageOrders_pojo_class.getisItemMarkedForReplacement()));
+        } catch (Exception e) {
+        isItemMarkedForReplacement = false;
+            e.printStackTrace();
+        }
+
 
 
 
@@ -102,14 +110,27 @@ public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_Man
     itemName_widget.setText(String.valueOf(itemName_cutName));
 
     try{
-        itemname_cutname_weight = itemName+"_"+cutname+"_"+weight;
+        if(isItemMarkedForReplacement){
+            marker_checkBox.setChecked(true);
+
+        }
+        else{
+            marker_checkBox.setChecked(false);
+
+        }
     }
     catch (Exception e){
         itemname_cutname_weight = "";
         e.printStackTrace();
     }
 
-
+        try{
+            itemname_cutname_weight = itemName+"_"+cutname+"_"+weight;
+        }
+        catch (Exception e){
+            itemname_cutname_weight = "";
+            e.printStackTrace();
+        }
 
 
     double subtotal = (Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()));

@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import com.itextpdf.text.ExceptionConverter;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementOrderDetails;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen;
@@ -22,6 +23,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+
+import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
 
 
 public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_ReplacementOrderDetails> {
@@ -33,12 +36,10 @@ public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_Replacem
 
     public Adapter_Replacement_Refund_List(Context mContext, List<Modal_ReplacementOrderDetails> markedOrdersList, ReplacementRefundListFragment replacementRefundListFragment) {
         super(mContext, R.layout.replacement_refund_itemslist, markedOrdersList);
-
         this.mContext=mContext;
         this.markedOrdersList=markedOrdersList;
         this.replacementRefundListFragment = replacementRefundListFragment;
     }
-
 
 
     @Nullable
@@ -67,10 +68,24 @@ public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_Replacem
         final TextView balanceamount_text_widget = listViewItem.findViewById(R.id.balanceamount_text_widget);
         final TextView markedItemDesp_text_widget = listViewItem.findViewById(R.id.markedItemDesp_text_widget);
 
+        final LinearLayout cardView_parentLayout = listViewItem.findViewById(R.id.cardView_parentLayout);
         final LinearLayout order_item_list_parentLayout = listViewItem.findViewById(R.id.order_item_list_parentLayout);
 
-        Modal_ReplacementOrderDetails modal_replacementOrderDetails = markedOrdersList.get(pos);
+        Modal_ReplacementOrderDetails  modal_replacementOrderDetails = markedOrdersList.get(pos);
+        try{
 
+        if(modal_replacementOrderDetails.getStatus().toString().toUpperCase().equals("COMPLETED")){
+
+            cardView_parentLayout.setBackground(getDrawable(mContext,R.color.TMC_PaleOrange));
+        }
+        else{
+            cardView_parentLayout.setBackground(getDrawable(mContext,R.color.TMC_White));
+
+        }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         try{
             orderid_text_widget.setText(String.valueOf(modal_replacementOrderDetails.getOrderid()));
         }
@@ -178,6 +193,9 @@ public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_Replacem
         try {
 
             JSONArray array  = modal_replacementOrderDetails.getItemsmarked_Array();
+            if(array.length()==0){
+                 array = new JSONArray(modal_replacementOrderDetails.getItemsmarked_String());
+            }
             //Log.i("tag","array.length()"+ array.length());
             String arraystring= array.toString();
             modal_replacementOrderDetails.setItemsmarked_String(arraystring);
@@ -316,10 +334,11 @@ public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_Replacem
         order_item_list_parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Modal_ReplacementOrderDetails  modal_replacementOrderDetails = markedOrdersList.get(pos);
+
                 Intent intent = new Intent(mContext, AddReplacement_Refund_OrdersScreen.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("data", modal_replacementOrderDetails);
-                bundle.putDouble("balanceAmnt", balanceAmount);
 
                 intent.putExtras(bundle);
                 mContext.startActivity(intent);

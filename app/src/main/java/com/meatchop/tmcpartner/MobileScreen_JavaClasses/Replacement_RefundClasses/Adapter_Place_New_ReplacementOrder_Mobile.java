@@ -68,7 +68,6 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
         holder.mobile_itemIndex.setText(String.valueOf(position + 1));
 
 
-
         if (position == (itemInCart_Hashmap.size() - 1)) {
             holder.mobile_addNewItem_layout.setVisibility(View.VISIBLE);
             holder.mobile_autoComplete_widget.setFocusable(true);
@@ -80,13 +79,12 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
         }
 
 
-
         int length = holder.mobile_autoComplete_widget.getText().length();
         holder.mobile_autoComplete_widget.setSelection(length);
         //Log.e("TAG", "position" + position);
         Modal_NewOrderItems recylerviewPojoClass = AddReplacement_Refund_OrdersScreen.cartItem_hashmap.get(AddReplacement_Refund_OrdersScreen.cart_Item_List.get(position));
 
-
+try{
         if (recylerviewPojoClass.getItemuniquecode().equals("empty")) {
             //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getItemname());
             //Log.e("TAG", "adapter 1 " + recylerviewPojoClass.getGrossweight());
@@ -101,10 +99,7 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
             holder.mobile_autoComplete_widget.setText("");
 
 
-        }
-        else
-        {
-
+        } else {
 
 
             pricetype_of_pos = String.valueOf(Objects.requireNonNull(AddReplacement_Refund_OrdersScreen.cartItem_hashmap.get(AddReplacement_Refund_OrdersScreen.cart_Item_List.get(position))).getPricetypeforpos());
@@ -113,23 +108,21 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
             if (pricetype_of_pos.equals("tmcprice")) {
 
                 holder.mobile_autoComplete_widget.setText(recylerviewPojoClass.getItemname());
-                if(!holder.mobile_autoComplete_widget.getText().toString().equals("")&&holder.mobile_autoComplete_widget.getText().length()>3){
+                if (!holder.mobile_autoComplete_widget.getText().toString().equals("") && holder.mobile_autoComplete_widget.getText().length() > 3) {
                     holder.mobile_autoComplete_widget.setKeyListener(null);
                     holder.mobile_autoComplete_widget.clearFocus();
                     holder.mobile_autoComplete_widget.dismissDropDown();
-                    holder.mobile_autoComplete_widget.setBackground(getDrawable(context,R.drawable.grey_color_textview_backgrounf));
+                    holder.mobile_autoComplete_widget.setBackground(getDrawable(context, R.drawable.grey_color_textview_backgrounf));
 
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     holder.mobile_itemWeight_widget.setFocusedByDefault(false);
                 }
                 holder.mobile_barcode_widget.setText(recylerviewPojoClass.getItemuniquecode());
-                if(!holder.mobile_barcode_widget.getText().toString().equals("")&&holder.mobile_barcode_widget.getText().length()>3)
-                {
+                if (!holder.mobile_barcode_widget.getText().toString().equals("") && holder.mobile_barcode_widget.getText().length() > 3) {
                     holder.mobile_barcode_widget.setKeyListener(null);
 
                 }
-
 
 
                 holder.mobile_barcode_widget.setText(recylerviewPojoClass.getItemuniquecode());
@@ -138,22 +131,20 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
                 holder.mobile_itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
                 //  taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
                 addReplacement_refund_ordersScreen.add_amount_ForBillDetails();
-                holder.mobile_itemWeight_widget.setBackground(getDrawable(context,R.drawable.grey_color_textview_backgrounf));
+                holder.mobile_itemWeight_widget.setBackground(getDrawable(context, R.drawable.grey_color_textview_backgrounf));
                 holder.mobile_itemWeight_widget.setKeyListener(null);
 
                 try {
-                    if(recylerviewPojoClass.getGrossweight().equals("")){
+                    if (recylerviewPojoClass.getGrossweight().equals("")) {
                         if (recylerviewPojoClass.getNetweight().equals("")) {
 
                             holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getPortionsize()));
 
-                        }
-                        else{
+                        } else {
                             holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getNetweight()));
 
                         }
-                    }
-                    else{
+                    } else {
                         holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
 
                     }
@@ -174,8 +165,7 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
                                }
 
                                 */
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     //Log.e("TAG", "Cant set itemweight/portionsize in recycler adapter");
                     e.printStackTrace();
                 }
@@ -188,7 +178,7 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
                 holder.mobile_autoComplete_widget.setKeyListener(null);
                 holder.mobile_autoComplete_widget.clearFocus();
                 holder.mobile_autoComplete_widget.dismissDropDown();
-                holder.mobile_autoComplete_widget.setBackground(getDrawable(context,R.drawable.grey_color_textview_backgrounf));
+                holder.mobile_autoComplete_widget.setBackground(getDrawable(context, R.drawable.grey_color_textview_backgrounf));
 
                 holder.mobile_itemPrice_Widget.setText(String.valueOf(recylerviewPojoClass.getItemFinalPrice()));
 
@@ -202,7 +192,10 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
 
 
         }
-
+    }
+    catch(Exception e) {
+        e.printStackTrace();
+    }
 
 
 

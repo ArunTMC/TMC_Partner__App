@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
@@ -18,7 +17,6 @@ import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -53,11 +51,8 @@ import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOr
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.R;
-import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Adapter_OrderDetails_OrderedItemList;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementOrderDetails;
-import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
-import com.meatchop.tmcpartner.Settings.Helper;
 import com.meatchop.tmcpartner.Settings.helper_weight_cut_Listview;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -76,31 +71,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetails;
 
 public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     TextView orderid_textview_widget,status_text_widget,usermobileno_textview_widget,orderplaceddate_textview_widget,markeddate_textview_widget,totalAmtUserGot_textview_widget,replacementorderAmount_textview_widget,
         refundorder_textview_widget,balanceorder_textview_widget;
-    TextView mobile_ItemTotal_textwidget,mobile_GST_textwidget,mobile_ToPay_textwidget;
-    Button mobile_checkout_button;
+    TextView mobile_ItemTotal_textwidget,mobile_GST_textwidget,mobile_ToPay_textwidget,refundAmt_editwidget;
+    Button mobile_checkout_button,addRefund_buttonWidget;
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0,totalAmounttopay=0;
     int new_totalAmount_withGst,new_totalAmount_withoutGst=0,newGst=0;
-    String finaltoPayAmount="",discountAmount="0";
+    String finaltoPayAmount="",discountAmount="0",oldOrderOrderid = "0";
     String FormattedTime,CurrentDate,formattedDate,CurrentDay;
-    String vendorKey="",usermobileNo ="";
+    String vendorKey="",usermobileNo ="",orderPlacedDate ="";
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
     String selectedPaymentMode  ="CASH ON DELIVERY";
     String selectedOrderType  ="POS Order";
-    String Currenttime,MenuItems,customermobileno="";
+    String Currenttime,MenuItems,customermobileno="",Currenttime_transactiontable ="";
     public static List<Modal_NewOrderItems> completemenuItem;
-
+    ReplacementRefundListFragment replacementRefundListFragment;
+    Adapter_Replacement_Refund_List adapter_replacement_refund_list;
     long sTime =0;
     String finaltoPayAmountinmethod="";
     Adapter_Place_New_ReplacementOrder_Mobile adapterPlaceNewReplacementOrder;
@@ -185,8 +180,8 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         mobile_GST_textwidget = findViewById(R.id.mobile_GST_textwidget);
         mobile_ToPay_textwidget = findViewById(R.id.mobile_ToPay_textwidget);
         mobile_checkout_button = findViewById(R.id.mobile_checkout_button);
-
-
+        addRefund_buttonWidget = findViewById(R.id.addRefund_buttonWidget);
+        refundAmt_editwidget  = findViewById(R.id.refundAmt_editwidget);
 
         OrderdItems_desp = new ArrayList<>();
         completemenuItem = new ArrayList<>();
@@ -210,10 +205,12 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
         try{
+            turnoffProgressBarAndResetArray();
+
             getMenuItemArrayFromSharedPreferences();
             completemenuItem= getMenuItemfromString(MenuItems);
 
-            createEmptyRowInListView("empty");
+           // createEmptyRowInListView("empty");
             CallAdapter();
 
         }
@@ -221,6 +218,26 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+
+        addRefund_buttonWidget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String enteredrefundAmount = refundAmt_editwidget.getText().toString();
+                enteredrefundAmount = enteredrefundAmount.replaceAll("[^\\d.]", "");
+                double refundAmtdouble = Double.parseDouble(enteredrefundAmount);
+                if(balanceAmount>=refundAmtdouble){
+                    Currenttime_transactiontable  = getDate_and_time_TransactionTable() ;
+
+                    UpdateReplacementOrderDetailsTable(false, Currenttime_transactiontable, sTime,enteredrefundAmount,modal_replacementOrderDetails);
+
+                }
+                else{
+                    AlertDialogClass.showDialog(AddReplacement_Refund_OrdersScreen.this, R.string.Cant_apply_refundAmount);
+
+                }
+            }
+
+        });
         mobile_checkout_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -251,7 +268,23 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 }
             }
         });
-        
+        try{
+            if(orderPlacedDate.equals("") || orderPlacedDate.equals("null") || orderPlacedDate.equals(null)){
+                orderPlacedDate =  String.valueOf(modal_replacementOrderDetails.getOrderplaceddate());
+            }
+        }
+        catch (Exception e){
+            orderPlacedDate ="";
+            e.printStackTrace();
+        }
+        try{
+            oldOrderOrderid = String.valueOf(modal_replacementOrderDetails.getOrderid());
+        }
+        catch (Exception e){
+            oldOrderOrderid = "";
+            e.printStackTrace();
+        }
+
         try{
             orderid_textview_widget.setText(String.valueOf(modal_replacementOrderDetails.getOrderid()));
         }
@@ -456,12 +489,9 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         try{
             JSONArray array  = modal_replacementOrderDetails.getRefunddetails_Array();
             //Log.i("tag","array.length()"+ array.length());
-            String arraystring= array.toString();
-            modal_replacementOrderDetails.setRefunddetails_String(arraystring);
 
         }
         catch (Exception e){
-            modal_replacementOrderDetails.setRefunddetails_String("");
 
             e.printStackTrace();
         }
@@ -469,12 +499,9 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         try{
             JSONArray array  = modal_replacementOrderDetails.getReplacementdetails_Array();
             //Log.i("tag","array.length()"+ array.length());
-            String arraystring= array.toString();
-            modal_replacementOrderDetails.setReplacementdetails_String(arraystring);
 
         }
         catch (Exception e){
-            modal_replacementOrderDetails.setReplacementdetails_String("");
 
             e.printStackTrace();
         }
@@ -844,7 +871,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                                         sTime = System.currentTimeMillis();
                                         Currenttime = getDate_and_time();
-
+                                             Currenttime_transactiontable  = getDate_and_time_TransactionTable() ;
                                         //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
                                         if (selectedPaymentMode.equals("CASH")) {
                                             selectedPaymentMode = Constants.CASH_ON_DELIVERY;
@@ -902,6 +929,119 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
 
     }
+
+    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray ItemsDespArray, boolean isReplacementType, String transactionType, double Amountinmethod, String message) {
+
+        showProgressBar(true);
+        double CouponDiscountAmount_double = 0;
+                String CouponDiscountAmount ="0";
+        CouponDiscountAmount = discountAmount;
+        try {
+            try {
+                if (!CouponDiscountAmount.equals("")) {
+                    CouponDiscountAmount = (CouponDiscountAmount.replaceAll("[^\\d.]", ""));
+                    CouponDiscountAmount_double = Double.parseDouble(CouponDiscountAmount);
+                } else {
+                    CouponDiscountAmount_double = 0;
+                }
+
+
+            } catch (Exception e) {
+                CouponDiscountAmount_double = 0;
+                e.printStackTrace();
+            }
+
+        }
+        catch (Exception e){
+            CouponDiscountAmount_double = 0;
+            e.printStackTrace();
+        }
+
+
+        try{
+            usermobileNo = (usermobileNo.replaceAll("\\+91", ""));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+            if(isReplacementType) {
+                jsonObject.put("replacmentorderid", orderid);
+                jsonObject.put("replacementorderamount", Amountinmethod);
+                jsonObject.put("replacementitemdesp", ItemsDespArray);
+                if (CouponDiscountAmount_double > 0) {
+                    jsonObject.put("discountamount", CouponDiscountAmount_double);
+
+                }
+            }
+            else{
+                jsonObject.put("refundamount", Amountinmethod);
+
+            }
+            jsonObject.put("transactiontime", currenttime);
+            jsonObject.put("orderid", oldOrderOrderid);
+            jsonObject.put("vendorkey", vendorKey);
+            jsonObject.put("transactiontype", transactionType);
+            jsonObject.put("transactionstatus", message);
+            jsonObject.put("mobileno", "+91"+usermobileNo);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addReplacementTransactionDetailsTable,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                //Log.d(Constants.TAG, "Response: " + response);
+                showProgressBar(false);
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(AddReplacement_Refund_OrdersScreen.this, "Replacement Transaction Details is not updated", Toast.LENGTH_LONG).show();
+                showProgressBar(false);
+
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+
 
     private List<Modal_NewOrderItems> getMenuItemfromString(String menulist) {
         List<Modal_NewOrderItems>MenuList=new ArrayList<>();
@@ -1293,7 +1433,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                 }
                                 if (!isUpdateReplacementDetailsMethodCalled) {
 
-                                    UpdateReplacementOrderDetailsTable(true, currenttime, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                                    UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
                                 }
 
 
@@ -1350,6 +1490,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                         PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
                                     }
 
+                                    if (!isUpdateReplacementDetailsMethodCalled) {
+
+                                        UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                                    }
 
 
 
@@ -1384,6 +1528,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                         PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
                     }
+                    if (!isUpdateReplacementDetailsMethodCalled) {
+
+                        UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                    }
 
 
 
@@ -1416,13 +1564,20 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
     }
 
-    private void UpdateReplacementOrderDetailsTable(boolean isReplacementCalled, String currenttime, long sTime, String finaltoPayAmountinmethod, Modal_ReplacementOrderDetails modal_replacementOrderDetails) {
+    private void UpdateReplacementOrderDetailsTable(boolean isReplacementCalled, String currenttime_transactionFormat, long sTime, String finaltoPayAmountinmethod, Modal_ReplacementOrderDetails modal_replacementOrderDetails_inMethod) {
 
         if(isUpdateReplacementDetailsMethodCalled){
             return;
         }
         showProgressBar(true);
         isUpdateReplacementDetailsMethodCalled = true;
+
+        JSONObject refunddetailsObject = new JSONObject();
+        JSONArray refunddetailsArray = new JSONArray();
+
+        JSONObject replacementdetailsObject = new JSONObject();
+        JSONArray replacementdetailsArray = new JSONArray();
+
 
         String totalReplacementvalueString = "0" , totalRefundValueString = "0",totalAmountUserGotString = "0";
         double totalReplacementvalueDouble = 0 , totalRefundValueDouble = 0,finalAmountDouble=0 , totalAmountUserGotDouble = 0,balanceAmountUsergot = 0;
@@ -1433,19 +1588,19 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
             e.printStackTrace();
         }
         try{
-            totalAmountUserGotString =  modal_replacementOrderDetails.getAmountusercanavl().toString();
+            totalAmountUserGotString =  modal_replacementOrderDetails_inMethod.getAmountusercanavl().toString();
         }
         catch (Exception e){
             e.printStackTrace();
         }
         try{
-            totalReplacementvalueString =  modal_replacementOrderDetails.getTotalreplacementamount().toString();
+            totalReplacementvalueString =  modal_replacementOrderDetails_inMethod.getTotalreplacementamount().toString();
         }
         catch (Exception e){
             e.printStackTrace();
         }
         try{
-            totalRefundValueString =  modal_replacementOrderDetails.getTotalrefundedamount().toString();
+            totalRefundValueString =  modal_replacementOrderDetails_inMethod.getTotalrefundedamount().toString();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -1483,10 +1638,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         //Log.d(TAG, " uploaduserDatatoDB.");
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("mobileno", modal_replacementOrderDetails.getMobileno().toString());
+            jsonObject.put("mobileno", modal_replacementOrderDetails_inMethod.getMobileno().toString());
 
 
-            jsonObject.put("orderid", modal_replacementOrderDetails.getOrderid().toString());
+            jsonObject.put("orderid", modal_replacementOrderDetails_inMethod.getOrderid().toString());
 
 
         } catch (JSONException e) {
@@ -1494,24 +1649,45 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         }
 
         if(isReplacementCalled) {
+            replacementdetailsObject = new JSONObject();
+            replacementdetailsArray = new JSONArray();
+          /*  try {
+                replacementdetailsArray = modal_replacementOrderDetails_inMethod.getReplacementdetails_Array();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
+           */
             try{
                 totalReplacementvalueDouble = totalReplacementvalueDouble + finalAmountDouble;
             }
             catch (Exception e){
                 e.printStackTrace();
             }
-            JSONObject replacementdetailsObject = new JSONObject();
-            JSONArray replacementdetailsArray = new JSONArray();
             try{
-                replacementdetailsObject.put("replacementdate",currenttime);
-                replacementdetailsObject.put("replacementorderid",String.valueOf(sTime));
-                replacementdetailsObject.put("replacementordervalue",finalAmountDouble);
-                replacementdetailsArray.put(replacementdetailsObject);
+                if((!modal_replacementOrderDetails_inMethod.getReplacementdetails_String().equals("")) && (!modal_replacementOrderDetails_inMethod.getReplacementdetails_String().equals("[]")) && (!modal_replacementOrderDetails_inMethod.getReplacementdetails_String().equals(null))){
+                    JSONArray tempreplacementdetailsArray = new JSONArray(modal_replacementOrderDetails_inMethod.getReplacementdetails_String());
+                    if(tempreplacementdetailsArray.length()>0){
+                        replacementdetailsArray = tempreplacementdetailsArray;
+                    }
+
+                }
             }
             catch (Exception e){
                 e.printStackTrace();
             }
+
+            try{
+                replacementdetailsObject.put("replacementdate",Currenttime);
+                replacementdetailsObject.put("replacementorderid",String.valueOf(sTime));
+                replacementdetailsObject.put("replacementordervalue",finalAmountDouble);
+                replacementdetailsArray.put(replacementdetailsObject);
+                  }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
             try {
                 jsonObject.put("replacementdetails", replacementdetailsArray);
 
@@ -1522,25 +1698,56 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            try{
+
+                modal_replacementOrderDetails_inMethod.setReplacementdetails_Array(replacementdetailsArray);
+                modal_replacementOrderDetails_inMethod.setReplacementdetails_String(replacementdetailsArray.toString());
+                modal_replacementOrderDetails_inMethod.setTotalreplacementamount(String.valueOf(totalReplacementvalueDouble));
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
         }
         else{
+            refunddetailsObject = new JSONObject();
+            refunddetailsArray = new JSONArray();
+          /*  try {
+                refunddetailsArray = modal_replacementOrderDetails_inMethod.getRefunddetails_Array();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
+           */
             try{
                 totalRefundValueDouble = totalRefundValueDouble + finalAmountDouble;
             }
             catch (Exception e){
                 e.printStackTrace();
             }
-            JSONObject refunddetailsObject = new JSONObject();
-            JSONArray refunddetailsArray = new JSONArray();
             try{
-                refunddetailsObject.put("refundeddate",currenttime);
+                if((!modal_replacementOrderDetails_inMethod.getRefunddetails_String().equals("")) && (!modal_replacementOrderDetails_inMethod.getRefunddetails_String().equals("[]")) && (!modal_replacementOrderDetails_inMethod.getRefunddetails_String().equals(null))){
+                    JSONArray temprefunddetailsArray = new JSONArray(modal_replacementOrderDetails_inMethod.getRefunddetails_String());
+                    if(temprefunddetailsArray.length()>0){
+                        refunddetailsArray = temprefunddetailsArray;
+                    }
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try{
+                refunddetailsObject.put("refundeddate",Currenttime);
                 refunddetailsObject.put("refundedamount",finalAmountDouble);
                 refunddetailsArray.put(refunddetailsObject);
             }
             catch (Exception e){
                 e.printStackTrace();
             }
+
             try {
                 jsonObject.put("refunddetails", refunddetailsArray);
 
@@ -1551,11 +1758,20 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            try{
 
+                modal_replacementOrderDetails_inMethod.setRefunddetails_Array(refunddetailsArray);
+                modal_replacementOrderDetails_inMethod.setRefunddetails_String(refunddetailsArray.toString());
+                modal_replacementOrderDetails_inMethod.setTotalrefundedamount(String.valueOf(totalRefundValueDouble));
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
             try{
                 if(balanceAmountUsergot==0){
                     jsonObject.put("status", "COMPLETED");
-
+                    modal_replacementOrderDetails_inMethod.setStatus("COMPLETED");
                 }
             }
             catch (Exception e){
@@ -1565,13 +1781,16 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
+        JSONArray finalReplacementdetailsArray = replacementdetailsArray;
+        double finalAmountDouble1 = finalAmountDouble;
+        double finalBalanceAmountUsergot = balanceAmountUsergot;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_UpdateReplacementOrderDetaialsTable,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 //Log.d(Constants.TAG, "Response: " + response);
 
-                String message ="";
+                String message = "";
                 Log.d(TAG, "change menu Item " + response.length());
                 try {
                     message = response.getString("message");
@@ -1579,7 +1798,15 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
+                if (isReplacementCalled){
+                    addDataInReplacementTransactiondetails(currenttime_transactionFormat, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, true, "REPLACEMENT", finalAmountDouble1,message);
+                }
+                else
+                {
+                    addDataInReplacementTransactiondetails(currenttime_transactionFormat, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, false, "REFUND", finalAmountDouble1,message);
 
+                }
+                updateDatainLocalArray(modal_replacementOrderDetails_inMethod, finalBalanceAmountUsergot);
 
                 showProgressBar(false);
                 isUpdateReplacementDetailsMethodCalled = false;
@@ -1588,9 +1815,16 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "Error: " + error.toString());
+
+
+                if (isReplacementCalled){
+                    addDataInReplacementTransactiondetails(Currenttime, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, true, "REPLACEMENT", finalAmountDouble1,"Error");
+                }
+                else
+                {
+                    addDataInReplacementTransactiondetails(Currenttime, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, false, "REFUND", finalAmountDouble1,"Error");
+
+                }
                 showProgressBar(false);
                 Toast.makeText(AddReplacement_Refund_OrdersScreen.this,"Failed to change express delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
                 isUpdateReplacementDetailsMethodCalled = false;
@@ -1615,6 +1849,69 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         // Make the request
         Volley.newRequestQueue(AddReplacement_Refund_OrdersScreen.this).add(jsonObjectRequest);
 
+
+
+    }
+
+    private void updateDatainLocalArray(Modal_ReplacementOrderDetails modal_replacementOrderDetails_inMethod, double finalBalanceAmountUsergot) {
+        try{
+            if(finalBalanceAmountUsergot<=0){
+                status_text_widget.setText("COMPLETED");
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
+            balanceorder_textview_widget.setText(String.valueOf(Math.round(finalBalanceAmountUsergot)));
+            balanceAmount = finalBalanceAmountUsergot;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            refundorder_textview_widget.setText(String.valueOf(modal_replacementOrderDetails_inMethod.getTotalrefundedamount()));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            replacementorderAmount_textview_widget.setText(String.valueOf(modal_replacementOrderDetails_inMethod.getTotalreplacementamount()));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
+            balanceorder_textview_widget.setText(String.valueOf(Math.round(balanceAmount)));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        modal_replacementOrderDetails = modal_replacementOrderDetails_inMethod;
+        String orderid_FromLocalModal = "", orderidFromReplacementFragment ="";
+        orderid_FromLocalModal = modal_replacementOrderDetails.getOrderid().toString();
+        for(int i= 0; i<replacementRefundListFragment.markedOrdersList.size();i++){
+            orderidFromReplacementFragment = replacementRefundListFragment.markedOrdersList.get(i).getOrderid().toString();
+            try {
+                if (orderidFromReplacementFragment.equals(orderid_FromLocalModal)) {
+                    replacementRefundListFragment.markedOrdersList.set(i, modal_replacementOrderDetails);
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
 
     }
@@ -2705,7 +3002,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                             //  showProgressBar(false);
                         }
                         else{
-                            turnoffProgressBarAndResetArray();
+                            if(isinventorycheck) {
+                                turnoffProgressBarAndResetArray();
+                            }
+
                         }
 
 
@@ -3526,6 +3826,8 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                     if(message.equals("success")) {
                         //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
                         showProgressBar(false);
+                        turnoffProgressBarAndResetArray();
+
                     }
 
 
@@ -4908,6 +5210,19 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
     }
+    public String getDate_and_time_TransactionTable()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
 
     // The Handler that gets information back from the BluetoothChatService
     private final Handler mHandler = new Handler() {
@@ -4933,6 +5248,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                             if (!isOrderTrackingDetailsMethodCalled) {
 
                                 PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                            }
+                            if (!isUpdateReplacementDetailsMethodCalled) {
+
+                                UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
                             }
 
 
@@ -5035,7 +5354,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                             PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
                                         }
 
+                                        if (!isUpdateReplacementDetailsMethodCalled) {
 
+                                            UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                                        }
 
 
                                         try{

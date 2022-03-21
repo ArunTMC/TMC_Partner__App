@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementOrderDetails;
 
@@ -38,6 +39,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +67,6 @@ public class ReplacementRefundListFragment extends Fragment {
     Context mContext;
     LinearLayout loadingpanelmask,loadingPanel;
     static List<Modal_ReplacementOrderDetails> markedOrdersList;
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -146,7 +148,7 @@ public class ReplacementRefundListFragment extends Fragment {
     private void FetchOrdersFromDatabase(String vendorName, String mobileno) {
         final String[] Count = {"0"};
 
-
+        markedOrdersList.clear();
         String deliveryUserMobileNumber ="";
         deliveryUserMobileNumber = mobileno;
         if (deliveryUserMobileNumber.length() == 13) {
@@ -218,7 +220,13 @@ public class ReplacementRefundListFragment extends Fragment {
                                     try{
                                         if (json.has("markeddate")) {
                                              modal_replacementOrderDetails.markeddate = String.valueOf(json.get("markeddate"));
-
+                                            try{
+                                                modal_replacementOrderDetails.setMarkedDateLong(getLongValuefortheDate(String.valueOf(json.get("markeddate"))));
+                                            }
+                                            catch (Exception e){
+                                                modal_replacementOrderDetails.setMarkedDateLong ("0");
+                                                e.printStackTrace();
+                                            }
                                         }
                                         else
                                         {
@@ -229,6 +237,8 @@ public class ReplacementRefundListFragment extends Fragment {
                                     catch (Exception e){
                                          e.printStackTrace();
                                     }
+
+
 
                                     try{
                                         if (json.has("markeditemdesp")) {
@@ -330,6 +340,23 @@ public class ReplacementRefundListFragment extends Fragment {
                                     }
 
                                         try{
+                                            if (json.has("refunddetails")) {
+                                                modal_replacementOrderDetails.refunddetails_String = String.valueOf(json.get("refunddetails"));
+
+                                            }
+                                            else
+                                            {
+                                                modal_replacementOrderDetails.refunddetails_String = "";
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            modal_replacementOrderDetails.refunddetails_String = "";
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try{
                                             if (json.has("replacementdetails")) {
                                                 modal_replacementOrderDetails.replacementdetails_Array = (JSONArray) json.get("replacementdetails");
 
@@ -344,6 +371,23 @@ public class ReplacementRefundListFragment extends Fragment {
 
                                             e.printStackTrace();
                                         }
+
+                                        try{
+                                            if (json.has("replacementdetails")) {
+                                                modal_replacementOrderDetails.replacementdetails_String = String.valueOf(json.get("replacementdetails"));
+
+                                            }
+                                            else
+                                            {
+                                                modal_replacementOrderDetails.replacementdetails_String = "";
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            modal_replacementOrderDetails.replacementdetails_String = "";
+
+                                            e.printStackTrace();
+                                        }
+
 
                                         try{
                                             if (json.has("totalrefundedamount")) {
@@ -383,9 +427,7 @@ public class ReplacementRefundListFragment extends Fragment {
                                     }
                                     markedOrdersList.add(modal_replacementOrderDetails);
                                 }
-
-                                Adapter_Replacement_Refund_List adapter_replacement_refund_list = new Adapter_Replacement_Refund_List(mContext, markedOrdersList, ReplacementRefundListFragment.this);
-                                 orders_listview.setAdapter(adapter_replacement_refund_list);
+                                CallAdapter();
 
 
                                 try{
@@ -449,6 +491,25 @@ public class ReplacementRefundListFragment extends Fragment {
         AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_mobile_no_text);
 
     }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        CallAdapter();
+    }
+
+    public void CallAdapter() {
+        Collections.sort(markedOrdersList, new Comparator<Modal_ReplacementOrderDetails>() {
+            public int compare(final Modal_ReplacementOrderDetails object1, final Modal_ReplacementOrderDetails object2) {
+                return object2.getMarkedDateLong().compareTo(object1.getMarkedDateLong());
+            }
+        });
+
+
+        Adapter_Replacement_Refund_List adapter_replacement_refund_list = new Adapter_Replacement_Refund_List(mContext, markedOrdersList, ReplacementRefundListFragment.this);
+        orders_listview.setAdapter(adapter_replacement_refund_list);
+
     }
 
     public String getLongValuefortheDate(String orderplacedtime) {

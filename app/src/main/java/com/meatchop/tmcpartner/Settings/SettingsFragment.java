@@ -314,290 +314,6 @@ public class SettingsFragment extends Fragment {
             e.printStackTrace();
         }
 
-        /*
-        if (UserRole.equals(Constants.SUPERADMIN_ROLENAME)) {
-            managemenuLayout.setVisibility(VISIBLE);
-            manageordersLinearLayout.setVisibility(VISIBLE);
-            salesLinearLayout.setVisibility(VISIBLE);
-
-
-            if (screenInches < 8) {
-                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
-                editPaymentModeOftheOrder.setVisibility(VISIBLE);
-                orderDetailsDump_report.setVisibility(VISIBLE);
-                generateCustomerMobileno_BillvalueReport.setVisibility(VISIBLE);
-                cancelledOrdersLayout.setVisibility(VISIBLE);
-                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
-                plotOrdersLocation_layout.setVisibility(VISIBLE);
-                MenuTransactionDetailsLayout.setVisibility(VISIBLE);
-                generateUserDetailsLayout.setVisibility(VISIBLE);
-                swiggyOrderPlacing_layout.setVisibility(GONE);
-            } else {
-                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
-                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
-                testlayout.setVisibility(GONE);
-                delivered_orders_timewiseReport.setVisibility(View.GONE);
-                editPaymentModeOftheOrder.setVisibility(View.GONE);
-                orderDetailsDump_report.setVisibility(GONE);
-                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-                cancelledOrdersLayout.setVisibility(GONE);
-                plotOrdersLocation_layout.setVisibility(GONE);
-                MenuTransactionDetailsLayout.setVisibility(GONE);
-                generateUserDetailsLayout.setVisibility(GONE);
-
-
-            }
-        }
-        else if (UserRole.equals(Constants.ADMIN_ROLENAME)) {
-            managemenuLayout.setVisibility(VISIBLE);
-            manageordersLinearLayout.setVisibility(VISIBLE);
-            salesLinearLayout.setVisibility(VISIBLE);
-            orderDetailsDump_report.setVisibility(GONE);
-            testlayout.setVisibility(GONE);
-            plotOrdersLocation_layout.setVisibility(GONE);
-            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-            generateUserDetailsLayout.setVisibility(GONE);
-
-            if (screenInches < 8) {
-                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
-                editPaymentModeOftheOrder.setVisibility(VISIBLE);
-                cancelledOrdersLayout.setVisibility(VISIBLE);
-                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
-                MenuTransactionDetailsLayout.setVisibility(VISIBLE);
-                swiggyOrderPlacing_layout.setVisibility(GONE);
-
-            } else {
-                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
-
-                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
-                delivered_orders_timewiseReport.setVisibility(View.GONE);
-                editPaymentModeOftheOrder.setVisibility(View.GONE);
-                cancelledOrdersLayout.setVisibility(GONE);
-                MenuTransactionDetailsLayout.setVisibility(GONE);
-
-
-            }
-
-
-        }
-        else if (UserRole.equals(Constants.STOREMANAGER_ROLENAME)) {
-            managemenuLayout.setVisibility(VISIBLE);
-
-            searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
-            salesLinearLayout.setVisibility(VISIBLE);
-            orderDetailsDump_report.setVisibility(GONE);
-            cancelledOrdersLayout.setVisibility(GONE);
-            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-
-            plotOrdersLocation_layout.setVisibility(GONE);
-            editPaymentModeOftheOrder.setVisibility(GONE);
-            MenuTransactionDetailsLayout.setVisibility(VISIBLE);
-            generateUserDetailsLayout.setVisibility(GONE);
-
-            if (screenInches < 8) {
-                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
-                slotwiseAppOrderList.setVisibility(VISIBLE);
-                swiggyOrderPlacing_layout.setVisibility(GONE);
-
-            } else {
-                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
-
-                delivered_orders_timewiseReport.setVisibility(View.GONE);
-                editPaymentModeOftheOrder.setVisibility(View.GONE);
-                orderDetailsDump_report.setVisibility(GONE);
-                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-                cancelledOrdersLayout.setVisibility(GONE);
-                slotwiseAppOrderList.setVisibility(GONE);
-                slotwiseAppOrderList.setVisibility(GONE);
-            }
-        }
-        else if (UserRole.equals(Constants.ASSISTANTSTOREMANAGER_ROLENAME)) {
-            managemenuLayout.setVisibility(GONE);
-            salesLinearLayout.setVisibility(VISIBLE);
-            consolidatedSalesReport.setVisibility(GONE);
-            PosSalesReport.setVisibility(GONE);
-            resetTokenNoLayout.setVisibility(GONE);
-            AppSalesReport.setVisibility(GONE);
-            deliveryPartnerSettlementReport.setVisibility(GONE);
-            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-            editPaymentModeOftheOrder.setVisibility(GONE);
-            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-            cancelledOrdersLayout.setVisibility(GONE);
-            generateUserDetailsLayout.setVisibility(GONE);
-
-            if (screenInches < 8) {
-                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
-                slotwiseAppOrderList.setVisibility(VISIBLE);
-                plotOrdersLocation_layout.setVisibility(VISIBLE);
-                orderDetailsDump_report.setVisibility(VISIBLE);
-                searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
-                slotwiseAppOrderList.setVisibility(VISIBLE);
-                swiggyOrderPlacing_layout.setVisibility(GONE);
-
-            } else {
-                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
-
-                delivered_orders_timewiseReport.setVisibility(View.GONE);
-                slotwiseAppOrderList.setVisibility(GONE);
-                plotOrdersLocation_layout.setVisibility(GONE);
-            }
-            testlayout.setVisibility(GONE);
-
-        }
-        else if (UserRole.equals(Constants.CASHIER_ROLENAME)) {
-            generateUserDetailsLayout.setVisibility(GONE);
-
-            managemenuLayout.setVisibility(GONE);
-            searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
-            salesLinearLayout.setVisibility(VISIBLE);
-            editPaymentModeOftheOrder.setVisibility(GONE);
-            delivered_orders_timewiseReport.setVisibility(View.GONE);
-            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-            cancelledOrdersLayout.setVisibility(GONE);
-            plotOrdersLocation_layout.setVisibility(GONE);
-            slotwiseAppOrderList.setVisibility(GONE);
-            orderDetailsDump_report.setVisibility(GONE);
-            swiggyOrderPlacing_layout.setVisibility(GONE);
-
-        }
-        else {
-            swiggyOrderPlacing_layout.setVisibility(VISIBLE);
-
-            managemenuLayout.setVisibility(GONE);
-            plotOrdersLocation_layout.setVisibility(GONE);
-            slotwiseAppOrderList.setVisibility(GONE);
-            searchOrdersUsingMobileNumbers.setVisibility(GONE);
-            salesLinearLayout.setVisibility(GONE);
-            editPaymentModeOftheOrder.setVisibility(GONE);
-            delivered_orders_timewiseReport.setVisibility(View.GONE);
-            orderDetailsDump_report.setVisibility(GONE);
-            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
-            cancelledOrdersLayout.setVisibility(GONE);
-            generateUserDetailsLayout.setVisibility(GONE);
-
-            Toast.makeText(mContext, "You Don't have any User Role Ask Admin to assign the Role", Toast.LENGTH_LONG).show();
-
-
-        }
-
-
- */
-
-      /*  if(UserRole.length()>0) {
-            if (UserRole.toUpperCase().equals(Constants.SUPERADMIN_ROLENAME)) {
-                managemenuLayout.setVisibility(VISIBLE);
-                viewordersLinearLayout.setVisibility(VISIBLE);
-                manageordersLinearLayout.setVisibility(VISIBLE);
-                salesLinearLayout.setVisibility(VISIBLE);
-                // dataAnalyticsLinearLayout.setVisibility(VISIBLE);
-                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
-
-
-                if (screenInches > Constants.default_mobileScreenSize) {
-                    //if Pos
-                    editPaymentModeOftheOrder.setVisibility(GONE);
-                    plotOrdersLocation_layout.setVisibility(GONE);
-                    delivered_orders_timewiseReport.setVisibility(View.GONE);
-                    slotwiseAppOrderList.setVisibility(View.GONE);
-                    //total dataAnalytics module
-                    dataAnalyticsLinearLayout.setVisibility(GONE);
-
-                } else {
-                    //if Mobile
-                    swiggyOrderPlacing_layout.setVisibility(GONE);
-
-                }
-            } else if (UserRole.toUpperCase().equals(Constants.REPORTSVIEWER_ROLENAME)) {
-                managemenuLayout.setVisibility(GONE);
-                viewordersLinearLayout.setVisibility(GONE);
-                manageordersLinearLayout.setVisibility(GONE);
-                salesLinearLayout.setVisibility(GONE);
-                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
-                resetTokenNoLayout.setVisibility(GONE);
-                if (screenInches > Constants.default_mobileScreenSize) {
-                    //if Pos
-
-                    dataAnalyticsLinearLayout.setVisibility(GONE);
-
-
-                } else {
-                    //if Mobile
-
-                    dataAnalyticsLinearLayout.setVisibility(VISIBLE);
-
-                }
-            } else if (UserRole.toUpperCase().equals(Constants.STOREMANAGER_ROLENAME)) {
-                managemenuLayout.setVisibility(VISIBLE);
-                viewordersLinearLayout.setVisibility(VISIBLE);
-                manageordersLinearLayout.setVisibility(VISIBLE);
-                salesLinearLayout.setVisibility(VISIBLE);
-                dataAnalyticsLinearLayout.setVisibility(GONE);
-                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
-                if (screenInches > Constants.default_mobileScreenSize) {
-                    //if Pos
-                    editPaymentModeOftheOrder.setVisibility(GONE);
-                    plotOrdersLocation_layout.setVisibility(GONE);
-                    delivered_orders_timewiseReport.setVisibility(View.GONE);
-                    slotwiseAppOrderList.setVisibility(View.GONE);
-
-                } else {
-                    //if Mobile
-                    swiggyOrderPlacing_layout.setVisibility(GONE);
-
-                }
-            } else if (UserRole.toUpperCase().equals(Constants.DELIVERYMANAGER_ROLENAME)) {
-
-                managemenuLayout.setVisibility(VISIBLE);
-                viewordersLinearLayout.setVisibility(VISIBLE);
-                manageordersLinearLayout.setVisibility(GONE);
-                salesLinearLayout.setVisibility(GONE);
-                dataAnalyticsLinearLayout.setVisibility(GONE);
-                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
-                resetTokenNoLayout.setVisibility(GONE);
-                if (screenInches > Constants.default_mobileScreenSize) {
-                    //if Pos
-                    editPaymentModeOftheOrder.setVisibility(GONE);
-                    plotOrdersLocation_layout.setVisibility(GONE);
-                    delivered_orders_timewiseReport.setVisibility(View.GONE);
-                    slotwiseAppOrderList.setVisibility(View.GONE);
-
-                } else {
-                    //if Mobile
-                    swiggyOrderPlacing_layout.setVisibility(GONE);
-
-                }
-
-
-            } else if (UserRole.toUpperCase().equals(Constants.CASHIER_ROLENAME)) {
-
-                managemenuLayout.setVisibility(VISIBLE);
-                viewordersLinearLayout.setVisibility(VISIBLE);
-                manageordersLinearLayout.setVisibility(GONE);
-                salesLinearLayout.setVisibility(VISIBLE);
-                dataAnalyticsLinearLayout.setVisibility(GONE);
-                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
-                if (screenInches > Constants.default_mobileScreenSize) {
-                    //if Pos
-                    editPaymentModeOftheOrder.setVisibility(GONE);
-                    plotOrdersLocation_layout.setVisibility(GONE);
-                    delivered_orders_timewiseReport.setVisibility(View.GONE);
-                    slotwiseAppOrderList.setVisibility(View.GONE);
-
-                } else {
-                    //if Mobile
-                    swiggyOrderPlacing_layout.setVisibility(GONE);
-
-                }
-            }
-        }
-
-        else{
-            Toast.makeText(getActivity(),"You Don't have any User Role Ask Admin to assign the Role",Toast.LENGTH_LONG).show();
-
-        }
-
-
-       */
 
         if(UserRole.length()>0) {
             SharedPreferences sharedpref = mContext.getSharedPreferences("PartnerAppAccessDetails", MODE_PRIVATE);
@@ -647,8 +363,7 @@ public class SettingsFragment extends Fragment {
             slotwiseAppOrderList.setVisibility(View.GONE);
             mobilePrinterConnectLayout.setVisibility(GONE);
             dataAnalyticsLinearLayout.setVisibility(GONE);
-
-
+            add_refund_replace_order_layout.setVisibility(GONE);
 
 
         } else {
@@ -659,10 +374,12 @@ public class SettingsFragment extends Fragment {
 
             if((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))){
                 editPaymentModeOftheOrder.setVisibility(VISIBLE);
+                add_refund_replace_order_layout.setVisibility(VISIBLE);
 
             }
             else{
                 editPaymentModeOftheOrder.setVisibility(GONE);
+                add_refund_replace_order_layout.setVisibility(GONE);
 
             }
 
@@ -682,15 +399,19 @@ public class SettingsFragment extends Fragment {
 
             if (UserPhoneNumber.equals("+919597580128") || UserPhoneNumber.equals("+917010779096")) {
                 changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
-            testlayout.setVisibility(VISIBLE);
-             changeMenuItemPrice_weight.setVisibility(VISIBLE);
-
+                testlayout.setVisibility(VISIBLE);
+                changeMenuItemPrice_weight.setVisibility(VISIBLE);
+                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+                changeMenuItemStatus.setVisibility(VISIBLE);
+                generateUserDetailsButton.setVisibility(VISIBLE);
             } else {
                 changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
 
                 testlayout.setVisibility(GONE);
                 changeMenuItemPrice_weight.setVisibility(GONE);
         }
+
+
         if(!isinventorycheck){
             changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
             changeMenuItemStatus.setVisibility(VISIBLE);
@@ -700,22 +421,23 @@ public class SettingsFragment extends Fragment {
             changeMenuItemStatus.setVisibility(GONE);
         }
 
-        if (UserPhoneNumber.equals("+919597580128")) {
-            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
-            changeMenuItemStatus.setVisibility(VISIBLE);
-            generateUserDetailsButton.setVisibility(VISIBLE);
-        }
 
-        if (UserPhoneNumber.equals("+918451023780")) {
-            generateUserDetailsLayout.setVisibility(VISIBLE);
-        }
-        //919655212898
+
+
+        //Navaneedhan
 
         if (UserPhoneNumber.equals("+919655212898")) {
             managemenuLayout.setVisibility(VISIBLE);
             changeDeliverySlotdetails.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(GONE);
-            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            if(!isinventorycheck){
+                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+                changeMenuItemStatus.setVisibility(VISIBLE);
+            }
+            else{
+                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+                changeMenuItemStatus.setVisibility(GONE);
+            }
             changeMenuItemPrice.setVisibility(GONE);
             changeMenuItemVisibilityinTv.setVisibility(GONE);
             changeMenuItemPrice_weight.setVisibility(GONE);
@@ -3084,3 +2806,295 @@ public class SettingsFragment extends Fragment {
         return longvalue;
     }
 }
+
+
+
+
+
+
+
+
+/*
+        if (UserRole.equals(Constants.SUPERADMIN_ROLENAME)) {
+            managemenuLayout.setVisibility(VISIBLE);
+            manageordersLinearLayout.setVisibility(VISIBLE);
+            salesLinearLayout.setVisibility(VISIBLE);
+
+
+            if (screenInches < 8) {
+                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
+                editPaymentModeOftheOrder.setVisibility(VISIBLE);
+                orderDetailsDump_report.setVisibility(VISIBLE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(VISIBLE);
+                cancelledOrdersLayout.setVisibility(VISIBLE);
+                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
+                plotOrdersLocation_layout.setVisibility(VISIBLE);
+                MenuTransactionDetailsLayout.setVisibility(VISIBLE);
+                generateUserDetailsLayout.setVisibility(VISIBLE);
+                swiggyOrderPlacing_layout.setVisibility(GONE);
+            } else {
+                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
+                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
+                testlayout.setVisibility(GONE);
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                editPaymentModeOftheOrder.setVisibility(View.GONE);
+                orderDetailsDump_report.setVisibility(GONE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+                cancelledOrdersLayout.setVisibility(GONE);
+                plotOrdersLocation_layout.setVisibility(GONE);
+                MenuTransactionDetailsLayout.setVisibility(GONE);
+                generateUserDetailsLayout.setVisibility(GONE);
+
+
+            }
+        }
+        else if (UserRole.equals(Constants.ADMIN_ROLENAME)) {
+            managemenuLayout.setVisibility(VISIBLE);
+            manageordersLinearLayout.setVisibility(VISIBLE);
+            salesLinearLayout.setVisibility(VISIBLE);
+            orderDetailsDump_report.setVisibility(GONE);
+            testlayout.setVisibility(GONE);
+            plotOrdersLocation_layout.setVisibility(GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            generateUserDetailsLayout.setVisibility(GONE);
+
+            if (screenInches < 8) {
+                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
+                editPaymentModeOftheOrder.setVisibility(VISIBLE);
+                cancelledOrdersLayout.setVisibility(VISIBLE);
+                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
+                MenuTransactionDetailsLayout.setVisibility(VISIBLE);
+                swiggyOrderPlacing_layout.setVisibility(GONE);
+
+            } else {
+                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
+
+                deliveryPartnerSettlementReport.setVisibility(VISIBLE);
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                editPaymentModeOftheOrder.setVisibility(View.GONE);
+                cancelledOrdersLayout.setVisibility(GONE);
+                MenuTransactionDetailsLayout.setVisibility(GONE);
+
+
+            }
+
+
+        }
+        else if (UserRole.equals(Constants.STOREMANAGER_ROLENAME)) {
+            managemenuLayout.setVisibility(VISIBLE);
+
+            searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
+            salesLinearLayout.setVisibility(VISIBLE);
+            orderDetailsDump_report.setVisibility(GONE);
+            cancelledOrdersLayout.setVisibility(GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+
+            plotOrdersLocation_layout.setVisibility(GONE);
+            editPaymentModeOftheOrder.setVisibility(GONE);
+            MenuTransactionDetailsLayout.setVisibility(VISIBLE);
+            generateUserDetailsLayout.setVisibility(GONE);
+
+            if (screenInches < 8) {
+                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
+                slotwiseAppOrderList.setVisibility(VISIBLE);
+                swiggyOrderPlacing_layout.setVisibility(GONE);
+
+            } else {
+                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
+
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                editPaymentModeOftheOrder.setVisibility(View.GONE);
+                orderDetailsDump_report.setVisibility(GONE);
+                generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+                cancelledOrdersLayout.setVisibility(GONE);
+                slotwiseAppOrderList.setVisibility(GONE);
+                slotwiseAppOrderList.setVisibility(GONE);
+            }
+        }
+        else if (UserRole.equals(Constants.ASSISTANTSTOREMANAGER_ROLENAME)) {
+            managemenuLayout.setVisibility(GONE);
+            salesLinearLayout.setVisibility(VISIBLE);
+            consolidatedSalesReport.setVisibility(GONE);
+            PosSalesReport.setVisibility(GONE);
+            resetTokenNoLayout.setVisibility(GONE);
+            AppSalesReport.setVisibility(GONE);
+            deliveryPartnerSettlementReport.setVisibility(GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            editPaymentModeOftheOrder.setVisibility(GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            cancelledOrdersLayout.setVisibility(GONE);
+            generateUserDetailsLayout.setVisibility(GONE);
+
+            if (screenInches < 8) {
+                delivered_orders_timewiseReport.setVisibility(View.VISIBLE);
+                slotwiseAppOrderList.setVisibility(VISIBLE);
+                plotOrdersLocation_layout.setVisibility(VISIBLE);
+                orderDetailsDump_report.setVisibility(VISIBLE);
+                searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
+                slotwiseAppOrderList.setVisibility(VISIBLE);
+                swiggyOrderPlacing_layout.setVisibility(GONE);
+
+            } else {
+                swiggyOrderPlacing_layout.setVisibility(VISIBLE);
+
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                slotwiseAppOrderList.setVisibility(GONE);
+                plotOrdersLocation_layout.setVisibility(GONE);
+            }
+            testlayout.setVisibility(GONE);
+
+        }
+        else if (UserRole.equals(Constants.CASHIER_ROLENAME)) {
+            generateUserDetailsLayout.setVisibility(GONE);
+
+            managemenuLayout.setVisibility(GONE);
+            searchOrdersUsingMobileNumbers.setVisibility(VISIBLE);
+            salesLinearLayout.setVisibility(VISIBLE);
+            editPaymentModeOftheOrder.setVisibility(GONE);
+            delivered_orders_timewiseReport.setVisibility(View.GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            cancelledOrdersLayout.setVisibility(GONE);
+            plotOrdersLocation_layout.setVisibility(GONE);
+            slotwiseAppOrderList.setVisibility(GONE);
+            orderDetailsDump_report.setVisibility(GONE);
+            swiggyOrderPlacing_layout.setVisibility(GONE);
+
+        }
+        else {
+            swiggyOrderPlacing_layout.setVisibility(VISIBLE);
+
+            managemenuLayout.setVisibility(GONE);
+            plotOrdersLocation_layout.setVisibility(GONE);
+            slotwiseAppOrderList.setVisibility(GONE);
+            searchOrdersUsingMobileNumbers.setVisibility(GONE);
+            salesLinearLayout.setVisibility(GONE);
+            editPaymentModeOftheOrder.setVisibility(GONE);
+            delivered_orders_timewiseReport.setVisibility(View.GONE);
+            orderDetailsDump_report.setVisibility(GONE);
+            generateCustomerMobileno_BillvalueReport.setVisibility(GONE);
+            cancelledOrdersLayout.setVisibility(GONE);
+            generateUserDetailsLayout.setVisibility(GONE);
+
+            Toast.makeText(mContext, "You Don't have any User Role Ask Admin to assign the Role", Toast.LENGTH_LONG).show();
+
+
+        }
+
+
+ */
+
+      /*  if(UserRole.length()>0) {
+            if (UserRole.toUpperCase().equals(Constants.SUPERADMIN_ROLENAME)) {
+                managemenuLayout.setVisibility(VISIBLE);
+                viewordersLinearLayout.setVisibility(VISIBLE);
+                manageordersLinearLayout.setVisibility(VISIBLE);
+                salesLinearLayout.setVisibility(VISIBLE);
+                // dataAnalyticsLinearLayout.setVisibility(VISIBLE);
+                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
+
+
+                if (screenInches > Constants.default_mobileScreenSize) {
+                    //if Pos
+                    editPaymentModeOftheOrder.setVisibility(GONE);
+                    plotOrdersLocation_layout.setVisibility(GONE);
+                    delivered_orders_timewiseReport.setVisibility(View.GONE);
+                    slotwiseAppOrderList.setVisibility(View.GONE);
+                    //total dataAnalytics module
+                    dataAnalyticsLinearLayout.setVisibility(GONE);
+
+                } else {
+                    //if Mobile
+                    swiggyOrderPlacing_layout.setVisibility(GONE);
+
+                }
+            } else if (UserRole.toUpperCase().equals(Constants.REPORTSVIEWER_ROLENAME)) {
+                managemenuLayout.setVisibility(GONE);
+                viewordersLinearLayout.setVisibility(GONE);
+                manageordersLinearLayout.setVisibility(GONE);
+                salesLinearLayout.setVisibility(GONE);
+                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
+                resetTokenNoLayout.setVisibility(GONE);
+                if (screenInches > Constants.default_mobileScreenSize) {
+                    //if Pos
+
+                    dataAnalyticsLinearLayout.setVisibility(GONE);
+
+
+                } else {
+                    //if Mobile
+
+                    dataAnalyticsLinearLayout.setVisibility(VISIBLE);
+
+                }
+            } else if (UserRole.toUpperCase().equals(Constants.STOREMANAGER_ROLENAME)) {
+                managemenuLayout.setVisibility(VISIBLE);
+                viewordersLinearLayout.setVisibility(VISIBLE);
+                manageordersLinearLayout.setVisibility(VISIBLE);
+                salesLinearLayout.setVisibility(VISIBLE);
+                dataAnalyticsLinearLayout.setVisibility(GONE);
+                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
+                if (screenInches > Constants.default_mobileScreenSize) {
+                    //if Pos
+                    editPaymentModeOftheOrder.setVisibility(GONE);
+                    plotOrdersLocation_layout.setVisibility(GONE);
+                    delivered_orders_timewiseReport.setVisibility(View.GONE);
+                    slotwiseAppOrderList.setVisibility(View.GONE);
+
+                } else {
+                    //if Mobile
+                    swiggyOrderPlacing_layout.setVisibility(GONE);
+
+                }
+            } else if (UserRole.toUpperCase().equals(Constants.DELIVERYMANAGER_ROLENAME)) {
+
+                managemenuLayout.setVisibility(VISIBLE);
+                viewordersLinearLayout.setVisibility(VISIBLE);
+                manageordersLinearLayout.setVisibility(GONE);
+                salesLinearLayout.setVisibility(GONE);
+                dataAnalyticsLinearLayout.setVisibility(GONE);
+                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
+                resetTokenNoLayout.setVisibility(GONE);
+                if (screenInches > Constants.default_mobileScreenSize) {
+                    //if Pos
+                    editPaymentModeOftheOrder.setVisibility(GONE);
+                    plotOrdersLocation_layout.setVisibility(GONE);
+                    delivered_orders_timewiseReport.setVisibility(View.GONE);
+                    slotwiseAppOrderList.setVisibility(View.GONE);
+
+                } else {
+                    //if Mobile
+                    swiggyOrderPlacing_layout.setVisibility(GONE);
+
+                }
+
+
+            } else if (UserRole.toUpperCase().equals(Constants.CASHIER_ROLENAME)) {
+
+                managemenuLayout.setVisibility(VISIBLE);
+                viewordersLinearLayout.setVisibility(VISIBLE);
+                manageordersLinearLayout.setVisibility(GONE);
+                salesLinearLayout.setVisibility(VISIBLE);
+                dataAnalyticsLinearLayout.setVisibility(GONE);
+                GeneralConfiguration_linearLayout.setVisibility(VISIBLE);
+                if (screenInches > Constants.default_mobileScreenSize) {
+                    //if Pos
+                    editPaymentModeOftheOrder.setVisibility(GONE);
+                    plotOrdersLocation_layout.setVisibility(GONE);
+                    delivered_orders_timewiseReport.setVisibility(View.GONE);
+                    slotwiseAppOrderList.setVisibility(View.GONE);
+
+                } else {
+                    //if Mobile
+                    swiggyOrderPlacing_layout.setVisibility(GONE);
+
+                }
+            }
+        }
+
+        else{
+            Toast.makeText(getActivity(),"You Don't have any User Role Ask Admin to assign the Role",Toast.LENGTH_LONG).show();
+
+        }
+
+
+       */

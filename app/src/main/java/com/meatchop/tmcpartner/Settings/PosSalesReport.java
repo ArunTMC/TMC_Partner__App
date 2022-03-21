@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -48,6 +49,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
+import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
@@ -63,6 +65,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -83,8 +86,8 @@ import static android.os.Build.VERSION.SDK_INT;
 public class PosSalesReport extends AppCompatActivity {
     LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorKey,vendorname;
+    TextView refundAmount_textwidget,replacementAmount_textwidget,vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String replacementOrderDetailsString,startDateString_forReplacementransaction ="",endDateString_forReplacementransaction ="",vendorKey,vendorname;
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -135,6 +138,9 @@ public class PosSalesReport extends AppCompatActivity {
     public static List<String> SubCtgywiseTotalArray;
     public static HashMap<String, String>  SubCtgywiseTotalHashmap  = new HashMap();;
 
+    public static List<String> replacementTransactiontypeArray = new ArrayList<>();
+    public static HashMap<String, List<Modal_ReplacementTransactionDetails>> replacementTransactiontypeHashmap = new HashMap();
+
 
     List<ListData> dataList = new ArrayList<>();
 
@@ -152,6 +158,14 @@ public class PosSalesReport extends AppCompatActivity {
     double swiggyOrderCouponDiscount =0;
     double dunzoOrderCouponDiscount =0;
     double bigbasketOrderCouponDiscount =0;
+
+    boolean isgetReplacementOrderForSelectedDateCalled = false;
+
+    boolean isOrderDetailsResponseReceivedForSelectedDate = false;
+
+    boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+
+
 
     ListView posSalesReport_Listview;
     ScrollView scrollView;
@@ -187,6 +201,8 @@ public class PosSalesReport extends AppCompatActivity {
         creditSales =  findViewById(R.id.creditSales);
         dunzoSales = findViewById(R.id.dunzoSales);
         bigBasketSales = findViewById(R.id.bigBasketSales);
+        refundAmount_textwidget  = findViewById(R.id.refundAmount_textwidget);
+        replacementAmount_textwidget= findViewById(R.id.replacementAmount_textwidget);
 
         swiggySales = findViewById(R.id.swiggySales);
         scrollView  = findViewById(R.id.scrollView);
@@ -231,6 +247,8 @@ public class PosSalesReport extends AppCompatActivity {
         bigBasketOrderpaymentMode_DiscountOrderid.clear();
         bigBasketOrderpaymentModeHashmap.clear();
         bigBasketOrderpaymentMode_DiscountHashmap.clear();
+        replacementTransactiontypeHashmap.clear();
+        replacementTransactiontypeArray.clear();
 
         phoneOrderpaymentMode_DiscountOrderid.clear();
         phoneOrderpaymentMode_DiscountHashmap.clear();
@@ -267,6 +285,9 @@ public class PosSalesReport extends AppCompatActivity {
 
         dateSelector_text.setText(CurrentDate);
         vendorName.setText(vendorname);
+        startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
+        endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
+        getdataFromReplacementTransaction(startDateString_forReplacementransaction,endDateString_forReplacementransaction, vendorKey);
 
         getOrderForSelectedDate(CurrentDate, vendorKey);
         getTmcSubCtgyList(vendorKey);
@@ -659,9 +680,43 @@ public class PosSalesReport extends AppCompatActivity {
                 String Payment_Amount = "", key = paymentModeArray.get(i);
                 Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
                 Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
+                String replacmentFromTextview = "",refundFromTextview = "";
+                double replacment_doubleFromTextview = 0,refund_doubleFromTextview = 0;
 
                 //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
                 DecimalFormat decimalFormat = new DecimalFormat("0.00");
+                try{
+                    replacmentFromTextview = replacementAmount_textwidget.getText().toString();
+                }
+                catch (Exception e){
+                    replacmentFromTextview="0";
+                    e.printStackTrace();
+                }
+
+                try{
+                    refundFromTextview = refundAmount_textwidget.getText().toString();
+
+                }
+                catch (Exception e){
+                    refundFromTextview = "0";
+                    e.printStackTrace();
+                }
+                try{
+                    replacment_doubleFromTextview = Math.round(Double.parseDouble(replacmentFromTextview));
+                }
+                catch (Exception e){
+                    replacment_doubleFromTextview =0;
+                    e.printStackTrace();
+                }
+
+                try{
+                    refund_doubleFromTextview = Math.round(Double.parseDouble(refundFromTextview));
+
+                }
+                catch (Exception e){
+                    refund_doubleFromTextview = 0;
+                    e.printStackTrace();
+                }
 
 
                 if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
@@ -669,7 +724,7 @@ public class PosSalesReport extends AppCompatActivity {
                         payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
                         String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                         payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        payment_AmountDouble = payment_AmountDouble - (payment_AmountDiscDouble + refund_doubleFromTextview + replacment_doubleFromTextview ) ;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Cash Sales";
                     } catch (Exception e) {
@@ -1233,6 +1288,8 @@ public class PosSalesReport extends AppCompatActivity {
 
     private void openDatePicker() {
 
+        replacementTransactiontypeHashmap.clear();
+        replacementTransactiontypeArray.clear();
 
         final Calendar cldr = Calendar.getInstance();
         int day = cldr.get(Calendar.DAY_OF_MONTH);
@@ -1252,9 +1309,13 @@ public class PosSalesReport extends AppCompatActivity {
                             String CurrentDay =   getDayString(dayOfWeek);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             isgetOrderForSelectedDateCalled = false;
+                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(DateString,"STARTTIME");
+                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(DateString, "ENDTIME");
 
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             getOrderForSelectedDate(DateString, vendorKey);
+                            getdataFromReplacementTransaction(startDateString_forReplacementransaction,endDateString_forReplacementransaction, vendorKey);
+
                         }
                         catch (Exception e ){
                             e.printStackTrace();
@@ -2021,7 +2082,7 @@ public class PosSalesReport extends AppCompatActivity {
                         try{
                             if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
 
-                                Adjusting_Widgets_Visibility(false);
+                             /*   Adjusting_Widgets_Visibility(false);
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                                 // Adapter_Pos_Sales_Report adapater_pos_sales_report = new Adapter_Pos_Sales_Report(PosSalesReport.this, Order_Item_List, OrderItem_hashmap, tmcSubCtgykey,SubCtgyKey_List);
                                 // posSalesReport_Listview.setAdapter(adapater_pos_sales_report);
@@ -2029,6 +2090,11 @@ public class PosSalesReport extends AppCompatActivity {
 
                                 prepareContent();
                                 setAdapter();
+
+                              */
+                                isOrderDetailsResponseReceivedForSelectedDate = true;
+                                runthread();
+
                             }
 
                             else{
@@ -2062,7 +2128,7 @@ public class PosSalesReport extends AppCompatActivity {
                                 bigBasketOrderpaymentModeHashmap.clear();
                                 bigBasketOrderpaymentMode_DiscountHashmap.clear();
                                 ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
-
+                                adapter.notifyDataSetChanged();
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                                 Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                                 Adjusting_Widgets_Visibility(false);
@@ -2079,46 +2145,79 @@ public class PosSalesReport extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
-                Adjusting_Widgets_Visibility(false);
-                Order_Item_List.clear();
-                OrderItem_hashmap.clear();
-                finalBillDetails.clear();
-                FinalBill_hashmap.clear();
-                paymentModeArray.clear();
-                paymentModeHashmap.clear();
-                tmcSubCtgywise_sorted_hashmap.clear();
-                phoneOrderpaymentModeArray.clear();
-                phoneOrderpaymentModeHashmap.clear();
-                paymentMode_DiscountHashmap.clear();
-                paymentMode_DiscountOrderid.clear();
-                phoneOrderpaymentMode_DiscountOrderid.clear();
-                phoneOrderpaymentMode_DiscountHashmap.clear();
-                SubCtgywiseTotalArray.clear();
-                tmcSubCtgykey.clear();
-                SubCtgywiseTotalHashmap.clear();
-                swiggyOrderpaymentModeArray.clear();
-                swiggyOrderpaymentModeHashmap.clear();
-                swiggyOrderpaymentMode_DiscountOrderid.clear();
-                swiggyOrderpaymentMode_DiscountHashmap.clear();
-                dunzoOrderpaymentModeArray.clear();
-                dunzoOrderpaymentModeHashmap.clear();
-                dunzoOrderpaymentMode_DiscountOrderid.clear();
-                dunzoOrderpaymentMode_DiscountHashmap.clear();
+                if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+                    try {
+                        try {
+                            Collections.sort(Order_Item_List, new Comparator<String>() {
+                                public int compare(final String object1, final String object2) {
+                                    return object1.compareTo(object2);
+                                }
+                            });
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
+                        runthread();
 
-                bigBasketOrderpaymentModeArray.clear();
-                bigBasketOrderpaymentMode_DiscountOrderid.clear();
-                bigBasketOrderpaymentModeHashmap.clear();
-                bigBasketOrderpaymentMode_DiscountHashmap.clear();
-                ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
+                        //addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                       /* adapater_pos_sales_report = new Adapter_ConsolidatedSalesReport_listview(ConsolidatedReportSubCtgywise.this, Order_Item_List, OrderItem_hashmap);
+                        consolidatedSalesReport_Listview.setAdapter(adapater_pos_sales_report);
+                        ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
+                        scrollView.fullScroll(View.FOCUS_UP);
 
-                addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                        */
 
-                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
 
-                error.printStackTrace();
+                        //sort_the_array_CtgyWise();
+                        // prepareContent();
+                        //setAdapter();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                else {
+                    Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                    Adjusting_Widgets_Visibility(false);
+                    Order_Item_List.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    paymentModeArray.clear();
+                    paymentModeHashmap.clear();
+                    tmcSubCtgywise_sorted_hashmap.clear();
+                    phoneOrderpaymentModeArray.clear();
+                    phoneOrderpaymentModeHashmap.clear();
+                    paymentMode_DiscountHashmap.clear();
+                    paymentMode_DiscountOrderid.clear();
+                    phoneOrderpaymentMode_DiscountOrderid.clear();
+                    phoneOrderpaymentMode_DiscountHashmap.clear();
+                    SubCtgywiseTotalArray.clear();
+                    tmcSubCtgykey.clear();
+                    SubCtgywiseTotalHashmap.clear();
+                    swiggyOrderpaymentModeArray.clear();
+                    swiggyOrderpaymentModeHashmap.clear();
+                    swiggyOrderpaymentMode_DiscountOrderid.clear();
+                    swiggyOrderpaymentMode_DiscountHashmap.clear();
+                    dunzoOrderpaymentModeArray.clear();
+                    dunzoOrderpaymentModeHashmap.clear();
+                    dunzoOrderpaymentMode_DiscountOrderid.clear();
+                    dunzoOrderpaymentMode_DiscountHashmap.clear();
+
+                    bigBasketOrderpaymentModeArray.clear();
+                    bigBasketOrderpaymentMode_DiscountOrderid.clear();
+                    bigBasketOrderpaymentModeHashmap.clear();
+                    bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                    ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
+                    adapter.notifyDataSetChanged();
+                    addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+
+                    error.printStackTrace();
+                }
             }
         }) {
             @Override
@@ -2145,6 +2244,361 @@ public class PosSalesReport extends AppCompatActivity {
         Volley.newRequestQueue(PosSalesReport.this).add(jsonObjectRequest);
 
     }
+
+    private void getdataFromReplacementTransaction(String startdateString_forReplacementransaction, String enddateString_forReplacementransaction, String vendorKey) {
+        if(isgetReplacementOrderForSelectedDateCalled){
+            return;
+        }
+        isgetReplacementOrderForSelectedDateCalled = true;
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        Adjusting_Widgets_Visibility(true);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetReplacementTransactionDetailsForTransactionTimeVendorkey + "?transactiontime1="+startdateString_forReplacementransaction+"&vendorkey="+vendorKey+"&transactiontime2="+enddateString_forReplacementransaction,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            JSONArray JArray = response.getJSONArray("content");
+                            if(JArray.length()>0) {
+                                replacementOrderDetailsString = JArray.toString();
+                                convertReplacementTransactionDetailsJsonIntoArray(replacementOrderDetailsString);
+                            }
+                            else{
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            }
+
+                        } catch (JSONException e) {
+                            isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(PosSalesReport.this,"There is no Orders Yet ",Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                isgetReplacementOrderForSelectedDateCalled=false;
+                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                error.printStackTrace();
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorKey);
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(PosSalesReport.this).add(jsonObjectRequest);
+
+
+
+
+    }
+
+    private void convertReplacementTransactionDetailsJsonIntoArray(String stringOfArray) {
+
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        try {
+            JSONArray JArray = new JSONArray(stringOfArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            int arrayLength = JArray.length();
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+            for (int i1 = 0; i1 < arrayLength; i1++) {
+                Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = new Modal_ReplacementTransactionDetails();
+                String transactionStatus = "", transactionType = "";
+                List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = new ArrayList<>();
+
+
+                try {
+                    JSONObject json = JArray.getJSONObject(i1);
+                    try{
+                        if(json.has("discountamount")){
+                            modal_replacementTransactionDetails.setDiscountamount(String.valueOf(json.getString("discountamount")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setDiscountamount("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setDiscountamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("markeditemdesp")){
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String(String.valueOf(json.getString("markeditemdesp")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("mobileno")){
+                            modal_replacementTransactionDetails.setMobileno(String.valueOf(json.getString("mobileno")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setMobileno("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setMobileno("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("orderid")){
+                            modal_replacementTransactionDetails.setOrderid(String.valueOf(json.getString("orderid")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setOrderid("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setOrderid("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("refundamount")){
+                            modal_replacementTransactionDetails.setRefundamount(String.valueOf(json.getString("refundamount")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setRefundamount("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setRefundamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("replacementitemdesp")){
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string(String.valueOf(json.getString("replacementitemdesp")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if(json.has("replacementorderamount")){
+                            modal_replacementTransactionDetails.setReplacementorderamount(String.valueOf(json.getString("replacementorderamount")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if(json.has("replacementorderid")){
+                            modal_replacementTransactionDetails.setReplacementorderid(String.valueOf(json.getString("replacementorderid")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if(json.has("transactionstatus")){
+                            modal_replacementTransactionDetails.setTransactionstatus(String.valueOf(json.getString("transactionstatus")));
+                            transactionStatus = String.valueOf(json.getString("transactionstatus"));
+                        }
+                        else{
+                            transactionStatus ="";
+                            modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        transactionStatus ="";
+
+                        modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if(json.has("transactiontime")){
+                            modal_replacementTransactionDetails.setTransactiontime(String.valueOf(json.getString("transactiontime")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setTransactiontime("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setTransactiontime("");
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        if(json.has("transactiontype")){
+                            modal_replacementTransactionDetails.setTransactiontype(String.valueOf(json.getString("transactiontype")));
+                            transactionType =String.valueOf(json.getString("transactiontype").toString().toUpperCase());
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setTransactiontype("");
+                            transactionType ="";
+
+                        }
+                    }
+                    catch (Exception e){
+                        transactionType ="";
+
+                        modal_replacementTransactionDetails.setTransactiontype("");
+
+                        e.printStackTrace();
+                    }
+                    try{
+                        if(json.has("vendorkey")){
+                            modal_replacementTransactionDetails.setVendorkey(String.valueOf(json.getString("vendorkey")));
+
+                        }
+                        else{
+                            modal_replacementTransactionDetails.setVendorkey("");
+
+                        }
+                    }
+                    catch (Exception e){
+                        modal_replacementTransactionDetails.setVendorkey("");
+
+                        e.printStackTrace();
+                    }
+
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try{
+                    Log.i("TransactionDetailsArray",String.valueOf(replacementTransactionDetailsArray.size()));
+                    Log.i("TransactiontypeArray",String.valueOf(replacementTransactiontypeArray.size()));
+                    Log.i("TransactiontypeHashmap",String.valueOf(replacementTransactiontypeHashmap.size()));
+                    Log.i("transactionArray",String.valueOf(replacementTransactionDetailsArray.size()));
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                try{
+                    if(transactionStatus.toString().toUpperCase().equals("SUCCESS")) {
+                        try {
+                            replacementTransactionDetailsArray.add(modal_replacementTransactionDetails);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+
+                            if (replacementTransactiontypeArray.contains(transactionType)) {
+                                replacementTransactiontypeHashmap.get(transactionType).add(modal_replacementTransactionDetails);
+                            } else {
+                                replacementTransactiontypeArray.add(transactionType);
+                                replacementTransactiontypeHashmap.put(transactionType, replacementTransactionDetailsArray);
+                            }
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try{
+                            if(arrayLength-1==i1){
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
 
     private void sort_the_array_CtgyWise() {
         for(int i =0 ; i<tmcSubCtgykey.size();i++){
@@ -2305,7 +2759,9 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
     private void setAdapter() {
-            try {
+        Adjusting_Widgets_Visibility(false);
+
+        try {
                 adapter = new Adapter_Pos_Sales_Report(PosSalesReport.this, dataList,false);
                 posSalesReport_Listview.setAdapter(adapter);
 
@@ -2381,7 +2837,8 @@ public class PosSalesReport extends AppCompatActivity {
 
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
            double totalAmountWithOutGstwithoutDiscount = 0;
-           double totalAmountWithGstwithoutDiscount =0;
+           double totalAmountWithGstwithoutDiscount_without_refund_replacement =0;
+           double totalAmountWithOutGstwithoutDiscount_refund_replacement =0;
             double totalAmountWithOutGst = 0;
             double discountAmount = 0;
             double GST = 0;
@@ -2416,6 +2873,89 @@ public class PosSalesReport extends AppCompatActivity {
            double bigBasketOrder_Payment_Amount = 0;
            double bigBasketOrder_Discount_Amount = 0;
 
+
+           double totalRefundAmount = 0;
+           double totalReplacementAmount = 0;
+
+
+
+           try{
+               for (String transactionType : replacementTransactiontypeArray) {
+
+                   List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = replacementTransactiontypeHashmap.get(transactionType);
+
+                   for(int i=0 ;i <replacementTransactionDetailsArray.size(); i++){
+                       double refundAmount = 0;
+                       double replacementAmount = 0;
+
+                       Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = replacementTransactionDetailsArray.get(i);
+
+                       if(modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REFUND")){
+                           String refundAmountString ="0";
+                           try{
+                               refundAmountString = modal_replacementTransactionDetails.getRefundamount().toString();
+
+                           }
+                           catch (Exception e){
+                               refundAmountString ="0";
+                               e.printStackTrace();
+                           }
+                           try {
+                               refundAmount = Double.parseDouble(refundAmountString);
+
+                           }
+                           catch (Exception e){
+                               e.printStackTrace();
+                           }
+
+                           try{
+
+                               totalRefundAmount  = refundAmount + totalRefundAmount;
+                           }
+                           catch (Exception e){
+                               e.printStackTrace();
+                           }
+
+                       }
+
+
+                       if(modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REPLACEMENT")){
+                           String replacementAmountString ="0";
+                           try{
+                               replacementAmountString = modal_replacementTransactionDetails.getReplacementorderamount().toString();
+
+                           }
+                           catch (Exception e){
+                               replacementAmountString ="0";
+                               e.printStackTrace();
+                           }
+                           try {
+                               replacementAmount = Double.parseDouble(replacementAmountString);
+
+                           }
+                           catch (Exception e){
+                               e.printStackTrace();
+                           }
+
+                           try{
+
+                               totalReplacementAmount  = replacementAmount + totalReplacementAmount;
+                           }
+                           catch (Exception e){
+                               e.printStackTrace();
+                           }
+                       }
+
+
+                   }
+
+
+               }
+
+           }
+           catch (Exception e){
+               e.printStackTrace();
+           }
 
            String TMCsubCtgyKey = "",subCtgyTotal="";
             for (int i = 0; i < order_item_list.size(); i++) {
@@ -2575,25 +3115,39 @@ public class PosSalesReport extends AppCompatActivity {
            }
 
            try{
-               totalAmountWithGstwithoutDiscount = totalAmountWithOutGstwithoutDiscount+GST;
+               totalAmountWithOutGstwithoutDiscount_refund_replacement = totalAmountWithOutGstwithoutDiscount - totalRefundAmount - totalReplacementAmount;
+           }
+           catch (Exception e){
+               e.printStackTrace();
+           }
+           try{
+               totalAmountWithGstwithoutDiscount_without_refund_replacement = totalAmountWithOutGstwithoutDiscount_refund_replacement+GST;
+           }
+           catch (Exception e){
+               e.printStackTrace();
+           }
+           try{
+               cashPayment_Amount = cashPayment_Amount- (totalReplacementAmount+totalRefundAmount);
            }
            catch (Exception e){
                e.printStackTrace();
            }
 
-
            try{
-                totalAmt_without_GST.setText(String.valueOf(decimalFormat.format(totalAmountWithOutGst)));
+               replacementAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalReplacementAmount)));
+               refundAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalRefundAmount)));
+
+               totalAmt_without_GST.setText(String.valueOf(decimalFormat.format(totalAmountWithOutGst)));
                 totalCouponDiscount_Amt.setText(String.valueOf(decimalFormat.format(discountAmount)));
-                totalAmt_with_CouponDiscount.setText(String.valueOf(decimalFormat.format(totalAmountWithOutGstwithoutDiscount)));
+                totalAmt_with_CouponDiscount.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount_without_refund_replacement)));
                 totalGST_Amt.setText(String.valueOf(decimalFormat.format(GST)));
-                final_sales.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount)));
+                final_sales.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount_without_refund_replacement)));
                 upiSales.setText(String.valueOf(decimalFormat.format(upiPayment_Amount)));
                 cashSales.setText(String.valueOf(decimalFormat.format(cashPayment_Amount)));
                 cardSales.setText(String.valueOf(decimalFormat.format(cardPayment_Amount)));
                 creditSales.setText(String.valueOf(decimalFormat.format(creditPayment_Amount)));
 
-                totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount)));
+                totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount_without_refund_replacement)));
 
                phoneorderupiSales.setText(String.valueOf(decimalFormat.format(phoneOrder_upiPayment_Amount)));
                phoneordercashSales.setText(String.valueOf(decimalFormat.format(phoneOrder_cashPayment_Amount)));
@@ -2609,12 +3163,16 @@ public class PosSalesReport extends AppCompatActivity {
                 FinalBill_hashmap.put("TOTAL : ", String.valueOf(decimalFormat.format(totalAmountWithOutGst)));
                 finalBillDetails.add("DISCOUNT : ");
                 FinalBill_hashmap.put("DISCOUNT : ", String.valueOf(decimalFormat.format(discountAmount)));
-                finalBillDetails.add("SUBTOTAL : ");
+               finalBillDetails.add("REFUND : ");
+               FinalBill_hashmap.put("REFUND : ", String.valueOf(decimalFormat.format(totalRefundAmount)));
+               finalBillDetails.add("REPLACEMENT : ");
+               FinalBill_hashmap.put("REPLACEMENT : ", String.valueOf(decimalFormat.format(totalReplacementAmount)));
+               finalBillDetails.add("SUBTOTAL : ");
                 FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmountWithOutGstwithoutDiscount)));
                 finalBillDetails.add("GST : ");
                 FinalBill_hashmap.put("GST : ", String.valueOf(decimalFormat.format(GST)));
                 finalBillDetails.add("FINAL SALES : ");
-                FinalBill_hashmap.put("FINAL SALES : ", String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount)));
+                FinalBill_hashmap.put("FINAL SALES : ", String.valueOf(decimalFormat.format(totalAmountWithGstwithoutDiscount_without_refund_replacement)));
                 //   sort_list_tmcSubCtgyWise(Order_Item_List, OrderItem_hashmap);
 
             }
@@ -3726,6 +4284,39 @@ public class PosSalesReport extends AppCompatActivity {
         return CurrentDate;
     }
 
+    private String convertNormalDateintoReplacementTransactionDetailsDate(String sDate, String Time) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+
+
+        Date c1 = calendar.getTime();
+
+
+
+
+        SimpleDateFormat df = new SimpleDateFormat();
+        if(Time.equals("STARTTIME")) {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        }
+        else{
+            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+
+        }
+
+        String Date = df.format(c1);
+        return Date;
+    }
 
 
     private void getMenuItemArrayFromSharedPreferences() {
@@ -3744,8 +4335,54 @@ public class PosSalesReport extends AppCompatActivity {
 
     }
 
+    private void runthread() {
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(isReplacementTransacDetailsResponseReceivedForSelectedDate && isgetReplacementOrderForSelectedDateCalled){
+                            addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                            prepareContent();
+                            setAdapter();
+                        }
+                        else{
+                            runthread();
+                        }
+                    }
+                });
+            }
+        }, 15);
+    }
+
+    public String getstartDate_and_time_TransactionTable()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
+    public String getendDate_and_time_TransactionTable()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
 
@@ -3857,7 +4494,7 @@ public class PosSalesReport extends AppCompatActivity {
 
     private void addItemRows(Document layoutDocument) {
         try {
-            String rsunit = "Rs.",tmcprice;
+            String rsunit = "Rs.", tmcprice;
             PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
@@ -3902,130 +4539,125 @@ public class PosSalesReport extends AppCompatActivity {
 
           */
 
-                for (String SubCtgykey:tmcSubCtgykey){
-                    int i_value=0;
+            for (String SubCtgykey : tmcSubCtgykey) {
+                int i_value = 0;
 
-                    String SubCtgyName,menuid;
-                    Modal_OrderDetails subCtgyName_object =  SubCtgyKey_hashmap.get(SubCtgykey);
-                    SubCtgyName = subCtgyName_object.getTmcsubctgyname();
-                    for (int j = 0; j <Order_Item_List.size() ; j++) {
-                        menuid = Order_Item_List.get(j);
-                        Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
-                        String itemName = itemRow.getItemname();
-                        String  subCtgyKey_fromHashmap = "";
-                        try {
-                             subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
+                String SubCtgyName, menuid;
+                Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
+                SubCtgyName = subCtgyName_object.getTmcsubctgyname();
+                for (int j = 0; j < Order_Item_List.size(); j++) {
+                    menuid = Order_Item_List.get(j);
+                    Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
+                    String itemName = itemRow.getItemname();
+                    String subCtgyKey_fromHashmap = "";
+                    try {
+                        subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
+                    } catch (Exception e) {
+                        e.printStackTrace();
 
-                        }
-                        if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
+                    }
+                    if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
 
-                            if(i_value!=0) {
+                        if (i_value != 0) {
 
-                                itemnamecell = new PdfPCell(new Phrase((itemName)));
-                                itemnamecell.setBorder(Rectangle.BOTTOM);
-                                itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
-                                itemnamecell.setMinimumHeight(30);
-                                itemnamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                                itemnamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                                itemnamecell.setPaddingLeft(10);
-                                String KilogramString ="",Quantity="";
-                                try {
-                                     KilogramString = itemRow.getWeightingrams();
-                                 //   if(KilogramString != null &&(!KilogramString.equals(""))&&(!(KilogramString.equals("0.00Kg")))&&(!(KilogramString.equals("0")))) {
-                                        Quantity = KilogramString;
+                            itemnamecell = new PdfPCell(new Phrase((itemName)));
+                            itemnamecell.setBorder(Rectangle.BOTTOM);
+                            itemnamecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itemnamecell.setMinimumHeight(30);
+                            itemnamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            itemnamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itemnamecell.setPaddingLeft(10);
+                            String KilogramString = "", Quantity = "";
+                            try {
+                                KilogramString = itemRow.getWeightingrams();
+                                //   if(KilogramString != null &&(!KilogramString.equals(""))&&(!(KilogramString.equals("0.00Kg")))&&(!(KilogramString.equals("0")))) {
+                                Quantity = KilogramString;
                                    /* }
                                     else{
                                         Quantity =  itemRow.getQuantity();
                                     }
 
                                     */
-                                }
-                                catch(Exception e){
-                                  //  Quantity =  itemRow.getQuantity();
-                                    e.printStackTrace();
-                                }
-                                if(!Quantity.equals("0.0")&&(!Quantity.equals("0.00"))&&(!Quantity.equals("0"))){
-
-                                    double weightinGrams =Double.parseDouble(Quantity);
-                                    double kilogram = weightinGrams * 0.001;
-                                    Quantity  = String.valueOf(decimalFormat.format(kilogram) + "Kg");
-
-
-                                }
-                                else {
-                                    Quantity =  itemRow.getQuantity()+"Pc";
-
-                                }
-
-                                itemqtycell = new PdfPCell(new Phrase("" + Quantity));
-                                itemqtycell.setBorder(Rectangle.BOTTOM);
-                                itemqtycell.setBorderColor(BaseColor.LIGHT_GRAY);
-                                itemqtycell.setMinimumHeight(30);
-                                itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-
-                                double totalval = Double.parseDouble( itemRow.getTmcprice());
-                                tmcprice =  decimalFormat.format(totalval);
-                                tmcprice = rsunit + tmcprice;
-                                itempricecell = new PdfPCell(new Phrase(tmcprice));
-                                itempricecell.setBorder(Rectangle.BOTTOM);
-                                itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
-                                itempricecell.setMinimumHeight(30);
-                                itempricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                                itempricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                                itempricecell.setPaddingRight(10);
-
-
-                                table.addCell(itemnamecell);
-                                table.addCell(itemqtycell);
-                                table.addCell(itempricecell);
+                            } catch (Exception e) {
+                                //  Quantity =  itemRow.getQuantity();
+                                e.printStackTrace();
                             }
-                        }
-                        if(i_value==0) {
-                            i_value = 1;
-                            j=j-1;
-                            PdfPCell SubCtgycell = new PdfPCell(new Phrase(SubCtgyName));
-                            SubCtgycell.setBorder(Rectangle.NO_BORDER);
-                            SubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                            SubCtgycell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                            SubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                            SubCtgycell.setPaddingLeft(10);
-                            SubCtgycell.setFixedHeight(30);
-                            table.addCell(SubCtgycell);
+                            if (!Quantity.equals("0.0") && (!Quantity.equals("0.00")) && (!Quantity.equals("0"))) {
 
-                            PdfPCell qtySubCtgycell = new PdfPCell(new Phrase(""));
-                            qtySubCtgycell.setBorder(Rectangle.NO_BORDER);
-                            qtySubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                            qtySubCtgycell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                            qtySubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                            qtySubCtgycell.setFixedHeight(30);
-                            table.addCell(qtySubCtgycell);
+                                double weightinGrams = Double.parseDouble(Quantity);
+                                double kilogram = weightinGrams * 0.001;
+                                Quantity = String.valueOf(decimalFormat.format(kilogram) + "Kg");
 
 
-                            PdfPCell priceSubCtgycell = new PdfPCell(new Phrase(""));
-                            priceSubCtgycell.setBorder(Rectangle.NO_BORDER);
-                            priceSubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                            priceSubCtgycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                            priceSubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                            priceSubCtgycell.setFixedHeight(30);
-                            priceSubCtgycell.setPaddingRight(10);
-                            table.addCell(priceSubCtgycell);
+                            } else {
+                                Quantity = itemRow.getQuantity() + "Pc";
+
+                            }
+
+                            itemqtycell = new PdfPCell(new Phrase("" + Quantity));
+                            itemqtycell.setBorder(Rectangle.BOTTOM);
+                            itemqtycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itemqtycell.setMinimumHeight(30);
+                            itemqtycell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                            itemqtycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
 
+                            double totalval = Double.parseDouble(itemRow.getTmcprice());
+                            tmcprice = decimalFormat.format(totalval);
+                            tmcprice = rsunit + tmcprice;
+                            itempricecell = new PdfPCell(new Phrase(tmcprice));
+                            itempricecell.setBorder(Rectangle.BOTTOM);
+                            itempricecell.setBorderColor(BaseColor.LIGHT_GRAY);
+                            itempricecell.setMinimumHeight(30);
+                            itempricecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            itempricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            itempricecell.setPaddingRight(10);
+
+
+                            table.addCell(itemnamecell);
+                            table.addCell(itemqtycell);
+                            table.addCell(itempricecell);
                         }
                     }
+                    if (i_value == 0) {
+                        i_value = 1;
+                        j = j - 1;
+                        PdfPCell SubCtgycell = new PdfPCell(new Phrase(SubCtgyName));
+                        SubCtgycell.setBorder(Rectangle.NO_BORDER);
+                        SubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        SubCtgycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        SubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        SubCtgycell.setPaddingLeft(10);
+                        SubCtgycell.setFixedHeight(30);
+                        table.addCell(SubCtgycell);
+
+                        PdfPCell qtySubCtgycell = new PdfPCell(new Phrase(""));
+                        qtySubCtgycell.setBorder(Rectangle.NO_BORDER);
+                        qtySubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        qtySubCtgycell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        qtySubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        qtySubCtgycell.setFixedHeight(30);
+                        table.addCell(qtySubCtgycell);
+
+
+                        PdfPCell priceSubCtgycell = new PdfPCell(new Phrase(""));
+                        priceSubCtgycell.setBorder(Rectangle.NO_BORDER);
+                        priceSubCtgycell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        priceSubCtgycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        priceSubCtgycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        priceSubCtgycell.setFixedHeight(30);
+                        priceSubCtgycell.setPaddingRight(10);
+                        table.addCell(priceSubCtgycell);
+
+
+                    }
                 }
-
-
-
+            }
 
 
             //}
             layoutDocument.add(table);
+            if(paymentModeArray.size()>0) {
 
             PdfPTable tablePaymentModetitle = new PdfPTable(1);
             tablePaymentModetitle.setWidthPercentage(100);
@@ -4043,44 +4675,71 @@ public class PosSalesReport extends AppCompatActivity {
             layoutDocument.add(tablePaymentModetitle);
 
 
-                         PdfPTable tablePaymentMode = new PdfPTable(4);
-                         tablePaymentMode.setWidthPercentage(100);
-                         tablePaymentMode.setSpacingBefore(20);
-                         PdfPCell paymentModeemptycell;
-                         PdfPCell paymentModeemptycellone;
-                         PdfPCell paymentModeitemkeycell;
-                         PdfPCell paymentModeitemValueCell;
+            PdfPTable tablePaymentMode = new PdfPTable(4);
+            tablePaymentMode.setWidthPercentage(100);
+            tablePaymentMode.setSpacingBefore(20);
+            PdfPCell paymentModeemptycell;
+            PdfPCell paymentModeemptycellone;
+            PdfPCell paymentModeitemkeycell;
+            PdfPCell paymentModeitemValueCell;
 
 
             for (int i = 0; i < paymentModeArray.size(); i++) {
-                double payment_AmountDouble =0;
-                double payment_AmountDiscDouble =0;
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+                String replacmentFromTextview = "", refundFromTextview = "";
+                double replacment_doubleFromTextview = 0, refund_doubleFromTextview = 0;
 
-                String Payment_Amount="",key = paymentModeArray.get(i);
+                String Payment_Amount = "", key = paymentModeArray.get(i);
                 Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
                 Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
 
                 //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
 
-
-
-
-
                 if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+
+                    try {
+                        replacmentFromTextview = replacementAmount_textwidget.getText().toString();
+                    } catch (Exception e) {
+                        replacmentFromTextview = "0";
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        refundFromTextview = refundAmount_textwidget.getText().toString();
+
+                    } catch (Exception e) {
+                        refundFromTextview = "0";
+                        e.printStackTrace();
+                    }
+                    try {
+                        replacment_doubleFromTextview = Math.round(Double.parseDouble(replacmentFromTextview));
+                    } catch (Exception e) {
+                        replacment_doubleFromTextview = 0;
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        refund_doubleFromTextview = Math.round(Double.parseDouble(refundFromTextview));
+
+                    } catch (Exception e) {
+                        refund_doubleFromTextview = 0;
+                        e.printStackTrace();
+                    }
+
                     try {
                         payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
                         String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                         payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        payment_AmountDouble = payment_AmountDouble - (payment_AmountDiscDouble + refund_doubleFromTextview + replacment_doubleFromTextview);
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Cash Sales";
-                    }
-                    catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                         payment_AmountDouble = 0.00;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Card Sales";
+                        key = "Cash Sales";
 
                     }
                 }
@@ -4089,12 +4748,11 @@ public class PosSalesReport extends AppCompatActivity {
                         payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
                         String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                         payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Card Sales";
 
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                         payment_AmountDouble = 0.00;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
@@ -4107,12 +4765,11 @@ public class PosSalesReport extends AppCompatActivity {
                         payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
                         String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                         payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Upi Sales";
 
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         payment_AmountDouble = 0.00;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Upi Sales";
@@ -4128,12 +4785,11 @@ public class PosSalesReport extends AppCompatActivity {
                         payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
                         String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
                         payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Credit Sales";
 
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         payment_AmountDouble = 0.00;
                         Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
                         key = "Credit Sales";
@@ -4142,524 +4798,469 @@ public class PosSalesReport extends AppCompatActivity {
 
                     }
                 }
-
-
-
 
 
                 paymentModeemptycell = new PdfPCell(new Phrase(""));
-                             paymentModeemptycell.setBorder(Rectangle.NO_BORDER);
-                             paymentModeemptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                             paymentModeemptycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                             paymentModeemptycell.setFixedHeight(25);
-                             tablePaymentMode.addCell(paymentModeemptycell);
+                paymentModeemptycell.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycell.setFixedHeight(25);
+                tablePaymentMode.addCell(paymentModeemptycell);
 
-                             paymentModeemptycellone = new PdfPCell(new Phrase(""));
-                             paymentModeemptycellone.setBorder(Rectangle.NO_BORDER);
-                             paymentModeemptycellone.setHorizontalAlignment(Element.ALIGN_LEFT);
-                             paymentModeemptycellone.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                             paymentModeemptycellone.setFixedHeight(25);
-                             tablePaymentMode.addCell(paymentModeemptycellone);
+                paymentModeemptycellone = new PdfPCell(new Phrase(""));
+                paymentModeemptycellone.setBorder(Rectangle.NO_BORDER);
+                paymentModeemptycellone.setHorizontalAlignment(Element.ALIGN_LEFT);
+                paymentModeemptycellone.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeemptycellone.setFixedHeight(25);
+                tablePaymentMode.addCell(paymentModeemptycellone);
 
-                             paymentModeitemkeycell = new PdfPCell(new Phrase(key+" :  "));
-                             paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
-                             paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
-                             paymentModeitemkeycell.setMinimumHeight(25);
-                             paymentModeitemkeycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                             paymentModeitemkeycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                             tablePaymentMode.addCell(paymentModeitemkeycell);
-
-
-                           paymentModeitemValueCell = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
-                           paymentModeitemValueCell.setBorderColor(BaseColor.LIGHT_GRAY);
-                           paymentModeitemValueCell.setBorder(Rectangle.NO_BORDER);
-                           paymentModeitemValueCell.setMinimumHeight(25);
-                           paymentModeitemValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                           paymentModeitemValueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                           paymentModeitemValueCell.setPaddingRight(10);
-                           tablePaymentMode.addCell(paymentModeitemValueCell);
+                paymentModeitemkeycell = new PdfPCell(new Phrase(key + " :  "));
+                paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemkeycell.setMinimumHeight(25);
+                paymentModeitemkeycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemkeycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablePaymentMode.addCell(paymentModeitemkeycell);
 
 
-
-
-
-                         }
-                         layoutDocument.add(tablePaymentMode);
-
-
-            PdfPTable tablePaymentModetitle1 = new PdfPTable(1);
-            tablePaymentModetitle1.setWidthPercentage(100);
-            tablePaymentModetitle1.setSpacingBefore(20);
-
-
-            PdfPCell paymentModertitle1;
-                paymentModertitle1 = new PdfPCell(new Phrase("Phone Order Sales"));
-            paymentModertitle1.setBorder(Rectangle.NO_BORDER);
-            paymentModertitle1.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            paymentModertitle1.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            paymentModertitle1.setFixedHeight(25);
-            paymentModertitle1.setPaddingRight(20);
-            tablePaymentModetitle1.addCell(paymentModertitle1);
-            layoutDocument.add(tablePaymentModetitle1);
-
-
-            PdfPTable tablePaymentMode1 = new PdfPTable(4);
-            tablePaymentMode1.setWidthPercentage(100);
-            tablePaymentMode1.setSpacingBefore(20);
-            PdfPCell paymentModeemptycell1;
-            PdfPCell paymentModeemptycellone1;
-            PdfPCell paymentModeitemkeycell1;
-            PdfPCell paymentModeitemValueCell1;
-
-
-            for (int i = 0; i < phoneOrderpaymentModeArray.size(); i++) {
-                double payment_AmountDouble =0;
-                double payment_AmountDiscDouble =0;
-
-                String Payment_Amount="",key =  phoneOrderpaymentModeArray.get(i);
-                Modal_OrderDetails modal_orderDetails =  phoneOrderpaymentModeHashmap.get(key);
-                Modal_OrderDetails Payment_Modewise_discount =  phoneOrderpaymentMode_DiscountHashmap.get(key);
-
-                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-
-
-
-
-
-
-                if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Cash Sales";
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Card Sales";
-
-                    }
-                }
-                if ((key.toUpperCase().equals("CARD"))) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Card Sales";
-
-                    }
-                    catch(Exception e){
-                        e.printStackTrace();
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Card Sales";
-
-                    }
-                }
-                if ((key.toUpperCase().equals("UPI"))) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Upi Sales";
-
-                    }
-                    catch(Exception e){
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Upi Sales";
-
-                        e.printStackTrace();
-
-                    }
-                }
-
-                if ((key.toUpperCase().equals("CREDIT"))) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Credit Sales";
-
-                    }
-                    catch(Exception e){
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Credit Sales";
-
-                        e.printStackTrace();
-
-                    }
-                }
-
-
-
-
-                paymentModeemptycell1 = new PdfPCell(new Phrase(""));
-                paymentModeemptycell1.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycell1.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycell1.setFixedHeight(25);
-                tablePaymentMode1.addCell(paymentModeemptycell1);
-
-                paymentModeemptycellone1 = new PdfPCell(new Phrase(""));
-                paymentModeemptycellone1.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycellone1.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycellone1.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycellone1.setFixedHeight(25);
-                tablePaymentMode1.addCell(paymentModeemptycellone1);
-
-                paymentModeitemkeycell1 = new PdfPCell(new Phrase(key+" :  "));
-                paymentModeitemkeycell1.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemkeycell1.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemkeycell1.setMinimumHeight(25);
-                paymentModeitemkeycell1.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemkeycell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                tablePaymentMode1.addCell(paymentModeitemkeycell1);
-
-
-                paymentModeitemValueCell1 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
-                paymentModeitemValueCell1.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemValueCell1.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemValueCell1.setMinimumHeight(25);
-                paymentModeitemValueCell1.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemValueCell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeitemValueCell1.setPaddingRight(10);
-                tablePaymentMode1.addCell(paymentModeitemValueCell1);
-
-
-
+                paymentModeitemValueCell = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                paymentModeitemValueCell.setBorderColor(BaseColor.LIGHT_GRAY);
+                paymentModeitemValueCell.setBorder(Rectangle.NO_BORDER);
+                paymentModeitemValueCell.setMinimumHeight(25);
+                paymentModeitemValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModeitemValueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModeitemValueCell.setPaddingRight(10);
+                tablePaymentMode.addCell(paymentModeitemValueCell);
 
 
             }
-            layoutDocument.add(tablePaymentMode1);
+            layoutDocument.add(tablePaymentMode);
+        }
+           if(phoneOrderpaymentModeArray.size()>0) {
+               PdfPTable tablePaymentModetitle1 = new PdfPTable(1);
+               tablePaymentModetitle1.setWidthPercentage(100);
+               tablePaymentModetitle1.setSpacingBefore(20);
 
 
+               PdfPCell paymentModertitle1;
+               paymentModertitle1 = new PdfPCell(new Phrase("Phone Order Sales"));
+               paymentModertitle1.setBorder(Rectangle.NO_BORDER);
+               paymentModertitle1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+               paymentModertitle1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+               paymentModertitle1.setFixedHeight(25);
+               paymentModertitle1.setPaddingRight(20);
+               tablePaymentModetitle1.addCell(paymentModertitle1);
+               layoutDocument.add(tablePaymentModetitle1);
 
 
-            PdfPTable tablePaymentModetitle2 = new PdfPTable(1);
-            tablePaymentModetitle2.setWidthPercentage(100);
-            tablePaymentModetitle2.setSpacingBefore(20);
+               PdfPTable tablePaymentMode1 = new PdfPTable(4);
+               tablePaymentMode1.setWidthPercentage(100);
+               tablePaymentMode1.setSpacingBefore(20);
+               PdfPCell paymentModeemptycell1;
+               PdfPCell paymentModeemptycellone1;
+               PdfPCell paymentModeitemkeycell1;
+               PdfPCell paymentModeitemValueCell1;
 
 
-            PdfPCell paymentModertitle2;
-            paymentModertitle2 = new PdfPCell(new Phrase("Swiggy Order Sales"));
-            paymentModertitle2.setBorder(Rectangle.NO_BORDER);
-            paymentModertitle2.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            paymentModertitle2.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            paymentModertitle2.setFixedHeight(25);
-            paymentModertitle2.setPaddingRight(20);
-            tablePaymentModetitle2.addCell(paymentModertitle2);
-            layoutDocument.add(tablePaymentModetitle2);
+               for (int i = 0; i < phoneOrderpaymentModeArray.size(); i++) {
+                   double payment_AmountDouble = 0;
+                   double payment_AmountDiscDouble = 0;
+
+                   String Payment_Amount = "", key = phoneOrderpaymentModeArray.get(i);
+                   Modal_OrderDetails modal_orderDetails = phoneOrderpaymentModeHashmap.get(key);
+                   Modal_OrderDetails Payment_Modewise_discount = phoneOrderpaymentMode_DiscountHashmap.get(key);
+
+                   //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
 
-            PdfPTable tablePaymentMode2 = new PdfPTable(4);
-            tablePaymentMode2.setWidthPercentage(100);
-            tablePaymentMode2.setSpacingBefore(20);
-            PdfPCell paymentModeemptycell2;
-            PdfPCell paymentModeemptycellone2;
-            PdfPCell paymentModeitemkeycell2;
-            PdfPCell paymentModeitemValueCell2;
+                   if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+                       try {
+                           payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                           String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                           payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                           payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Cash Sales";
+                       } catch (Exception e) {
+                           e.printStackTrace();
+                           payment_AmountDouble = 0.00;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Card Sales";
+
+                       }
+                   }
+                   if ((key.toUpperCase().equals("CARD"))) {
+                       try {
+                           payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                           String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                           payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                           payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Card Sales";
+
+                       } catch (Exception e) {
+                           e.printStackTrace();
+                           payment_AmountDouble = 0.00;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Card Sales";
+
+                       }
+                   }
+                   if ((key.toUpperCase().equals("UPI"))) {
+                       try {
+                           payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                           String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                           payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                           payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Upi Sales";
+
+                       } catch (Exception e) {
+                           payment_AmountDouble = 0.00;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Upi Sales";
+
+                           e.printStackTrace();
+
+                       }
+                   }
+
+                   if ((key.toUpperCase().equals("CREDIT"))) {
+                       try {
+                           payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                           String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                           payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                           payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Credit Sales";
+
+                       } catch (Exception e) {
+                           payment_AmountDouble = 0.00;
+                           Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                           key = "Credit Sales";
+
+                           e.printStackTrace();
+
+                       }
+                   }
 
 
-            for (int i = 0; i < swiggyOrderpaymentModeArray.size(); i++) {
-                double payment_AmountDouble =0;
-                double payment_AmountDiscDouble =0;
+                   paymentModeemptycell1 = new PdfPCell(new Phrase(""));
+                   paymentModeemptycell1.setBorder(Rectangle.NO_BORDER);
+                   paymentModeemptycell1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                   paymentModeemptycell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                   paymentModeemptycell1.setFixedHeight(25);
+                   tablePaymentMode1.addCell(paymentModeemptycell1);
 
-                String Payment_Amount="",key =  swiggyOrderpaymentModeArray.get(i);
-                Modal_OrderDetails modal_orderDetails =  swiggyOrderpaymentModeHashmap.get(key);
-                Modal_OrderDetails Payment_Modewise_discount =  swiggyOrderpaymentMode_DiscountHashmap.get(key);
+                   paymentModeemptycellone1 = new PdfPCell(new Phrase(""));
+                   paymentModeemptycellone1.setBorder(Rectangle.NO_BORDER);
+                   paymentModeemptycellone1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                   paymentModeemptycellone1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                   paymentModeemptycellone1.setFixedHeight(25);
+                   tablePaymentMode1.addCell(paymentModeemptycellone1);
 
-                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                   paymentModeitemkeycell1 = new PdfPCell(new Phrase(key + " :  "));
+                   paymentModeitemkeycell1.setBorderColor(BaseColor.LIGHT_GRAY);
+                   paymentModeitemkeycell1.setBorder(Rectangle.NO_BORDER);
+                   paymentModeitemkeycell1.setMinimumHeight(25);
+                   paymentModeitemkeycell1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                   paymentModeitemkeycell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                   tablePaymentMode1.addCell(paymentModeitemkeycell1);
 
 
+                   paymentModeitemValueCell1 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                   paymentModeitemValueCell1.setBorderColor(BaseColor.LIGHT_GRAY);
+                   paymentModeitemValueCell1.setBorder(Rectangle.NO_BORDER);
+                   paymentModeitemValueCell1.setMinimumHeight(25);
+                   paymentModeitemValueCell1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                   paymentModeitemValueCell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                   paymentModeitemValueCell1.setPaddingRight(10);
+                   tablePaymentMode1.addCell(paymentModeitemValueCell1);
 
 
+               }
+               layoutDocument.add(tablePaymentMode1);
+           }
 
 
-                if ((key.toUpperCase().equals(Constants.SWIGGYORDER_PAYMENTMODE)) ) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Swiggy Sales";
+            if(swiggyOrderpaymentModeArray.size()>0) {
+                PdfPTable tablePaymentModetitle2 = new PdfPTable(1);
+                tablePaymentModetitle2.setWidthPercentage(100);
+                tablePaymentModetitle2.setSpacingBefore(20);
+
+
+                PdfPCell paymentModertitle2;
+                paymentModertitle2 = new PdfPCell(new Phrase("Swiggy Order Sales"));
+                paymentModertitle2.setBorder(Rectangle.NO_BORDER);
+                paymentModertitle2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModertitle2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModertitle2.setFixedHeight(25);
+                paymentModertitle2.setPaddingRight(20);
+                tablePaymentModetitle2.addCell(paymentModertitle2);
+                layoutDocument.add(tablePaymentModetitle2);
+
+
+                PdfPTable tablePaymentMode2 = new PdfPTable(4);
+                tablePaymentMode2.setWidthPercentage(100);
+                tablePaymentMode2.setSpacingBefore(20);
+                PdfPCell paymentModeemptycell2;
+                PdfPCell paymentModeemptycellone2;
+                PdfPCell paymentModeitemkeycell2;
+                PdfPCell paymentModeitemValueCell2;
+
+
+                for (int i = 0; i < swiggyOrderpaymentModeArray.size(); i++) {
+                    double payment_AmountDouble = 0;
+                    double payment_AmountDiscDouble = 0;
+
+                    String Payment_Amount = "", key = swiggyOrderpaymentModeArray.get(i);
+                    Modal_OrderDetails modal_orderDetails = swiggyOrderpaymentModeHashmap.get(key);
+                    Modal_OrderDetails Payment_Modewise_discount = swiggyOrderpaymentMode_DiscountHashmap.get(key);
+
+                    //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+
+                    if ((key.toUpperCase().equals(Constants.SWIGGYORDER_PAYMENTMODE))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales());
+                            String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                            payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                            payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Swiggy Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Swiggy Sales";
+
+                        }
                     }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Swiggy Sales";
 
-                    }
+
+                    paymentModeemptycell2 = new PdfPCell(new Phrase(""));
+                    paymentModeemptycell2.setBorder(Rectangle.NO_BORDER);
+                    paymentModeemptycell2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    paymentModeemptycell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeemptycell2.setFixedHeight(25);
+                    tablePaymentMode2.addCell(paymentModeemptycell2);
+
+                    paymentModeemptycellone2 = new PdfPCell(new Phrase(""));
+                    paymentModeemptycellone2.setBorder(Rectangle.NO_BORDER);
+                    paymentModeemptycellone2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    paymentModeemptycellone2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeemptycellone2.setFixedHeight(25);
+                    tablePaymentMode2.addCell(paymentModeemptycellone2);
+
+                    paymentModeitemkeycell2 = new PdfPCell(new Phrase(key + " :  "));
+                    paymentModeitemkeycell2.setBorderColor(BaseColor.LIGHT_GRAY);
+                    paymentModeitemkeycell2.setBorder(Rectangle.NO_BORDER);
+                    paymentModeitemkeycell2.setMinimumHeight(25);
+                    paymentModeitemkeycell2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    paymentModeitemkeycell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    tablePaymentMode2.addCell(paymentModeitemkeycell2);
+
+
+                    paymentModeitemValueCell2 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                    paymentModeitemValueCell2.setBorderColor(BaseColor.LIGHT_GRAY);
+                    paymentModeitemValueCell2.setBorder(Rectangle.NO_BORDER);
+                    paymentModeitemValueCell2.setMinimumHeight(25);
+                    paymentModeitemValueCell2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    paymentModeitemValueCell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeitemValueCell2.setPaddingRight(10);
+                    tablePaymentMode2.addCell(paymentModeitemValueCell2);
+
+
                 }
-
-
-
-
-
-
-                paymentModeemptycell2 = new PdfPCell(new Phrase(""));
-                paymentModeemptycell2.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycell2.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycell2.setFixedHeight(25);
-                tablePaymentMode2.addCell(paymentModeemptycell2);
-
-                paymentModeemptycellone2 = new PdfPCell(new Phrase(""));
-                paymentModeemptycellone2.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycellone2.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycellone2.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycellone2.setFixedHeight(25);
-                tablePaymentMode2.addCell(paymentModeemptycellone2);
-
-                paymentModeitemkeycell2 = new PdfPCell(new Phrase(key+" :  "));
-                paymentModeitemkeycell2.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemkeycell2.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemkeycell2.setMinimumHeight(25);
-                paymentModeitemkeycell2.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemkeycell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                tablePaymentMode2.addCell(paymentModeitemkeycell2);
-
-
-                paymentModeitemValueCell2 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
-                paymentModeitemValueCell2.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemValueCell2.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemValueCell2.setMinimumHeight(25);
-                paymentModeitemValueCell2.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemValueCell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeitemValueCell2.setPaddingRight(10);
-                tablePaymentMode2.addCell(paymentModeitemValueCell2);
-
-
-
-
+                layoutDocument.add(tablePaymentMode2);
 
             }
-            layoutDocument.add(tablePaymentMode2);
 
 
 
+            if(dunzoOrderpaymentModeArray.size()>0) {
+                PdfPTable tablePaymentModetitle3 = new PdfPTable(1);
+                tablePaymentModetitle3.setWidthPercentage(100);
+                tablePaymentModetitle3.setSpacingBefore(20);
 
 
-
-            PdfPTable tablePaymentModetitle3 = new PdfPTable(1);
-            tablePaymentModetitle3.setWidthPercentage(100);
-            tablePaymentModetitle3.setSpacingBefore(20);
-
-
-            PdfPCell paymentModertitle3;
-            paymentModertitle3 = new PdfPCell(new Phrase("Dunzo Order Sales"));
-            paymentModertitle3.setBorder(Rectangle.NO_BORDER);
-            paymentModertitle3.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            paymentModertitle3.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            paymentModertitle3.setFixedHeight(25);
-            paymentModertitle3.setPaddingRight(20);
-            tablePaymentModetitle3.addCell(paymentModertitle3);
-            layoutDocument.add(tablePaymentModetitle3);
+                PdfPCell paymentModertitle3;
+                paymentModertitle3 = new PdfPCell(new Phrase("Dunzo Order Sales"));
+                paymentModertitle3.setBorder(Rectangle.NO_BORDER);
+                paymentModertitle3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModertitle3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModertitle3.setFixedHeight(25);
+                paymentModertitle3.setPaddingRight(20);
+                tablePaymentModetitle3.addCell(paymentModertitle3);
+                layoutDocument.add(tablePaymentModetitle3);
 
 
-            PdfPTable tablePaymentMode3 = new PdfPTable(4);
-            tablePaymentMode3.setWidthPercentage(100);
-            tablePaymentMode3.setSpacingBefore(20);
-            PdfPCell paymentModeemptycell3;
-            PdfPCell paymentModeemptycellone3;
-            PdfPCell paymentModeitemkeycell3;
-            PdfPCell paymentModeitemValueCell3;
+                PdfPTable tablePaymentMode3 = new PdfPTable(4);
+                tablePaymentMode3.setWidthPercentage(100);
+                tablePaymentMode3.setSpacingBefore(20);
+                PdfPCell paymentModeemptycell3;
+                PdfPCell paymentModeemptycellone3;
+                PdfPCell paymentModeitemkeycell3;
+                PdfPCell paymentModeitemValueCell3;
 
 
-            for (int i = 0; i < dunzoOrderpaymentModeArray.size(); i++) {
-                double payment_AmountDouble =0;
-                double payment_AmountDiscDouble =0;
+                for (int i = 0; i < dunzoOrderpaymentModeArray.size(); i++) {
+                    double payment_AmountDouble = 0;
+                    double payment_AmountDiscDouble = 0;
 
-                String Payment_Amount="",key =  dunzoOrderpaymentModeArray.get(i);
-                Modal_OrderDetails modal_orderDetails =  dunzoOrderpaymentModeHashmap.get(key);
-                Modal_OrderDetails Payment_Modewise_discount =  dunzoOrderpaymentMode_DiscountHashmap.get(key);
+                    String Payment_Amount = "", key = dunzoOrderpaymentModeArray.get(i);
+                    Modal_OrderDetails modal_orderDetails = dunzoOrderpaymentModeHashmap.get(key);
+                    Modal_OrderDetails Payment_Modewise_discount = dunzoOrderpaymentMode_DiscountHashmap.get(key);
 
-                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-
-
+                    //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
 
+                    if ((key.toUpperCase().equals(Constants.DUNZOORDER_PAYMENTMODE))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales());
+                            String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                            payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                            payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Dunzo Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "Dunzo Sales";
 
-
-                if ((key.toUpperCase().equals(Constants.DUNZOORDER_PAYMENTMODE)) ) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Dunzo Sales";
+                        }
                     }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "Dunzo Sales";
 
-                    }
+
+                    paymentModeemptycell3 = new PdfPCell(new Phrase(""));
+                    paymentModeemptycell3.setBorder(Rectangle.NO_BORDER);
+                    paymentModeemptycell3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    paymentModeemptycell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeemptycell3.setFixedHeight(25);
+                    tablePaymentMode3.addCell(paymentModeemptycell3);
+
+                    paymentModeemptycellone3 = new PdfPCell(new Phrase(""));
+                    paymentModeemptycellone3.setBorder(Rectangle.NO_BORDER);
+                    paymentModeemptycellone3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    paymentModeemptycellone3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeemptycellone3.setFixedHeight(25);
+                    tablePaymentMode3.addCell(paymentModeemptycellone3);
+
+                    paymentModeitemkeycell3 = new PdfPCell(new Phrase(key + " :  "));
+                    paymentModeitemkeycell3.setBorderColor(BaseColor.LIGHT_GRAY);
+                    paymentModeitemkeycell3.setBorder(Rectangle.NO_BORDER);
+                    paymentModeitemkeycell3.setMinimumHeight(25);
+                    paymentModeitemkeycell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    paymentModeitemkeycell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    tablePaymentMode3.addCell(paymentModeitemkeycell3);
+
+
+                    paymentModeitemValueCell3 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                    paymentModeitemValueCell3.setBorderColor(BaseColor.LIGHT_GRAY);
+                    paymentModeitemValueCell3.setBorder(Rectangle.NO_BORDER);
+                    paymentModeitemValueCell3.setMinimumHeight(25);
+                    paymentModeitemValueCell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    paymentModeitemValueCell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeitemValueCell3.setPaddingRight(10);
+                    tablePaymentMode3.addCell(paymentModeitemValueCell3);
+
+
                 }
-
-
-
-
-
-
-                paymentModeemptycell3 = new PdfPCell(new Phrase(""));
-                paymentModeemptycell3.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycell3.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycell3.setFixedHeight(25);
-                tablePaymentMode3.addCell(paymentModeemptycell3);
-
-                paymentModeemptycellone3 = new PdfPCell(new Phrase(""));
-                paymentModeemptycellone3.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycellone3.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycellone3.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycellone3.setFixedHeight(25);
-                tablePaymentMode3.addCell(paymentModeemptycellone3);
-
-                paymentModeitemkeycell3 = new PdfPCell(new Phrase(key+" :  "));
-                paymentModeitemkeycell3.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemkeycell3.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemkeycell3.setMinimumHeight(25);
-                paymentModeitemkeycell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemkeycell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                tablePaymentMode3.addCell(paymentModeitemkeycell3);
-
-
-                paymentModeitemValueCell3 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
-                paymentModeitemValueCell3.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemValueCell3.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemValueCell3.setMinimumHeight(25);
-                paymentModeitemValueCell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemValueCell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeitemValueCell3.setPaddingRight(10);
-                tablePaymentMode3.addCell(paymentModeitemValueCell3);
-
-
-
-
-
+                layoutDocument.add(tablePaymentMode3);
             }
-            layoutDocument.add(tablePaymentMode3);
+
+            if(bigBasketOrderpaymentModeArray.size()>0) {
+                PdfPTable tablePaymentModetitle4 = new PdfPTable(1);
+                tablePaymentModetitle4.setWidthPercentage(100);
+                tablePaymentModetitle4.setSpacingBefore(20);
 
 
-
-            PdfPTable tablePaymentModetitle4 = new PdfPTable(1);
-            tablePaymentModetitle4.setWidthPercentage(100);
-            tablePaymentModetitle4.setSpacingBefore(20);
-
-
-            PdfPCell paymentModertitle4;
-            paymentModertitle4 = new PdfPCell(new Phrase("BigBasket Order Sales"));
-            paymentModertitle4.setBorder(Rectangle.NO_BORDER);
-            paymentModertitle4.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            paymentModertitle4.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            paymentModertitle4.setFixedHeight(25);
-            paymentModertitle4.setPaddingRight(20);
-            tablePaymentModetitle4.addCell(paymentModertitle4);
-            layoutDocument.add(tablePaymentModetitle4);
+                PdfPCell paymentModertitle4;
+                paymentModertitle4 = new PdfPCell(new Phrase("BigBasket Order Sales"));
+                paymentModertitle4.setBorder(Rectangle.NO_BORDER);
+                paymentModertitle4.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                paymentModertitle4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                paymentModertitle4.setFixedHeight(25);
+                paymentModertitle4.setPaddingRight(20);
+                tablePaymentModetitle4.addCell(paymentModertitle4);
+                layoutDocument.add(tablePaymentModetitle4);
 
 
-            PdfPTable tablePaymentMode4 = new PdfPTable(4);
-            tablePaymentMode4.setWidthPercentage(100);
-            tablePaymentMode4.setSpacingBefore(20);
-            PdfPCell paymentModeemptycell4;
-            PdfPCell paymentModeemptycellone4;
-            PdfPCell paymentModeitemkeycell4;
-            PdfPCell paymentModeitemValueCell4;
+                PdfPTable tablePaymentMode4 = new PdfPTable(4);
+                tablePaymentMode4.setWidthPercentage(100);
+                tablePaymentMode4.setSpacingBefore(20);
+                PdfPCell paymentModeemptycell4;
+                PdfPCell paymentModeemptycellone4;
+                PdfPCell paymentModeitemkeycell4;
+                PdfPCell paymentModeitemValueCell4;
 
 
-            for (int i = 0; i < bigBasketOrderpaymentModeArray.size(); i++) {
-                double payment_AmountDouble =0;
-                double payment_AmountDiscDouble =0;
+                for (int i = 0; i < bigBasketOrderpaymentModeArray.size(); i++) {
+                    double payment_AmountDouble = 0;
+                    double payment_AmountDiscDouble = 0;
 
-                String Payment_Amount="",key =  bigBasketOrderpaymentModeArray.get(i);
-                Modal_OrderDetails modal_orderDetails =  bigBasketOrderpaymentModeHashmap.get(key);
-                Modal_OrderDetails Payment_Modewise_discount =  bigBasketOrderpaymentMode_DiscountHashmap.get(key);
+                    String Payment_Amount = "", key = bigBasketOrderpaymentModeArray.get(i);
+                    Modal_OrderDetails modal_orderDetails = bigBasketOrderpaymentModeHashmap.get(key);
+                    Modal_OrderDetails Payment_Modewise_discount = bigBasketOrderpaymentMode_DiscountHashmap.get(key);
 
-                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
-
-
+                    //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
 
 
+                    if ((key.toUpperCase().equals(Constants.BIGBASKETORDER_PAYMENTMODE))) {
+                        try {
+                            payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales());
+                            String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                            payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                            payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "BigBasket Sales";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            payment_AmountDouble = 0.00;
+                            Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                            key = "BigBasket Sales";
 
-
-                if ((key.toUpperCase().equals(Constants.BIGBASKETORDER_PAYMENTMODE)) ) {
-                    try {
-                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales());
-                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
-                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
-                        payment_AmountDouble = payment_AmountDouble-payment_AmountDiscDouble;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "BigBasket Sales";
+                        }
                     }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        payment_AmountDouble = 0.00;
-                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
-                        key = "BigBasket Sales";
 
-                    }
+
+                    paymentModeemptycell4 = new PdfPCell(new Phrase(""));
+                    paymentModeemptycell4.setBorder(Rectangle.NO_BORDER);
+                    paymentModeemptycell4.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    paymentModeemptycell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeemptycell4.setFixedHeight(25);
+                    tablePaymentMode4.addCell(paymentModeemptycell4);
+
+                    paymentModeemptycellone4 = new PdfPCell(new Phrase(""));
+                    paymentModeemptycellone4.setBorder(Rectangle.NO_BORDER);
+                    paymentModeemptycellone4.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    paymentModeemptycellone4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeemptycellone4.setFixedHeight(25);
+                    tablePaymentMode4.addCell(paymentModeemptycellone4);
+
+                    paymentModeitemkeycell4 = new PdfPCell(new Phrase(key + " :  "));
+                    paymentModeitemkeycell4.setBorderColor(BaseColor.LIGHT_GRAY);
+                    paymentModeitemkeycell4.setBorder(Rectangle.NO_BORDER);
+                    paymentModeitemkeycell4.setMinimumHeight(25);
+                    paymentModeitemkeycell4.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    paymentModeitemkeycell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    tablePaymentMode4.addCell(paymentModeitemkeycell4);
+
+
+                    paymentModeitemValueCell4 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
+                    paymentModeitemValueCell4.setBorderColor(BaseColor.LIGHT_GRAY);
+                    paymentModeitemValueCell4.setBorder(Rectangle.NO_BORDER);
+                    paymentModeitemValueCell4.setMinimumHeight(25);
+                    paymentModeitemValueCell4.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    paymentModeitemValueCell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    paymentModeitemValueCell4.setPaddingRight(10);
+                    tablePaymentMode4.addCell(paymentModeitemValueCell4);
+
+
                 }
-
-
-
-
-
-
-                paymentModeemptycell4 = new PdfPCell(new Phrase(""));
-                paymentModeemptycell4.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycell4.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycell4.setFixedHeight(25);
-                tablePaymentMode4.addCell(paymentModeemptycell4);
-
-                paymentModeemptycellone4 = new PdfPCell(new Phrase(""));
-                paymentModeemptycellone4.setBorder(Rectangle.NO_BORDER);
-                paymentModeemptycellone4.setHorizontalAlignment(Element.ALIGN_LEFT);
-                paymentModeemptycellone4.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeemptycellone4.setFixedHeight(25);
-                tablePaymentMode4.addCell(paymentModeemptycellone4);
-
-                paymentModeitemkeycell4 = new PdfPCell(new Phrase(key+" :  "));
-                paymentModeitemkeycell4.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemkeycell4.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemkeycell4.setMinimumHeight(25);
-                paymentModeitemkeycell4.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemkeycell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                tablePaymentMode4.addCell(paymentModeitemkeycell4);
-
-
-                paymentModeitemValueCell4 = new PdfPCell(new Phrase("Rs. " + (Payment_Amount)));
-                paymentModeitemValueCell4.setBorderColor(BaseColor.LIGHT_GRAY);
-                paymentModeitemValueCell4.setBorder(Rectangle.NO_BORDER);
-                paymentModeitemValueCell4.setMinimumHeight(25);
-                paymentModeitemValueCell4.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                paymentModeitemValueCell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                paymentModeitemValueCell4.setPaddingRight(10);
-                tablePaymentMode4.addCell(paymentModeitemValueCell4);
-
-
-
-
-
+                layoutDocument.add(tablePaymentMode4);
             }
-            layoutDocument.add(tablePaymentMode4);
-
 
 
 

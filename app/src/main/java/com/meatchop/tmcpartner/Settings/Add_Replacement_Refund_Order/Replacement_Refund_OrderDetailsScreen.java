@@ -56,6 +56,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     static LinearLayout loadingPanel;
     static LinearLayout loadingpanelmask;
     boolean isAlreadyMarkedForReplacement = false;
+    Adapter_OrderDetails_OrderedItemList adapter_forOrderDetails_listview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,7 +138,6 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         }
         try{
             showProgressBar(true);
-            checkWeatherThisOrderIsMarkedOrNot(orderid,usermobileNo);
         }
         catch (Exception e)
         {
@@ -248,6 +248,19 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                 catch (Exception e){
                     e.printStackTrace();
                 }
+                try {
+                    if(json.has("menuitemid")) {
+                        manageOrders_pojo_class.menuItemKey = String.valueOf(json.get("menuitemid"));
+                    }
+                    else {
+                        manageOrders_pojo_class.menuItemKey  = "";
+                    }
+                }
+                catch (Exception e){
+                    manageOrders_pojo_class.menuItemKey  = "";
+
+                    e.printStackTrace();
+                }
 
 
                 if(subCtgyKey.equals("tmcsubctgy_16")){
@@ -306,6 +319,19 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                     catch (Exception e){
                         e.printStackTrace();
                     }
+                    try {
+                        if(json.has("menuitemkey")) {
+                            marinades_manageOrders_pojo_class.menuItemKey = String.valueOf(json.get("menuitemkey"));
+                        }
+                        else {
+                            marinades_manageOrders_pojo_class.menuItemKey  = "";
+                        }
+                    }
+                    catch (Exception e){
+                        marinades_manageOrders_pojo_class.menuItemKey  = "";
+
+                        e.printStackTrace();
+                    }
                     if(subCtgyKey.equals("tmcsubctgy_16")){
                         //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
                         marinades_manageOrders_pojo_class.itemName=" Grill House  "+marinadesObject.getString("itemname");
@@ -345,8 +371,9 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         }
 
 
+        checkWeatherThisOrderIsMarkedOrNot(orderid,usermobileNo);
 
-        Adapter_OrderDetails_OrderedItemList adapter_forOrderDetails_listview= new Adapter_OrderDetails_OrderedItemList(Replacement_Refund_OrderDetailsScreen.this, OrderdItems_desp,Replacement_Refund_OrderDetailsScreen.this);
+         adapter_forOrderDetails_listview= new Adapter_OrderDetails_OrderedItemList(Replacement_Refund_OrderDetailsScreen.this, OrderdItems_desp,Replacement_Refund_OrderDetailsScreen.this);
         orderidItemListview.setAdapter(adapter_forOrderDetails_listview);
           Helper.getListViewSize(orderidItemListview, screenInches);
 
@@ -382,6 +409,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                 JSONArray resultArray = response.getJSONArray("content");
                                 if (resultArray.length() == 0) {
                                     showProgressBar(false);
+
                                     replacementDetails_textview.setVisibility(View.GONE);
                                     make_replacement_button.setVisibility(View.VISIBLE);
 
@@ -389,8 +417,9 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                 for (int i = 0; i < resultArray.length(); i++) {
                                     JSONObject result = resultArray.getJSONObject(i);
 
+                                    JSONArray markeditemdesp = new JSONArray();
 
-                                    String status_json = "", orderid_json = "";
+                                    String status_json = "", orderid_json = "",reason_json="";
 
                                     try {
                                         if (result.has("status")) {
@@ -418,10 +447,69 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                     }
 
 
+                                    try {
+                                        if (result.has("reasonformarked")) {
+                                            reason_json = result.getString("reasonformarked");
+                                        } else {
+                                            reason_json = "";
+                                        }
+                                    } catch (Exception e) {
+                                        reason_json = "";
+
+                                        e.printStackTrace();
+                                    }
+                                    try {
+                                        reason_replacementtextview_Widget.setText(reason_json);
+                                        reason_replacementtextview_Widget.setFocusable(false);
+                                        reason_replacementtextview_Widget.setEnabled(false);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    try {
+                                        if (result.has("markeditemdesp")) {
+                                            markeditemdesp = result.getJSONArray("markeditemdesp");
+                                        } else {
+                                            markeditemdesp = new JSONArray();
+                                        }
+                                    } catch (Exception e) {
+                                        markeditemdesp = new JSONArray();
+
+                                        e.printStackTrace();
+                                    }
+
+                                    if(OrderdItems_desp.size()>0){
+                                        for (int j = 0; j<OrderdItems_desp.size();j++){
+                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= OrderdItems_desp.get(j);
+                                            String menuItemKeyFromOrderDetails = modal_manageOrders_pojo_class.getMenuItemKey().toString();
+                                           String menuItemKeyFromReplacementDetails ="";
+                                            for (int k =0 ;k < markeditemdesp.length();k++){
+
+                                                JSONObject json = new JSONObject();
+                                                json = markeditemdesp.getJSONObject(k);
+                                                if(json.has("menuitemkey")){
+                                                    menuItemKeyFromReplacementDetails = json.getString("menuitemkey");
+                                                }
+                                                else{
+                                                    menuItemKeyFromReplacementDetails="";
+                                                }
+
+                                                if(menuItemKeyFromReplacementDetails.equals(menuItemKeyFromOrderDetails)){
+                                                    modal_manageOrders_pojo_class.isItemMarkedForReplacement = true;
+                                                    adapter_forOrderDetails_listview.notifyDataSetChanged();
+                                                }
+
+                                            }
+
+                                        }
+                                    }
+
+
                                     showProgressBar(false);
                                     make_replacement_button.setVisibility(View.GONE);
                                     replacementDetails_textview.setVisibility(View.VISIBLE);
 
+                                    replacementDetails_textview.setText("This Order is Already Marked For Replacement/ Refund");
                                 }
                             }
                             } catch (JSONException e) {
@@ -489,6 +577,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         JSONArray markedItemsArray = new JSONArray();
         double total_amount_avl_for_user = 0;
         String Currenttime  = getDate_and_time() ;
+        String Currenttime_transactiontable  = getDate_and_time_TransactionTable() ;
 
         try{
             for(int i = 0 ; i<itemsSelectedForReplacementStringArray.size();i++){
@@ -813,8 +902,18 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             public void onResponse(@NonNull JSONObject response) {
                 //Log.d(Constants.TAG, "Response: " + response);
                 showProgressBar(false);
-                addDataInReplacementTransactiondetails(Currenttime,usermobileNo,orderid,markedItemsArray);
+                String message = "";
 
+                try {
+                    message = response.getString("message");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                addDataInReplacementTransactiondetails(Currenttime_transactiontable,usermobileNo,orderid,markedItemsArray,message);
+                make_replacement_button.setVisibility(View.GONE);
+                replacementDetails_textview.setVisibility(View.VISIBLE);
+
+                replacementDetails_textview.setText("This Order is Now Marked For Replacement/Refund");
 
             }
         }, new Response.ErrorListener() {
@@ -851,7 +950,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
 
     }
 
-    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray markedItemsArray) {
+    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray markedItemsArray, String message) {
 
         showProgressBar(true);
 
@@ -864,6 +963,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             jsonObject.put("orderplaceddate", orderPlacedDate);
             jsonObject.put("mobileno", usermobileNo);
             jsonObject.put("markeditemdesp", markedItemsArray);
+            jsonObject.put("transactionstatus", message);
 
 
 
@@ -933,5 +1033,18 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         String FormattedTime = dfTime.format(c);
         String formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
+    }
+
+    public String getDate_and_time_TransactionTable()
+    {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
     }
 }

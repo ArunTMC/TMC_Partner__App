@@ -329,7 +329,77 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:textSize="15sp" />
 
                 </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:background="@drawable/border_line" />
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:orientation="horizontal">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:text="(C) Refund Amount  "
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/refundAmount_textwidget"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans"
+                        android:gravity="right"
+                        android:text="0.00"
+
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp" />
+
+                </LinearLayout>
+
+
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:background="@drawable/border_line" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:orientation="horizontal">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:text="(D) Replacement Amount  "
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/replacementAmount_textwidget"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans"
+                        android:gravity="right"
+                        android:text="0.00"
+
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp" />
+
+                </LinearLayout>
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="10dp"
@@ -348,7 +418,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_bold"
-                        android:text="(C) TOTAL (A+B)  "
+                        android:text="(E) TOTAL (A-(B+C+D))  "
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp" />
 
@@ -384,7 +454,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_bold"
-                        android:text="(D) GST  "
+                        android:text="(F) GST  "
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp" />
 
@@ -422,7 +492,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_bold"
-                        android:text="(E) FINAL SALES (C+D)  "
+                        android:text="(G) FINAL SALES (E+F)  "
                         android:textColor="@color/TMC_Orange"
                         android:textSize="16sp" />
 
@@ -459,7 +529,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_bold"
-                        android:text="(E) FINAL SALES BREAKUP  "
+                        android:text="(H) FINAL SALES BREAKUP  "
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp" />
 

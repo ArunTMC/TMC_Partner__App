@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import org.json.JSONArray;
 
 public class Modal_ReplacementOrderDetails implements Parcelable {
-    public String itemsmarked_String="",refunddetails_String = "",replacementdetails_String = "",markeddate="",amountusercanavl="",mobileno="",orderid="",orderplaceddate="",totalrefundedamount="",totalreplacementamount="",vendorkey="",status="";
+    public String markedDateLong = "",itemsmarked_String="",refunddetails_String = "",replacementdetails_String = "",markeddate="",amountusercanavl="",mobileno="",orderid="",orderplaceddate="",totalrefundedamount="",totalreplacementamount="",vendorkey="",status="";
     public JSONArray itemsmarked_Array = new JSONArray();
     public JSONArray refunddetails_Array = new JSONArray();
     public JSONArray replacementdetails_Array = new JSONArray();
@@ -24,6 +24,7 @@ public class Modal_ReplacementOrderDetails implements Parcelable {
         itemsmarked_String = in.readString();
         refunddetails_String = in.readString();
         replacementdetails_String = in.readString();
+        markedDateLong = in.readString();
     }
 
     public static final Creator<Modal_ReplacementOrderDetails> CREATOR = new Creator<Modal_ReplacementOrderDetails>() {
@@ -88,6 +89,14 @@ public class Modal_ReplacementOrderDetails implements Parcelable {
 
     public void setReplacementdetails_Array(JSONArray replacementdetails_Array) {
         this.replacementdetails_Array = replacementdetails_Array;
+    }
+
+    public String getMarkedDateLong() {
+        return markedDateLong;
+    }
+
+    public void setMarkedDateLong(String markedDateLong) {
+        this.markedDateLong = markedDateLong;
     }
 
     public JSONArray getItemsmarked_Array() {
@@ -181,6 +190,7 @@ public class Modal_ReplacementOrderDetails implements Parcelable {
         dest.writeString(itemsmarked_String);
         dest.writeString(refunddetails_String);
         dest.writeString(replacementdetails_String);
+        dest.writeString(markedDateLong);
 
     }
 }

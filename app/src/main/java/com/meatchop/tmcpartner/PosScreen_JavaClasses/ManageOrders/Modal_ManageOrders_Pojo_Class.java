@@ -13,8 +13,16 @@ public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddr
 public   String isdataFetchedFromOrderTrackingDetails="FALSE",subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp;
     public int intTokenNo;
-public boolean isdelayed,isOrderPlacedlessThan3MinsBefore;
+public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplacement=false;
       String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
+
+    public boolean getisItemMarkedForReplacement() {
+        return isItemMarkedForReplacement;
+    }
+
+    public void setItemMarkedForReplacement(boolean itemMarkedForReplacement) {
+        isItemMarkedForReplacement = itemMarkedForReplacement;
+    }
 
     public String getPortionsize() {
         return portionsize;

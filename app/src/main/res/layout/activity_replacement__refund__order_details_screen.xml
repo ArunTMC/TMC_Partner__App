@@ -493,6 +493,7 @@
                     android:layout_height="140dp"
                     android:hint="Enter the reason"
                     android:ems="10"
+                    android:textColor="@color/TMC_Black"
                     android:padding="3dp"
                     android:paddingStart="5dp"
                     android:paddingEnd="5dp"

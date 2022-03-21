@@ -122,6 +122,10 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
         newOrders_menuItem_fragment = new NewOrders_MenuItem_Fragment();
         settingsFragment = new SettingsFragment();
+        invalidateOptionsMenu();
+        MenuItem replacement = bottomNavigationView.getMenu().findItem(R.id.replacement_navigatioBar_widget);
+        replacement.setVisible(false);
+
 
     }
 

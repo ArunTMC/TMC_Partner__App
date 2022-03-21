@@ -185,7 +185,6 @@
         <ListView
             android:id="@+id/orders_listview"
             android:layout_width="match_parent"
-            android:background="@color/TMC_PaleOrange"
             android:layout_height="match_parent" />
 
     </LinearLayout>
