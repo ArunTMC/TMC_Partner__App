@@ -5,12 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -41,12 +47,19 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.dantsu.escposprinter.connection.DeviceConnection;
+import com.dantsu.escposprinter.connection.usb.UsbConnection;
+import com.dantsu.escposprinter.connection.usb.UsbPrintersConnections;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.pos.printer.AsyncEscPosPrint;
+import com.pos.printer.AsyncEscPosPrinter;
+import com.pos.printer.AsyncUsbEscPosPrint;
+import com.pos.printer.Modal_USBPrinter;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -182,6 +195,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.APPOrdersList";
+
+    Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
+    boolean isUSBPrintReciptMethodCalled = false;
 
 
 
@@ -624,7 +641,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         if (sorted_OrdersList.size() > 0) {
                             manageOrders_ListView.setVisibility(View.VISIBLE);
                             mobile_orderinstruction.setVisibility(View.GONE);
-                            if(screenInches>8){
+                            if(screenInches>Constants.default_mobileScreenSize){
 
                                 adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderstatus);
                                 manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
@@ -905,7 +922,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         }
                         catch (Exception e){
                             e.printStackTrace();
-                            Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                            Toast.makeText(searchOrdersUsingMobileNumber.this,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
                         }
                         BluetoothPrintDriver.LF();
 
@@ -1161,7 +1178,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     }
                     catch (Exception e){
                         e.printStackTrace();
-                        Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+                        Toast.makeText(searchOrdersUsingMobileNumber.this,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
                     }
                     BluetoothPrintDriver.LF();
 
@@ -1466,15 +1483,6 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5137,7 +5145,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
     private void setAdapter() {
 
-        if(screenInches>8){
+        if(screenInches>Constants.default_mobileScreenSize){
 
             adapter_PosSearchOrders_usingMobileNumber_listView = new Adapter_Pos_SearchOrders_usingMobileNumber(searchOrdersUsingMobileNumber.this, sorted_OrdersList, searchOrdersUsingMobileNumber.this, orderStatus);
             manageOrders_ListView.setAdapter(adapter_PosSearchOrders_usingMobileNumber_listView);
@@ -5590,8 +5598,1310 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
+    public void PrintReciptUsingUSBPrinter(List<Modal_ManageOrders_Pojo_Class> selectedBillDetails) {
+        if(isUSBPrintReciptMethodCalled){
+            return;
+        }
+        isUSBPrintReciptMethodCalled = true;
+        Modal_ManageOrders_Pojo_Class selectedOrder = selectedBillDetails.get(0);
+
+        modal_usbPrinter = new Modal_USBPrinter();
+        try{
+
+            modal_usbPrinter.orderstatus = selectedOrder.getOrderstatus();
+            modal_usbPrinter.userMobile = selectedOrder.getUsermobile();
+            modal_usbPrinter.tokenno = selectedOrder.getTokenno();
+            modal_usbPrinter.payableAmount = selectedOrder.getPayableamount();
+            modal_usbPrinter.itemdesp = selectedOrder.getItemdesp();
+            modal_usbPrinter.orderid = selectedOrder.getOrderid();
+            modal_usbPrinter.payment_mode = selectedOrder.getPaymentmode();
+            modal_usbPrinter.finalCouponDiscountAmount = selectedOrder.getCoupondiscamount();
+            modal_usbPrinter.useraddress = selectedOrder.getUseraddress();
+            modal_usbPrinter.ordertype = selectedOrder.getOrderType();
+            modal_usbPrinter.slotname = selectedOrder.getSlotname();
+            modal_usbPrinter.slotdate= selectedOrder.getSlotdate();
+            modal_usbPrinter.slottimerange =selectedOrder. getSlottimerange();
+            modal_usbPrinter.deliverytype = selectedOrder.getDeliverytype();
+            modal_usbPrinter.notes = selectedOrder.getNotes();
+            modal_usbPrinter.orderplacedtime = selectedOrder.getOrderplacedtime();
+            modal_usbPrinter.orderdetailskey = selectedOrder.getOrderdetailskey();
+            modal_usbPrinter.deliverydistance =selectedOrder.getDeliverydistance();
+            modal_usbPrinter.payment_mode =selectedOrder. getPaymentmode();
 
 
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+        UsbConnection usbConnection = UsbPrintersConnections.selectFirstConnected(searchOrdersUsingMobileNumber.this);
+        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+            try {
+        if (usbConnection == null || usbManager == null) {
+
+
+            isUSBPrintReciptMethodCalled = false;
+                /*
+                new AlertDialog.Builder(mContext)
+                        .setTitle("USB Connection")
+                        .setMessage("No USB printer found.")
+                        .show();
+
+                 */
+
+
+            new TMCAlertDialogClass(searchOrdersUsingMobileNumber.this, R.string.app_name, R.string.ReConnect_Instruction,
+                    R.string.OK_Text, R.string.Cancel_Text,
+                    new TMCAlertDialogClass.AlertListener() {
+                        @Override
+                        public void onYes() {
+                            PrintReciptUsingUSBPrinter(selectedBillDetails);
+                        }
+
+                        @Override
+                        public void onNo() {
+
+                        }
+                    });
+
+
+            return;
+        }
+        }
+        catch (Exception e){
+
+            e.printStackTrace();
+        }
+
+        PendingIntent permissionIntent = PendingIntent.getBroadcast(
+                searchOrdersUsingMobileNumber.this,
+                0,
+                new Intent(ACTION_USB_PERMISSION),
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0
+        );
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        registerReceiver(usbReceiver, filter);
+        usbManager.requestPermission(usbConnection.getDevice(), permissionIntent);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    UsbManager usbManager = (UsbManager) searchOrdersUsingMobileNumber.this.getSystemService(Context.USB_SERVICE);
+                    UsbDevice usbDevice = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbManager != null && usbDevice != null) {
+                            new AsyncUsbEscPosPrint(
+                                    context, new AsyncEscPosPrint.OnPrintFinished() {
+                                @Override
+                                public void onError(AsyncEscPosPrinter asyncEscPosPrinter, int codeException) {
+                                    Log.e("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : An error occurred !");
+                                    isUSBPrintReciptMethodCalled = false;
+                                    showProgressBar(false);
+                                    try{
+                                        unregisterReceiver(usbReceiver);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                            AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onSuccess(AsyncEscPosPrinter asyncEscPosPrinter) {
+                                    Log.i("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : Print is finished !");
+                                    isUSBPrintReciptMethodCalled = false;
+                                    showProgressBar(false);
+                                    try{
+                                        unregisterReceiver(usbReceiver);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                            AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                            )
+                                    .execute(getAsyncEscPosPrinter(new UsbConnection(usbManager, usbDevice)));
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+
+
+    @SuppressLint("SimpleDateFormat")
+    public AsyncEscPosPrinter getAsyncEscPosPrinter(DeviceConnection printerConnection) {
+        showProgressBar(true);
+        AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
+
+        SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
+
+        String OrderPlacedtime = "";
+        String Orderid = "";
+        String CouponDiscount ="";
+        String OrderType = "";
+        String PayableAmountfromArray = "";
+        String PayableAmount = "";
+        String PaymentMode = "";
+        String MobileNumber ="";
+        String TokenNo="";
+        String Notes ="";
+        String Slotname ="";
+        String SlotDate = "";
+        String DeliveryTime = "";
+        String DeliveryType ="";
+        String DeliveryAmount =  "";
+        String DistanceFromStore ="";
+        String Address =  "";
+        JSONArray itemdesp = new JSONArray();
+
+        double totalAmountFromAddingSubtotal=0;
+        double couponDiscount_double=0;
+        double deliveryAmount_double=0;
+        double totalAmountFromAddingSubtotalWithDiscount =0;
+        double totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt =0;
+
+
+
+        try{
+            itemdesp = modal_usbPrinter.getItemdesp();
+            OrderPlacedtime = modal_usbPrinter.getOrderplacedtime();
+            Orderid = modal_usbPrinter.getOrderid();
+            CouponDiscount = modal_usbPrinter.getFinalCouponDiscountAmount();
+            OrderType = modal_usbPrinter.getOrdertype();
+            PayableAmount = modal_usbPrinter.getPayableAmount();
+            PaymentMode = modal_usbPrinter.getPayment_mode();
+            MobileNumber = modal_usbPrinter.getUserMobile();
+            TokenNo = modal_usbPrinter.getTokenno();
+            Notes = modal_usbPrinter.getNotes();
+            Slotname = modal_usbPrinter.getSlotname();
+            SlotDate = modal_usbPrinter.getSlotdate();
+            DeliveryTime = modal_usbPrinter.getSlottimerange();
+            DeliveryType = modal_usbPrinter.getDeliverytype();
+            DeliveryAmount = modal_usbPrinter.getDeliveryamount();
+            DistanceFromStore = modal_usbPrinter.getDeliverydistance();
+            Address = modal_usbPrinter.getUseraddress();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        String b = itemdesp.toString();
+        modal_usbPrinter.setItemDesp_String(b);
+        String itemDesp = "";
+
+        for (int i = 0; i < itemdesp.length(); i++) {
+            String text_to_Print_miniBill = "";
+
+            try {
+                JSONObject json = itemdesp.getJSONObject(i);
+                text_to_Print_miniBill = "";
+                text_to_Print_miniBill = "[c]<b><font size='tall'>Token No : "+TokenNo+"</b>\n\n";
+                text_to_Print_miniBill = text_to_Print_miniBill+"[c]<font size='normal'> Orderid "+Orderid +" \n";
+
+
+                String fullitemName = String.valueOf(json.getString("itemname"));
+                String itemName = "";
+                String itemNameAfterBraces = "";
+
+                String tmcSubCtgyKey = String.valueOf(json.getString("tmcsubctgykey"));
+                try {
+                    if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                        int indexofbraces = fullitemName.indexOf("(");
+                        int lastindexofbraces = fullitemName.indexOf(")");
+                        int lengthofItemname = fullitemName.length();
+                        lastindexofbraces = lastindexofbraces + 1;
+
+                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                            itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                            itemName = fullitemName.substring(0, indexofbraces);
+                            itemName = itemName + itemNameAfterBraces;
+                            fullitemName = fullitemName.substring(0, indexofbraces);
+                            fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                        }
+
+                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                            // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                            itemName = fullitemName.substring(0, indexofbraces);
+
+                            fullitemName = fullitemName.substring(0, indexofbraces);
+                            fullitemName = fullitemName;
+
+
+                        }
+
+                        if (fullitemName.length() > 21) {
+                            itemName = fullitemName.substring(0, 21);
+                            itemName = itemName + "...";
+
+
+                        }
+
+                    }
+                    else {
+
+                        if(fullitemName.contains("(")){
+                            int openbraces = fullitemName.indexOf("(");
+                            int closebraces = fullitemName.indexOf(")");
+                            System.out.println(fullitemName);
+                            itemName = fullitemName.substring(openbraces+1,closebraces) ;
+                            System.out.println(itemName);
+
+                        }
+                        if(!itemName.matches("[a-zA-Z0-9]+")){
+                            fullitemName = fullitemName.replaceAll(
+                                    "[^a-zA-Z0-9()]", "");
+                            fullitemName = fullitemName.replaceAll(
+                                    "[()]", " ");
+                            System.out.println("no english");
+
+                            System.out.println(fullitemName);
+
+                        }
+                        else{
+                            fullitemName = fullitemName.replaceAll(
+                                    "[^a-zA-Z0-9()]", "");
+                            System.out.println("have English");
+
+                            System.out.println(fullitemName);
+
+                        }
+
+
+
+
+
+                    }
+                } catch (Exception e) {
+                    itemName = fullitemName;
+
+                    e.printStackTrace();
+                }
+
+
+                if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <b><font size='wide'>Grill House  "+fullitemName +" </b>\n";
+
+                }
+                else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <b><font size='wide'>Ready to Cook  "+fullitemName +"</b> \n";
+
+                }
+                else  {
+
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <b><font size='wide'>"+fullitemName +" </b>\n";
+
+                }
+
+                String finalitemname = "", finalCutName="",finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+
+
+                try {
+                    if(json.has("cutname")){
+                        finalCutName = json.getString("cutname");
+
+                    }
+                    else{
+                        finalCutName ="";
+                    }
+                    //Log.i("tag","grossweight Log    "+                grossweight);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                try {
+                    finalitemNetweight = json.getString("netweight");
+                    //Log.i("tag","grossweight Log    "+                grossweight);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                try{
+                    finalQuantity = json.getString("quantity");
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                try {
+                    finalgrossweight = json.getString("grossweight");
+
+
+                    if ((finalgrossweight.equals(""))||(finalgrossweight.equals(null))||(finalgrossweight.equals(" - "))) {
+                        try {
+                            finalgrossweight = json.getString("grossweightingrams");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }
+                catch (Exception e){
+                    try {
+                        if (finalgrossweight.equals("")) {
+                            finalgrossweight = json.getString("grossweightingrams");
+                            //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                        }
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+
+
+                if((finalCutName.length()>0) && (!finalCutName.equals(null)) && (!finalCutName.equals("null"))){
+
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'> ---------------------------------------------- \n";
+
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>"+finalCutName.toUpperCase() +" \n";
+
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'> ---------------------------------------------- \n";
+
+
+                }
+                text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>Netweight : "+finalitemNetweight +" \n";
+                text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>Quantity : "+ finalQuantity +" \n";
+
+
+               // AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
+                 printer.addTextToPrint(text_to_Print_miniBill);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+
+        String text_to_Print = "";
+
+
+        String GSTIN = "GSTIN :33AAJCC0055D1Z9";
+
+        text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
+        text_to_Print = text_to_Print+"[c] <font size='normal'>Fresh Meat and Seafood \n";
+        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine1 ;
+        text_to_Print = text_to_Print + "[c] <font size='normal'>" + StoreAddressLine2 + " \n";
+        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine3 + " \n";
+        text_to_Print = text_to_Print+"[c] <font size='normal'>Contact No :"+StoreLanLine +" \n";
+        text_to_Print = text_to_Print+"[c] <font size='normal'>"+GSTIN +" \n" +" \n";
+        text_to_Print = text_to_Print+"[L] <font size='normal'>OrderId : "+Orderid +" \n";
+        text_to_Print = text_to_Print+"[L] <font size='normal'>Order Placed Time : "+OrderPlacedtime +" \n";
+        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
+        text_to_Print = text_to_Print+"[L] ITEMNAME * QTY " +" \n";
+        text_to_Print = text_to_Print+"[L] <font size='normal'>                                                "+" \n";
+
+        text_to_Print = text_to_Print+"[L] RATE                                  SUBTOTAL" +" \n";
+        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
+
+
+        try {
+
+            String itemdespStrig = itemdesp.toString();
+            modal_usbPrinter.setItemDesp_String(itemdespStrig);
+            String itemDesp_string = "";
+
+
+
+            for (int i = 0; i < itemdesp.length(); i++) {
+                JSONObject json = itemdesp.getJSONObject(i);
+
+
+                String itemDespName_Weight_quantity = "", itemwise_price = "", itemwise_Subtotal = "";
+
+
+                String fullitemName = String.valueOf(json.getString("itemname"));
+                String itemName = "";
+                String itemNameAfterBraces = "";
+
+                String tmcSubCtgyKey = String.valueOf(json.getString("tmcsubctgykey"));
+                try {
+                    if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                        int indexofbraces = fullitemName.indexOf("(");
+                        int lastindexofbraces = fullitemName.indexOf(")");
+                        int lengthofItemname = fullitemName.length();
+                        lastindexofbraces = lastindexofbraces + 1;
+
+                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                            itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                            itemName = fullitemName.substring(0, indexofbraces);
+                            itemName = itemName + itemNameAfterBraces;
+                            fullitemName = fullitemName.substring(0, indexofbraces);
+                            fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                        }
+
+                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                            // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                            itemName = fullitemName.substring(0, indexofbraces);
+
+                            fullitemName = fullitemName.substring(0, indexofbraces);
+                            fullitemName = fullitemName;
+
+
+                        }
+
+                        if (fullitemName.length() > 21) {
+                            itemName = fullitemName.substring(0, 21);
+                            itemName = itemName + "...";
+
+                            fullitemName = fullitemName.substring(0, 21);
+                            fullitemName = fullitemName + "...";
+                        }
+                        if (fullitemName.length() < 21) {
+                            itemName = fullitemName;
+
+                            fullitemName = fullitemName;
+
+                        }
+                    } else {
+                        int indexofbraces = fullitemName.indexOf("(");
+                        if (indexofbraces >= 0) {
+                            itemName = fullitemName.substring(0, indexofbraces);
+
+                        }
+                        if (fullitemName.length() > 21) {
+                            itemName = fullitemName.substring(0, 21);
+                            itemName = itemName + "...";
+                        }
+                        if (fullitemName.length() < 21) {
+                            itemName = fullitemName;
+
+                        }
+                    }
+                } catch (Exception e) {
+                    itemName = fullitemName;
+
+                    e.printStackTrace();
+                }
+
+
+
+                String finalCutName="", finalitemNetweight = "", finalgrossweight = "",finalQuantity ="";
+
+
+                try {
+                    finalQuantity = json.getString("quantity");
+
+
+                    if ((finalQuantity.equals(""))||(finalQuantity.equals(null))||(finalQuantity.equals(" - "))) {
+                        try {
+                            finalQuantity = json.getString("quantity");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                    }
+
+                }
+                catch (Exception e){
+                    try {
+                        if (finalQuantity.equals("")) {
+                            finalQuantity = json.getString("quantity");
+                            //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                        }
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+
+
+
+
+                try {
+                    finalitemNetweight = json.getString("netweight");
+
+
+                    if ((finalitemNetweight.equals(""))||(finalitemNetweight.equals(null))||(finalitemNetweight.equals(" - "))) {
+                        try {
+                            finalitemNetweight = json.getString("netweight");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                    }
+
+                }
+                catch (Exception e){
+                    try {
+                        if (finalitemNetweight.equals("")) {
+                            finalitemNetweight = json.getString("netweight");
+                            //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                        }
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+
+                try {
+
+                    if(json.has("cutname")){
+                        finalCutName = json.getString("cutname");
+
+                    }
+                    else{
+                        finalCutName ="";
+                    }
+
+
+                }
+                catch (Exception e){
+
+                    finalCutName ="";
+                    e.printStackTrace();
+                }
+
+
+
+                try {
+                    finalitemNetweight = json.getString("netweight");
+
+
+                    if ((finalitemNetweight.equals(""))||(finalitemNetweight.equals(null))||(finalitemNetweight.equals(" - "))) {
+                        try {
+                            finalitemNetweight = json.getString("netweight");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                    }
+
+                }
+                catch (Exception e){
+                    try {
+                        if (finalitemNetweight.equals("")) {
+                            finalitemNetweight = json.getString("netweight");
+                            //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                        }
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+                try {
+                    finalgrossweight = json.getString("grossweight");
+
+
+                    if ((finalgrossweight.equals(""))||(finalgrossweight.equals(null))||(finalgrossweight.equals(" - "))) {
+                        try {
+                            finalgrossweight = json.getString("grossweightingrams");
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+
+
+                    }
+
+                }
+                catch (Exception e){
+                    try {
+                        if (finalgrossweight.equals("")) {
+                            finalgrossweight = json.getString("grossweightingrams");
+                            //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                        }
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+
+
+
+                if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+
+                    text_to_Print = text_to_Print+"[L] <b><font size='normal'>Grill House  "+fullitemName +" </b>\n";
+
+
+                    if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
+
+                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+
+                    }
+                    if(!finalgrossweight.equals("")) {
+                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+
+                    }
+                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+
+                }
+                else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                    text_to_Print = text_to_Print+"[L]<b> <font size='normal'>Ready to Cook  "+fullitemName +" </b>\n";
+
+                    if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
+                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+
+
+                    }
+                    if(!finalgrossweight.equals("")) {
+                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+
+                    }
+
+
+
+                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+
+                }
+                else  {
+                    text_to_Print = text_to_Print+"[L] <b><font size='normal'>"+String.valueOf(fullitemName)  +"</b> \n";
+
+
+
+
+                    if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
+                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+
+                    }
+
+
+
+
+                    if(!finalgrossweight.equals("")) {
+
+                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+
+                    }
+                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+
+                }
+
+
+
+
+                itemwise_price = json.getString("tmcprice");
+
+                double itemwise_price_double = 0;
+                double quantity_double = 0;
+                double itemwise_Subtotal_double = 0;
+                try {
+                    itemwise_price_double = Double.parseDouble(itemwise_price);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    quantity_double = Double.parseDouble(String.valueOf(json.get("quantity")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    itemwise_price_double = 0;
+                }
+
+
+                try {
+                    itemwise_Subtotal_double = itemwise_price_double * quantity_double;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
+
+
+                try{
+                    totalAmountFromAddingSubtotal =  totalAmountFromAddingSubtotal + itemwise_Subtotal_double ;
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+                itemwise_Subtotal = String.valueOf(itemwise_Subtotal_double);
+                itemwise_price = String.valueOf(itemwise_Subtotal_double);
+
+                itemwise_price = "Rs. " + itemwise_price;
+                itemwise_Subtotal = "Rs." + itemwise_Subtotal;
+
+                if (itemwise_price.length() == 4) {
+                    //21spaces
+                    itemwise_price = itemwise_price + "                            ";
+                }
+                if (itemwise_price.length() == 5) {
+                    //20spaces
+                    itemwise_price = itemwise_price + "                           ";
+                }
+                if (itemwise_price.length() == 6) {
+                    //19spaces
+                    itemwise_price = itemwise_price + "                         ";
+                }
+                if (itemwise_price.length() == 7) {
+                    //18spaces
+                    itemwise_price = itemwise_price + "                        ";
+                }
+                if (itemwise_price.length() == 8) {
+                    //17spaces
+                    itemwise_price = itemwise_price + "                      ";
+                }
+                if (itemwise_price.length() == 9) {
+                    //16spaces
+                    itemwise_price = itemwise_price + "                     ";
+                }
+                if (itemwise_price.length() == 10) {
+                    //15spaces
+                    itemwise_price = itemwise_price + "                     ";
+                }
+                if (itemwise_price.length() == 11) {
+                    //14spaces
+                    itemwise_price = itemwise_price + "                    ";
+                }
+                if (itemwise_price.length() == 12) {
+                    //13spaces
+                    itemwise_price = itemwise_price + "                   ";
+                }
+                if (itemwise_price.length() == 13) {
+                    //12space
+                    itemwise_price = itemwise_price + "                  ";
+                }
+                if (itemwise_price.length() == 14) {
+                    //11spaces
+                    itemwise_price = itemwise_price + "                 ";
+                }
+                if (itemwise_price.length() == 15) {
+                    //10spaces
+                    itemwise_price = itemwise_price + "                ";
+                }
+                if (itemwise_price.length() == 16) {
+                    //9spaces
+                    itemwise_price = itemwise_price + "               ";
+                }
+                if (itemwise_price.length() == 17) {
+                    //8space
+                    itemwise_price = itemwise_price + "              ";
+                }
+                if (itemwise_price.length() == 18) {
+                    //7spaces
+                    itemwise_price = itemwise_price + "             ";
+                }
+
+
+                if (itemwise_Subtotal.length() == 4) {
+                    //6spaces
+                    itemwise_Subtotal = "      " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 5) {
+                    //7spaces
+                    itemwise_Subtotal = "       " + itemwise_Subtotal;
+                }
+
+                if (itemwise_Subtotal.length() == 6) {
+                    //8spaces
+                    itemwise_Subtotal = "        " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 7) {
+                    //7spaces
+                    itemwise_Subtotal = "       " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 8) {
+                    //6spaces
+                    itemwise_Subtotal = "      " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 9) {
+                    //5spaces
+                    itemwise_Subtotal = "     " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 10) {
+                    //4spaces
+                    itemwise_Subtotal = "    " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 11) {
+                    //3spaces
+                    itemwise_Subtotal = "   " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 12) {
+                    //2spaces
+                    itemwise_Subtotal = "  " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 13) {
+                    //1spaces
+                    itemwise_Subtotal = " " + itemwise_Subtotal;
+                }
+                if (itemwise_Subtotal.length() == 14) {
+                    //no space
+                    itemwise_Subtotal = "" + itemwise_Subtotal;
+                }
+
+
+
+
+                text_to_Print = text_to_Print+"[L] <font size='normal'>"+itemwise_price + itemwise_Subtotal +" \n";
+
+                text_to_Print = text_to_Print+"[L] <font size='normal'>                                                "+" \n";
+
+
+            }
+            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        PayableAmount = "Rs." + String.valueOf(totalAmountFromAddingSubtotal);
+        if (PayableAmount.length() == 4) {
+            //21spaces
+            PayableAmount = PayableAmount + "                                   " + PayableAmount;
+        }
+        if (PayableAmount.length() == 5) {
+            //20spaces
+            PayableAmount = PayableAmount + "                                " + PayableAmount;
+        }
+        if (PayableAmount.length() == 6) {
+            //19spaces
+            PayableAmount = PayableAmount + "                               " + PayableAmount;
+        }
+        if (PayableAmount.length() == 7) {
+            //18spaces
+            PayableAmount = PayableAmount + "                              " + PayableAmount;
+        }
+        if (PayableAmount.length() == 8) {
+            //17spaces
+            PayableAmount = PayableAmount + "                             " + PayableAmount;
+        }
+        if (PayableAmount.length() == 9) {
+            //16spaces
+            PayableAmount = PayableAmount + "                            " + PayableAmount;
+        }
+        if (PayableAmount.length() == 10) {
+            //15spaces
+            PayableAmount = PayableAmount + "                           " + PayableAmount;
+        }
+        if (PayableAmount.length() == 11) {
+            //14spaces
+            PayableAmount = PayableAmount + "                          " + PayableAmount;
+        }
+        if (PayableAmount.length() == 12) {
+            //13spaces
+            PayableAmount = PayableAmount + "                         " + PayableAmount;
+        }
+        if (PayableAmount.length() == 13) {
+            //12spaces
+            PayableAmount = PayableAmount + "                        " + PayableAmount;
+        }
+        if (PayableAmount.length() == 14) {
+            //11spaces
+            PayableAmount = PayableAmount + "                       " + PayableAmount;
+        }
+        if (PayableAmount.length() == 15) {
+            //10spaces
+            PayableAmount = PayableAmount + "                      " + PayableAmount;
+        }
+        if (PayableAmount.length() == 16) {
+            //9spaces
+            PayableAmount = PayableAmount + "                     " + PayableAmount;
+        }
+        if (PayableAmount.length() == 17) {
+            //8spaces
+            PayableAmount = PayableAmount + "                     " + PayableAmount;
+        }
+        if (PayableAmount.length() == 18) {
+            //7spaces
+            PayableAmount = PayableAmount + "                   " + PayableAmount;
+        }
+
+
+
+
+
+        text_to_Print = text_to_Print+"[L]" +PayableAmount+" \n";
+
+        text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+
+
+        if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
+            couponDiscount_double = Double.parseDouble (CouponDiscount);
+            if (OrderType.equals(Constants.APPORDER)) {
+                if (CouponDiscount.length() == 4) {
+                    //20spaces
+                    //NEW TOTAL =4
+                    CouponDiscount = "Coupon Discount                         " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 5) {
+                    //21spaces
+                    //NEW TOTAL =5
+                    CouponDiscount = "Coupon Discount                      " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 6) {
+                    //20spaces
+                    //NEW TOTAL =6
+                    CouponDiscount = "Coupon Discount                      " + CouponDiscount;
+                }
+
+                if (CouponDiscount.length() == 7) {
+                    //19spaces
+                    //NEW TOTAL =7
+                    CouponDiscount = "Coupon Discount                     " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 8) {
+                    //18spaces
+                    //NEW TOTAL =8
+                    CouponDiscount = "Coupon Discount                    " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 9) {
+                    //17spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Coupon Discount                   " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 10) {
+                    //16spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Coupon Discount                  " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 11) {
+                    //15spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Coupon Discount                   " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 12) {
+                    //14spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Coupon Discount                " + CouponDiscount;
+                }
+
+                if (CouponDiscount.length() == 13) {
+                    //13spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Coupon Discount               " + CouponDiscount;
+                }
+            }
+
+            if (OrderType.equals(Constants.POSORDER)) {
+                couponDiscount_double = Double.parseDouble (CouponDiscount);
+
+                if (CouponDiscount.length() == 4) {
+                    //20spaces
+                    //NEW TOTAL =4
+                    CouponDiscount = "Discount Amount                        " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 5) {
+                    //21spaces
+                    //NEW TOTAL =5
+                    CouponDiscount = "Discount Amount                      " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 6) {
+                    //20spaces
+                    //NEW TOTAL =6
+                    CouponDiscount = "Discount Amount                     " + CouponDiscount;
+                }
+
+                if (CouponDiscount.length() == 7) {
+                    //19spaces
+                    //NEW TOTAL =7
+                    CouponDiscount = "Discount Amount                    " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 8) {
+                    //18spaces
+                    //NEW TOTAL =8
+                    CouponDiscount = " Discount Amount                   " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 9) {
+                    //17spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 10) {
+                    //16spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 11) {
+                    //15spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Discount Amount                " + CouponDiscount;
+                }
+                if (CouponDiscount.length() == 12) {
+                    //14spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Discount Amount               " + CouponDiscount;
+                }
+
+                if (CouponDiscount.length() == 13) {
+                    //13spaces
+                    //NEW TOTAL =9
+                    CouponDiscount = "Discount Amount              " + CouponDiscount;
+                }
+            }
+
+
+            text_to_Print = text_to_Print+"[L]"+CouponDiscount+" \n";
+
+            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+
+
+
+
+
+        }
+
+        try{
+            totalAmountFromAddingSubtotalWithDiscount =  totalAmountFromAddingSubtotal - couponDiscount_double ;
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt = totalAmountFromAddingSubtotalWithDiscount+deliveryAmount_double;
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        if( deliveryAmount_double>0) {
+            if (DeliveryAmount.length() == 4) {
+                //25spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 5) {
+                //24spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                      " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 6) {
+                //23spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                     " + DeliveryAmount;
+            }
+
+            if (DeliveryAmount.length() == 7) {
+                //22spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                    " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 8) {
+                //21spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                   " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 9) {
+                //20spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                  " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 10) {
+                //19spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                 " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 11) {
+                //18spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 12) {
+                //17spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount               " + DeliveryAmount;
+            }
+
+            text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
+
+            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+
+
+
+        }
+
+        String NetTotal = "Rs." + String.valueOf(totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt);
+        if (NetTotal.length() == 4) {
+            //27spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                             " + NetTotal;
+        }
+        if (NetTotal.length() == 5) {
+            //26spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                             " + NetTotal;
+        }
+        if (NetTotal.length() == 6) {
+            //25spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                            " + NetTotal;
+        }
+
+        if (NetTotal.length() == 7) {
+            //24spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                            " + NetTotal;
+        }
+        if (NetTotal.length() == 8) {
+            //23spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                          " + NetTotal;
+        }
+        if (NetTotal.length() == 9) {
+            //22spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                         " + NetTotal;
+        }
+        if (NetTotal.length() == 10) {
+            //21spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                        " + NetTotal;
+        }
+        if (NetTotal.length() == 11) {
+            //20spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                       " + NetTotal;
+        }
+        if (NetTotal.length() == 12) {
+            //19spaces+4spaces
+            //NEW TOTAL =9
+            NetTotal = "NET TOTAL                     " + NetTotal;
+        }
+
+
+
+        text_to_Print = text_to_Print+"[L]" +NetTotal+" \n";
+
+        text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+
+
+
+        text_to_Print = text_to_Print+"[L]<b>Payment Mode : " +PaymentMode+" </b>\n";
+
+        text_to_Print = text_to_Print+"[L]Mobile No : " +MobileNumber+" \n"+" \n";
+
+        text_to_Print = text_to_Print+"[c]<b><font size='tall'> TOKENNO: " +TokenNo+" </b>\n";
+        text_to_Print = text_to_Print+"[L]<font size='normal'>                                                "+" \n";
+
+
+
+        text_to_Print = text_to_Print+"[L]<font size='normal'>Slot Name : " +Slotname+" \n";
+
+
+        text_to_Print = text_to_Print+"[L]Slot Date : " +SlotDate+" \n";
+
+
+
+        if(Slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)){
+            text_to_Print = text_to_Print+"[L]Order Placed time : " +OrderPlacedtime+" \n";
+
+
+        }
+        text_to_Print = text_to_Print+"[L]Delivery time : " +DeliveryTime+" \n";
+
+        text_to_Print = text_to_Print+"[L]Delivery type : " +DeliveryType+" \n";
+        text_to_Print = text_to_Print+"[L]Distance from Store  : " +DistanceFromStore+" Kms"+" \n";
+
+        text_to_Print = text_to_Print+"[L]Address : " +" \n";
+        text_to_Print = text_to_Print+"[L] "+ Address +" \n";
+
+
+
+        if(!Notes.equals("")) {
+            text_to_Print = text_to_Print+"[c]<b><font size='big'>Notes : " +Notes+" </b>\n\n";
+
+        }
+        else{
+            text_to_Print = text_to_Print+"[L] " +" \n";
+
+
+        }
+        text_to_Print = text_to_Print+"[L] " +" \n";
+
+        text_to_Print = text_to_Print+"[L] <b>Thank You For Choosing Us !!!! " +"</b> \n";
+
+        text_to_Print = text_to_Print+"[L] " +" \n";
+        text_to_Print = text_to_Print+"[L] " +" \n";
+
+//        AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
+        return printer.addTextToPrint(text_to_Print);
+
+
+
+
+
+
+    }
 
 
 

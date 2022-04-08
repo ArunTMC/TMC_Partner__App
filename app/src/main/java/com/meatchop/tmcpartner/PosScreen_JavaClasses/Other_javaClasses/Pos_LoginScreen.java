@@ -13,7 +13,6 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,6 +28,8 @@ import com.amazonaws.mobile.client.results.SignUpResult;
 import com.amazonaws.mobile.client.results.UserCodeDeliveryDetails;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.Mobile_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen;
@@ -46,8 +47,8 @@ public class Pos_LoginScreen extends AppCompatActivity {
     private boolean vendorLoginStatusBoolean;
     private EditText pos_edOtp1, pos_edOtp2, pos_edOtp3, pos_edOtp4 ,pos_edOtp5, pos_edOtp6 ;
     private static final String TAG = "TAG";
-    private String passCode, userMobileString;
-    double screenInches = 8;
+    private String passCode, userMobileString, minimumScreenSizeForPos;
+    double screenInches = Constants.default_mobileScreenSize ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +59,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
             getWindowManager().getDefaultDisplay().getMetrics(dm);
             double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
             double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-             screenInches = Math.sqrt(x + y);
+            screenInches = Math.sqrt(x + y);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -212,6 +213,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
         }else {
             AWSMobileIntialization();
         }
+
     }
     //It will intialize the AWS Mobile client in the dvice and check weather the user signedIn or ....
     // ......not on both Cognito and Vendor Login whenever he starts the app........
@@ -238,8 +240,8 @@ public class Pos_LoginScreen extends AppCompatActivity {
                                                           MODE_PRIVATE);
 
                                                   vendorLoginStatusBoolean = sh.getBoolean("VendorLoginStatus", false);
+                                                  minimumScreenSizeForPos = sh.getString("MinimumScreenSizeForPos", String.valueOf(Constants.default_mobileScreenSize));
                                                   //Log.i("Tag", " Successfully got the vendor login status");
-
                                                   //Log.i("Tag", "VendorLoginStatus ee" + vendorLoginStatusBoolean);
 
                                                   runOnUiThread(new Runnable() {
@@ -250,19 +252,37 @@ public class Pos_LoginScreen extends AppCompatActivity {
                                                   Intent i;
                                                   if (vendorLoginStatusBoolean) {
                                                       //Log.i("Tag", " Navigate to dashboard according to vendor login status");
+                                                      Constants.default_mobileScreenSize = Integer.parseInt(minimumScreenSizeForPos);
 
                                                       loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                       loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                                                      i = new Intent(Pos_LoginScreen.this, Pos_Dashboard_Screen.class);
+                                                      if(screenInches < Constants.default_mobileScreenSize ){
+                                                          i =new Intent(Pos_LoginScreen.this, MobileScreen_Dashboard.class);
+
+                                                      }else {
+
+
+                                                          i = new Intent(Pos_LoginScreen.this, Pos_Dashboard_Screen.class);
+
+                                                      }
                                                   } else {
                                                       //Log.i("Tag", " Navigate to vendor selection screen according to vendor login status");
 
                                                       loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                       loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                                                      i = new Intent(Pos_LoginScreen.this, Pos_Vendor_Selection_Screen.class);
+                                                      if(screenInches < Constants.default_mobileScreenSize ){
+                                                          i =new Intent(Pos_LoginScreen.this, Mobile_Vendor_Selection_Screen.class);
+
+                                                      }else {
+
+
+                                                          i = new Intent(Pos_LoginScreen.this, Pos_Vendor_Selection_Screen.class);
+
+                                                      }
+                                                    //  i = new Intent(Pos_LoginScreen.this, Pos_Vendor_Selection_Screen.class);
                                                   }
                                                   startActivity(i);
-                                                          overridePendingTransition(0, 0);
+                                                  overridePendingTransition(0, 0);
 
                                                   finish();
                                                       }

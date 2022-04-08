@@ -643,6 +643,19 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
     }
 
     private void prepareDataForPDF() {
+
+        Collections.sort(slotrangetimeArray, new Comparator<String>() {
+            public int compare(final String object1, final String object2) {
+                String string_1 = object1;
+                String string_2 = object2;
+
+
+                return string_1.compareTo(string_2);
+            }
+        });
+
+
+
         hashMap_sorted_OrdersList.clear();
         isPDF_FIle = true;
         Log.d(Constants.TAG, "prepareDataFor PDF Response: " );
@@ -821,6 +834,9 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
             inner_table.setHeaderRows(1);
             inner_table.setWidthPercentage(95);
 
+            PdfPTable allSlotinner_table = new PdfPTable(deliveredtimeArray.size()+1);
+            allSlotinner_table.setHeaderRows(1);
+            allSlotinner_table.setWidthPercentage(95);
 
 
 
@@ -835,7 +851,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
             slotrangetimecell.setFixedHeight(30);
             slotrangetimecell.setBorderWidthBottom(01);
             inner_table.addCell(slotrangetimecell);
-
+            allSlotinner_table.addCell(slotrangetimecell);
 
 
             for(int i =0 ;i<deliveredtimeArray.size();i++) {
@@ -856,7 +872,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
                 inner_table.addCell(slotrangetimecel11);
 
-
+                allSlotinner_table.addCell(slotrangetimecell);
 
             }
 
@@ -868,8 +884,63 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
             for (int j = 0; j< slotrangetimeArray.size(); j++) {
                 String slotrangetime = slotrangetimeArray.get(j);
+            if(slotrangetime.toString().toUpperCase().equals("ALL")){
+                if (hashMap_sorted_OrdersList.containsKey(slotrangetime)) {
+                    PdfPCell allslotrangetimecell = new PdfPCell(new Phrase(slotrangetime));
+                    allslotrangetimecell.setBorder(Rectangle.NO_BORDER);
+                    allslotrangetimecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    allslotrangetimecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    allslotrangetimecell.setPaddingLeft(10);
+                    allslotrangetimecell.setPaddingRight(20);
+                    allslotrangetimecell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    allslotrangetimecell.setBorderWidthBottom(01);
+                    allslotrangetimecell.setBorderWidthRight(01);
+                    allslotrangetimecell.setFixedHeight(30);
+                    allSlotinner_table.addCell(allslotrangetimecell);
 
-                if(hashMap_sorted_OrdersList.containsKey(slotrangetime)){
+
+                    HashMap<String, Integer> deliverytypewise_ordersHashmap_1 = hashMap_sorted_OrdersList.get(slotrangetime);
+
+                    for (int i = 0; i < deliveredtimeArray.size(); i++) {
+                        String deliveryType = deliveredtimeArray.get(i);
+
+                        if (deliverytypewise_ordersHashmap_1.containsKey(deliveryType)) {
+
+                            int count = deliverytypewise_ordersHashmap_1.get(deliveryType);
+                            PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(count)));
+                            deliveryTypecell.setBorder(Rectangle.NO_BORDER);
+                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                            deliveryTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            deliveryTypecell.setPaddingLeft(10);
+                            deliveryTypecell.setFixedHeight(30);
+                            deliveryTypecell.setBorderWidthBottom(01);
+                            if (deliveredtimeArray.size() - i != 1) {
+                                deliveryTypecell.setBorderWidthRight(01);
+                            }
+                            allSlotinner_table.addCell(deliveryTypecell);
+
+
+                        } else {
+                            int count = 0;
+                            PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(" - ")));
+                            deliveryTypecell.setBorder(Rectangle.NO_BORDER);
+                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                            deliveryTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                            deliveryTypecell.setPaddingLeft(10);
+                            deliveryTypecell.setFixedHeight(30);
+                            deliveryTypecell.setBorderWidthBottom(01);
+                            if (deliveredtimeArray.size() - i != 1) {
+                                deliveryTypecell.setBorderWidthRight(01);
+                            }
+                            allSlotinner_table.addCell(deliveryTypecell);
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                if (hashMap_sorted_OrdersList.containsKey(slotrangetime)) {
                     PdfPCell slotrangetimecell2 = new PdfPCell(new Phrase(slotrangetime));
                     slotrangetimecell2.setBorder(Rectangle.NO_BORDER);
                     slotrangetimecell2.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -885,7 +956,7 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
                     HashMap<String, Integer> deliverytypewise_ordersHashmap_1 = hashMap_sorted_OrdersList.get(slotrangetime);
 
-                    for(int i =0 ;i<deliveredtimeArray.size();i++) {
+                    for (int i = 0; i < deliveredtimeArray.size(); i++) {
                         String deliveryType = deliveredtimeArray.get(i);
 
                         if (deliverytypewise_ordersHashmap_1.containsKey(deliveryType)) {
@@ -893,36 +964,35 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
                             int count = deliverytypewise_ordersHashmap_1.get(deliveryType);
                             PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(count)));
                             deliveryTypecell.setBorder(Rectangle.NO_BORDER);
-                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_CENTER);
                             deliveryTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                             deliveryTypecell.setPaddingLeft(10);
                             deliveryTypecell.setFixedHeight(30);
                             deliveryTypecell.setBorderWidthBottom(01);
-                            if(deliveredtimeArray.size()-i !=1) {
+                            if (deliveredtimeArray.size() - i != 1) {
                                 deliveryTypecell.setBorderWidthRight(01);
                             }
                             inner_table.addCell(deliveryTypecell);
 
 
-                        }
-                        else{
+                        } else {
                             int count = 0;
-                            PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(count)));
+                            PdfPCell deliveryTypecell = new PdfPCell(new Phrase(String.valueOf(" - ")));
                             deliveryTypecell.setBorder(Rectangle.NO_BORDER);
-                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                            deliveryTypecell.setHorizontalAlignment(Element.ALIGN_CENTER);
                             deliveryTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                             deliveryTypecell.setPaddingLeft(10);
                             deliveryTypecell.setFixedHeight(30);
                             deliveryTypecell.setBorderWidthBottom(01);
-                            if(deliveredtimeArray.size()-i !=1) {
+                            if (deliveredtimeArray.size() - i != 1) {
                                 deliveryTypecell.setBorderWidthRight(01);
                             }
                             inner_table.addCell(deliveryTypecell);
                         }
                     }
 
-                    }
-
+                }
+            }
                 if(slotrangetimeArray.size() -1 == j){
                     try {
                        PdfPTable outertable = new PdfPTable(1);
@@ -935,6 +1005,21 @@ public class DeliveredOrdersTimewiseReport extends AppCompatActivity {
 
 
                         layoutDocument.add(outertable);
+
+
+                       /*PdfPTable allSlotoutertable1 = new PdfPTable(1);
+                       PdfPCell  allSlotoutercell1 = new PdfPCell(allSlotinner_table);
+                        allSlotoutercell1.setCellEvent(roundRectange);
+                        allSlotoutercell1.setBorder(Rectangle.NO_BORDER);
+                        allSlotoutercell1.setPadding(8);
+                        allSlotoutertable1.addCell(allSlotoutercell1);
+                        allSlotoutertable1.setWidthPercentage(100);
+
+                        */
+                        layoutDocument.add(allSlotinner_table);
+
+
+
 
                     } catch (DocumentException e) {
                         e.printStackTrace();
@@ -1941,13 +2026,13 @@ else{
                             manageOrdersPojoClass.typebasedonDeliveredTime = String.valueOf("On Time Delivery ");
 
 
-                        } else if (delayedTimeIntt < 30) {
+                        } else if (delayedTimeIntt <= 30) {
                             manageOrdersPojoClass.typebasedonDeliveredTime = String.valueOf("0 - 30 Mins Late ");
 
 
 
 
-                        } else if (delayedTimeIntt > 30 && delayedTimeIntt < 60) {
+                        } else if (delayedTimeIntt > 30 && delayedTimeIntt <= 60) {
 
                             manageOrdersPojoClass.typebasedonDeliveredTime = String.valueOf("30 - 60 Mins Late ");
 
@@ -2229,13 +2314,13 @@ else{
 
                     Log.i("Tag", "Count New : " + onTimeDelivery_Count);
 
-                } else if (delayedTimeIntt < 30) {
+                } else if (delayedTimeIntt <= 30) {
                     thirtyMinsLateDeliveryCount++;
 
 
                     Log.i("Tag", "Count confirmed : " + thirtyMinsLateDeliveryCount);
 
-                } else if (delayedTimeIntt > 30 && delayedTimeIntt < 60) {
+                } else if (delayedTimeIntt > 30 && delayedTimeIntt <= 60) {
                     sixtyMinsLateDeliveryCount++;
 
 
@@ -2390,7 +2475,7 @@ else{
                             e.printStackTrace();
                         }
 
-                        if (delayedTimeInt < 30) {
+                        if (delayedTimeInt <= 30) {
                             
 
 
@@ -2459,7 +2544,7 @@ else{
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        if (delayedTimeInt > 30 && delayedTimeInt < 60) {
+                        if (delayedTimeInt > 30 && delayedTimeInt <= 60) {
 
                             
 

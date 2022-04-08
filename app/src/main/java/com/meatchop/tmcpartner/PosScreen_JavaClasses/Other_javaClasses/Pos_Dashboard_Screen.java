@@ -36,14 +36,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
-import com.meatchop.tmcpartner.Settings.Modal_MenuItem_Settings;
 import com.meatchop.tmcpartner.Settings.SettingsFragment;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -54,7 +51,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +76,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     String vendorkey;
     String MenuItemKey,UserRole;
     List<Modal_MenuItem> MarinadeMenuList=new ArrayList<>();
-    String errorCode = "0";
+    String errorCode = "0",minimumscreensizeforpos ="",defaultprintertype ="";
     Dialog dialog ;
     Button restartAgain;
     TextView title;
@@ -101,6 +97,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         SharedPreferences shared =getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", ""));
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+        minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
         bottomNavigationView = findViewById(R.id.bottomnav);
         dialog = new Dialog(Pos_Dashboard_Screen.this);
 
@@ -222,7 +219,32 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                         e.printStackTrace();
                                     }
 
-                                    saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+
+                                    try{
+                                        minimumscreensizeforpos =  String.valueOf(json.get("minimumscreensizeforpos"));
+
+                                    }
+                                    catch (Exception e){
+
+                                        minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
+
+
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        defaultprintertype =  String.valueOf(json.get("defaultprintertype"));
+
+                                    }
+                                    catch (Exception e){
+
+                                        defaultprintertype = String.valueOf(Constants.POS_PrinterType);
+
+
+                                        e.printStackTrace();
+                                    }
+
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos);
 
 
                                 } catch (JSONException e) {
@@ -231,7 +253,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                     //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
                                     //Log.d(Constants.TAG, "e: " + e.getMessage());
                                     //Log.d(Constants.TAG, "e: " + e.toString());
-                                    saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
 
                                 }
 
@@ -239,7 +261,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
 
                         }
 
@@ -251,7 +273,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                 //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
                 //Log.d(Constants.TAG, "Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "Error: " + error.toString());
-                saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
 
                 error.printStackTrace();
             }
@@ -283,8 +305,25 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
     }
 
-    private void saveInventoryCodePermisioninSharedPreference(boolean isinventorycheck) {
+    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos) {
 
+
+
+        SharedPreferences printerDatasharedPreferences
+                = getSharedPreferences("PrinterConnectionData",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor printerDatamyEdit
+                = printerDatasharedPreferences.edit();
+
+        printerDatamyEdit.putString(
+                "printerType",
+                defaultprintertype);
+
+        printerDatamyEdit.putString(
+                "printerStatus",
+                "Success");
+        printerDatamyEdit.apply();
 
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
@@ -295,6 +334,11 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         myEdit.putBoolean(
                 "inventoryCheckBool",
                 isinventorycheck
+        );
+
+        myEdit.putString(
+                "MinimumScreenSizeForPos",
+                minimumscreensizeforpos
         );
 
         myEdit.apply();
@@ -627,7 +671,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         editorr.apply();
 
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetMobileAppData, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPOSMobileAppData, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {

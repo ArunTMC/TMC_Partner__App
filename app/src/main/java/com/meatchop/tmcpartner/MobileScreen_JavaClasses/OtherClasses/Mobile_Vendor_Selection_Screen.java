@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,6 +32,8 @@ import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_vendor;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -51,7 +54,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private String mobile_vendorKey;
     private String mobile_vendorMobileNumber;
     private String mobile_vendorAddressline1,mobile_vendorAddressline2,mobile_vendorPincode;
-    private String mobile_vendorStatus, mobile_vendorFssaino;
+    private String mobile_vendorStatus, mobile_vendorFssaino,minimumscreensizeforpos;
     private String mobile_vendorLatitude;
     private String mobile_vendorLongitude,newtoken="",vendortype = "";
     private ArrayAdapter mobile_spinner_aAdapter;
@@ -64,6 +67,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private JSONArray result;
     private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItemWisereport;
     List<Modal_vendor> vendorList=new ArrayList<>();
+    double screenInches;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +86,13 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         getAreawiseVendorName();
         loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
         loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
+        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
+        screenInches = Math.sqrt(x+y);
+
 
         SharedPreferences sh
                 = getSharedPreferences("VendorLoginData",
@@ -258,7 +269,24 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
                                             e.printStackTrace();
                                         }
+                                        try {
 
+                                            if(json.has("minimumscreensizeforpos")){
+
+                                                modal_vendor.setMinimumscreensizeforpos( String.valueOf(json.get("minimumscreensizeforpos")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setMinimumscreensizeforpos( String.valueOf(Constants.default_mobileScreenSize));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setMinimumscreensizeforpos( String.valueOf(Constants.default_mobileScreenSize));
+                                            e.printStackTrace();
+                                        }
                                         try {
 
                                             if(json.has("status")){
@@ -799,7 +827,18 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
                             loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                             loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                            Intent i = new Intent(Mobile_Vendor_Selection_Screen.this, MobileScreen_Dashboard.class);
+                            Constants.default_mobileScreenSize = Integer.parseInt(minimumscreensizeforpos);
+
+                            Intent i;
+                            if(screenInches < Constants.default_mobileScreenSize ){
+                                i =new Intent(Mobile_Vendor_Selection_Screen.this, Mobile_LoginScreen.class);
+
+                            }else {
+
+
+                                i = new Intent(Mobile_Vendor_Selection_Screen.this, Pos_Dashboard_Screen.class);
+
+                            }
                             startActivity(i);
                             finish();
                         }
@@ -871,6 +910,10 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                 mobile_vendorNameString
         );
         myEdit.putString(
+                "MinimumScreenSizeForPos",
+                minimumscreensizeforpos
+        );
+        myEdit.putString(
                 "VendorAddressline1",
                 mobile_vendorAddressline1
         );
@@ -940,6 +983,8 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         mobile_vendorPincode=getVendorData(position,"pincode");
         mobile_vendorStatus=getVendorData(position,"status");
         mobile_vendorFssaino =getVendorData(position,"vendorfssaino");
+        minimumscreensizeforpos = getVendorData(position,"minimumscreensizeforpos");
+
         mobile_vendorLatitude =getVendorData(position,"locationlat");
         mobile_vendorLongitude =getVendorData(position,"locationlong");
         try {

@@ -40,7 +40,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -887,7 +886,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                         else{
                             mobile_manageOrders1.Adjusting_Widgets_Visibility(true);
 
-                            mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+                            mobile_manageOrders1.printRecipt(modal_manageOrders_pojo_class);
 
 
                         }
@@ -1096,7 +1095,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                                                 else{
                                                     //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
 
-                                                    mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+                                                    mobile_manageOrders1.printRecipt(modal_manageOrders_pojo_class);
 
                                                 }
                                             }
@@ -1165,7 +1164,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                                                     else{
                                                         //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
 
-                                                        mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+                                                        mobile_manageOrders1.printRecipt(modal_manageOrders_pojo_class);
 
                                                     }
                                                 }
@@ -1223,7 +1222,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                                     else{
                                         //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
 
-                                        mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+                                        mobile_manageOrders1.printRecipt(modal_manageOrders_pojo_class);
 
                                     }
                                 }
@@ -1863,7 +1862,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                             }
                             else{
                                //AlertDialogClass.showDialog(mobile_manageOrders1.getActivity(),R.string.Please_Wait_Until_Printer_Stop);
-                                    mobile_manageOrders1.printBill(modal_manageOrders_pojo_class);
+                                    mobile_manageOrders1.printRecipt(modal_manageOrders_pojo_class);
                                 
 
                             }

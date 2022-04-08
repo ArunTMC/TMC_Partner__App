@@ -2,7 +2,7 @@ package com.meatchop.tmcpartner;
 
 public class Constants {
 
-    public static final int default_mobileScreenSize  = 8;
+    public static int default_mobileScreenSize  = 7;
     public static final String Enter_the_mobile_no_text ="Enter the Mobile Number";
     public static final String Order_Value_should_be_above  ="Order Value Should Be Above : ";
     public static final String PointusercanRedeemtoday  ="Can't redeem more than users limit per day";
@@ -93,6 +93,9 @@ public class Constants {
     public static final String Store_VendorType ="STORE";
     public static final String Warehouse_VendorType ="WAREHOUSE";
 
+    public static final String Bluetooth_PrinterType ="Bluetooth Printer";
+    public static final String USB_PrinterType ="USB Printer";
+    public static final String POS_PrinterType ="POS Printer";
 
 
     public static final String ADMIN_ROLENAME ="ADMIN";
@@ -111,6 +114,8 @@ public class Constants {
     public static final String GENERALMODULE ="generalmodule";
     public static final String PAYTM_SUCCESSSTATUS ="TXN_SUCCESS";
     public static final String RAZORPAY_SUCCESSSTATUS ="paid";
+    public static final String CREDIT_AMOUNT_ADDED ="AMOUNT_ADDED";
+    public static final String CREDIT_AMOUNT_PAID ="AMOUNT_PAID";
 
 
     public static final String api_getListofSubCtgy = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=SubCategory";
@@ -143,6 +148,8 @@ public class Constants {
     //"https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsappordersnew";
     //"https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/resource";
     //"https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsapporders";
+
+
     public static final String api_GetOrderDetailsusingPaymentmode_vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetailsforpaymentmodeandvendorkey";
 
     public static final String api_GetTrackingOrderDetails_AppOrders_and_PosOrders ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsappandposorders";
@@ -153,11 +160,8 @@ public class Constants {
     public static final String api_GetOrderDetailsusingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetails?orderid=";
     public static final String api_GetOrderDetailsusingMobileno_vendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetailswithmobilenovendorkey";
     public static final String api_GetTrackingOrderDetails_orderid ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetails?orderid=";
-
     public static final String api_GetRatingDetailsUsingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/ratingdetailsfororder?orderid=";
-
-
-
+    public static final String api_GetOrderDetailsusingMobilenowithIndex = "https://pna7nowovg.execute-api.ap-south-1.amazonaws.com/dev/orderdetailswithmobileno";
 
 
     public static final String api_GetTrackingOrderDetailswithDate_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackingorderdetailsusingdateforreport";
@@ -177,9 +181,6 @@ public class Constants {
     public static final String api_GetDeliverySlots = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/slotsforstoreid";
 
     public static final String api_addCouponDetailsInCouponTranactionsTable = "https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/coupontrans?modulename=CouponTrans";
-    public static final String api_updateRedeemPointsTablewithkey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/redeempointsdetails?modulename=RedeemPoints";
-    public static final String api_updateRedeemPointsTablewithoutKey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/updareoraddredeempointdetails";
-    public static final String api_updateRaisedTicketsTablewithkey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/ratingticketdetails?modulename=RatingTicket";
 
 
 
@@ -190,21 +191,28 @@ public class Constants {
     public static final String api_addOrderDetailsInOrderTrackingDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/ordertracking?modulename=TrackOrder";
     public static final String api_addOrderDetailsInPaymentDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/payment?modulename=Payment";
     public static final  String api_getDeliveryPartnerList = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/deliveryuser?vendorkey=";
-    public static final String api_updateMenuItemDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MenuNew";
-    public static final String api_updateMarinadeMenuItemPriceDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MarinadeMenuNew";
-    public static final String api_addReplacementOrderDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/replacementorderdetails?modulename=ReplacementOrders";
+     public static final String api_addReplacementOrderDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/replacementorderdetails?modulename=ReplacementOrders";
     public static final String api_addReplacementTransactionDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/replacementtransactiondetails?modulename=ReplacementTrans";
+    public static final String api_addCreditOrderDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/creditorderdetails";
+    public static final String api_addCreditOrdersTransactionDetailsTable ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/creditorderstransactiondetails";
 
     public static final String api_addMenuavailabilityTransaction ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/menuavailabilitytransactionnew?modulename=MenuAvailTransNew";
             //old = "https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/menuavailabilitytransaction?modulename=MenuAvailTrans";
-    public static final String api_UpdateReplacementOrderDetaialsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/replacementorderdetails";
 
+
+    public static final String api_UpdateCreditOrderDetailsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/creditorderdetails";
+    public static final String api_UpdateReplacementOrderDetailsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/replacementorderdetails";
     public static final String api_UpdateTokenNO_OrderDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/orderdetails?modulename=PlaceOrder";
     public static final String api_Update_DeliverySlotDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/deliveryslotdetails?modulename=VendorSlot";
     public static final String api_Update_DeliverySlots ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/deliveryslots?modulename=DeliverySlot";
     public static final String api_updatePaymentTransactionTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/paymenttrans?modulename=Payment";
     public static final String api_Update_ChangeMenuItemAvailability_SubCtgywise ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/changemenuitemavailabilitystatussubctgywise";
     public static final String api_updatePaymentMode_OrderDetailsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/orderdetails?modulename=PlaceOrder";
+    public static final String api_updateRedeemPointsTablewithkey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/redeempointsdetails?modulename=RedeemPoints";
+    public static final String api_updateRedeemPointsTablewithoutKey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/updareoraddredeempointdetails";
+    public static final String api_updateRaisedTicketsTablewithkey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/ratingticketdetails?modulename=RatingTicket";
+    public static final String api_updateMenuItemDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MenuNew";
+    public static final String api_updateMarinadeMenuItemPriceDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MarinadeMenuNew";
 
     public static final String api_updateMarinadeMenuItemDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MarinadeMenuNew";
     public static final String api_updateTrackingOrderTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/trackingorderdetails?modulename=TrackOrder";
@@ -225,10 +233,12 @@ public class Constants {
     public static final String api_GetPaymentTransactionusingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getpaymenttransationfororderid?orderid=";
     public static final String api_GetPaymentDetailsFromRazorpay= "https://us-central1-dosavillage-acc39.cloudfunctions.net/getrazorpayorderstatusfortmc?orderid=";
     public static final String api_GetPaymentDetailsFromPaytm= "https://us-central1-dosavillage-acc39.cloudfunctions.net/getpaytmorderstatusfortmc?orderid=";
-    public static final String  api_GetMobileAppData ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=Mobile";
+    public static final String api_GetPOSMobileAppData ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=PosAppData";
             //"https://1gvpvgme35.execute-api.ap-south-1.amazonaws.com/stage/resource";
-            public static final String  api_GetRedeemPointsDetailsFortheUser ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getredeempointdetailsforuser";
+    public static final String  api_GetRedeemPointsDetailsFortheUser ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getredeempointdetailsforuser";
     public static final String api_GetVendorUsingUserKey= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/key?tablename=Vendor&key=";
+    public static final String api_GetCreditOrdersUsingMobilenoWithVendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/creditorderdetailsformobilenowithvendorkey";
+    public static final String api_GetCreditOrdersTransactionDetailsUsingMobilenoWithVendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/creditordertransactiondetailsformobilenowithvendorkey";
 
 
 

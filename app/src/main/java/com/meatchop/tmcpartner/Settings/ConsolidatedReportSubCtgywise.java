@@ -642,7 +642,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                try {
+              /*  try {
                     Log.i("TransactionDetailsArray", String.valueOf(replacementTransactionDetailsArray.size()));
                     Log.i("TransactiontypeArray", String.valueOf(replacementTransactiontypeArray.size()));
                     Log.i("TransactiontypeHashmap", String.valueOf(replacementTransactiontypeHashmap.size()));
@@ -651,6 +651,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+               */
                 try {
                     if (transactionStatus.toString().toUpperCase().equals("SUCCESS")) {
                         try {

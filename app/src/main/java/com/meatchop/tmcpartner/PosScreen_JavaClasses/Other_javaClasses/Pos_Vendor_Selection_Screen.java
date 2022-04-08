@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -24,6 +25,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.R;
@@ -51,11 +53,11 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private ArrayList<String> VendorName_arrayList;
     private JSONArray result;
     private String pos_vendorMobileNumber;
-    private String pos_vendorAddressline1,pos_vendorAddressline2,pos_vendorPincode;
-    private String pos_vendorStatus, pos_vendorFssaino,pos_vendorLatitude,pos_vendorLongitude;
+    private String pos_vendorAddressline1,pos_vendorAddressline2,pos_vendorPincode,minimumscreensizeforpos;
+    private String pos_vendorStatus, pos_vendorFssaino,pos_vendorLatitude,pos_vendorLongitude,defaultprintertype;
     LinearLayout loadingPanel,loadingpanelmask;
     private  Boolean inventoryCheckBool = false;
-
+    double screenInches;
 
     List<Modal_vendor> vendorList=new ArrayList<>();
 
@@ -75,7 +77,11 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
         pos_vendorDetails_verification_button = findViewById(R.id.pos_vendor_verify_widget);
         VendorName_arrayList = new ArrayList<String>();
         getAreawiseVendorName();
-
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
+        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
+        screenInches = Math.sqrt(x+y);
         Adjusting_Widgets_Visibility(true);
 
         SharedPreferences sh
@@ -96,6 +102,8 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 pos_vendorPincode=getVendorData(position,"pincode");
                 pos_vendorStatus=getVendorData(position,"status");
                 pos_vendorFssaino =getVendorData(position,"vendorfssaino");
+                minimumscreensizeforpos = getVendorData(position,"minimumscreensizeforpos");
+                defaultprintertype = getVendorData(position,"defaultprintertype");
 
                 pos_vendorLatitude =getVendorData(position,"locationlat");
                 pos_vendorLongitude =getVendorData(position,"locationlong");
@@ -242,6 +250,28 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                                             modal_vendor.setVendortype( String.valueOf(""));
                                             e.printStackTrace();
                                         }
+
+
+
+                                        try {
+
+                                            if(json.has("minimumscreensizeforpos")){
+
+                                                modal_vendor.setMinimumscreensizeforpos( String.valueOf(json.get("minimumscreensizeforpos")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setMinimumscreensizeforpos( String.valueOf(Constants.default_mobileScreenSize));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setMinimumscreensizeforpos( String.valueOf(Constants.default_mobileScreenSize));
+                                            e.printStackTrace();
+                                        }
+
 
                                         try {
 
@@ -416,7 +446,23 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                                             e.printStackTrace();
                                         }
 
+                                        try {
+                                            if(json.has("defaultprintertype")){
 
+                                                modal_vendor.setDefaultprintertype( String.valueOf(json.get("defaultprintertype")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setDefaultprintertype( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setDefaultprintertype( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
 
 
                                         try {
@@ -669,12 +715,19 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                             Adjusting_Widgets_Visibility(false);
                         }
                         else {
-
-
                             Adjusting_Widgets_Visibility(false);
                             saveVendorLoginStatus();
-                            Intent i = new Intent(Pos_Vendor_Selection_Screen.this, Pos_Dashboard_Screen.class);
+                            Intent i;
+                            Constants.default_mobileScreenSize = Integer.parseInt(minimumscreensizeforpos);
+                            if(screenInches < Constants.default_mobileScreenSize ){
+                                 i =new Intent(Pos_Vendor_Selection_Screen.this, Mobile_LoginScreen.class);
 
+                            }else {
+
+
+                                 i = new Intent(Pos_Vendor_Selection_Screen.this, Pos_Dashboard_Screen.class);
+
+                            }
                             startActivity(i);
                             finish();
                         }
@@ -724,6 +777,26 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
 
     private void saveVendorLoginStatus() {
         //Log.i(Constants.TAG,"VendorLoginStatus"+ pos_vendorLogin);
+
+
+        SharedPreferences printerDatasharedPreferences
+                = getSharedPreferences("PrinterConnectionData",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor printerDatamyEdit
+                = printerDatasharedPreferences.edit();
+
+        printerDatamyEdit.putString(
+                "printerType",
+                defaultprintertype);
+
+        printerDatamyEdit.putString(
+                "printerStatus",
+                "Success");
+
+        printerDatamyEdit.apply();
+
+
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
@@ -769,7 +842,10 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 pos_vendorLatitude
         );
 
-
+        myEdit.putString(
+                "MinimumScreenSizeForPos",
+                minimumscreensizeforpos
+        );
         myEdit.putString(
                 "VendorLongitute",
                 pos_vendorLongitude

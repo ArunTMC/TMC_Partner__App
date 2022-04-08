@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
@@ -15,6 +17,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-feature android:name="android.hardware.usb.host" />
 
     <application
         android:allowBackup="true"
@@ -28,7 +32,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen"></activity>
+        <activity android:name=".Settings.CreditOrders_MobileNumberwiseTransactionScreen"></activity>
+        <activity android:name=".Settings.CreditOrders_MobileNumberwise_Report" />
+        <activity android:name=".MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen" />
         <activity android:name=".Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen" />
         <activity android:name=".Settings.Add_Replacement_Refund_Order.Add_Replacement_Refund_Screen" />
         <activity android:name=".Settings.GenerateUserDetailsReport" />
@@ -36,7 +42,7 @@
         <activity android:name=".Settings.ChangeMenuItemWeightAndPriceSecondScreen" />
         <activity android:name=".Settings.OrderAndRatingDetailsScreen" />
         <activity android:name=".Settings.RaisedTicketDetailsForRating" />
-        <activity android:name=".Settings.AddBigBasketOrder"/>
+        <activity android:name=".Settings.AddBigBasketOrder" />
         <activity android:name=".MobileScreen_JavaClasses.Mobile_NewOrders.CartActivity_Mobile_NewOrdersScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_SecondScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_FirstScreen" />
@@ -141,6 +147,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.BillingScreen" />
+                <action android:name="com.android.example.USB_PERMISSION.ManageOrders" />
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="preloaded_fonts"

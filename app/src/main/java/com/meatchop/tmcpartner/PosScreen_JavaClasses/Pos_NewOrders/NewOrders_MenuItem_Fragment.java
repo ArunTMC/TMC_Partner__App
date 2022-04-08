@@ -1,9 +1,17 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -31,6 +39,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
@@ -44,6 +53,9 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.dantsu.escposprinter.connection.DeviceConnection;
+import com.dantsu.escposprinter.connection.usb.UsbConnection;
+import com.dantsu.escposprinter.connection.usb.UsbPrintersConnections;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
@@ -52,6 +64,8 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
+import com.pos.printer.Modal_USBPrinter;
+
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.pos.printer.PrinterFunctions;
 
@@ -61,6 +75,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.ConnectException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -71,6 +86,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+
+import com.pos.printer.AsyncEscPosPrint;
+import com.pos.printer.AsyncUsbEscPosPrint;
+import com.pos.printer.AsyncEscPosPrinter;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
@@ -102,6 +122,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     double new_to_pay_Amount,old_to_pay_Amount=0;
     public static HashMap<String,Modal_NewOrderItems> cartItem_hashmap = new HashMap();
     public static List<String> cart_Item_List;
+
 
 
     static Adapter_CartItem_Recyclerview adapter_cartItem_recyclerview;
@@ -146,12 +167,45 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+    String printerType_sharedPreference = "";
+    String printerStatus_sharedPreference = "";
 
+    double totalamountUserHaveAsCredit =0;
+    public  boolean isAddOrUpdateCreditOrderDetailsIsCalled = false;
+    public  boolean  isUpdateCreditOrderDetailsIsCalled = false;
 
 
     boolean isinventorycheck = false;
 
+    private BluetoothAdapter mBluetoothAdapter = null;
+    // Member object for the chat services
+    private BluetoothPrintDriver mChatService = null;
 
+
+    // Message types sent from the BluetoothChatService Handler
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    public static final int MESSAGE_READ = 2;
+    public static final int MESSAGE_WRITE = 3;
+    public static final int MESSAGE_DEVICE_NAME = 4;
+    public static final int MESSAGE_TOAST = 5;
+
+    // Key names received from the BluetoothChatService Handler
+    public static final String DEVICE_NAME = "device_name";
+    public static final String TOAST = "toast";
+
+    // Intent request codes
+    private static final int REQUEST_CONNECT_DEVICE = 1;
+    private static final int REQUEST_ENABLE_BT = 2;
+    private BluetoothAdapter mBtAdapter;
+    long sTime =0;
+    String finaltoPayAmountinmethod="";
+    String mConnectedDeviceName ;
+    boolean isPrinterCnnected = false;
+    String printerName = "";
+    String printerStatus= "";
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.BillingScreen";
+
+    Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
 
     public NewOrders_MenuItem_Fragment() {
         // Required empty public constructor
@@ -219,6 +273,19 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         redeemPointsLayout = view.findViewById(R.id.redeemPointsLayout);
         discountAmountLayout = view.findViewById(R.id.discountAmountLayout);
         useStoreNumberCheckBox = view.findViewById(R.id.useStoreNumberCheckBox);
+
+
+        try{
+            SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+            printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+            printerStatus_sharedPreference   = (shared_PF_PrinterData.getString("printerStatus", ""));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
         try{
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
@@ -291,7 +358,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
                 showProgressBar(true);
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetMobileAppData, null,
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPOSMobileAppData, null,
                             new com.android.volley.Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(@NonNull JSONObject response) {
@@ -1158,7 +1225,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 e.printStackTrace();
             }
             showProgressBar(true);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingMobileno_vendorkey +"?usermobile="+deliveryUserMobileNumberEncoded, null,
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingMobilenowithIndex +"?usermobile="+deliveryUserMobileNumberEncoded, null,
                     new com.android.volley.Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(@NonNull JSONObject response) {
@@ -1553,7 +1620,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                     createEmptyRowInListView("empty");
                                     CallAdapter();
                                     discountAmount = "0";
-
+                                    isDiscountApplied = false;
                                     discount_Edit_widget.setText("0");
                                     finaltoPayAmount = "0";
                                     discount_rs_text_widget.setText(discountAmount);
@@ -1608,14 +1675,21 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 });
 
             }
-            if (!isOrderDetailsMethodCalled) {
-
-                PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+            if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
+                GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
             }
-            if (!isOrderTrackingDetailsMethodCalled) {
+            else{
+                if (!isOrderDetailsMethodCalled) {
 
-                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+                    PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+                }
+                if (!isOrderTrackingDetailsMethodCalled) {
+
+                    PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+                }
             }
+
+
             
             if(isProceedtoCheckoutinRedeemdialogClicked){
                 if((!redeemPoints_String.equals(""))&&(!redeemPoints_String.equals("0"))){
@@ -1755,6 +1829,124 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     }
 
+    private void GetDatafromCreditOrderDetailsTable(String paymentMode, long sTime, String currenttime) {
+        totalamountUserHaveAsCredit = 0;
+        String mobileno = "+91" + mobileNo_Edit_widget.getText().toString();
+
+        try {
+            mobileno = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetCreditOrdersUsingMobilenoWithVendorkey +"?usermobileno="+mobileno+"&vendorkey="+vendorKey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+
+                            Log.d(Constants.TAG, " response: " + response);
+                            try {
+                                String jsonString =response.toString();
+                                JSONObject jsonObject = new JSONObject(jsonString);
+                                JSONArray JArray  = jsonObject.getJSONArray("content");
+                                int i1=0;
+                                int arrayLength = JArray.length();
+
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        try {
+                                            if(json.has("totalamountincredit")) {
+                                                totalamountUserHaveAsCredit = Double.parseDouble(json.getString("totalamountincredit"));
+                                            }
+                                            else{
+                                                totalamountUserHaveAsCredit =0;
+                                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                                            }
+                                        }
+                                        catch(Exception e){
+                                            e.printStackTrace();
+                                            totalamountUserHaveAsCredit =0;
+                                        }
+
+                                        if (!isOrderDetailsMethodCalled) {
+
+                                            PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+                                        }
+                                        if (!isOrderTrackingDetailsMethodCalled) {
+
+                                            PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+                                        }
+
+                                    } catch (Exception e) {
+                                        Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                        totalamountUserHaveAsCredit =0;
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                totalamountUserHaveAsCredit =0;
+                                e.printStackTrace();
+                            }
+
+
+                        } catch (Exception e) {
+                            showProgressBar(false);
+                            Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                            totalamountUserHaveAsCredit =0;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+
+                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Mobile");
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
+
 
     private boolean checkforBarcodeInCart(String itemUniquecode) {
         String search = itemUniquecode;
@@ -1764,379 +1956,1329 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         }
         return false;
     }
+    private void printReciptUsingBluetoothPrinter(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype) {
+
+
+        if (BluetoothPrintDriver.IsNoConnection()) {
+            //  Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+
+            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
+                    R.string.OK_Text, R.string.Empty_Text,
+                    new TMCAlertDialogClass.AlertListener() {
+                        @Override
+                        public void onYes() {
+                            //ConnectPrinter();
+                            turnoffProgressBarAndResetArray();
+                            return;
+
+                        }
+
+                        @Override
+                        public void onNo() {
+
+                        }
+                    });
+        }
+
+
+        if(!BluetoothPrintDriver.IsNoConnection()){
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if (!mBluetoothAdapter.isEnabled()) {
+                Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
+
+                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
+                        R.string.OK_Text, R.string.Empty_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                               // ConnectPrinter();
+                                turnoffProgressBarAndResetArray();
+                                return;
+                            }
+
+                            @Override
+                            public void onNo() {
+
+                            }
+                        });
+            }
+        }
+
+
+        showProgressBar(true);
+
+        try {
+            new Thread(new Runnable() {
+                public void run() {
+
+
+                    double oldSavedAmount = 0;
+                    String CouponDiscount = "0";
+
+
+                    String Title = "The Meat Chop";
+
+                    String GSTIN = "GSTIN :33AAJCC0055D1Z9";
+                    String CurrentTime = getDate_and_time();
+
+
+                    BluetoothPrintDriver.Begin();
+
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.printString(Title);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.printString(StoreAddressLine1);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.printString(StoreAddressLine2);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString(StoreAddressLine3);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.printString(StoreLanLine);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.printString(CurrentTime);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 49);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 130);
+                    BluetoothPrintDriver.printString(GSTIN);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("Order Placed time : " + orderplacedTime);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("Order Id : " + orderid);
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetLineSpacing((byte) 55);
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.printString("----------------------------------------------");
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetLineSpacing((byte) 120);
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.printString("ItemName ");
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetLineSpacing((byte) 55);
+                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.printString("RATE                                  SUBTOTAL");
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    BluetoothPrintDriver.Begin();
+                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                    BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                    BluetoothPrintDriver.printString("----------------------------------------------");
+                    BluetoothPrintDriver.BT_Write("\r");
+                    BluetoothPrintDriver.LF();
+
+
+                    try {
+
+
+                        for (int i = 0; i < cart_item_list.size(); i++) {
+                            double savedAmount;
+                            String itemUniqueCode = cart_item_list.get(i);
+                            Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
+
+                            String fullitemName = String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+                       /* int indexofbraces = itemName.indexOf("(");
+                        if (indexofbraces >= 0) {
+                            itemName = itemName.substring(0, indexofbraces);
+
+                        }
+                        if (itemName.length() > 21) {
+                            itemName = itemName.substring(0, 21);
+                            itemName = itemName + "...";
+                        }
+
+                        */
+                            String itemName = "";
+                            String itemNameAfterBraces = "";
+
+                            String tmcSubCtgyKey = String.valueOf(Objects.requireNonNull(modal_newOrderItems).getTmcsubctgykey());
+                            try {
+                                if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                                    int indexofbraces = fullitemName.indexOf("(");
+                                    int lastindexofbraces = fullitemName.indexOf(")");
+                                    int lengthofItemname = fullitemName.length();
+                                    lastindexofbraces = lastindexofbraces + 1;
+
+                                    if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                        itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                        itemName = fullitemName.substring(0, indexofbraces);
+                                        itemName = itemName + itemNameAfterBraces;
+                                        fullitemName = fullitemName.substring(0, indexofbraces);
+                                        fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                                    }
+
+                                    if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                        // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                        itemName = fullitemName.substring(0, indexofbraces);
+
+                                        fullitemName = fullitemName.substring(0, indexofbraces);
+                                        fullitemName = fullitemName;
+
+
+                                    }
+
+                                    if (fullitemName.length() > 21) {
+                                        itemName = fullitemName.substring(0, 21);
+                                        itemName = itemName + "...";
+
+                                        fullitemName = fullitemName.substring(0, 21);
+                                        fullitemName = fullitemName + "...";
+                                    }
+                                    if (fullitemName.length() < 21) {
+                                        itemName = fullitemName;
+
+                                        fullitemName = fullitemName;
+
+                                    }
+                                } else {
+                                    int indexofbraces = fullitemName.indexOf("(");
+                                    if (indexofbraces >= 0) {
+                                        itemName = fullitemName.substring(0, indexofbraces);
+
+                                    }
+                                    if (fullitemName.length() > 21) {
+                                        itemName = fullitemName.substring(0, 21);
+                                        itemName = itemName + "...";
+                                    }
+                                    if (fullitemName.length() < 21) {
+                                        itemName = fullitemName;
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                itemName = fullitemName;
+
+                                e.printStackTrace();
+                            }
+
+
+                            savedAmount = Double.parseDouble(modal_newOrderItems.getSavedAmount());
+                            oldSavedAmount = savedAmount + oldSavedAmount;
+                            String Gst = "Rs."+modal_newOrderItems.getGstAmount();
+                            String subtotal ="Rs."+ modal_newOrderItems.getSubTotal_perItem();
+                            String quantity = modal_newOrderItems.getQuantity();
+                            String itemrate = "Rs."+modal_newOrderItems.getItemFinalPrice();
+                            String weight = modal_newOrderItems.getItemFinalWeight();
+                            String itemDespName_Weight_quantity = "";
+
+                            //´ÖÌå
+                            if(!weight.equals(" ")&&weight.length()>0) {
+                                itemDespName_Weight_quantity = String.valueOf(fullitemName + "( " + weight + " )" + " * " + quantity);
+                            }
+                            else {
+
+                                itemDespName_Weight_quantity = String.valueOf(fullitemName + " * " + quantity);
+                            }
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+
+                            if (itemrate.length() == 4) {
+                                //14spaces
+                                itemrate = itemrate + "                ";
+                            }
+                            if (itemrate.length() == 5) {
+                                //13spaces
+                                itemrate = itemrate + "               ";
+                            }
+                            if (itemrate.length() == 6) {
+                                //12spaces
+                                itemrate = itemrate + "              ";
+                            }
+                            if (itemrate.length() == 7) {
+                                //11spaces
+                                itemrate = itemrate + "             ";
+                            }
+                            if (itemrate.length() == 8) {
+                                //10spaces
+                                itemrate = itemrate + "            ";
+                            }
+                            if (itemrate.length() == 9) {
+                                //9spaces
+                                itemrate = itemrate + "           ";
+                            }
+                            if (itemrate.length() == 10) {
+                                //8spaces
+                                itemrate = itemrate + "          ";
+                            }
+                            if (itemrate.length() == 11) {
+                                //7spaces
+                                itemrate = itemrate + "         ";
+                            }
+                            if (itemrate.length() == 12) {
+                                //6spaces
+                                itemrate = itemrate + "        ";
+                            }
+                            if (itemrate.length() == 13) {
+                                //5spaces
+                                itemrate = itemrate + "       ";
+                            }
+                            if (itemrate.length() == 14) {
+                                //4spaces
+                                itemrate = itemrate + "      ";
+                            }
+                            if (itemrate.length() == 15) {
+                                //3spaces
+                                itemrate = itemrate + "     ";
+                            }
+                            if (itemrate.length() == 16) {
+                                //2spaces
+                                itemrate = itemrate + "    ";
+                            }
+                            if (itemrate.length() == 17) {
+                                //1spaces
+                                itemrate = itemrate + "   ";
+                            }
+                            if (itemrate.length() == 18) {
+                                //1spaces
+                                itemrate = itemrate + "  ";
+                            }
+
+
+                            if (Gst.length() == 7) {
+                                //1spaces
+                                Gst = Gst + "  ";
+                            }
+                            if (Gst.length() == 8) {
+                                //0space
+                                Gst = Gst + " ";
+                            }
+                            if (Gst.length() == 9) {
+                                //no space
+                                Gst = Gst;
+                            }
+                            if (subtotal.length() == 4) {
+                                //5spaces
+                                subtotal = "        " + subtotal;
+                            }
+                            if (subtotal.length() == 5) {
+                                //6spaces
+                                subtotal = "        " + subtotal;
+                            }
+                            if (subtotal.length() == 6) {
+                                //8spaces
+                                subtotal = "          " + subtotal;
+                            }
+                            if (subtotal.length() == 7) {
+                                //7spaces
+                                subtotal = "         " + subtotal;
+                            }
+                            if (subtotal.length() == 8) {
+                                //6spaces
+                                subtotal = "        " + subtotal;
+                            }
+                            if (subtotal.length() == 9) {
+                                //5spaces
+                                subtotal = "       " + subtotal;
+                            }
+                            if (subtotal.length() == 10) {
+                                //4spaces
+                                subtotal = "      " + subtotal;
+                            }
+                            if (subtotal.length() == 11) {
+                                //3spaces
+                                subtotal = "     " + subtotal;
+                            }
+                            if (subtotal.length() == 12) {
+                                //2spaces
+                                subtotal = "    " + subtotal;
+                            }
+                            if (subtotal.length() == 13) {
+                                //1spaces
+                                subtotal = "   " + subtotal;
+                            }
+                            if (subtotal.length() == 14) {
+                                //no space
+                                subtotal = "  " + subtotal;
+                            }
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(itemrate+ Gst + subtotal);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+
+                        }
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        String totalRate = "Rs." +itemTotalwithoutGst;
+                        String totalGst = "Rs." + taxAmount;
+                        String totalSubtotal = "Rs." + finaltoPayAmount;
+                        if (totalRate.length() == 7) {
+                            //10spaces
+                            totalRate = totalRate + "             ";
+                        }
+                        if (totalRate.length() == 8) {
+                            //9spaces
+                            totalRate = totalRate + "            ";
+                        }
+                        if (totalRate.length() == 9) {
+                            //8spaces
+                            totalRate = totalRate + "           ";
+                        }
+                        if (totalRate.length() == 10) {
+                            //7spaces
+                            totalRate = totalRate + "          ";
+                        }
+                        if (totalRate.length() == 11) {
+                            //6spaces
+                            totalRate = totalRate + "          ";
+                        }
+                        if (totalRate.length() == 12) {
+                            //5spaces
+                            totalRate = totalRate + "        ";
+                        }
+                        if (totalRate.length() == 13) {
+                            //4spaces
+                            totalRate = totalRate + "       ";
+                        }
+                        if (totalRate.length() == 14) {
+                            //4spaces
+                            totalRate = totalRate + "      ";
+                        }
+
+                        if (totalGst.length() == 7) {
+                            //1spaces
+                            totalGst = totalGst + "   ";
+                        }
+                        if (totalGst.length() == 8) {
+                            //0space
+                            totalGst = totalGst + "  ";
+                        }
+                        if (totalGst.length() == 9) {
+                            //no space
+                            totalGst = totalGst+" ";
+                        }
+
+                        if (totalSubtotal.length() == 6) {
+                            //8spaces
+                            totalSubtotal = "          " + totalSubtotal;
+                        }
+                        if (totalSubtotal.length() == 7) {
+                            //7spaces
+                            totalSubtotal = "         " + totalSubtotal;
+                        }
+                        if (totalSubtotal.length() == 8) {
+                            //6spaces
+                            totalSubtotal = "        " + totalSubtotal;
+                        }
+                        if (totalSubtotal.length() == 9) {
+                            //5spaces
+                            totalSubtotal = "       " + totalSubtotal;
+                        }
+                        if (totalSubtotal.length() == 10) {
+                            //4spaces
+                            totalSubtotal = "      " + totalSubtotal;
+                        }
+
+                        if (totalSubtotal.length() == 11) {
+                            //4spaces
+                            totalSubtotal = "     " + totalSubtotal;
+                        }
+
+                        if (totalSubtotal.length() == 12) {
+                            //4spaces
+                            totalSubtotal = "    " + totalSubtotal;
+                        }
+                        if (totalSubtotal.length() == 13) {
+                            //4spaces
+                            totalSubtotal = "   " + totalSubtotal;
+                        }
+                        if (totalSubtotal.length() == 14) {
+                            //4spaces
+                            totalSubtotal = "  " + totalSubtotal;
+                        }
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(totalRate+ totalGst + totalSubtotal);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                        CouponDiscount = "0";
+
+                        CouponDiscount = discountAmount;
+
+                        if (!CouponDiscount.equals("0")) {
+                            CouponDiscount = "Rs. " + CouponDiscount + ".00";
+
+                            if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
+
+                                if (CouponDiscount.length() == 4) {
+                                    //20spaces
+                                    //NEW TOTAL =4
+                                    CouponDiscount = "Discount Amount                           " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 5) {
+                                    //21spaces
+                                    //NEW TOTAL =5
+                                    CouponDiscount = "Discount Amount                         " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 6) {
+                                    //20spaces
+                                    //NEW TOTAL =6
+                                    CouponDiscount = "Discount Amount                        " + CouponDiscount;
+                                }
+
+                                if (CouponDiscount.length() == 7) {
+                                    //19spaces
+                                    //NEW TOTAL =7
+                                    CouponDiscount = "Discount Amount                       " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 8) {
+                                    //18spaces
+                                    //NEW TOTAL =8
+                                    CouponDiscount = " Discount Amount                      " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 9) {
+                                    //17spaces
+                                    //NEW TOTAL =9
+                                    CouponDiscount = "Discount Amount                     " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 10) {
+                                    //16spaces
+                                    //NEW TOTAL =9
+                                    CouponDiscount = "Discount Amount                    " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 11) {
+                                    //15spaces
+                                    //NEW TOTAL =9
+                                    CouponDiscount = "Discount Amount                   " + CouponDiscount;
+                                }
+                                if (CouponDiscount.length() == 12) {
+                                    //14spaces
+                                    //NEW TOTAL =9
+                                    CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                                }
+
+                                if (CouponDiscount.length() == 13) {
+                                    //13spaces
+                                    //NEW TOTAL =9
+                                    CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                                }
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                                BluetoothPrintDriver.printString(CouponDiscount);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                                BluetoothPrintDriver.printString("----------------------------------------------");
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+
+                            }
+
+
+                        }
+                        String NetTotal = "Rs."+finaltoPayAmountinmethod;
+
+                        if (NetTotal.length() == 4) {
+                            //27spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                               " + NetTotal;
+                        }
+                        if (NetTotal.length() == 5) {
+                            //26spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                               " + NetTotal;
+                        }
+                        if (NetTotal.length() == 6) {
+                            //25spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                              " + NetTotal;
+                        }
+
+                        if (NetTotal.length() == 7) {
+                            //24spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                              " + NetTotal;
+                        }
+                        if (NetTotal.length() == 8) {
+                            //23spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                            " + NetTotal;
+                        }
+                        if (NetTotal.length() == 9) {
+                            //22spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                           " + NetTotal;
+                        }
+                        if (NetTotal.length() == 10) {
+                            //21spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                          " + NetTotal;
+                        }
+                        if (NetTotal.length() == 11) {
+                            //20spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                         " + NetTotal;
+                        }
+                        if (NetTotal.length() == 12) {
+                            //19spaces+4spaces
+                            //NEW TOTAL =9
+                            NetTotal = "NET TOTAL                       " + NetTotal;
+                        }
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString(NetTotal);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString("Earned Rewards : " +String.valueOf((int)(totalredeempointsusergetfromorder))+" Points");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                        if(payment_mode.toString().toUpperCase().equals(Constants.CREDIT)){
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString("Old Amount need to be Paid : " +String.valueOf(Math.round(totalamountUserHaveAsCredit)) + " \n");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString("total Amount need to be Paid = (Old amount + Current Bill Amount ) \n");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            String payableamountPrint = "";
+                            try{
+                                payableamountPrint = finaltoPayAmountinmethod;
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+
+                            }
+
+
+                            double payableamountdoublePrint =0;
+                            try{
+                                payableamountdoublePrint = Math.round(Double.parseDouble(String.valueOf(payableamountPrint)));
+                            }
+                            catch (Exception e){
+                                payableamountdoublePrint = 0;
+                                e.printStackTrace();
+
+                            }
+
+
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString("total Amount need to be Paid : " +  String.valueOf(Math.round(totalamountUserHaveAsCredit+payableamountdoublePrint))+ " \n");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                            BluetoothPrintDriver.printString("----------------------------------------------");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                        }
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString("ordertype : "+ordertype);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                        BluetoothPrintDriver.printString("----------------------------------------------");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString("PaymentMode : " +payment_mode);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 0);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString("User Mobile : " +userMobile);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.BT_Write("\n");
+
+                        BluetoothPrintDriver.LF();
+
+
+
+
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.printString("Thank you for choosing us !!!");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.FeedAndCutPaper((byte)66,(byte)50);
+
+
+                        if (!isPrintedSecondTime) {
+
+                            turnoffProgressBar(orderplacedTime,userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode,discountAmount,ordertype);
+                        }
+                        else {
+                            turnoffProgressBarAndResetArray();
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }).start();
+
+        }
+        catch (Exception e){
+            showProgressBar(false);
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+
+    private void turnoffProgressBar(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+
+                showProgressBar(false);
+
+                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
+                        R.string.Yes_Text, R.string.No_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                                isPrintedSecondTime = true;
+
+                                printReciptUsingBluetoothPrinter(orderplacedTime, userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount, ordertype);
+
+                            }
+
+                            @Override
+                            public void onNo() {
+
+                                turnoffProgressBarAndResetArray();
+
+                            }
+                        });
+
+
+
+                return;
+
+            }
+        });
+    }
+
+    private void turnoffProgressBarAndResetArray() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                StockBalanceChangedForThisItemList.clear();
+                isStockOutGoingAlreadyCalledForthisItem =false;
+
+
+                cart_Item_List.clear();
+
+                cartItem_hashmap.clear();
+                ispaymentMode_Clicked = false;
+                isOrderDetailsMethodCalled = false;
+
+                isPaymentDetailsMethodCalled = false;
+                isOrderTrackingDetailsMethodCalled = false;
+                new_to_pay_Amount = 0;
+                old_taxes_and_charges_Amount = 0;
+                old_total_Amount = 0;
+                createEmptyRowInListView("empty");
+                CallAdapter();
+                discountAmount = "0";
+                isDiscountApplied = false;
+                discount_Edit_widget.setText("0");
+                finaltoPayAmount = "0";
+                discount_rs_text_widget.setText(discountAmount);
+                OrderTypefromSpinner = "POS Order";
+                orderTypeSpinner.setSelection(0);
+                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                mobileNo_Edit_widget.setText("");
+                isPrintedSecondTime = false;
+                showProgressBar(false);
+                useStoreNumberCheckBox.setChecked(false);
+                ispointsApplied_redeemClicked=false;
+                isProceedtoCheckoutinRedeemdialogClicked =false;
+                isRedeemDialogboxOpened=false;
+                isUpdateRedeemPointsMethodCalled=false;
+                isUpdateCouponTransactionMethodCalled=false;
+                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                totalAmounttopay=0;
+                finalamounttoPay=0;
+                pointsalreadyredeemDouble=0;
+                totalpointsuserhave_afterapplypoints=0;
+                pointsenteredToredeem_double=0;
+                pointsenteredToredeem="";
+
+                finaltoPayAmountwithRedeemPoints="";
+                redeemPoints_String="";
+                redeemKey="";
+                mobileno_redeemKey="";
+                discountAmountalreadyusedtoday="";
+                totalpointsredeemedalreadybyuser="";
+                totalordervalue_tillnow="";
+                totalredeempointsuserhave="";
+
+                redeemed_points_text_widget.setText("");
+                redeemPointsLayout.setVisibility(View.GONE);
+                //discountlayout visible
+                discountAmountLayout.setVisibility(View.GONE);
+
+                return;
+
+            }
+        });
+
+
+
+    }
+
+
+
+
 
     private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt, String ordertype) {
-        try {
-            Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
-            double oldSavedAmount = 0;
-            String CouponDiscount = "0";
-            String Gstt="",subtotall="",quantity="",price="",weight="";
-            double gst_double=0,subtotal_double=0,price_double=0;
-            for (int i = 0; i < cart_item_list.size(); i++) {
-                double savedAmount;
-                String itemUniqueCode = cart_item_list.get(i);
-                Modal_NewOrderItems modal_newOrderItems = cart_Item_hashmap.get(itemUniqueCode);
-                String itemName = String.valueOf(modal_newOrderItems.getItemname());
-                int indexofbraces = itemName.indexOf("(");
-                if (indexofbraces >= 0) {
-                    itemName = itemName.substring(0, indexofbraces);
 
-                }
-                if (itemName.length() > 21) {
-                    itemName = itemName.substring(0, 21);
-                    itemName = itemName + "...";
-                }
-                try{
-                    price = String.valueOf( modal_newOrderItems.getItemFinalPrice());
-                    if(price.equals("null")){
-                        price  = "  ";
+
+                try {
+                    Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
+                    double oldSavedAmount = 0;
+                    String CouponDiscount = "0";
+                    String Gstt="",subtotall="",quantity="",price="",weight="";
+                    double gst_double=0,subtotal_double=0,price_double=0;
+                    for (int i = 0; i < cart_item_list.size(); i++) {
+                        double savedAmount;
+                        String itemUniqueCode = cart_item_list.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cart_Item_hashmap.get(itemUniqueCode);
+                        String itemName = String.valueOf(modal_newOrderItems.getItemname());
+                        int indexofbraces = itemName.indexOf("(");
+                        if (indexofbraces >= 0) {
+                            itemName = itemName.substring(0, indexofbraces);
+
+                        }
+                        if (itemName.length() > 21) {
+                            itemName = itemName.substring(0, 21);
+                            itemName = itemName + "...";
+                        }
+                        try{
+                            price = String.valueOf( modal_newOrderItems.getItemFinalPrice());
+                            if(price.equals("null")){
+                                price  = "  ";
+                            }
+                        }
+                        catch(Exception e){
+                            price  = "0";
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            weight =  modal_newOrderItems.getItemFinalWeight().toString();
+                        }
+                        catch(Exception e){
+                            weight = "0";
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            Gstt = modal_newOrderItems.getGstAmount();
+
+                        }
+                        catch(Exception e){
+                            Gstt  = "0";
+                            e.printStackTrace();
+                        }
+
+
+
+
+
+                        try{
+                            savedAmount = Double.parseDouble(modal_newOrderItems.getSavedAmount());
+                        }
+                        catch(Exception e){
+                            savedAmount = 0;
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            oldSavedAmount = savedAmount + oldSavedAmount;
+                        }
+                        catch(Exception e){
+                            weight = "0";
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            subtotall = modal_newOrderItems.getSubTotal_perItem();
+                        }
+                        catch(Exception e){
+                            subtotall = "0";
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            quantity = modal_newOrderItems.getQuantity();
+                        }
+                        catch(Exception e){
+                            quantity = "0";
+                            e.printStackTrace();
+                        }
+
+
+
+                        Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gstt, subtotall, "cutname");
+
                     }
-                }
-                catch(Exception e){
-                    price  = "0";
-                    e.printStackTrace();
-                }
 
-                try{
-                    weight =  modal_newOrderItems.getItemFinalWeight().toString();
-                }
-                catch(Exception e){
-                    weight = "0";
-                    e.printStackTrace();
-                }
+                    Printer_POJO_Class Printer_POJO_ClassArraytotal = new Printer_POJO_Class(itemTotalwithoutGst, discountAmountt, totaltaxAmount, payableAmount, oldSavedAmount);
+                    PrinterFunctions.PortDiscovery(portName, portSettings);
+                    PrinterFunctions.OpenCashDrawer(portName, portSettings, 0, 4);
 
-                try{
-                    Gstt = modal_newOrderItems.getGstAmount();
+                    // PrinterFunctions.OpenPort( portName, portSettings);
+                    //    PrinterFunctions.CheckStatus( portName, portSettings,2);
+                    PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
 
-                }
-                catch(Exception e){
-                    Gstt  = "0";
-                    e.printStackTrace();
-                }
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
 
 
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
 
 
-
-                try{
-                    savedAmount = Double.parseDouble(modal_newOrderItems.getSavedAmount());
-                }
-                catch(Exception e){
-                    savedAmount = 0;
-                    e.printStackTrace();
-                }
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
 
 
-                try{
-                    oldSavedAmount = savedAmount + oldSavedAmount;
-                }
-                catch(Exception e){
-                    weight = "0";
-                    e.printStackTrace();
-                }
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
 
 
-
-                try{
-                    subtotall = modal_newOrderItems.getSubTotal_perItem();
-                }
-                catch(Exception e){
-                    subtotall = "0";
-                    e.printStackTrace();
-                }
-
-                try{
-                    quantity = modal_newOrderItems.getQuantity();
-                }
-                catch(Exception e){
-                    quantity = "0";
-                    e.printStackTrace();
-                }
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, "GSTIN :33AAJCC0055D1Z9" + "\n");
 
 
-
-                Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gstt, subtotall, "cutname");
-
-            }
-
-            Printer_POJO_Class Printer_POJO_ClassArraytotal = new Printer_POJO_Class(itemTotalwithoutGst, discountAmountt, totaltaxAmount, payableAmount, oldSavedAmount);
-            PrinterFunctions.PortDiscovery(portName, portSettings);
-            PrinterFunctions.OpenCashDrawer(portName, portSettings, 0, 4);
-
-            // PrinterFunctions.OpenPort( portName, portSettings);
-            //    PrinterFunctions.CheckStatus( portName, portSettings,2);
-            PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, Currenttime + "\n");
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine2 + "\n");
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "# " + orderid + "\n");
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine3 + "\n");
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "ITEM NAME * QTY" + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "RATE                GST         SUBTOTAL" + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                    for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        String itemrate, Gst, subtotal;
+                        itemrate = "Rs." + Printer_POJO_ClassArray[i].getItemRate();
+                        Gst = "Rs." + Printer_POJO_ClassArray[i].getGST();
+                        subtotal = "Rs." + Printer_POJO_ClassArray[i].getSubTotal();
+                        if (itemrate.length() == 4) {
+                            //14spaces
+                            itemrate = itemrate + "              ";
+                        }
+                        if (itemrate.length() == 5) {
+                            //13spaces
+                            itemrate = itemrate + "             ";
+                        }
+                        if (itemrate.length() == 6) {
+                            //12spaces
+                            itemrate = itemrate + "            ";
+                        }
+                        if (itemrate.length() == 7) {
+                            //11spaces
+                            itemrate = itemrate + "           ";
+                        }
+                        if (itemrate.length() == 8) {
+                            //10spaces
+                            itemrate = itemrate + "          ";
+                        }
+                        if (itemrate.length() == 9) {
+                            //9spaces
+                            itemrate = itemrate + "         ";
+                        }
+                        if (itemrate.length() == 10) {
+                            //8spaces
+                            itemrate = itemrate + "        ";
+                        }
+                        if (itemrate.length() == 11) {
+                            //7spaces
+                            itemrate = itemrate + "       ";
+                        }
+                        if (itemrate.length() == 12) {
+                            //6spaces
+                            itemrate = itemrate + "      ";
+                        }
+                        if (itemrate.length() == 13) {
+                            //5spaces
+                            itemrate = itemrate + "     ";
+                        }
+                        if (itemrate.length() == 14) {
+                            //4spaces
+                            itemrate = itemrate + "    ";
+                        }
+                        if (itemrate.length() == 15) {
+                            //3spaces
+                            itemrate = itemrate + "   ";
+                        }
+                        if (itemrate.length() == 16) {
+                            //2spaces
+                            itemrate = itemrate + "  ";
+                        }
+                        if (itemrate.length() == 17) {
+                            //1spaces
+                            itemrate = itemrate + " ";
+                        }
+                        if (itemrate.length() == 18) {
+                            //1spaces
+                            itemrate = itemrate + "";
+                        }
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreLanLine + "\n");
+                        if (Gst.length() == 7) {
+                            //1spaces
+                            Gst = Gst + " ";
+                        }
+                        if (Gst.length() == 8) {
+                            //0space
+                            Gst = Gst + "";
+                        }
+                        if (Gst.length() == 9) {
+                            //no space
+                            Gst = Gst;
+                        }
+                        if (subtotal.length() == 4) {
+                            //5spaces
+                            subtotal = "      " + subtotal;
+                        }
+                        if (subtotal.length() == 5) {
+                            //6spaces
+                            subtotal = "      " + subtotal;
+                        }
+                        if (subtotal.length() == 6) {
+                            //8spaces
+                            subtotal = "        " + subtotal;
+                        }
+                        if (subtotal.length() == 7) {
+                            //7spaces
+                            subtotal = "       " + subtotal;
+                        }
+                        if (subtotal.length() == 8) {
+                            //6spaces
+                            subtotal = "      " + subtotal;
+                        }
+                        if (subtotal.length() == 9) {
+                            //5spaces
+                            subtotal = "     " + subtotal;
+                        }
+                        if (subtotal.length() == 10) {
+                            //4spaces
+                            subtotal = "    " + subtotal;
+                        }
+                        if (subtotal.length() == 11) {
+                            //3spaces
+                            subtotal = "   " + subtotal;
+                        }
+                        if (subtotal.length() == 12) {
+                            //2spaces
+                            subtotal = "  " + subtotal;
+                        }
+                        if (subtotal.length() == 13) {
+                            //1spaces
+                            subtotal = " " + subtotal;
+                        }
+                        if (subtotal.length() == 14) {
+                            //no space
+                            subtotal = "" + subtotal;
+                        }
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, "GSTIN :33AAJCC0055D1Z9" + "\n");
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, itemrate + Gst + subtotal + "\n\n");
+                    }
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                    String totalRate = "Rs." + Printer_POJO_ClassArraytotal.getTotalRate();
+                    String totalGst = "Rs." + Printer_POJO_ClassArraytotal.getTotalGST();
+                    String totalSubtotal = "Rs." + finaltoPayAmount;
+                    if (totalRate.length() == 7) {
+                        //10spaces
+                        totalRate = totalRate + "          ";
+                    }
+                    if (totalRate.length() == 8) {
+                        //9spaces
+                        totalRate = totalRate + "         ";
+                    }
+                    if (totalRate.length() == 9) {
+                        //8spaces
+                        totalRate = totalRate + "        ";
+                    }
+                    if (totalRate.length() == 10) {
+                        //7spaces
+                        totalRate = totalRate + "       ";
+                    }
+                    if (totalRate.length() == 11) {
+                        //6spaces
+                        totalRate = totalRate + "      ";
+                    }
+                    if (totalRate.length() == 12) {
+                        //5spaces
+                        totalRate = totalRate + "     ";
+                    }
+                    if (totalRate.length() == 13) {
+                        //4spaces
+                        totalRate = totalRate + "    ";
+                    }
+
+                    if (totalGst.length() == 7) {
+                        //1spaces
+                        totalGst = totalGst + " ";
+                    }
+                    if (totalGst.length() == 8) {
+                        //0space
+                        totalGst = totalGst + "";
+                    }
+                    if (totalGst.length() == 9) {
+                        //no space
+                        totalGst = totalGst;
+                    }
+
+                    if (totalSubtotal.length() == 6) {
+                        //8spaces
+                        totalSubtotal = "        " + totalSubtotal;
+                    }
+                    if (totalSubtotal.length() == 7) {
+                        //7spaces
+                        totalSubtotal = "       " + totalSubtotal;
+                    }
+                    if (totalSubtotal.length() == 8) {
+                        //6spaces
+                        totalSubtotal = "      " + totalSubtotal;
+                    }
+                    if (totalSubtotal.length() == 9) {
+                        //5spaces
+                        totalSubtotal = "     " + totalSubtotal;
+                    }
+                    if (totalSubtotal.length() == 10) {
+                        //4spaces
+                        totalSubtotal = "    " + totalSubtotal;
+                    }
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, Currenttime + "\n");
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, totalRate + totalGst + totalSubtotal + "\n");
 
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "# " + orderid + "\n");
-
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "ITEM NAME * QTY" + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "RATE                GST         SUBTOTAL" + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-            for (int i = 0; i < Printer_POJO_ClassArray.length; i++) {
-
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                String itemrate, Gst, subtotal;
-                itemrate = "Rs." + Printer_POJO_ClassArray[i].getItemRate();
-                Gst = "Rs." + Printer_POJO_ClassArray[i].getGST();
-                subtotal = "Rs." + Printer_POJO_ClassArray[i].getSubTotal();
-                if (itemrate.length() == 4) {
-                    //14spaces
-                    itemrate = itemrate + "              ";
-                }
-                if (itemrate.length() == 5) {
-                    //13spaces
-                    itemrate = itemrate + "             ";
-                }
-                if (itemrate.length() == 6) {
-                    //12spaces
-                    itemrate = itemrate + "            ";
-                }
-                if (itemrate.length() == 7) {
-                    //11spaces
-                    itemrate = itemrate + "           ";
-                }
-                if (itemrate.length() == 8) {
-                    //10spaces
-                    itemrate = itemrate + "          ";
-                }
-                if (itemrate.length() == 9) {
-                    //9spaces
-                    itemrate = itemrate + "         ";
-                }
-                if (itemrate.length() == 10) {
-                    //8spaces
-                    itemrate = itemrate + "        ";
-                }
-                if (itemrate.length() == 11) {
-                    //7spaces
-                    itemrate = itemrate + "       ";
-                }
-                if (itemrate.length() == 12) {
-                    //6spaces
-                    itemrate = itemrate + "      ";
-                }
-                if (itemrate.length() == 13) {
-                    //5spaces
-                    itemrate = itemrate + "     ";
-                }
-                if (itemrate.length() == 14) {
-                    //4spaces
-                    itemrate = itemrate + "    ";
-                }
-                if (itemrate.length() == 15) {
-                    //3spaces
-                    itemrate = itemrate + "   ";
-                }
-                if (itemrate.length() == 16) {
-                    //2spaces
-                    itemrate = itemrate + "  ";
-                }
-                if (itemrate.length() == 17) {
-                    //1spaces
-                    itemrate = itemrate + " ";
-                }
-                if (itemrate.length() == 18) {
-                    //1spaces
-                    itemrate = itemrate + "";
-                }
-
-
-                if (Gst.length() == 7) {
-                    //1spaces
-                    Gst = Gst + " ";
-                }
-                if (Gst.length() == 8) {
-                    //0space
-                    Gst = Gst + "";
-                }
-                if (Gst.length() == 9) {
-                    //no space
-                    Gst = Gst;
-                }
-                if (subtotal.length() == 4) {
-                    //5spaces
-                    subtotal = "      " + subtotal;
-                }
-                if (subtotal.length() == 5) {
-                    //6spaces
-                    subtotal = "      " + subtotal;
-                }
-                if (subtotal.length() == 6) {
-                    //8spaces
-                    subtotal = "        " + subtotal;
-                }
-                if (subtotal.length() == 7) {
-                    //7spaces
-                    subtotal = "       " + subtotal;
-                }
-                if (subtotal.length() == 8) {
-                    //6spaces
-                    subtotal = "      " + subtotal;
-                }
-                if (subtotal.length() == 9) {
-                    //5spaces
-                    subtotal = "     " + subtotal;
-                }
-                if (subtotal.length() == 10) {
-                    //4spaces
-                    subtotal = "    " + subtotal;
-                }
-                if (subtotal.length() == 11) {
-                    //3spaces
-                    subtotal = "   " + subtotal;
-                }
-                if (subtotal.length() == 12) {
-                    //2spaces
-                    subtotal = "  " + subtotal;
-                }
-                if (subtotal.length() == 13) {
-                    //1spaces
-                    subtotal = " " + subtotal;
-                }
-                if (subtotal.length() == 14) {
-                    //no space
-                    subtotal = "" + subtotal;
-                }
-
-
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, Printer_POJO_ClassArray[i].getItemName() + "  *  " + Printer_POJO_ClassArray[i].getItemWeight() + "(" + Printer_POJO_ClassArray[i].getQuantity() + ")" + "\n");
-
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 80);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, itemrate + Gst + subtotal + "\n\n");
-            }
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-            String totalRate = "Rs." + Printer_POJO_ClassArraytotal.getTotalRate();
-            String totalGst = "Rs." + Printer_POJO_ClassArraytotal.getTotalGST();
-            String totalSubtotal = "Rs." + finaltoPayAmount;
-            if (totalRate.length() == 7) {
-                //10spaces
-                totalRate = totalRate + "          ";
-            }
-            if (totalRate.length() == 8) {
-                //9spaces
-                totalRate = totalRate + "         ";
-            }
-            if (totalRate.length() == 9) {
-                //8spaces
-                totalRate = totalRate + "        ";
-            }
-            if (totalRate.length() == 10) {
-                //7spaces
-                totalRate = totalRate + "       ";
-            }
-            if (totalRate.length() == 11) {
-                //6spaces
-                totalRate = totalRate + "      ";
-            }
-            if (totalRate.length() == 12) {
-                //5spaces
-                totalRate = totalRate + "     ";
-            }
-            if (totalRate.length() == 13) {
-                //4spaces
-                totalRate = totalRate + "    ";
-            }
-
-            if (totalGst.length() == 7) {
-                //1spaces
-                totalGst = totalGst + " ";
-            }
-            if (totalGst.length() == 8) {
-                //0space
-                totalGst = totalGst + "";
-            }
-            if (totalGst.length() == 9) {
-                //no space
-                totalGst = totalGst;
-            }
-
-            if (totalSubtotal.length() == 6) {
-                //8spaces
-                totalSubtotal = "        " + totalSubtotal;
-            }
-            if (totalSubtotal.length() == 7) {
-                //7spaces
-                totalSubtotal = "       " + totalSubtotal;
-            }
-            if (totalSubtotal.length() == 8) {
-                //6spaces
-                totalSubtotal = "      " + totalSubtotal;
-            }
-            if (totalSubtotal.length() == 9) {
-                //5spaces
-                totalSubtotal = "     " + totalSubtotal;
-            }
-            if (totalSubtotal.length() == 10) {
-                //4spaces
-                totalSubtotal = "    " + totalSubtotal;
-            }
-
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, totalRate + totalGst + totalSubtotal + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
 
@@ -2152,156 +3294,156 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
  */
-            CouponDiscount = "0";
+                    CouponDiscount = "0";
 
-            CouponDiscount = Printer_POJO_ClassArraytotal.getTotaldiscount();
+                    CouponDiscount = Printer_POJO_ClassArraytotal.getTotaldiscount();
 
-            if (!CouponDiscount.equals("0")) {
-                CouponDiscount = "Rs. " + CouponDiscount + ".00";
+                    if (!CouponDiscount.equals("0")) {
+                        CouponDiscount = "Rs. " + CouponDiscount + ".00";
 
-                if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
+                        if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
 
-                    if (CouponDiscount.length() == 4) {
-                        //20spaces
-                        //NEW TOTAL =4
-                        CouponDiscount = "Discount Amount                   " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 5) {
-                        //21spaces
-                        //NEW TOTAL =5
-                        CouponDiscount = "Discount Amount                 " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 6) {
-                        //20spaces
-                        //NEW TOTAL =6
-                        CouponDiscount = "Discount Amount                " + CouponDiscount;
+                            if (CouponDiscount.length() == 4) {
+                                //20spaces
+                                //NEW TOTAL =4
+                                CouponDiscount = "Discount Amount                   " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 5) {
+                                //21spaces
+                                //NEW TOTAL =5
+                                CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 6) {
+                                //20spaces
+                                //NEW TOTAL =6
+                                CouponDiscount = "Discount Amount                " + CouponDiscount;
+                            }
+
+                            if (CouponDiscount.length() == 7) {
+                                //19spaces
+                                //NEW TOTAL =7
+                                CouponDiscount = "Discount Amount               " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 8) {
+                                //18spaces
+                                //NEW TOTAL =8
+                                CouponDiscount = " Discount Amount              " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 9) {
+                                //17spaces
+                                //NEW TOTAL =9
+                                CouponDiscount = " Discount Amount             " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 10) {
+                                //16spaces
+                                //NEW TOTAL =9
+                                CouponDiscount = " Discount Amount            " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 11) {
+                                //15spaces
+                                //NEW TOTAL =9
+                                CouponDiscount = "Discount Amount            " + CouponDiscount;
+                            }
+                            if (CouponDiscount.length() == 12) {
+                                //14spaces
+                                //NEW TOTAL =9
+                                CouponDiscount = "Discount Amount           " + CouponDiscount;
+                            }
+
+                            if (CouponDiscount.length() == 13) {
+                                //13spaces
+                                //NEW TOTAL =9
+                                CouponDiscount = "Discount Amount           " + CouponDiscount;
+
+                            }
+
+
+                            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, CouponDiscount + "\n");
+
+
+                            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                        }
                     }
 
-                    if (CouponDiscount.length() == 7) {
-                        //19spaces
-                        //NEW TOTAL =7
-                        CouponDiscount = "Discount Amount               " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 8) {
-                        //18spaces
-                        //NEW TOTAL =8
-                        CouponDiscount = " Discount Amount              " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 9) {
-                        //17spaces
-                        //NEW TOTAL =9
-                        CouponDiscount = " Discount Amount             " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 10) {
-                        //16spaces
-                        //NEW TOTAL =9
-                        CouponDiscount = " Discount Amount            " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 11) {
-                        //15spaces
-                        //NEW TOTAL =9
-                        CouponDiscount = "Discount Amount            " + CouponDiscount;
-                    }
-                    if (CouponDiscount.length() == 12) {
-                        //14spaces
-                        //NEW TOTAL =9
-                        CouponDiscount = "Discount Amount           " + CouponDiscount;
-                    }
-
-                    if (CouponDiscount.length() == 13) {
-                        //13spaces
-                        //NEW TOTAL =9
-                        CouponDiscount = "Discount Amount           " + CouponDiscount;
-
-                    }
 
 
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, CouponDiscount + "\n");
 
+                    String redeemPoints_String_print="";
+                    if (!redeemPoints_String.equals("0")) {
+                        redeemPoints_String_print = "Rs. " + redeemPoints_String + ".00";
+
+                        if ((!redeemPoints_String_print.equals("Rs.0.0")) && (!redeemPoints_String_print.equals("Rs.0")) && (!redeemPoints_String_print.equals("Rs.0.00")) && (redeemPoints_String_print != (null)) && (!redeemPoints_String_print.equals("")) && (!redeemPoints_String_print.equals("Rs. .00")) && (!redeemPoints_String_print.equals("Rs..00"))) {
+
+                            if (redeemPoints_String_print.length() == 4) {
+                                //20spaces
+                                //NEW TOTAL =4
+                                redeemPoints_String_print = "Points Redeemed                    " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 5) {
+                                //21spaces
+                                //NEW TOTAL =5
+                                redeemPoints_String_print = "Points Redeemed                  " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 6) {
+                                //20spaces
+                                //NEW TOTAL =6
+                                redeemPoints_String_print = "Points Redeemed                 " + redeemPoints_String_print;
+                            }
+
+                            if (redeemPoints_String_print.length() == 7) {
+                                //19spaces
+                                //NEW TOTAL =7
+                                redeemPoints_String_print = "Points Redeemed                " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 8) {
+                                //18spaces
+                                //NEW TOTAL =8
+                                redeemPoints_String_print = "Points Redeemed               " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 9) {
+                                //17spaces
+                                //NEW TOTAL =9
+                                redeemPoints_String_print = "Points Redeemed               " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 10) {
+                                //16spaces
+                                //NEW TOTAL =9
+                                redeemPoints_String_print = "Points Redeemed             " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 11) {
+                                //15spaces
+                                //NEW TOTAL =9
+                                redeemPoints_String_print =" Points Redeemed             " + redeemPoints_String_print;
+                            }
+                            if (redeemPoints_String_print.length() == 12) {
+                                //14spaces
+                                //NEW TOTAL =9
+                                redeemPoints_String_print = "Points Redeemed            " + redeemPoints_String_print;
+                            }
+
+                            if (redeemPoints_String_print.length() == 13) {
+                                //13spaces
+                                //NEW TOTAL =9
+                                redeemPoints_String_print = "Points Redeemed            " + redeemPoints_String_print;
+
+                            }
+
+
+                            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, redeemPoints_String_print + "\n");
+
+
+                            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                        }}
 
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-                }
-            }
-
-
-
-
-            String redeemPoints_String_print="";
-            if (!redeemPoints_String.equals("0")) {
-                redeemPoints_String_print = "Rs. " + redeemPoints_String + ".00";
-
-                if ((!redeemPoints_String_print.equals("Rs.0.0")) && (!redeemPoints_String_print.equals("Rs.0")) && (!redeemPoints_String_print.equals("Rs.0.00")) && (redeemPoints_String_print != (null)) && (!redeemPoints_String_print.equals("")) && (!redeemPoints_String_print.equals("Rs. .00")) && (!redeemPoints_String_print.equals("Rs..00"))) {
-
-                    if (redeemPoints_String_print.length() == 4) {
-                        //20spaces
-                        //NEW TOTAL =4
-                        redeemPoints_String_print = "Points Redeemed                    " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 5) {
-                        //21spaces
-                        //NEW TOTAL =5
-                        redeemPoints_String_print = "Points Redeemed                  " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 6) {
-                        //20spaces
-                        //NEW TOTAL =6
-                        redeemPoints_String_print = "Points Redeemed                 " + redeemPoints_String_print;
-                    }
-
-                    if (redeemPoints_String_print.length() == 7) {
-                        //19spaces
-                        //NEW TOTAL =7
-                        redeemPoints_String_print = "Points Redeemed                " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 8) {
-                        //18spaces
-                        //NEW TOTAL =8
-                        redeemPoints_String_print = "Points Redeemed               " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 9) {
-                        //17spaces
-                        //NEW TOTAL =9
-                        redeemPoints_String_print = "Points Redeemed               " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 10) {
-                        //16spaces
-                        //NEW TOTAL =9
-                        redeemPoints_String_print = "Points Redeemed             " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 11) {
-                        //15spaces
-                        //NEW TOTAL =9
-                        redeemPoints_String_print =" Points Redeemed             " + redeemPoints_String_print;
-                    }
-                    if (redeemPoints_String_print.length() == 12) {
-                        //14spaces
-                        //NEW TOTAL =9
-                        redeemPoints_String_print = "Points Redeemed            " + redeemPoints_String_print;
-                    }
-
-                    if (redeemPoints_String_print.length() == 13) {
-                        //13spaces
-                        //NEW TOTAL =9
-                        redeemPoints_String_print = "Points Redeemed            " + redeemPoints_String_print;
-
-                    }
-
-
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, redeemPoints_String_print + "\n");
-
-
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-                }}
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            String NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
+                    String NetTotal = Printer_POJO_ClassArraytotal.getTotalsubtotal();
           /*  try {
                 if (!NetTotal.contains(".")) {
                     int netTotaLint = Integer.parseInt(NetTotal);
@@ -2326,120 +3468,163 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
            */
 
-            if (NetTotal.length() > 6) {
+                    if (NetTotal.length() > 6) {
 
-                if (NetTotal.length() == 7) {
-                    //24spaces
-                    //NEW TOTAL =9
-                    NetTotal = " NET TOTAL                       Rs. " + NetTotal;
-                }
-                if (NetTotal.length() == 8) {
-                    //23spaces
-                    //NEW TOTAL =9
-                    NetTotal = "  NET TOTAL                       Rs. " + NetTotal;
-                }
-                if (NetTotal.length() == 9) {
-                    //22spaces
-                    //NEW TOTAL =9
-                    NetTotal = "  NET TOTAL                      Rs. " + NetTotal;
-                }
-                if (NetTotal.length() == 10) {
-                    //21spaces
-                    //NEW TOTAL =9
-                    NetTotal = "  NET TOTAL                    Rs. " + NetTotal;
-                }
-                if (NetTotal.length() == 11) {
-                    //20spaces
-                    //NEW TOTAL =9
-                    NetTotal = "  NET TOTAL                   Rs. " + NetTotal;
-                }
-                if (NetTotal.length() == 12) {
-                    //19spaces
-                    //NEW TOTAL =9
-                    NetTotal = "  NET TOTAL                  Rs. " + NetTotal;
-                }
-            } else {
-                NetTotal = " NET TOTAL                    Rs.  " + NetTotal;
+                        if (NetTotal.length() == 7) {
+                            //24spaces
+                            //NEW TOTAL =9
+                            NetTotal = " NET TOTAL                       Rs. " + NetTotal;
+                        }
+                        if (NetTotal.length() == 8) {
+                            //23spaces
+                            //NEW TOTAL =9
+                            NetTotal = "  NET TOTAL                       Rs. " + NetTotal;
+                        }
+                        if (NetTotal.length() == 9) {
+                            //22spaces
+                            //NEW TOTAL =9
+                            NetTotal = "  NET TOTAL                      Rs. " + NetTotal;
+                        }
+                        if (NetTotal.length() == 10) {
+                            //21spaces
+                            //NEW TOTAL =9
+                            NetTotal = "  NET TOTAL                    Rs. " + NetTotal;
+                        }
+                        if (NetTotal.length() == 11) {
+                            //20spaces
+                            //NEW TOTAL =9
+                            NetTotal = "  NET TOTAL                   Rs. " + NetTotal;
+                        }
+                        if (NetTotal.length() == 12) {
+                            //19spaces
+                            //NEW TOTAL =9
+                            NetTotal = "  NET TOTAL                  Rs. " + NetTotal;
+                        }
+                    } else {
+                        NetTotal = " NET TOTAL                    Rs.  " + NetTotal;
 
-            }
-
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, NetTotal + "\n");
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-            try {
-                if (payment_mode.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) {
-                    if((!amountRecieved_String.equals("null"))&&(!balanceAmount_String.equals("null"))) {
-                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Amount Given by Customer : ");
-
-
-                        PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
-                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, amountRecieved_String + " Rs " + "\n");
-
-                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-
-                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Balance Amount given : ");
-
-
-                        PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
-                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, balanceAmount_String + " Rs" + "\n");
-
-                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
                     }
-                }
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Earned Rewards : " +  String.valueOf((int)(totalredeempointsusergetfromorder))+"\n");
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, NetTotal + "\n");
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
-
-            if(!ordertype.equals(Constants.POSORDER)) {
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Order Type: ");
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                    try {
+                        if (payment_mode.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) {
+                            if((!amountRecieved_String.equals("null"))&&(!balanceAmount_String.equals("null"))) {
+                                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Amount Given by Customer : ");
 
 
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, ordertype + "\n");
-            }
+                                PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, amountRecieved_String + " Rs " + "\n");
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Payment Mode: ");
-
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, payment_mode + "\n");
+                                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "MobileNo : ");
+                                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Balance Amount given : ");
 
 
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 0, userMobile + "           " + "\n");
+                                PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, balanceAmount_String + " Rs" + "\n");
+
+                                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                            }
+                        }
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Earned Rewards : " +  String.valueOf((int)(totalredeempointsusergetfromorder))+"\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                    if(payment_mode.toString().toUpperCase().equals(Constants.CREDIT)){
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Old Amount need to be Paid : " +  String.valueOf(Math.round(totalamountUserHaveAsCredit))+"\n");
+
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 1, 30, 0, " total Amount need to be Paid = (Old amount + Current Bill Amount ) \n");
+
+
+
+
+                        String payableamountPrint = "";
+                        try{
+                            payableamountPrint = Printer_POJO_ClassArraytotal.getTotalsubtotal();
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+                        }
+
+
+                        double payableamountdoublePrint =0;
+                        try{
+                            payableamountdoublePrint = Math.round(Double.parseDouble(String.valueOf(payableamountPrint)));
+                        }
+                        catch (Exception e){
+                            payableamountdoublePrint = 0;
+                            e.printStackTrace();
+
+                        }
+
+
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "total Amount need to be Paid : " +  String.valueOf(Math.round(totalamountUserHaveAsCredit+payableamountdoublePrint))+"\n");
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                    }
+                    if(!ordertype.equals(Constants.POSORDER)) {
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Order Type: ");
+
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, ordertype + "\n");
+                    }
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Payment Mode: ");
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 90);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 30, 0, payment_mode + "\n");
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "MobileNo : ");
+
+
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 0, userMobile + "           " + "\n");
 
 
 /*
@@ -2455,169 +3640,169 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
  */
 
 
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, "\n" + "Thank you for choosing us !!!  " + "\n");
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, "\n" + "Thank you for choosing us !!!  " + "\n");
 
 
-           PrinterFunctions.PreformCut(portName, portSettings, 1);
-            //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
-            //Log.i("tag", "printer Log    " + PrinterFunctions.PortDiscovery(portName, portSettings));
+                    PrinterFunctions.PreformCut(portName, portSettings, 1);
+                    //  PrinterFunctions.PrintSampleReceipt(portName,portSettings);
+                    //Log.i("tag", "printer Log    " + PrinterFunctions.PortDiscovery(portName, portSettings));
 
-            //Log.i("tag", "printer Log    " + PrinterFunctions.OpenPort(portName, portSettings));
+                    //Log.i("tag", "printer Log    " + PrinterFunctions.OpenPort(portName, portSettings));
 
-            //Log.i("tag", "printer Log    " + PrinterFunctions.CheckStatus(portName, portSettings, 2));
-            if (!isPrintedSecondTime) {
-                showProgressBar(false);
-                //isPrintedSecondTime = true;
-                //showProgressBar(true);
-
-
-                //       openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode);
-
-                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
-                        R.string.Yes_Text, R.string.No_Text,
-                        new TMCAlertDialogClass.AlertListener() {
-                            @Override
-                            public void onYes() {
-                                isPrintedSecondTime = true;
-
-                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount, ordertype);
-
-                            }
-
-                            @Override
-                            public void onNo() {
-                                StockBalanceChangedForThisItemList.clear();
-                                isStockOutGoingAlreadyCalledForthisItem =false;
+                    //Log.i("tag", "printer Log    " + PrinterFunctions.CheckStatus(portName, portSettings, 2));
+                    if (!isPrintedSecondTime) {
+                        showProgressBar(false);
+                        //isPrintedSecondTime = true;
+                        //showProgressBar(true);
 
 
-                                cart_Item_List.clear();
-                                cart_Item_hashmap.clear();
-                                cart_item_list.clear();
-                                cartItem_hashmap.clear();
-                                ispaymentMode_Clicked = false;
-                                isOrderDetailsMethodCalled = false;
+                        //       openPrintAgainDialog(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode);
 
-                                isPaymentDetailsMethodCalled = false;
-                                isOrderTrackingDetailsMethodCalled = false;
-                                new_to_pay_Amount = 0;
-                                old_taxes_and_charges_Amount = 0;
-                                old_total_Amount = 0;
-                                createEmptyRowInListView("empty");
-                                CallAdapter();
-                                discountAmount = "0";
+                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
+                                R.string.Yes_Text, R.string.No_Text,
+                                new TMCAlertDialogClass.AlertListener() {
+                                    @Override
+                                    public void onYes() {
+                                        isPrintedSecondTime = true;
 
-                                discount_Edit_widget.setText("0");
-                                finaltoPayAmount = "0";
-                                discount_rs_text_widget.setText(discountAmount);
-                                OrderTypefromSpinner = "POS Order";
-                                orderTypeSpinner.setSelection(0);
-                                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+                                        printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount, ordertype);
 
-                                mobileNo_Edit_widget.setText("");
-                                isPrintedSecondTime = false;
-                                showProgressBar(false);
-                                useStoreNumberCheckBox.setChecked(false);
-                                ispointsApplied_redeemClicked=false;
-                                isProceedtoCheckoutinRedeemdialogClicked =false;
-                                isRedeemDialogboxOpened=false;
-                                isUpdateRedeemPointsMethodCalled=false;
-                                isUpdateCouponTransactionMethodCalled=false;
-                                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
-                                totalAmounttopay=0;
-                                finalamounttoPay=0;
-                                pointsalreadyredeemDouble=0;
-                                totalpointsuserhave_afterapplypoints=0;
-                                pointsenteredToredeem_double=0;
-                                pointsenteredToredeem="";
+                                    }
 
-                                finaltoPayAmountwithRedeemPoints="";
-                                redeemPoints_String="";
-                                redeemKey="";
-                                mobileno_redeemKey="";
-                                discountAmountalreadyusedtoday="";
-                                totalpointsredeemedalreadybyuser="";
-                                totalordervalue_tillnow="";
-                                totalredeempointsuserhave="";
-
-                                redeemed_points_text_widget.setText("");
-                                redeemPointsLayout.setVisibility(View.GONE);
-                                //discountlayout visible
-                                    discountAmountLayout.setVisibility(View.GONE);
-
-                            }
-                        });
+                                    @Override
+                                    public void onNo() {
+                                        StockBalanceChangedForThisItemList.clear();
+                                        isStockOutGoingAlreadyCalledForthisItem =false;
 
 
-            } else {
-                cart_Item_List.clear();
-                StockBalanceChangedForThisItemList.clear();
-                StockBalanceChangedForThisItemList.clear();
-                isStockOutGoingAlreadyCalledForthisItem =false;
+                                        cart_Item_List.clear();
+                                        cart_Item_hashmap.clear();
+                                        cart_item_list.clear();
+                                        cartItem_hashmap.clear();
+                                        ispaymentMode_Clicked = false;
+                                        isOrderDetailsMethodCalled = false;
 
-                cart_Item_hashmap.clear();
-                cart_item_list.clear();
-                cartItem_hashmap.clear();
+                                        isPaymentDetailsMethodCalled = false;
+                                        isOrderTrackingDetailsMethodCalled = false;
+                                        new_to_pay_Amount = 0;
+                                        old_taxes_and_charges_Amount = 0;
+                                        old_total_Amount = 0;
+                                        createEmptyRowInListView("empty");
+                                        CallAdapter();
+                                        discountAmount = "0";
+                                        isDiscountApplied = false;
+                                        discount_Edit_widget.setText("0");
+                                        finaltoPayAmount = "0";
+                                        discount_rs_text_widget.setText(discountAmount);
+                                        OrderTypefromSpinner = "POS Order";
+                                        orderTypeSpinner.setSelection(0);
+                                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
 
-                new_to_pay_Amount = 0;
-                old_taxes_and_charges_Amount = 0;
-                old_total_Amount = 0;
-                createEmptyRowInListView("empty");
-                CallAdapter();
-                discountAmount = "0";
+                                        mobileNo_Edit_widget.setText("");
+                                        isPrintedSecondTime = false;
+                                        showProgressBar(false);
+                                        useStoreNumberCheckBox.setChecked(false);
+                                        ispointsApplied_redeemClicked=false;
+                                        isProceedtoCheckoutinRedeemdialogClicked =false;
+                                        isRedeemDialogboxOpened=false;
+                                        isUpdateRedeemPointsMethodCalled=false;
+                                        isUpdateCouponTransactionMethodCalled=false;
+                                        isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                        totalAmounttopay=0;
+                                        finalamounttoPay=0;
+                                        pointsalreadyredeemDouble=0;
+                                        totalpointsuserhave_afterapplypoints=0;
+                                        pointsenteredToredeem_double=0;
+                                        pointsenteredToredeem="";
 
-                discount_Edit_widget.setText("0");
-                finaltoPayAmount = "0";
-                discount_rs_text_widget.setText(discountAmount);
-                OrderTypefromSpinner = "POS Order";
-                orderTypeSpinner.setSelection(0);
-                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-                useStoreNumberCheckBox.setChecked(false);
+                                        finaltoPayAmountwithRedeemPoints="";
+                                        redeemPoints_String="";
+                                        redeemKey="";
+                                        mobileno_redeemKey="";
+                                        discountAmountalreadyusedtoday="";
+                                        totalpointsredeemedalreadybyuser="";
+                                        totalordervalue_tillnow="";
+                                        totalredeempointsuserhave="";
+
+                                        redeemed_points_text_widget.setText("");
+                                        redeemPointsLayout.setVisibility(View.GONE);
+                                        //discountlayout visible
+                                        discountAmountLayout.setVisibility(View.GONE);
+
+                                    }
+                                });
+
+
+                    } else {
+                        cart_Item_List.clear();
+                        StockBalanceChangedForThisItemList.clear();
+                        StockBalanceChangedForThisItemList.clear();
+                        isStockOutGoingAlreadyCalledForthisItem =false;
+
+                        cart_Item_hashmap.clear();
+                        cart_item_list.clear();
+                        cartItem_hashmap.clear();
+
+                        new_to_pay_Amount = 0;
+                        old_taxes_and_charges_Amount = 0;
+                        old_total_Amount = 0;
+                        createEmptyRowInListView("empty");
+                        CallAdapter();
+                        discountAmount = "0";
+                        isDiscountApplied = false;
+                        discount_Edit_widget.setText("0");
+                        finaltoPayAmount = "0";
+                        discount_rs_text_widget.setText(discountAmount);
+                        OrderTypefromSpinner = "POS Order";
+                        orderTypeSpinner.setSelection(0);
+                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+                        useStoreNumberCheckBox.setChecked(false);
 
 
 
 
-                mobileNo_Edit_widget.setText("");
-                isPrintedSecondTime = false;
-                ispaymentMode_Clicked = false;
-                isOrderDetailsMethodCalled = false;
+                        mobileNo_Edit_widget.setText("");
+                        isPrintedSecondTime = false;
+                        ispaymentMode_Clicked = false;
+                        isOrderDetailsMethodCalled = false;
 
-                isPaymentDetailsMethodCalled = false;
-                isOrderTrackingDetailsMethodCalled = false;
-                ispointsApplied_redeemClicked=false;
-                isProceedtoCheckoutinRedeemdialogClicked =false;
-                isRedeemDialogboxOpened=false;
-                isUpdateRedeemPointsMethodCalled=false;
-                isUpdateCouponTransactionMethodCalled=false;
-                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
-                totalAmounttopay=0;
-                finalamounttoPay=0;
+                        isPaymentDetailsMethodCalled = false;
+                        isOrderTrackingDetailsMethodCalled = false;
+                        ispointsApplied_redeemClicked=false;
+                        isProceedtoCheckoutinRedeemdialogClicked =false;
+                        isRedeemDialogboxOpened=false;
+                        isUpdateRedeemPointsMethodCalled=false;
+                        isUpdateCouponTransactionMethodCalled=false;
+                        isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                        totalAmounttopay=0;
+                        finalamounttoPay=0;
 
-                pointsalreadyredeemDouble=0;
-                totalpointsuserhave_afterapplypoints=0;
-                pointsenteredToredeem_double=0;
-                pointsenteredToredeem="";
+                        pointsalreadyredeemDouble=0;
+                        totalpointsuserhave_afterapplypoints=0;
+                        pointsenteredToredeem_double=0;
+                        pointsenteredToredeem="";
 
-                finaltoPayAmountwithRedeemPoints="";
-                redeemPoints_String="";
-                redeemKey="";
-                mobileno_redeemKey="";
-                discountAmountalreadyusedtoday="";
-                totalpointsredeemedalreadybyuser="";
-                totalordervalue_tillnow="";
-                totalredeempointsuserhave="";
+                        finaltoPayAmountwithRedeemPoints="";
+                        redeemPoints_String="";
+                        redeemKey="";
+                        mobileno_redeemKey="";
+                        discountAmountalreadyusedtoday="";
+                        totalpointsredeemedalreadybyuser="";
+                        totalordervalue_tillnow="";
+                        totalredeempointsuserhave="";
 
-                redeemed_points_text_widget.setText("");
-                redeemPointsLayout.setVisibility(View.GONE);
-                //discountlayout visible
-                                    discountAmountLayout.setVisibility(View.GONE);
-                showProgressBar(false);
+                        redeemed_points_text_widget.setText("");
+                        redeemPointsLayout.setVisibility(View.GONE);
+                        //discountlayout visible
+                        discountAmountLayout.setVisibility(View.GONE);
+                        showProgressBar(false);
 
-            }
+                    }
 
 
 
@@ -2638,6 +3823,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             CallAdapter();
             discountAmount = "0";
             CouponDiscount = "0";
+            isDiscountApplied = false;
             discount_Edit_widget.setText("0");
             finaltoPayAmount = "0";
             discount_rs_text_widget.setText(discountAmount);
@@ -2655,11 +3841,14 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
          */
 
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            Toast.makeText(mContext,String.valueOf(e),Toast.LENGTH_LONG).show();
-        }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(mContext,String.valueOf(e),Toast.LENGTH_LONG).show();
+                }
+
+
+
 
 
     }
@@ -3630,7 +4819,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     }
 
     public void add_amount_ForBillDetails() {
-DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
         for(String Key :cart_Item_List){
             Modal_NewOrderItems newOrderItems = cartItem_hashmap.get(Key);
 
@@ -3943,7 +5132,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                                       createEmptyRowInListView("empty");
                                       CallAdapter();
                                       discountAmount = "0";
-
+                                      isDiscountApplied = false;
                                       discount_Edit_widget.setText("0");
                                       finaltoPayAmount = "0";
                                       discount_rs_text_widget.setText(discountAmount);
@@ -4952,7 +6141,46 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
         }
 
+            if(String.valueOf(Payment_mode).toUpperCase().equals(Constants.CREDIT)){
+                    double payableAmount_double = 0;
+                    String usermobileno = "";
+                    try{
+                        usermobileno = "+91"+mobileNo_Edit_widget.getText().toString();
+                    }
+                    catch (Exception e) {
+                    e.printStackTrace();
+                    }
+                    
+                        try{
+                            if((!payableAmount.equals("null")) && (!payableAmount.equals("")) && (!payableAmount.equals(null)) ){
+                                payableAmount_double  = Double.parseDouble(payableAmount);
 
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        
+                        try {
+                            if(totalamountUserHaveAsCredit == 0){
+                                AddOrUpdateDatainCreditOrderDetailsTable(payableAmount_double, orderid,usermobileno,orderplacedTime,"ADD",payableAmount_double);
+
+                            }
+                            else{
+                                double newamountUserHaveAsCredit =0;
+                                newamountUserHaveAsCredit = payableAmount_double + totalamountUserHaveAsCredit;
+                                AddOrUpdateDatainCreditOrderDetailsTable(newamountUserHaveAsCredit, orderid,usermobileno,orderplacedTime,"UPDATE",payableAmount_double);
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        
+                        
+                    }
+                
+                
+            }
             JSONObject jsonObject = new JSONObject();
             double  CouponDiscountAmount_double =0;
             try {
@@ -5029,9 +6257,63 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                         if (message.equals("success")) {
                             // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                             // startTwice.main();
-                            printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount,ordertype);
+                            try {
+                                if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                    PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount, ordertype);
+
+                                }
+                                else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                      printReciptUsingBluetoothPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount, ordertype);
+
+                                }
+                                else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                    int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                    if(i != -1){
+                                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount,ordertype);
+
+                                    }
+                                    else{
+                                            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Pos_Printer_Not_Connected,
+                                                    R.string.OK_Text,R.string.Empty_Text,
+                                                    new TMCAlertDialogClass.AlertListener() {
+                                                        @Override
+                                                        public void onYes() {
+                                                            //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                        }
+
+                                                        @Override
+                                                        public void onNo() {
+
+                                                        }
+                                                    });
 
 
+                                    }
+
+                                }
+                                else {
+                                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Please_select_printer_type,
+                                            R.string.OK_Text,R.string.Empty_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+                                                    //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+                                }
+
+
+                            }
+                            catch(Exception e ){
+                                e.printStackTrace();
+
+
+                            }
 /*
                             StockBalanceChangedForThisItemList.clear();
                             cart_Item_List.clear();
@@ -5048,6 +6330,7 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
                             CallAdapter();
                             discountAmount = "0";
                             useStoreNumberCheckBox.setChecked(false);
+                            isDiscountApplied = false;
                             discount_Edit_widget.setText("0");
                             finaltoPayAmount = "0";
                             discount_rs_text_widget.setText(discountAmount);
@@ -5133,6 +6416,232 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+    }
+
+    /*
+    private void updateDatainCreditOrderDetailsTable(double payableAmount_double, String orderid, String usermobileno, String orderplacedTime) {
+        if(isUpdateCreditOrderDetailsIsCalled){
+            return;
+        }
+        isUpdateCreditOrderDetailsIsCalled =true;
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("lastupdatedtime", orderplacedTime);
+            jsonObject.put("totalamountincredit", payableAmount_double);
+            jsonObject.put("vendorkey", vendorKey);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_UpdateCreditOrderDetailsTable,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+
+
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+                    isUpdateCreditOrderDetailsIsCalled=false;
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                isUpdateCreditOrderDetailsIsCalled=false;
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
+
+
+     */
+    private void AddOrUpdateDatainCreditOrderDetailsTable(double newamountUserHaveAsCredit, String orderid, String usermobileno, String orderplacedTime, String transactionType, double payableAmountDouble) {
+
+
+        if(isAddOrUpdateCreditOrderDetailsIsCalled){
+            return;
+        }
+        isAddOrUpdateCreditOrderDetailsIsCalled =true;
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("lastupdatedtime", orderplacedTime);
+            jsonObject.put("totalamountincredit", Math.round(newamountUserHaveAsCredit));
+            jsonObject.put("vendorkey", vendorKey);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String  apiString = "";
+            if(transactionType.toUpperCase().equals("ADD")){
+                apiString = Constants. api_addCreditOrderDetailsTable;
+            }
+            else if(transactionType.toUpperCase().equals("UPDATE")){
+                apiString = Constants. api_UpdateCreditOrderDetailsTable;
+            }
+
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, apiString,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+
+                            addCreditOrdersTransactionDetails(orderid,usermobileno,vendorKey,totalamountUserHaveAsCredit,payableAmountDouble,newamountUserHaveAsCredit,orderplacedTime,transactionType);
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+                    isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+    }
+
+    private void addCreditOrdersTransactionDetails(String orderid, String usermobileno, String vendorKey, double oldamountUserHaveAsCredit, double payableAmountDouble, double newamountUserHaveAsCredit, String orderplacedTime, String transactionType) {
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+            jsonObject.put("vendorkey", vendorKey);
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("transactiontime", orderplacedTime);
+            jsonObject.put("transactiontype", Constants.CREDIT_AMOUNT_ADDED);
+            jsonObject.put("orderid", orderid);
+            jsonObject.put("oldamountincredit", oldamountUserHaveAsCredit);
+            jsonObject.put("transactionvalue", Math.round(payableAmountDouble));
+            jsonObject.put("newamountincredit",Math.round( newamountUserHaveAsCredit));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addCreditOrdersTransactionDetailsTable,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                    if (message.equals("success")) {
+
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+                    isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
 
 
 
@@ -6346,10 +7855,1054 @@ DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
 
+    private void PrintReciptForNewItemUsingUSBPrinter(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String finalCouponDiscountAmount, String ordertype) {
+
+
+
+
+        modal_usbPrinter = new Modal_USBPrinter();
+        try{
+
+            modal_usbPrinter.orderplacedTime = orderplacedTime;
+            modal_usbPrinter.userMobile = userMobile;
+            modal_usbPrinter.tokenno = tokenno;
+            modal_usbPrinter.itemTotalwithoutGst = itemTotalwithoutGst;
+            modal_usbPrinter.taxAmount = taxAmount;
+            modal_usbPrinter.payableAmount = payableAmount;
+            modal_usbPrinter.orderid = orderid;
+            modal_usbPrinter.cart_Item_List = cart_item_list;
+            modal_usbPrinter.cartItem_hashmap = cartItem_hashmap;
+            modal_usbPrinter.payment_mode = payment_mode;
+            modal_usbPrinter.finalCouponDiscountAmount = finalCouponDiscountAmount;
+            modal_usbPrinter.ordertype = ordertype;
+
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        UsbConnection usbConnection = UsbPrintersConnections.selectFirstConnected(mContext);
+        UsbManager usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+
+        if (usbConnection == null || usbManager == null) {
+            showProgressBar(false);
+
+          /*  new AlertDialog.Builder(mContext)
+                    .setTitle("USB Connection")
+                    .setMessage("No USB printer found.")
+                    .show();
+
+           */
+
+            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.ReConnect_Instruction,
+                    R.string.OK_Text, R.string.Cancel_Text,
+                    new TMCAlertDialogClass.AlertListener() {
+                        @Override
+                        public void onYes() {
+                            PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, userMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, finalCouponDiscountAmount, ordertype);
+
+                            return;
+                        }
+
+                        @Override
+                        public void onNo() {
+                            StockBalanceChangedForThisItemList.clear();
+                            isStockOutGoingAlreadyCalledForthisItem =false;
+
+                            NewOrders_MenuItem_Fragment.cart_Item_List.clear();
+                            NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
+
+                            ispaymentMode_Clicked = false;
+                            isOrderDetailsMethodCalled = false;
+
+                            isPaymentDetailsMethodCalled = false;
+                            isOrderTrackingDetailsMethodCalled = false;
+                            new_to_pay_Amount = 0;
+                            old_taxes_and_charges_Amount = 0;
+                            old_total_Amount = 0;
+                            createEmptyRowInListView("empty");
+                            CallAdapter();
+                            discountAmount = "0";
+                            isDiscountApplied = false;
+                            discount_Edit_widget.setText("0");
+                            finaltoPayAmount = "0";
+                            discount_rs_text_widget.setText(discountAmount);
+                            OrderTypefromSpinner = "POS Order";
+                            orderTypeSpinner.setSelection(0);
+                            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                            mobileNo_Edit_widget.setText("");
+                            isPrintedSecondTime = false;
+                            showProgressBar(false);
+                            useStoreNumberCheckBox.setChecked(false);
+                            ispointsApplied_redeemClicked=false;
+                            isProceedtoCheckoutinRedeemdialogClicked =false;
+                            isRedeemDialogboxOpened=false;
+                            isUpdateRedeemPointsMethodCalled=false;
+                            isUpdateCouponTransactionMethodCalled=false;
+                            isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                            totalAmounttopay=0;
+                            finalamounttoPay=0;
+                            pointsalreadyredeemDouble=0;
+                            totalpointsuserhave_afterapplypoints=0;
+                            pointsenteredToredeem_double=0;
+                            pointsenteredToredeem="";
+
+                            finaltoPayAmountwithRedeemPoints="";
+                            redeemPoints_String="";
+                            redeemKey="";
+                            mobileno_redeemKey="";
+                            discountAmountalreadyusedtoday="";
+                            totalpointsredeemedalreadybyuser="";
+                            totalordervalue_tillnow="";
+                            totalredeempointsuserhave="";
+
+                            redeemed_points_text_widget.setText("");
+                            redeemPointsLayout.setVisibility(View.GONE);
+                            //discountlayout visible
+                            discountAmountLayout.setVisibility(View.GONE);
+                        }
+                    });
+            return;
+        }
+
+        PendingIntent permissionIntent = PendingIntent.getBroadcast(
+                mContext,
+                0,
+                new Intent(ACTION_USB_PERMISSION),
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0
+        );
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addCategory("Billing Screen");
+        mContext.registerReceiver(usbReceiver_newItem, filter);
+        usbManager.requestPermission(usbConnection.getDevice(), permissionIntent);
+
+
+
+    }
+    private final BroadcastReceiver usbReceiver_newItem = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Set<String> category = intent.getCategories();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (mContext) {
+                    UsbManager usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+                    UsbDevice usbDevice = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbManager != null && usbDevice != null) {
+                            new AsyncUsbEscPosPrint(
+                                    context, new AsyncEscPosPrint.OnPrintFinished() {
+                                        @Override
+                                        public void onError(AsyncEscPosPrinter asyncEscPosPrinter, int codeException) {
+                                            Log.e("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : An error occurred !");
+                                            try{
+                                                mContext.unregisterReceiver(usbReceiver_newItem);
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+
+
+                                            try{
+                                                if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                                    AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                                }
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                            StockBalanceChangedForThisItemList.clear();
+                                            isStockOutGoingAlreadyCalledForthisItem =false;
+
+                                            NewOrders_MenuItem_Fragment.cart_Item_List.clear();
+                                            NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
+
+                                            ispaymentMode_Clicked = false;
+                                            isOrderDetailsMethodCalled = false;
+
+                                            isPaymentDetailsMethodCalled = false;
+                                            isOrderTrackingDetailsMethodCalled = false;
+                                            new_to_pay_Amount = 0;
+                                            old_taxes_and_charges_Amount = 0;
+                                            old_total_Amount = 0;
+                                            createEmptyRowInListView("empty");
+                                            CallAdapter();
+                                            discountAmount = "0";
+                                            isDiscountApplied = false;
+                                            discount_Edit_widget.setText("0");
+                                            finaltoPayAmount = "0";
+                                            discount_rs_text_widget.setText(discountAmount);
+                                            OrderTypefromSpinner = "POS Order";
+                                            orderTypeSpinner.setSelection(0);
+                                            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                                            mobileNo_Edit_widget.setText("");
+                                            isPrintedSecondTime = false;
+                                            showProgressBar(false);
+                                            useStoreNumberCheckBox.setChecked(false);
+                                            ispointsApplied_redeemClicked=false;
+                                            isProceedtoCheckoutinRedeemdialogClicked =false;
+                                            isRedeemDialogboxOpened=false;
+                                            isUpdateRedeemPointsMethodCalled=false;
+                                            isUpdateCouponTransactionMethodCalled=false;
+                                            isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                            totalAmounttopay=0;
+                                            finalamounttoPay=0;
+                                            pointsalreadyredeemDouble=0;
+                                            totalpointsuserhave_afterapplypoints=0;
+                                            pointsenteredToredeem_double=0;
+                                            pointsenteredToredeem="";
+
+                                            finaltoPayAmountwithRedeemPoints="";
+                                            redeemPoints_String="";
+                                            redeemKey="";
+                                            mobileno_redeemKey="";
+                                            discountAmountalreadyusedtoday="";
+                                            totalpointsredeemedalreadybyuser="";
+                                            totalordervalue_tillnow="";
+                                            totalredeempointsuserhave="";
+
+                                            redeemed_points_text_widget.setText("");
+                                            redeemPointsLayout.setVisibility(View.GONE);
+                                            //discountlayout visible
+                                            discountAmountLayout.setVisibility(View.GONE);
+
+                                        }
+
+                                        @Override
+                                        public void onSuccess(AsyncEscPosPrinter asyncEscPosPrinter) {
+                                            Log.i("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : Print is finished !");
+
+                                            try{
+                                                mContext.unregisterReceiver(usbReceiver_newItem);
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+
+
+                                            try{
+                                                if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                                    AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                                }
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                            if (!isPrintedSecondTime) {
+                                                //isPrintedSecondTime = true;
+                                                //showProgressBar(true);
+
+                                                HashMap<String, Modal_NewOrderItems> cartItem_hashmap = new HashMap();
+                                                List<String> cart_Item_List = new ArrayList<>();
+                                                String orderplacedTime = "" ; String userMobile = "" ; String tokenno = "" ; String itemTotalwithoutGst = "" ; String taxAmount = "" ; String payableAmount = "" ; String orderid = "" ;  String payment_mode = "" ; String finalCouponDiscountAmount = "" ; String ordertype ="";
+                                                try{
+                                                    cartItem_hashmap = modal_usbPrinter.getCartItem_hashmap();
+                                                    cart_Item_List = modal_usbPrinter.getCart_Item_List();
+                                                    orderplacedTime = modal_usbPrinter.getOrderplacedTime();
+                                                    userMobile = modal_usbPrinter.getUserMobile();
+                                                    tokenno = modal_usbPrinter.getTokenno();
+                                                    itemTotalwithoutGst = modal_usbPrinter.getItemTotalwithoutGst();
+                                                    taxAmount = modal_usbPrinter.getTaxAmount();
+                                                    payableAmount = modal_usbPrinter.getPayableAmount();
+                                                    orderid = modal_usbPrinter.getOrderid();
+                                                    payment_mode = modal_usbPrinter.getPayment_mode();
+                                                    finalCouponDiscountAmount = modal_usbPrinter.getFinalCouponDiscountAmount();
+                                                    ordertype = modal_usbPrinter.getOrdertype();
+
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                                String finalOrderplacedTime = orderplacedTime;
+                                                String finalUserMobile = userMobile;
+                                                String finalTokenno = tokenno;
+                                                String finalItemTotalwithoutGst = itemTotalwithoutGst;
+                                                String finalTaxAmount = taxAmount;
+                                                String finalPayableAmount = payableAmount;
+                                                String finalOrderid = orderid;
+                                                List<String> finalCart_Item_List = cart_Item_List;
+                                                HashMap<String, Modal_NewOrderItems> finalCartItem_hashmap = cartItem_hashmap;
+                                                String finalPayment_mode = payment_mode;
+                                                String finalCouponDiscountAmount1 = finalCouponDiscountAmount;
+                                                String finalOrdertype = ordertype;
+                                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
+                                                        R.string.Yes_Text, R.string.No_Text,
+                                                        new TMCAlertDialogClass.AlertListener() {
+                                                            @Override
+                                                            public void onYes() {
+                                                                isPrintedSecondTime = true;
+                                                                PrintReciptForNewItemUsingUSBPrinter(finalOrderplacedTime, finalUserMobile, finalTokenno, finalItemTotalwithoutGst, finalTaxAmount, finalPayableAmount, finalOrderid, finalCart_Item_List, finalCartItem_hashmap, finalPayment_mode, finalCouponDiscountAmount1, finalOrdertype);
+
+
+                                                            }
+
+                                                            @Override
+                                                            public void onNo() {
+                                                                StockBalanceChangedForThisItemList.clear();
+                                                                isStockOutGoingAlreadyCalledForthisItem =false;
+
+                                                                NewOrders_MenuItem_Fragment.cart_Item_List.clear();
+                                                                NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
+
+                                                                ispaymentMode_Clicked = false;
+                                                                isOrderDetailsMethodCalled = false;
+
+                                                                isPaymentDetailsMethodCalled = false;
+                                                                isOrderTrackingDetailsMethodCalled = false;
+                                                                new_to_pay_Amount = 0;
+                                                                old_taxes_and_charges_Amount = 0;
+                                                                old_total_Amount = 0;
+                                                                createEmptyRowInListView("empty");
+                                                                CallAdapter();
+                                                                discountAmount = "0";
+                                                                isDiscountApplied = false;
+                                                                discount_Edit_widget.setText("0");
+                                                                finaltoPayAmount = "0";
+                                                                discount_rs_text_widget.setText(discountAmount);
+                                                                OrderTypefromSpinner = "POS Order";
+                                                                orderTypeSpinner.setSelection(0);
+                                                                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                                                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                                                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+                                                                mobileNo_Edit_widget.setText("");
+                                                                isPrintedSecondTime = false;
+                                                                showProgressBar(false);
+                                                                useStoreNumberCheckBox.setChecked(false);
+                                                                ispointsApplied_redeemClicked=false;
+                                                                isProceedtoCheckoutinRedeemdialogClicked =false;
+                                                                isRedeemDialogboxOpened=false;
+                                                                isUpdateRedeemPointsMethodCalled=false;
+                                                                isUpdateCouponTransactionMethodCalled=false;
+                                                                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                                                totalAmounttopay=0;
+                                                                finalamounttoPay=0;
+                                                                pointsalreadyredeemDouble=0;
+                                                                totalpointsuserhave_afterapplypoints=0;
+                                                                pointsenteredToredeem_double=0;
+                                                                pointsenteredToredeem="";
+
+                                                                finaltoPayAmountwithRedeemPoints="";
+                                                                redeemPoints_String="";
+                                                                redeemKey="";
+                                                                mobileno_redeemKey="";
+                                                                discountAmountalreadyusedtoday="";
+                                                                totalpointsredeemedalreadybyuser="";
+                                                                totalordervalue_tillnow="";
+                                                                totalredeempointsuserhave="";
+
+                                                                redeemed_points_text_widget.setText("");
+                                                                redeemPointsLayout.setVisibility(View.GONE);
+                                                                //discountlayout visible
+                                                                discountAmountLayout.setVisibility(View.GONE);
+
+                                                            }
+                                                        });
+
+
+                                            }
+                                            else {
+                                                cart_Item_List.clear();
+                                                StockBalanceChangedForThisItemList.clear();
+                                                StockBalanceChangedForThisItemList.clear();
+                                                isStockOutGoingAlreadyCalledForthisItem =false;
+
+                                                NewOrders_MenuItem_Fragment.cart_Item_List.clear();
+                                                NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
+
+                                                cartItem_hashmap.clear();
+
+                                                new_to_pay_Amount = 0;
+                                                old_taxes_and_charges_Amount = 0;
+                                                old_total_Amount = 0;
+                                                createEmptyRowInListView("empty");
+                                                CallAdapter();
+                                                discountAmount = "0";
+                                                isDiscountApplied = false;
+                                                discount_Edit_widget.setText("0");
+                                                finaltoPayAmount = "0";
+                                                discount_rs_text_widget.setText(discountAmount);
+                                                OrderTypefromSpinner = "POS Order";
+                                                orderTypeSpinner.setSelection(0);
+                                                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+                                                useStoreNumberCheckBox.setChecked(false);
+
+
+
+
+                                                mobileNo_Edit_widget.setText("");
+                                                isPrintedSecondTime = false;
+                                                ispaymentMode_Clicked = false;
+                                                isOrderDetailsMethodCalled = false;
+
+                                                isPaymentDetailsMethodCalled = false;
+                                                isOrderTrackingDetailsMethodCalled = false;
+                                                ispointsApplied_redeemClicked=false;
+                                                isProceedtoCheckoutinRedeemdialogClicked =false;
+                                                isRedeemDialogboxOpened=false;
+                                                isUpdateRedeemPointsMethodCalled=false;
+                                                isUpdateCouponTransactionMethodCalled=false;
+                                                isUpdateRedeemPointsWithoutKeyMethodCalled=false;
+                                                totalAmounttopay=0;
+                                                finalamounttoPay=0;
+
+                                                pointsalreadyredeemDouble=0;
+                                                totalpointsuserhave_afterapplypoints=0;
+                                                pointsenteredToredeem_double=0;
+                                                pointsenteredToredeem="";
+
+                                                finaltoPayAmountwithRedeemPoints="";
+                                                redeemPoints_String="";
+                                                redeemKey="";
+                                                mobileno_redeemKey="";
+                                                discountAmountalreadyusedtoday="";
+                                                totalpointsredeemedalreadybyuser="";
+                                                totalordervalue_tillnow="";
+                                                totalredeempointsuserhave="";
+
+                                                redeemed_points_text_widget.setText("");
+                                                redeemPointsLayout.setVisibility(View.GONE);
+                                                //discountlayout visible
+                                                discountAmountLayout.setVisibility(View.GONE);
+                                                showProgressBar(false);
+
+                                            }
+
+                                        }
+                                    }
+                            )
+                                    .execute(getAsyncEscPosPrinterNewItem(new UsbConnection(usbManager, usbDevice)));
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+
+
+    @SuppressLint("SimpleDateFormat")
+    public AsyncEscPosPrinter getAsyncEscPosPrinterNewItem(DeviceConnection printerConnection) {
+
+
+        SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
+        HashMap<String, Modal_NewOrderItems> cartItem_hashmap = new HashMap();
+        List<String> cart_Item_List = new ArrayList<>();
+        String orderplacedTime = "";
+        String userMobile = "";
+        String tokenno = "";
+        String itemTotalwithoutGst = "";
+        String taxAmount = "";
+        String payableAmount = "";
+        String orderid = "";
+        String payment_mode = "";
+        String finalCouponDiscountAmount = "";
+        String ordertype = "";
+        try {
+            cartItem_hashmap = modal_usbPrinter.getCartItem_hashmap();
+            cart_Item_List = modal_usbPrinter.getCart_Item_List();
+            orderplacedTime = modal_usbPrinter.getOrderplacedTime();
+            userMobile = modal_usbPrinter.getUserMobile();
+            tokenno = modal_usbPrinter.getTokenno();
+            itemTotalwithoutGst = modal_usbPrinter.getItemTotalwithoutGst();
+            taxAmount = modal_usbPrinter.getTaxAmount();
+            payableAmount = modal_usbPrinter.getPayableAmount();
+            orderid = modal_usbPrinter.getOrderid();
+            payment_mode = modal_usbPrinter.getPayment_mode();
+            finalCouponDiscountAmount = modal_usbPrinter.getFinalCouponDiscountAmount();
+            ordertype = modal_usbPrinter.getOrdertype();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String text_to_Print = "";
+        String Title = "The Meat Chop";
+
+        String GSTIN = "GSTIN :33AAJCC0055D1Z9";
+
+
+        text_to_Print = "[c]<font size='big'>The Meat Chop\n";
+        text_to_Print = text_to_Print + "[c] <font size='normal'>Fresh Meat and Seafood \n";
+        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine1 ;
+        text_to_Print = text_to_Print + "[c] <font size='normal'>" + StoreAddressLine2 + " \n";
+        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine3 + " \n";
+        text_to_Print = text_to_Print + "[c] <font size='normal'>Contact No :" + StoreLanLine + " \n";
+        text_to_Print = text_to_Print + "[c] <font size='normal'>" + GSTIN + " \n";
+        text_to_Print = text_to_Print + "[c] <font size='normal'>" + orderplacedTime + " \n";
+        text_to_Print = text_to_Print + "[c] <font size='normal'># " + orderid + " \n";
+        text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+        text_to_Print = text_to_Print + "[L] ITEMNAME * QTY " + " \n";
+        text_to_Print = text_to_Print + "[L] RATE                                  SUBTOTAL" + " \n";
+        text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+
+
+        if (cart_Item_List.size() == cartItem_hashmap.size()) {
+
+            double oldSavedAmount = 0;
+            String CouponDiscount = "0";
+            String Gstt = " ", subtotal = " ", quantity = " ", price = " ", weight = " ";
+
+            for (int i = 0; i < cart_Item_List.size(); i++) {
+                String itemDetails = "";
+                double savedAmount;
+                String itemUniqueCode = cart_Item_List.get(i);
+                Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
+
+                String itemName = "";
+                try {
+                    itemName = String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+                }
+                catch (Exception e) {
+                    String itemUniqueCode1 = cart_Item_List.get(i);
+                    Modal_NewOrderItems modal_newOrderItems1 = cartItem_hashmap.get(itemUniqueCode1);
+                    try {
+                        itemName = String.valueOf(Objects.requireNonNull(modal_newOrderItems1).getItemname());
+                    }
+                    catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+
+                int indexofbraces = itemName.indexOf("(");
+                if (indexofbraces >= 0) {
+                    itemName = itemName.substring(0, indexofbraces);
+
+                }
+                if (itemName.length() > 21) {
+                    itemName = itemName.substring(0, 21);
+                    itemName = itemName + "...";
+                }
+                try {
+                    price = String.valueOf(modal_newOrderItems.getItemFinalPrice());
+                    if (price.equals("null")) {
+                        price = "  ";
+                    }
+                } catch (Exception e) {
+                    price = "0";
+                    e.printStackTrace();
+                }
+
+                try {
+                    weight = modal_newOrderItems.getItemFinalWeight().toString();
+                } catch (Exception e) {
+                    weight = "0";
+                    e.printStackTrace();
+                }
+
+                try {
+                    Gstt = modal_newOrderItems.getGstAmount();
+
+                } catch (Exception e) {
+                    Gstt = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    savedAmount = Double.parseDouble(modal_newOrderItems.getSavedAmount());
+                } catch (Exception e) {
+                    savedAmount = 0;
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    oldSavedAmount = savedAmount + oldSavedAmount;
+                } catch (Exception e) {
+                    weight = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    subtotal = modal_newOrderItems.getSubTotal_perItem();
+                } catch (Exception e) {
+                    subtotal = "0";
+                    e.printStackTrace();
+                }
+
+                try {
+                    quantity = modal_newOrderItems.getQuantity();
+                } catch (Exception e) {
+                    quantity = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    itemName = itemName + "  *  " + weight + " ( " + quantity + " ) ";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                text_to_Print = text_to_Print + "[L] <b><font size='normal'>" + itemName + " </b>\n";
+
+
+                if (price.length() == 4) {
+                    //14spaces
+                    price = price + "                ";
+                }
+                if (price.length() == 5) {
+                    //13spaces
+                    price = price + "               ";
+                }
+                if (price.length() == 6) {
+                    //12spaces
+                    price = price + "              ";
+                }
+                if (price.length() == 7) {
+                    //11spaces
+                    price = price + "             ";
+                }
+                if (price.length() == 8) {
+                    //10spaces
+                    price = price + "            ";
+                }
+                if (price.length() == 9) {
+                    //9spaces
+                    price = price + "           ";
+                }
+                if (price.length() == 10) {
+                    //8spaces
+                    price = price + "          ";
+                }
+                if (price.length() == 11) {
+                    //7spaces
+                    price = price + "         ";
+                }
+                if (price.length() == 12) {
+                    //6spaces
+                    price = price + "        ";
+                }
+                if (price.length() == 13) {
+                    //5spaces
+                    price = price + "       ";
+                }
+                if (price.length() == 14) {
+                    //4spaces
+                    price = price + "      ";
+                }
+                if (price.length() == 15) {
+                    //3spaces
+                    price = price + "     ";
+                }
+                if (price.length() == 16) {
+                    //2spaces
+                    price = price + "    ";
+                }
+                if (price.length() == 17) {
+                    //1spaces
+                    price = price + "   ";
+                }
+                if (price.length() == 18) {
+                    //1spaces
+                    price = price + " ";
+                }
+
+
+                if (Gstt.length() == 7) {
+                    //1spaces
+                    Gstt = Gstt + " ";
+                }
+                if (Gstt.length() == 8) {
+                    //0space
+                    Gstt = Gstt + "";
+                }
+                if (Gstt.length() == 9) {
+                    //no space
+                    Gstt = Gstt;
+                }
+                if (subtotal.length() == 4) {
+                    //5spaces
+                    subtotal = "       " + subtotal;
+                }
+                if (subtotal.length() == 5) {
+                    //6spaces
+                    subtotal = "       " + subtotal;
+                }
+                if (subtotal.length() == 6) {
+                    //8spaces
+                    subtotal = "         " + subtotal;
+                }
+                if (subtotal.length() == 7) {
+                    //7spaces
+                    subtotal = "        " + subtotal;
+                }
+                if (subtotal.length() == 8) {
+                    //6spaces
+                    subtotal = "      " + subtotal;
+                }
+                if (subtotal.length() == 9) {
+                    //5spaces
+                    subtotal = "      " + subtotal;
+                }
+                if (subtotal.length() == 10) {
+                    //4spaces
+                    subtotal = "     " + subtotal;
+                }
+                if (subtotal.length() == 11) {
+                    //3spaces
+                    subtotal = "    " + subtotal;
+                }
+                if (subtotal.length() == 12) {
+                    //2spaces
+                    subtotal = "   " + subtotal;
+                }
+                if (subtotal.length() == 13) {
+                    //1spaces
+                    subtotal = "  " + subtotal;
+                }
+                if (subtotal.length() == 14) {
+                    //no space
+                    subtotal = " " + subtotal;
+                }
+
+                itemDetails = price + Gstt + subtotal;
+
+                text_to_Print = text_to_Print + "[L] <font size='normal'>" + itemDetails + " \n";
+                text_to_Print = text_to_Print+"[L]<font size='normal'>                                                "+" \n";
+
+            }
+
+            text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+
+
+            finaltoPayAmount = "Rs. " + finaltoPayAmount;
+            taxAmount = "Rs. " + taxAmount;
+            itemTotalwithoutGst = "Rs. " + itemTotalwithoutGst;
+
+            if (itemTotalwithoutGst.length() == 7) {
+                //10spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "            ";
+            }
+            if (itemTotalwithoutGst.length() == 8) {
+                //9spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "           ";
+            }
+            if (itemTotalwithoutGst.length() == 9) {
+                //8spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "          ";
+            }
+            if (itemTotalwithoutGst.length() == 10) {
+                //7spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "         ";
+            }
+            if (itemTotalwithoutGst.length() == 11) {
+                //6spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "        ";
+            }
+            if (itemTotalwithoutGst.length() == 12) {
+                //5spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "       ";
+            }
+            if (itemTotalwithoutGst.length() == 13) {
+                //4spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "      ";
+            }
+
+            if (taxAmount.length() == 7) {
+                //1spaces
+                taxAmount = taxAmount + "";
+            }
+            if (taxAmount.length() == 8) {
+                //0space
+                taxAmount = taxAmount + "";
+            }
+            if (taxAmount.length() == 9) {
+                //no space
+                taxAmount = taxAmount;
+            }
+
+            if (finaltoPayAmount.length() == 6) {
+                //8spaces
+                finaltoPayAmount = "         " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 7) {
+                //7spaces
+                finaltoPayAmount = "        " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 8) {
+                //6spaces
+                finaltoPayAmount = "       " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 9) {
+                //5spaces
+                finaltoPayAmount = "      " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 10) {
+                //4spaces
+                finaltoPayAmount = "     " + finaltoPayAmount;
+            }
+
+
+            text_to_Print = text_to_Print + "[L] " + itemTotalwithoutGst + taxAmount + finaltoPayAmount + " \n";
+
+
+            text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+
+            CouponDiscount = finalCouponDiscountAmount;
+            if (!CouponDiscount.equals("0")) {
+                CouponDiscount = "Rs. " + CouponDiscount + ".00";
+
+                if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
+
+                    if (CouponDiscount.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        CouponDiscount = "Discount Amount                     " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        CouponDiscount = " Discount Amount                " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = " Discount Amount               " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = " Discount Amount              " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount              " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount             " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount             " + CouponDiscount;
+
+                    }
+
+                    text_to_Print = text_to_Print + "[L]" + CouponDiscount + " \n";
+                    text_to_Print = text_to_Print + "[L]----------------------------------------------" + " \n";
+
+                }
+            }
+
+            String redeemPoints_String_print = "";
+            if (!redeemPoints_String.equals("0")) {
+                redeemPoints_String_print = "Rs. " + redeemPoints_String + ".00";
+
+                if ((!redeemPoints_String_print.equals("Rs.0.0")) && (!redeemPoints_String_print.equals("Rs.0")) && (!redeemPoints_String_print.equals("Rs.0.00")) && (redeemPoints_String_print != (null)) && (!redeemPoints_String_print.equals("")) && (!redeemPoints_String_print.equals("Rs. .00")) && (!redeemPoints_String_print.equals("Rs..00"))) {
+
+                    if (redeemPoints_String_print.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        redeemPoints_String_print = "Points Redeemed                     " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        redeemPoints_String_print = "Points Redeemed                   " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        redeemPoints_String_print = "Points Redeemed                  " + redeemPoints_String_print;
+                    }
+
+                    if (redeemPoints_String_print.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        redeemPoints_String_print = "Points Redeemed                 " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        redeemPoints_String_print = "Points Redeemed                " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed                " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed              " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = " Points Redeemed              " + redeemPoints_String_print;
+                    }
+                    if (redeemPoints_String_print.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed             " + redeemPoints_String_print;
+                    }
+
+                    if (redeemPoints_String_print.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        redeemPoints_String_print = "Points Redeemed             " + redeemPoints_String_print;
+
+                    }
+
+                    text_to_Print = text_to_Print + "[L]" + redeemPoints_String_print + " \n";
+                    text_to_Print = text_to_Print + "[L]----------------------------------------------" + " \n";
+
+                }
+            }
+
+
+            if (payableAmount.length() > 6) {
+
+                if (payableAmount.length() == 7) {
+                    //24spaces
+                    //NEW TOTAL =9
+                    payableAmount = " NET TOTAL                         Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 8) {
+                    //23spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                         Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 9) {
+                    //22spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                       Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 10) {
+                    //21spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                      Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 11) {
+                    //20spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                     Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 12) {
+                    //19spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                    Rs. " + payableAmount;
+                }
+            } else {
+                payableAmount = " NET TOTAL                      Rs.  " + payableAmount;
+
+            }
+            text_to_Print = text_to_Print + "[L]" + payableAmount + " \n";
+            text_to_Print = text_to_Print + "[L]----------------------------------------------" + " \n";
+
+            try {
+                if (payment_mode.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) {
+                    if ((!amountRecieved_String.equals("null")) && (!balanceAmount_String.equals("null"))) {
+                        text_to_Print = text_to_Print + "[L]Amount Given by Customer : " + amountRecieved_String + " Rs " + " \n";
+
+                        text_to_Print = text_to_Print + "[L]----------------------------------------------" + " \n";
+
+                        text_to_Print = text_to_Print + "[L]Balance Amount given : " + balanceAmount_String + " Rs " + " \n";
+
+                        text_to_Print = text_to_Print + "[L----------------------------------------------" + " \n";
+
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            text_to_Print = text_to_Print + "[L]Earned Rewards : " + String.valueOf((int) (totalredeempointsusergetfromorder)) + " \n";
+
+            text_to_Print = text_to_Print + "[L]----------------------------------------------" + " \n";
+            if(payment_mode.toString().toUpperCase().equals(Constants.CREDIT)){
+                text_to_Print = text_to_Print + "[L]Old Amount need to be Paid : " + String.valueOf(Math.round(totalamountUserHaveAsCredit)) + " \n";
+
+                text_to_Print = text_to_Print + "[L]total Amount need to be Paid = (Old amount + Current Bill Amount )  \n";
+                    String payableamountPrint = "";
+                    try{
+                        payableamountPrint = modal_usbPrinter.getPayableAmount().toString();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+                double payableamountdoublePrint =0;
+                try{
+                    payableamountdoublePrint = Math.round(Double.parseDouble(String.valueOf(payableamountPrint)));
+                }
+                catch (Exception e){
+                    payableamountdoublePrint = 0;
+                    e.printStackTrace();
+
+                }
+
+
+                text_to_Print = text_to_Print + "[L]total Amount need to be Paid : " +  String.valueOf(Math.round(totalamountUserHaveAsCredit+payableamountdoublePrint))+ " \n";
+                text_to_Print = text_to_Print + "[L]----------------------------------------------" + " \n";
+
+            }
+            text_to_Print = text_to_Print + "[L]Order Type : " + String.valueOf(ordertype) + " \n";
+
+
+            text_to_Print = text_to_Print + "[L]Payment Mode : " + String.valueOf(payment_mode) + " \n";
+
+
+            text_to_Print = text_to_Print + "[L]Mobile No : " + String.valueOf(userMobile) + " \n" + " \n";
+
+
+            text_to_Print = text_to_Print + "[C] Thank you for choosing us !!!" + " \n";
+
+        } else {
+            Toast.makeText(mContext, "Size of Cart is not matched", Toast.LENGTH_SHORT).show();
+        }
+
+
+        AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
+        return printer.addTextToPrint(text_to_Print);
+
+
+    }
+
+
+
+
+
+
+
 }
-
-
-
 
 
 

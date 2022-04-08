@@ -833,16 +833,21 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 OrderdItems_desp.clear();
 
                 if (ordertype.equals(Constants.POSORDER)) {
+
+                  
+
+
+
                     try {
                         Thread t = new Thread() {
                             public void run() {
-                                printRecipt(selectedBillDetails);
+
+                              //  printRecipt(selectedBillDetails);
                             }
                         };
                         t.start();
                     } catch (Exception e) {
                         e.printStackTrace();
-
                         new_to_pay_Amount = 0;
                         old_taxes_and_charges_Amount = 0;
                         old_total_Amount = 0;
@@ -852,10 +857,12 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     try {
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                         if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                            searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
                             try {
                                 Thread t = new Thread() {
                                     public void run() {
-                                        printRecipt(selectedBillDetails);
+                                       // printRecipt(selectedBillDetails);
                                     }
                                 };
                                 t.start();
@@ -916,9 +923,11 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 OrderdItems_desp.clear();
                 if ((ordertype.equals(Constants.POSORDER))||(ordertype.equals(Constants.SwiggyOrder))||(ordertype.equals(Constants.DunzoOrder))||(ordertype.equals(Constants.BigBasket))) {
                     try {
+                        Pos_Orders_List.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
                         Thread t = new Thread() {
                             public void run() {
-                                printRecipt(selectedBillDetails);
+                               // printRecipt(selectedBillDetails);
                             }
                         };
                         t.start();
@@ -934,10 +943,12 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     try {
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                         if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
+                            searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
                             try {
                                 Thread t = new Thread() {
                                     public void run() {
-                                        printRecipt(selectedBillDetails);
+                                        //printRecipt(selectedBillDetails);
                                     }
                                 };
                                 t.start();
@@ -1001,9 +1012,11 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 OrderdItems_desp.clear();
                 if (ordertype.equals(Constants.POSORDER)) {
                     try {
+                        Pos_Orders_List.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
                         Thread t = new Thread() {
                             public void run() {
-                                printRecipt(selectedBillDetails);
+                                //printRecipt(selectedBillDetails);
                             }
                         };
                         t.start();
@@ -1020,9 +1033,11 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                         if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                             try {
+                                searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
                                 Thread t = new Thread() {
                                     public void run() {
-                                        printRecipt(selectedBillDetails);
+                                        //printRecipt(selectedBillDetails);
                                     }
                                 };
                                 t.start();
@@ -1249,8 +1264,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
     private void generatingTokenNo(String vendorkey, String orderDetailsKey, List<Modal_ManageOrders_Pojo_Class> selectedOrderr) {
-        searchOrdersUsingMobileNumber.showProgressBar(true);
-        searchOrdersUsingMobileNumber.showOrderInstructionText(false);
+        //searchOrdersUsingMobileNumber.showProgressBar(true);
+       // searchOrdersUsingMobileNumber.showOrderInstructionText(false);
 
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_generateTokenNo+vendorkey,
@@ -1273,9 +1288,10 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                             String Orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                             if (orderDetailsKey.equals(Orderdetailskey)) {
                                 modal_manageOrders_pojo_class.setTokenno(tokenNo);
-                                searchOrdersUsingMobileNumber.showProgressBar(false);
+                               // searchOrdersUsingMobileNumber.showProgressBar(false);
                                 notifyDataSetChanged();
-                                printRecipt(selectedOrderr);
+                                searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedOrderr);
+                                //printRecipt(selectedOrderr);
 
                             }
                         }

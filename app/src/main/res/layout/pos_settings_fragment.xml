@@ -593,7 +593,25 @@
                 </LinearLayout>
 
 
+                <LinearLayout
+                    android:id="@+id/mobilenowisecreditOrderslist"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
 
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="MobileNowise Credit Orders List"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp"
+
+                        />
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -1054,6 +1072,87 @@
                     android:layout_height="10dp"
 
                     android:background="@drawable/border_line" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="15dp"
+                    android:id="@+id/printerParentLayout"
+                    android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:gravity="center_vertical"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="@string/Printer_Type"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp"
+
+                        />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text=""
+                        android:gravity="center"
+                        android:textSize="16sp"
+                        android:layout_marginStart="12dp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+                    <Spinner
+                        android:layout_width="match_parent"
+                        android:id="@+id/printerTypeSpinner"
+                        android:layout_marginTop="5dp"
+                        android:visibility="gone"
+                        android:layout_marginBottom="6dp"
+                        android:layout_height="35dp"/>
+
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/printerTypeRadioGroup"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1.1"
+                            android:id="@+id/usbRadiobutton"
+                            android:text="USB"/>
+                        <RadioButton
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:id="@+id/bluetoothPrinterRadiobutton"
+
+                            android:text="Bluetooth" />
+
+                        <RadioButton
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight=".9"
+                            android:id="@+id/posPrinterRadiobutton"
+
+                            android:text="POS Machine"/>
+                        <RadioButton
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1.1"
+                            android:id="@+id/nonePrinterRadiobutton"
+
+                            android:text="None"/>
+                    </RadioGroup>
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1065,12 +1164,12 @@
 
                     <TextView
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Printer Status : "
+                        android:layout_height="22dp"
                         android:layout_weight=".1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="Printer Status : "
                         android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp"
-                        android:fontFamily="@font/open_sans_semibold"/>
+                        android:textSize="16sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -1089,7 +1188,7 @@
                         android:textSize="13sp"
                         android:layout_gravity="center_vertical"
                         android:layout_marginEnd="10dp"
-
+                        android:visibility="gone"
                         android:background="@drawable/button_background"
                         android:textColor="@color/TMC_White"
 

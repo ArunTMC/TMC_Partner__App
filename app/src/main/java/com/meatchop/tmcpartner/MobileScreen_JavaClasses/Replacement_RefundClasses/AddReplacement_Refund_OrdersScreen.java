@@ -1784,7 +1784,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         JSONArray finalReplacementdetailsArray = replacementdetailsArray;
         double finalAmountDouble1 = finalAmountDouble;
         double finalBalanceAmountUsergot = balanceAmountUsergot;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_UpdateReplacementOrderDetaialsTable,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_UpdateReplacementOrderDetailsTable,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {

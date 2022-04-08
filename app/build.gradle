@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "30.0.0"
 
     defaultConfig {
         applicationId "com.meatchop.tmcpartner"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 2
-        versionName "1.9.1"
+        versionName "1.9.1(20)"
         ndk {
             abiFilters 'armeabi','armeabi-v7a', 'x86'
         }
@@ -37,7 +37,7 @@ android {
     sourceSets {
         main {
             java {
-                srcDirs 'src\\main\\java', 'src\\main\\java\\com\\Mobile Screen Java classes', 'src\\main\\java\\com\\POS Screen Java classes', 'src\\main\\java\\com\\Pos_NewOrders', 'src\\main\\java\\com\\meatchopp.tmcpartner\\MobileScreen_JavaClasses\\MobileScreen_'
+                srcDirs 'src\\main\\java', 'src\\main\\java\\com\\Mobile Screen Java classes', 'src\\main\\java\\com\\POS Screen Java classes', 'src\\main\\java\\com\\Pos_NewOrders', 'src\\main\\java\\com\\meatchopp.tmcpartner\\MobileScreen_JavaClasses\\MobileScreen_', 'src\\main\\java\\usbPrinter', 'src\\main\\java\\com\\usbPrinter'
             }
         }
     }
@@ -74,6 +74,7 @@ dependencies {
     implementation 'com.itextpdf:layout:7.0.0'
     implementation 'com.itextpdf:itextg:5.5.10'
     implementation 'com.squareup.picasso:picasso:2.5.0'
+    implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.0.1'
 
     implementation 'com.jakewharton:butterknife:8.8.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

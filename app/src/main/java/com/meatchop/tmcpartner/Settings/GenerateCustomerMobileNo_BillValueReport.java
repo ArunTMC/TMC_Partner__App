@@ -6,7 +6,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -49,6 +48,7 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -64,7 +64,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -119,6 +118,19 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     int spinnerselecteditem_Count =1;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
+
+
+    public static List<String> replacementTransactionDateArray = new ArrayList<>();
+    public static HashMap<String, List<Modal_ReplacementTransactionDetails>> replacementTransactionDateHashmap = new HashMap();
+
+
+    boolean isgetReplacementOrderForSelectedDateCalled = false;
+
+    boolean isSheetForLastDateGenerate = false;
+
+    boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+    String replacementOrderDetailsString="", startDateString_forReplacementransaction = "",
+            endDateString_forReplacementransaction = "";
 
     String selectedStartDate = "";
     String selectedEndDate = "";
@@ -270,7 +282,6 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                ;
                             }
                         }
                         else{
@@ -324,6 +335,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     todateSelectorLayout.setVisibility(View.VISIBLE);
                     dateSelectorLayout.setVisibility(View.GONE);
                     newOrdersSync_Layout.setVisibility(View.INVISIBLE);
+                    isSheetForLastDateGenerate = false;
                 }
                 else{
                     isSwitchisOn =true;
@@ -391,6 +403,10 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             public void onClick(View view) {
                 ordersList.clear();
                 sorted_OrdersList.clear();
+
+                replacementTransactionDateHashmap.clear();
+                replacementTransactionDateArray.clear();
+
                 array_of_orderId.clear();
                 spinnerselecteditem = 1 ;
                 spinnerselecteditem_Count=1;
@@ -399,8 +415,11 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
                 PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(todatestring);
 
+                startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
+                endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
 
                 isSearchButtonClicked = false;
+                getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
                 getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
 
@@ -613,7 +632,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        ;
+
                     }
                 } else {
                     Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
@@ -657,6 +676,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         try {
+                            replacementTransactionDateHashmap.clear();
+                            replacementTransactionDateArray.clear();
 
                             ordersList.clear();
                             sorted_OrdersList.clear();
@@ -673,6 +694,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                                 monthstring="0"+monthstring;
                             }
 
+                            isSheetForLastDateGenerate = false;
 
 
                             Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
@@ -690,6 +712,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             fromdatestring = fromdateSelector_text.getText().toString();
                             selectedStartDate = fromdatestring;
                             selectedEndDate = getDatewithNameoftheseventhDayFromSelectedStartDate(DateString);
+                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
+
 
                             //      showProgressBar(true);
 
@@ -742,9 +766,13 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             sorted_OrdersList.clear();
                             array_of_orderId.clear();
                             array_of_Dates.clear();
+                            replacementTransactionDateHashmap.clear();
+                            replacementTransactionDateArray.clear();
+
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
+                            isSheetForLastDateGenerate = false;
 
                             if(datestring.length()==1){
                                 datestring="0"+datestring;
@@ -765,11 +793,14 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             String CurrentDateString =datestring+monthstring+String.valueOf(year);
                             //   PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay(CurrentDateString);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
 
                             todateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             //getOrderForSelectedDate(DateString, vendorKey);
                             showProgressBar(true);
                             todatestring = todateSelector_text.getText().toString();
+                            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+
                             calculate_the_dateandgetData(fromdatestring,todatestring);
 //                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
 
@@ -869,6 +900,10 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             sorted_OrdersList.clear();
                             array_of_orderId.clear();
 
+                            replacementTransactionDateHashmap.clear();
+                            replacementTransactionDateArray.clear();
+
+
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
@@ -897,6 +932,11 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             //getOrderForSelectedDate(DateString, vendorKey);
                             showProgressBar(true);
                             todatestring=DateString;
+                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
+                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
+
+
+                            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
                             getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
 
@@ -912,7 +952,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
     private void getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(String previousDateString, String todaysdate, String vendorKey) {
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
-
+            isSheetForLastDateGenerate = false;
         showProgressBar(true);
 
 
@@ -943,22 +983,24 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
                 try {
-                    Toast.makeText(GenerateCustomerMobileNo_BillValueReport.this, "There is no Order  on " + todaysdate, Toast.LENGTH_LONG).show();
-                    if(array_of_orderId.size()<=0){
-                        loadingpanelmask.setVisibility(View.GONE);
-                        loadingPanel.setVisibility(View.GONE);
-                        manageOrders_ListView.setVisibility(View.GONE);
-                        orderinstruction.setText("No Order today");
 
-                        orderinstruction.setVisibility(View.VISIBLE);
-                        appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-                    }
                     if(todaysdate.equals(todatestring)) {
-                        //   Toast.makeText(GenerateOrderDetailsDump.this, String.valueOf(spinnerselecteditem_Count), Toast.LENGTH_LONG).show();
-                        //    Toast.makeText(GenerateOrderDetailsDump.this, String.valueOf("spinnerselecteditem  "+spinnerselecteditem), Toast.LENGTH_LONG).show();
 
-                        // appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-                        DisplayOrderListDatainListView(ordersList);
+                       // isSheetForLastDateGenerate=true;
+
+                        if(array_of_orderId.size()<=0){
+                            loadingpanelmask.setVisibility(View.GONE);
+                            loadingPanel.setVisibility(View.GONE);
+                            manageOrders_ListView.setVisibility(View.GONE);
+                            orderinstruction.setText("No Order today");
+                            Toast.makeText(GenerateCustomerMobileNo_BillValueReport.this, "There is no Order  on " + todaysdate, Toast.LENGTH_LONG).show();
+
+                            orderinstruction.setVisibility(View.VISIBLE);
+                            appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                        }
+                        else {
+                            DisplayOrderListDatainListView(ordersList);
+                        }
                     }
                     else{
                         String nextday = getTomorrowsDate(todaysdate);
@@ -971,7 +1013,6 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
 //
-                    showProgressBar(false);
                     error.printStackTrace();
 
 
@@ -1405,7 +1446,11 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
         } catch (JSONException e) {
             e.printStackTrace();
-            showProgressBar(false);
+            if(todaysdate.equals(todatestring)) {
+                showProgressBar(false);
+
+            }
+
         }
     }
 
@@ -1500,10 +1545,14 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
         for(int i =0;array_of_Dates.size()>i;i++) {
             String date = array_of_Dates.get(i);
             List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList = getorderlistdatewise(OrdersList,date );
+            double totalRefundAmount = 0;
+            double totalReplacementAmount = 0;
 
             sheet = wb.createSheet(date);
             int rowNum = 1;
-
+            if(array_of_Dates.size()-i==1 ){
+                isSheetForLastDateGenerate=true;
+            }
             if (sorted_OrdersList.size() > 0) {
                 for (int ii = 0; ii < sorted_OrdersList.size(); ii++) {
 
@@ -1563,66 +1612,220 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList  1  : " + sorted_OrdersList.size());
                     Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum:  1  " + rowNum);
 
-                    if (rowNum > sorted_OrdersList.size()) {
-                        Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
-                        Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
-                        if (SDK_INT >= Build.VERSION_CODES.R) {
 
-                            if(Environment.isExternalStorageManager()){
-                                try {
-                                    GenerateExcelSheet();
+                        if (rowNum > sorted_OrdersList.size()) {
 
 
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    ;
+                            try {
+                                for (int ij = 0; ij < replacementTransactionDateArray.size(); ij++) {
+                                    String transactiondate =replacementTransactionDateArray.get(ij);
+                                    List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = replacementTransactionDateHashmap.get(transactiondate);
+
+                                    for (int i1 = 0; i1 < replacementTransactionDetailsArray.size(); i1++) {
+
+                                        Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = replacementTransactionDetailsArray.get(i1);
+                                        double refundAmount = 0;
+                                        double replacementAmount = 0;
+
+                                        if(transactiondate.equals(date)){
+                                            if (modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REFUND")) {
+                                                String refundAmountString = "0";
+                                                try {
+                                                    refundAmountString = modal_replacementTransactionDetails.getRefundamount().toString();
+
+                                                } catch (Exception e) {
+                                                    refundAmountString = "0";
+                                                    e.printStackTrace();
+                                                }
+                                                try {
+                                                    refundAmount = Double.parseDouble(refundAmountString);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+
+                                                    totalRefundAmount = refundAmount + totalRefundAmount;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                            }
+
+
+                                            if (modal_replacementTransactionDetails.getTransactiontype().toUpperCase().equals("REPLACEMENT")) {
+                                                String replacementAmountString = "0";
+                                                try {
+                                                    replacementAmountString = modal_replacementTransactionDetails.getReplacementorderamount().toString();
+
+                                                } catch (Exception e) {
+                                                    replacementAmountString = "0";
+                                                    e.printStackTrace();
+                                                }
+                                                try {
+                                                    replacementAmount = Double.parseDouble(replacementAmountString);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+
+                                                    totalReplacementAmount = replacementAmount + totalReplacementAmount;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+
+
+
+
+
+                                        }
+                                        else{
+
+                                        }
+                                    }
+
+                                    if(replacementTransactionDateArray.size() - ij ==1){
+                                        rowNum = rowNum +5;
+                                        Row row = sheet.createRow(rowNum++);
+                                        row.createCell(0).setCellValue("   ");
+                                        row.createCell(1).setCellValue("Replacement Value :  ");
+                                        row.createCell(2).setCellValue(" Rs. "+ totalReplacementAmount);
+
+                                        rowNum = rowNum +1;
+
+                                        Row row1 = sheet.createRow(rowNum++);
+                                        row1.createCell(0).setCellValue("   ");
+                                        row1.createCell(1).setCellValue("Refund Value :  ");
+                                        row1.createCell(2).setCellValue(" Rs. "+ totalRefundAmount);
+
+                                    }
+
+
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                            Log.d(Constants.TAG, "prepareDataForExcelSheet type  sorted_OrdersList: " + sorted_OrdersList.size());
+                            Log.d(Constants.TAG, "prepareDataForExcelSheet type  rowNum: " + rowNum);
+                            if(isSheetForLastDateGenerate) {
+
+                                if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                                    if (Environment.isExternalStorageManager()) {
+                                        try {
+                                            GenerateExcelSheet();
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                    } else {
+                                        try {
+                                            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                            intent.addCategory("android.intent.category.DEFAULT");
+                                            intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+                                            startActivityForResult(intent, 2296);
+                                        } catch (Exception e) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                            startActivityForResult(intent, 2296);
+                                        }
+                                    }
+
+                                } else {
+
+
+                                    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, WRITE_EXTERNAL_STORAGE);
+                                    //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                                    // If do not grant write external storage permission.
+                                    if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                                        // Request user to grant write external storage permission.
+                                        ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                                REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                                    } else {
+                                        showProgressBar(true);
+                                        try {
+                                            GenerateExcelSheet();
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                    }
                                 }
                             }
                             else{
-                                try {
-                                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                                    intent.addCategory("android.intent.category.DEFAULT");
-                                    intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
-                                    startActivityForResult(intent, 2296);
-                                } catch (Exception e) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                                    startActivityForResult(intent, 2296);
-                                }
+
                             }
+                            // GenerateExcelSheet();
+                        } else {
+                            //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
+
 
                         }
-                        else {
-
-
-                            int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, WRITE_EXTERNAL_STORAGE);
-                            //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
-                            // If do not grant write external storage permission.
-                            if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
-                                // Request user to grant write external storage permission.
-                                ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
-                                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
-                            } else {
-                                showProgressBar(true);
-                                try {
-                                    GenerateExcelSheet();
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    ;
-                                }
-                            }
-                        }
-                       // GenerateExcelSheet();
-                    } else {
-                        //  Toast.makeText(mContext,+sorted_OrdersList.size(),Toast.LENGTH_LONG).show();
-
-
-                    }
 
 
                 }
             } else {
+                if(isSheetForLastDateGenerate) {
+
+                    if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                        if (Environment.isExternalStorageManager()) {
+                            try {
+                                GenerateExcelSheet();
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        } else {
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+                                startActivityForResult(intent, 2296);
+                            } catch (Exception e) {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivityForResult(intent, 2296);
+                            }
+                        }
+
+                    } else {
+
+
+                        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(GenerateCustomerMobileNo_BillValueReport.this, WRITE_EXTERNAL_STORAGE);
+                        //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                        // If do not grant write external storage permission.
+                        if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                            // Request user to grant write external storage permission.
+                            ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
+                                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                        } else {
+                            showProgressBar(true);
+                            try {
+                                GenerateExcelSheet();
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ;
+                            }
+                        }
+                    }
+                }
+                else{
+
+                }
                 Toast.makeText(GenerateCustomerMobileNo_BillValueReport.this, "There is no data to create sheet", Toast.LENGTH_LONG).show();
 
             }
@@ -1694,6 +1897,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             outputStream = new FileOutputStream(file);
             wb.write(outputStream);
             showProgressBar(false);
+            isSheetForLastDateGenerate = false;
           /*  StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
             Uri pdfUri;
@@ -1723,7 +1927,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
             //     startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(Uri.fromFile(file), "application/xls"));
 
-            Toast.makeText(getApplicationContext(), "File Created", Toast.LENGTH_LONG).show();
+           // Toast.makeText(getApplicationContext(), "File Created", Toast.LENGTH_LONG).show();
+           // Toast.makeText(getApplicationContext(), "File Created", Toast.LENGTH_LONG).show();
             Objects.requireNonNull(outputStream).close();
 
         } catch (java.io.IOException e) {
@@ -1765,6 +1970,356 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
 
+
+
+    private void getdataFromReplacementTransaction(String startdateString_forReplacementransaction, String enddateString_forReplacementransaction, String vendorKey) {
+        if (isgetReplacementOrderForSelectedDateCalled) {
+            return;
+        }
+        isgetReplacementOrderForSelectedDateCalled = true;
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        showProgressBar(true);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetReplacementTransactionDetailsForTransactionTimeVendorkey + "?transactiontime1=" + startdateString_forReplacementransaction + "&vendorkey=" + vendorKey + "&transactiontime2=" + enddateString_forReplacementransaction, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            JSONArray JArray = response.getJSONArray("content");
+                            if (JArray.length() > 0) {
+                                replacementOrderDetailsString = JArray.toString();
+                                convertReplacementTransactionDetailsJsonIntoArray(replacementOrderDetailsString);
+                            } else {
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            }
+
+                        } catch (JSONException e) {
+                            isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(GenerateCustomerMobileNo_BillValueReport.this, "There is no Orders Yet ", Toast.LENGTH_LONG).show();
+                showProgressBar(false);
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
+                isgetReplacementOrderForSelectedDateCalled = false;
+                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorKey);
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(GenerateCustomerMobileNo_BillValueReport.this).add(jsonObjectRequest);
+
+
+    }
+
+    private void convertReplacementTransactionDetailsJsonIntoArray(String stringOfArray) {
+            String date = "";
+        isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
+        try {
+            JSONArray JArray = new JSONArray(stringOfArray);
+            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+            int arrayLength = JArray.length();
+            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+            for (int i1 = 0; i1 < arrayLength; i1++) {
+                Modal_ReplacementTransactionDetails modal_replacementTransactionDetails = new Modal_ReplacementTransactionDetails();
+                String transactionStatus = "", transactionType = "";
+                List<Modal_ReplacementTransactionDetails> replacementTransactionDetailsArray = new ArrayList<>();
+
+
+                try {
+                    JSONObject json = JArray.getJSONObject(i1);
+                    try {
+                        if (json.has("discountamount")) {
+                            modal_replacementTransactionDetails.setDiscountamount(String.valueOf(json.getString("discountamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setDiscountamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setDiscountamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("markeditemdesp")) {
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String(String.valueOf(json.getString("markeditemdesp")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setMarkeditemdesp_String("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("mobileno")) {
+                            modal_replacementTransactionDetails.setMobileno(String.valueOf(json.getString("mobileno")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setMobileno("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setMobileno("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("orderid")) {
+                            modal_replacementTransactionDetails.setOrderid(String.valueOf(json.getString("orderid")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setOrderid("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setOrderid("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("refundamount")) {
+                            modal_replacementTransactionDetails.setRefundamount(String.valueOf(json.getString("refundamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setRefundamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setRefundamount("");
+
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("replacementitemdesp")) {
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string(String.valueOf(json.getString("replacementitemdesp")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementitemdesp_string("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("replacementorderamount")) {
+                            modal_replacementTransactionDetails.setReplacementorderamount(String.valueOf(json.getString("replacementorderamount")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementorderamount("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("replacementorderid")) {
+                            modal_replacementTransactionDetails.setReplacementorderid(String.valueOf(json.getString("replacementorderid")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setReplacementorderid("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactionstatus")) {
+                            modal_replacementTransactionDetails.setTransactionstatus(String.valueOf(json.getString("transactionstatus")));
+                            transactionStatus = String.valueOf(json.getString("transactionstatus"));
+                        } else {
+                            transactionStatus = "";
+                            modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        }
+                    } catch (Exception e) {
+                        transactionStatus = "";
+
+                        modal_replacementTransactionDetails.setTransactionstatus("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactiontime")) {
+                            modal_replacementTransactionDetails.setTransactiontime(String.valueOf(json.getString("transactiontime")));
+                            date = String.valueOf(json.getString("transactiontime"));
+                            date = convertDatetoNormalFormat(date);
+                        } else {
+                            modal_replacementTransactionDetails.setTransactiontime("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setTransactiontime("");
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("transactiontype")) {
+                            modal_replacementTransactionDetails.setTransactiontype(String.valueOf(json.getString("transactiontype")));
+                            transactionType = String.valueOf(json.getString("transactiontype").toString().toUpperCase());
+
+                        } else {
+                            modal_replacementTransactionDetails.setTransactiontype("");
+                            transactionType = "";
+
+                        }
+                    } catch (Exception e) {
+                        transactionType = "";
+
+                        modal_replacementTransactionDetails.setTransactiontype("");
+
+                        e.printStackTrace();
+                    }
+                    try {
+                        if (json.has("vendorkey")) {
+                            modal_replacementTransactionDetails.setVendorkey(String.valueOf(json.getString("vendorkey")));
+
+                        } else {
+                            modal_replacementTransactionDetails.setVendorkey("");
+
+                        }
+                    } catch (Exception e) {
+                        modal_replacementTransactionDetails.setVendorkey("");
+
+                        e.printStackTrace();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Log.i("TransactionDetailsArray", String.valueOf(replacementTransactionDetailsArray.size()));
+                    Log.i("TransactiontypeArray", String.valueOf(replacementTransactionDateArray.size()));
+                    Log.i("TransactiontypeHashmap", String.valueOf(replacementTransactionDateHashmap.size()));
+                    Log.i("transactionArray", String.valueOf(replacementTransactionDetailsArray.size()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    if (transactionStatus.toString().toUpperCase().equals("SUCCESS")) {
+                        try {
+                            replacementTransactionDetailsArray.add(modal_replacementTransactionDetails);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+
+                            if (replacementTransactionDateArray.contains(date)) {
+                                replacementTransactionDateHashmap.get(date).add(modal_replacementTransactionDetails);
+                            } else {
+                                replacementTransactionDateArray.add(date);
+                                replacementTransactionDateHashmap.put(date, replacementTransactionDetailsArray);
+                            }
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            if (arrayLength - 1 == i1) {
+                                isReplacementTransacDetailsResponseReceivedForSelectedDate = true;
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private String convertDatetoNormalFormat(String ndate) {
+        String convertedDate = "";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+        Date date = null;
+        try {
+            date = dateFormat.parse(ndate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+
+        Date c1 = calendar.getTime();
+
+
+        SimpleDateFormat df = new SimpleDateFormat();
+
+            df = new SimpleDateFormat("EEE, d MMM yyyy");
+
+
+        convertedDate = df.format(c1);
+        return  convertedDate;
+    }
 
 
     private void hideKeyboard(EditText editText) {
@@ -1914,6 +2469,36 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     }
 
 
+    private String convertNormalDateintoReplacementTransactionDetailsDate(String sDate, String Time) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+
+        Date c1 = calendar.getTime();
+
+
+        SimpleDateFormat df = new SimpleDateFormat();
+        if (Time.equals("STARTTIME")) {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        } else {
+            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+
+        }
+
+        String Date = df.format(c1);
+        return Date;
+    }
+
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
@@ -1950,6 +2535,30 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     }
 
 
+
+    public String getstartDate_and_time_TransactionTable() {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
+
+    public String getendDate_and_time_TransactionTable() {
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
+
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        String FormattedTime = dfTime.format(c);
+
+        return FormattedTime;
+    }
 
     private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");

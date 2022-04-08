@@ -1,14 +1,17 @@
 package com.meatchop.tmcpartner.Settings;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,7 +36,10 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +53,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.dantsu.escposprinter.connection.usb.UsbConnection;
+import com.dantsu.escposprinter.connection.usb.UsbPrintersConnections;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
@@ -101,7 +109,7 @@ public class SettingsFragment extends Fragment {
             changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
+    LinearLayout mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -109,6 +117,7 @@ public class SettingsFragment extends Fragment {
     double screenInches;
     List<String>allowedModules_array;
 
+    List<String>printerType_ArrayList = new ArrayList<>();
 
     boolean isinventorycheck = false;
     // Local Bluetooth adapter
@@ -156,8 +165,12 @@ public class SettingsFragment extends Fragment {
     List<Modal_User> FilteredUserTableArray = new ArrayList<>();
     List<Modal_Address> FilteredAddressTableArray = new ArrayList<>();
     List<String>AddedUserKey = new ArrayList<>();
-
+    Spinner printerTypeSpinner;
     List<ModalOrderItemDetails> OrderItemDetailsTableArray = new ArrayList<>();
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.Settings";
+    RadioGroup printerTypeRadioGroup;
+    LinearLayout printerParentLayout;
+    RadioButton usbRadiobutton,bluetoothPrinterRadiobutton,posPrinterRadiobutton,nonePrinterRadiobutton;
     String vendorkey_hastinapuram = "vendor_1",vendorkey_velachery = "vendor_3",vendorkey_usertable = "";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -213,6 +226,7 @@ public class SettingsFragment extends Fragment {
         settings_scrollview = view.findViewById(R.id.settings_scrollview);
         autoRefreshingSwitch = view.findViewById(R.id.autoRefreshingSwitch);
         changeMenuItemStatus = view.findViewById(R.id.changeMenuItemStatus);
+        printerTypeSpinner  = view.findViewById(R.id.printerTypeSpinner);
         delivered_orders_timewiseReport = view.findViewById(R.id.delivered_orders_timewiseReport);
         consolidatedSalesReport = view.findViewById(R.id.consolidatedSalesReport);
         PosSalesReport = view.findViewById(R.id.PosSalesReport);
@@ -262,6 +276,14 @@ public class SettingsFragment extends Fragment {
         changeMenuItemPrice_weight = view.findViewById(R.id.changeMenuItemPrice_weight);
         add_refund_replace_order_layout= view.findViewById(R.id.add_refund_replace_order_layout);
         changeMenuItemAvail_allowNegativeStock  = view.findViewById(R.id.changeMenuItemAvail_allowNegativeStock);
+        printerTypeRadioGroup = (RadioGroup) view.findViewById(R.id.printerTypeRadioGroup);
+        printerParentLayout =  view.findViewById(R.id.printerParentLayout);
+        usbRadiobutton = view.findViewById(R.id.usbRadiobutton);
+        bluetoothPrinterRadiobutton = view.findViewById(R.id.bluetoothPrinterRadiobutton);
+        posPrinterRadiobutton = view.findViewById(R.id.posPrinterRadiobutton);
+        nonePrinterRadiobutton = view.findViewById(R.id.nonePrinterRadiobutton);
+        mobilenowisecreditOrderslist = view.findViewById(R.id.mobilenowisecreditOrderslist);
+
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -274,7 +296,29 @@ public class SettingsFragment extends Fragment {
         UserRole = shared.getString("userrole", "");
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
 
+        try{
+            SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+           String printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+            if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                changeSelectedPrinterType(posPrinterRadiobutton.getId(),true);
 
+            }
+            else if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                changeSelectedPrinterType(usbRadiobutton.getId(),true);
+
+            }
+            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                changeSelectedPrinterType(bluetoothPrinterRadiobutton.getId(),true);
+
+            }
+            else{
+                changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         userMobileNo.setText(UserPhoneNumber);
         storeName.setText(vendorName);
         DisplayMetrics dm = new DisplayMetrics();
@@ -290,6 +334,71 @@ public class SettingsFragment extends Fragment {
         viewordersLinearLayout.setVisibility(GONE);
         manageordersLinearLayout.setVisibility(GONE);
         dataAnalyticsLinearLayout.setVisibility(GONE);
+
+        nonePrinterRadiobutton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(mContext, "None", Toast.LENGTH_SHORT).show();
+              //  changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
+                if(nonePrinterRadiobutton.isSelected()){
+                    changeSelectedPrinterType(nonePrinterRadiobutton.getId(),false);
+                    // Toast.makeText(mContext, "USB", Toast.LENGTH_SHORT).show();
+
+                }
+                else{
+                    changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
+                    //Toast.makeText(mContext, "None", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+        usbRadiobutton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(usbRadiobutton.isSelected()){
+                    changeSelectedPrinterType(usbRadiobutton.getId(),false);
+                   // Toast.makeText(mContext, "USB", Toast.LENGTH_SHORT).show();
+
+                }
+                else{
+                    changeSelectedPrinterType(usbRadiobutton.getId(),true);
+                    //Toast.makeText(mContext, "None", Toast.LENGTH_SHORT).show();
+
+                }
+
+            }
+        });
+        bluetoothPrinterRadiobutton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(bluetoothPrinterRadiobutton.isSelected()){
+                    changeSelectedPrinterType(bluetoothPrinterRadiobutton.getId(),false);
+                 //   Toast.makeText(mContext, "none", Toast.LENGTH_SHORT).show();
+
+                }
+                else{
+                    changeSelectedPrinterType(bluetoothPrinterRadiobutton.getId(),true);
+                  //  Toast.makeText(mContext, "bluetooth", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+        posPrinterRadiobutton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(posPrinterRadiobutton.isSelected()){
+                    changeSelectedPrinterType(posPrinterRadiobutton.getId(),false);
+                    //Toast.makeText(mContext, "none", Toast.LENGTH_SHORT).show();
+
+                }
+                else {
+                    changeSelectedPrinterType(posPrinterRadiobutton.getId(), true);
+                  //  Toast.makeText(mContext, "POS", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
 
 
         try {
@@ -361,16 +470,18 @@ public class SettingsFragment extends Fragment {
             plotOrdersLocation_layout.setVisibility(GONE);
             delivered_orders_timewiseReport.setVisibility(View.GONE);
             slotwiseAppOrderList.setVisibility(View.GONE);
-            mobilePrinterConnectLayout.setVisibility(GONE);
+            mobilePrinterConnectLayout.setVisibility(VISIBLE);
             dataAnalyticsLinearLayout.setVisibility(GONE);
             add_refund_replace_order_layout.setVisibility(GONE);
-
-
+            printerParentLayout.setVisibility(VISIBLE);
+            connect_printer_button_widget.setVisibility(GONE);
         } else {
             //if Mobile
             addBigbasketOrders_placing_layout.setVisibility(GONE);
             addDunzoOrders_Placing_layout.setVisibility(GONE);
             swiggyOrderPlacing_layout.setVisibility(GONE);
+            printerParentLayout.setVisibility(GONE);
+            connect_printer_button_widget.setVisibility(VISIBLE);
 
             if((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))){
                 editPaymentModeOftheOrder.setVisibility(VISIBLE);
@@ -426,7 +537,7 @@ public class SettingsFragment extends Fragment {
 
         //Navaneedhan
 
-        if (UserPhoneNumber.equals("+919655212898")) {
+        if (UserPhoneNumber.equals("+916383677365")) {
             managemenuLayout.setVisibility(VISIBLE);
             changeDeliverySlotdetails.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(GONE);
@@ -490,7 +601,13 @@ public class SettingsFragment extends Fragment {
         });
 
 
-
+        mobilenowisecreditOrderslist.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, CreditOrders_MobileNumberwise_Report.class);
+                startActivity(intent);
+            }
+        });
 
 
 
@@ -866,6 +983,233 @@ public class SettingsFragment extends Fragment {
 
 
     }
+
+    @SuppressLint("NonConstantResourceId")
+    private void changeSelectedPrinterType(int radiobutton, boolean changeSelectionto) {
+
+        switch(radiobutton){
+            case R.id.usbRadiobutton:
+                // do operations specific to this selection
+                if(changeSelectionto){
+                    usbRadiobutton.setSelected(true);
+                    usbRadiobutton.setChecked(true);
+                    nonePrinterRadiobutton.setChecked(false);
+                    nonePrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setChecked(false);
+                    bluetoothPrinterRadiobutton.setSelected(false);
+                    bluetoothPrinterRadiobutton.setChecked(false);
+                    connectUSBPrinter();
+                }
+                else{
+                    usbRadiobutton.setSelected(false);
+                    usbRadiobutton.setChecked(false);
+                    nonePrinterRadiobutton.setChecked(true);
+                    nonePrinterRadiobutton.setSelected(true);
+                    posPrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setChecked(false);
+                    bluetoothPrinterRadiobutton.setSelected(false);
+                    bluetoothPrinterRadiobutton.setChecked(false);
+                    disconnectAllPrinters();
+                }
+
+
+                break;
+            case R.id.bluetoothPrinterRadiobutton:
+                if(changeSelectionto){
+                    bluetoothPrinterRadiobutton.setSelected(true);
+                    bluetoothPrinterRadiobutton.setChecked(true);
+                    nonePrinterRadiobutton.setChecked(false);
+                    nonePrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setChecked(false);
+                    usbRadiobutton.setSelected(false);
+                    usbRadiobutton.setChecked(false);
+                    connectBluetoothPrinter();
+                }
+                else{
+                    bluetoothPrinterRadiobutton.setSelected(false);
+                    bluetoothPrinterRadiobutton.setChecked(false);
+                    nonePrinterRadiobutton.setSelected(true);
+                    nonePrinterRadiobutton.setChecked(true);
+                    posPrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setChecked(false);
+                    usbRadiobutton.setSelected(false);
+                    usbRadiobutton.setChecked(false);
+                    disconnectAllPrinters();
+
+                }
+                // do operations specific to this selection
+                break;
+            case R.id.posPrinterRadiobutton:
+                // do operations specific to this selection
+                if(changeSelectionto){
+                    posPrinterRadiobutton.setSelected(true);
+                    posPrinterRadiobutton.setChecked(true);
+                    nonePrinterRadiobutton.setChecked(false);
+                    nonePrinterRadiobutton.setSelected(false);
+                    bluetoothPrinterRadiobutton.setSelected(false);
+                    bluetoothPrinterRadiobutton.setChecked(false);
+                    usbRadiobutton.setSelected(false);
+                    usbRadiobutton.setChecked(false);
+                    connectPOSPrinter();
+                }
+                else{
+                    posPrinterRadiobutton.setSelected(false);
+                    posPrinterRadiobutton.setChecked(false);
+                    nonePrinterRadiobutton.setChecked(true);
+                    nonePrinterRadiobutton.setSelected(true);
+                    bluetoothPrinterRadiobutton.setSelected(false);
+                    bluetoothPrinterRadiobutton.setChecked(false);
+                    usbRadiobutton.setSelected(false);
+                    usbRadiobutton.setChecked(false);
+                    disconnectAllPrinters();
+
+                }
+                break;
+            case R.id.nonePrinterRadiobutton:
+                // do operations specific to this selection
+                posPrinterRadiobutton.setSelected(false);
+                posPrinterRadiobutton.setChecked(false);
+                bluetoothPrinterRadiobutton.setSelected(false);
+                bluetoothPrinterRadiobutton.setChecked(false);
+                usbRadiobutton.setSelected(false);
+                usbRadiobutton.setChecked(false);
+                nonePrinterRadiobutton.setChecked(true);
+                nonePrinterRadiobutton.setSelected(true);
+                disconnectAllPrinters();
+
+                break;
+        }
+
+    }
+
+    private void disconnectAllPrinters() {
+
+        try {
+            UsbConnection usbConnection = UsbPrintersConnections.selectFirstConnected(mContext);
+            UsbManager usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+
+            if (usbConnection != null || usbManager != null) {
+                usbConnection.disconnect();
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            if (!BluetoothPrintDriver.IsNoConnection()) {
+                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                if (mBluetoothAdapter.isEnabled()) {
+                    mBluetoothAdapter.disable();
+                }
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+                SaveDatainSharedPreferences(false,String.valueOf("None"),"Disconnected","NONE");
+
+    }
+
+    private void connectBluetoothPrinter() {
+
+
+        try{
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            // If the adapter is null, then Bluetooth is not supported
+            if (mBluetoothAdapter == null) {
+                Toast.makeText(mContext, "Bluetooth is not Supported", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!mBluetoothAdapter.isEnabled()) {
+                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                // Otherwise, setup the chat session
+
+            } else {
+                if (mChatService == null) {
+
+                    setupChat();
+
+                }
+                Intent serverIntent = null;
+                //showBottomSheetDialog();
+                // Launch the DeviceListActivity to see devices and do scan
+                serverIntent = new Intent(mContext, DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+            }
+
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+     //   Toast.makeText(mContext, "Bluetooth", Toast.LENGTH_SHORT).show();
+    }
+    private void connectPOSPrinter() {
+        printerConnectionStatus_Textwidget.setText("POS Printer Connected");
+
+        SaveDatainSharedPreferences(true,String.valueOf("POS Machine"),"Connected",Constants.POS_PrinterType);
+
+   //     Toast.makeText(mContext, "POS", Toast.LENGTH_SHORT).show();
+
+    }
+    private void connectUSBPrinter() {
+        try {
+            UsbConnection usbConnection = UsbPrintersConnections.selectFirstConnected(mContext);
+            UsbManager usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
+            try {
+                if (usbConnection == null || usbManager == null) {
+
+
+
+                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.ReConnect_Instruction,
+                            R.string.OK_Text, R.string.Cancel_Text,
+                            new TMCAlertDialogClass.AlertListener() {
+                                @Override
+                                public void onYes() {
+                                    connectUSBPrinter();
+
+                                }
+
+                                @Override
+                                public void onNo() {
+                                    changeSelectedPrinterType(usbRadiobutton.getId(),false);
+                                    return;
+                                }
+                            });
+
+                    return;
+                }
+            }
+            catch (Exception e){
+
+                e.printStackTrace();
+            }
+            PendingIntent permissionIntent = PendingIntent.getBroadcast(
+                    mContext,
+                    0,
+                    new Intent(ACTION_USB_PERMISSION),
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0
+            );
+            IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+            mContext.registerReceiver(usbReceiver_settings, filter);
+            usbManager.requestPermission(usbConnection.getDevice(), permissionIntent);
+
+        }
+        catch (Exception e){
+
+            e.printStackTrace();
+        }
+    }
+
 
     private void GetOrderItemDetailsAndGenerateSheet() {
 
@@ -2189,7 +2533,7 @@ public class SettingsFragment extends Fragment {
         SharedPreferences sharedPreferences
                 = mContext.getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
-
+        Constants.default_mobileScreenSize=7;
         SharedPreferences.Editor myEdit
                 = sharedPreferences.edit();
         myEdit.putString(
@@ -2228,6 +2572,10 @@ public class SettingsFragment extends Fragment {
         );
         myEdit.putString(
                 "VendorLatitude",
+                ""
+        );
+        myEdit.putString(
+                "MinimumScreenSizeForPos",
                 ""
         );
 
@@ -2331,7 +2679,7 @@ public class SettingsFragment extends Fragment {
                             printerName = mConnectedDeviceName;
                            // setTitle(R.string.title_connected_to);
                             //setTitle(mConnectedDeviceName);
-                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus,Constants.Bluetooth_PrinterType);
 
                             break;
                         case BluetoothPrintDriver.STATE_CONNECTING:
@@ -2340,7 +2688,8 @@ public class SettingsFragment extends Fragment {
                             isPrinterCnnected =false;
                             printerStatus = "Connecting";
                             printerName = mConnectedDeviceName;
-                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus,Constants.Bluetooth_PrinterType);
+
 
                             break;
                         case BluetoothPrintDriver.STATE_LISTEN:
@@ -2352,7 +2701,15 @@ public class SettingsFragment extends Fragment {
                             isPrinterCnnected =false;
                             printerStatus = "Not Connected";
                             printerName = mConnectedDeviceName;
-                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+                            try{
+                                changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus,Constants.Bluetooth_PrinterType);
+
 
                             break;
                     }
@@ -2435,6 +2792,12 @@ public class SettingsFragment extends Fragment {
                 } else {
                     // User did not enable Bluetooth or an error occured
                     Log.d("TAG", "BT not enabled");
+                    try{
+                        changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     Toast.makeText(mContext, "bt_not_enabled_leaving", Toast.LENGTH_SHORT).show();
                     //finish();
                 }
@@ -2444,7 +2807,7 @@ public class SettingsFragment extends Fragment {
 
 
 
-    private void SaveDatainSharedPreferences(boolean isPrinterCnnected, String printerName, String printerStatus) {
+    private void SaveDatainSharedPreferences(boolean isPrinterConnected, String printerName, String printerStatus, String printerType) {
         SharedPreferences sharedPreferences
                 = mContext.getSharedPreferences("PrinterConnectionData",
                 MODE_PRIVATE);
@@ -2459,7 +2822,11 @@ public class SettingsFragment extends Fragment {
                 printerName);
         myEdit.putBoolean(
                 "isPrinterConnected",
-                isPrinterCnnected);
+                isPrinterConnected);
+
+        myEdit.putString(
+                "printerType",
+                printerType);
         myEdit.apply();
 
 
@@ -2675,7 +3042,29 @@ public class SettingsFragment extends Fragment {
 
 
     }
-
+    private final BroadcastReceiver usbReceiver_settings = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (context) {
+                    UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+                    UsbDevice usbDevice = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbManager != null && usbDevice != null) {
+                            SaveDatainSharedPreferences(true,String.valueOf(usbDevice.getDeviceName()),"Connected",Constants.USB_PrinterType);
+                            printerConnectionStatus_Textwidget.setText("USB Printer Connected");
+                        }
+                        else{
+                            connectUSBPrinter();
+                        }
+                    }
+                    else{
+                        connectUSBPrinter();
+                    }
+                }
+            }
+        }
+    };
 
     private void openConsolidatedSalesReportActivity() {
         SharedPreferences sharedPreferences
@@ -2699,6 +3088,7 @@ public class SettingsFragment extends Fragment {
     private void signOutfromAWSandClearSharedPref() {
 
         AWSMobileClient.getInstance().signOut();
+        Constants.default_mobileScreenSize=7;
 
 
         SharedPreferences sharedPreferences
@@ -2707,7 +3097,10 @@ public class SettingsFragment extends Fragment {
 
         SharedPreferences.Editor myEdit
                 = sharedPreferences.edit();
-
+        myEdit.putString(
+                "MinimumScreenSizeForPos",
+                ""
+        );
         myEdit.putBoolean(
                 "VendorLoginStatus",
                 false);

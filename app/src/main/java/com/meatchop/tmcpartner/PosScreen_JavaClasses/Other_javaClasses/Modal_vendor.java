@@ -2,7 +2,7 @@ package com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses;
 
 public class Modal_vendor {
     String pincode="",addressline1 ="", addressline2 ="", vendortype="",vendormobile="",status="",key="",inventorycheck = "",istestvendor ="",vendorname="";
-    String get,vendorfssaino ="",locationlat="",locationlong="",inventorycheckpos="";
+    String get,defaultprintertype="",vendorfssaino ="",locationlat="",locationlong="",inventorycheckpos="" , minimumscreensizeforpos ="";
 
 
     public String getGet(String name) {
@@ -12,6 +12,9 @@ public class Modal_vendor {
         }
         else if(name.equals("vendormobile")){
             value = this.vendormobile;
+        }
+        else if(name.equals("minimumscreensizeforpos")){
+            value = this.minimumscreensizeforpos;
         }
         else if(name.equals("status")){
             value = this.status;
@@ -57,9 +60,27 @@ public class Modal_vendor {
         else if(name.equals("inventorycheckpos")){
             value = this.inventorycheckpos;
         }
-
+        else if(name.equals("defaultprintertype")){
+            value = this.defaultprintertype;
+        }
 
         return value;
+    }
+
+    public String getDefaultprintertype() {
+        return defaultprintertype;
+    }
+
+    public void setDefaultprintertype(String defaultprintertype) {
+        this.defaultprintertype = defaultprintertype;
+    }
+
+    public String getMinimumscreensizeforpos() {
+        return minimumscreensizeforpos;
+    }
+
+    public void setMinimumscreensizeforpos(String minimumscreensizeforpos) {
+        this.minimumscreensizeforpos = minimumscreensizeforpos;
     }
 
     public String getPincode() {

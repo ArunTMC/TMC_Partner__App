@@ -1,6 +1,7 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
-import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -48,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
     Context mContext;
@@ -70,6 +68,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+    String printerType_sharedPreference = "";
+    String printerStatus_sharedPreference = "";
+
+    BluetoothAdapter mBluetoothAdapter =null;
 
 
     public Adapter_Pos_ManageOrders_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_ManageOrderFragment pos_manageOrderFragment, String orderStatus) {
@@ -153,13 +155,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         final TextView changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
         SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-
+        SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+        printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+        printerStatus_sharedPreference   = (shared_PF_PrinterData.getString("printerStatus", ""));
 
         StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
         StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
         StoreAddressLine3 = (shared.getString("VendorPincode", ""));
         StoreLanLine = (shared.getString("VendorMobileNumber", ""));
-
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
         //Log.i("Tag","Order Pos:   "+ Pos_ManageOrderFragment.sorted_OrdersList.get(pos));
 
@@ -837,12 +840,63 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                     if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                         try {
+                            if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                 pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedBillDetails);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                if(i != -1){
+                                    printRecipt(selectedBillDetails);
+
+                                }
+                                else{
+                                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Pos_Printer_Not_Connected,
+                                            R.string.OK_Text,R.string.Empty_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+                                                    //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+                                }
+
+                            }
+                            else {
+                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Please_select_printer_type,
+                                        R.string.OK_Text,R.string.Empty_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+                                                //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+
+                                            }
+                                        });
+                            }
+
+/*
+
                             Thread t = new Thread() {
                                 public void run() {
-                                    printRecipt(selectedBillDetails);
+
                                 }
                             };
                             t.start();
+
+ */
                         } catch (Exception e) {
                             e.printStackTrace();
 
@@ -897,9 +951,61 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                     if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                         try {
+
+                            if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedBillDetails);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                if(i != -1){
+                                    printRecipt(selectedBillDetails);
+
+                                }
+                                else{
+                                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Pos_Printer_Not_Connected,
+                                            R.string.OK_Text,R.string.Empty_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+                                                    //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+                                }
+
+                            }
+                            else {
+                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Please_select_printer_type,
+                                        R.string.OK_Text,R.string.Empty_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+                                                //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+
+                                            }
+                                        });
+                            }
+
+                            //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
                             Thread t = new Thread() {
                                 public void run() {
-                                    printRecipt(selectedBillDetails);
+                                  //  printRecipt(selectedBillDetails);
+                                    //pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedBillDetails);
+
+
                                 }
                             };
                             t.start();
@@ -962,9 +1068,59 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                     if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                         try {
+                            if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedBillDetails);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                if(i != -1){
+                                    printRecipt(selectedBillDetails);
+
+                                }
+                                else{
+                                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Pos_Printer_Not_Connected,
+                                            R.string.OK_Text,R.string.Empty_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+                                                    //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+                                }
+                            }
+                            else {
+                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Please_select_printer_type,
+                                        R.string.OK_Text,R.string.Empty_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+                                                //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+
+                                            }
+                                        });
+                            }
+
+                            //     pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
                             Thread t = new Thread() {
                                 public void run() {
-                                    printRecipt(selectedBillDetails);
+                                   // printRecipt(selectedBillDetails);
+                                  //  pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedBillDetails);
+                                    //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
+
                                 }
                             };
                             t.start();
@@ -1222,9 +1378,60 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                 notifyDataSetChanged();
 
                                 try {
+                                    if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                        pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedOrderr);
+
+                                    }
+                                    else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                        pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedOrderr);
+
+                                    }
+                                    else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                        int ii = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                        if(ii != -1){
+                                            printRecipt(selectedOrderr);
+
+                                        }
+                                        else{
+                                            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Pos_Printer_Not_Connected,
+                                                    R.string.OK_Text,R.string.Empty_Text,
+                                                    new TMCAlertDialogClass.AlertListener() {
+                                                        @Override
+                                                        public void onYes() {
+                                                            //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                        }
+
+                                                        @Override
+                                                        public void onNo() {
+
+                                                        }
+                                                    });
+                                        }
+                                    }
+                                    else {
+                                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Please_select_printer_type,
+                                                R.string.OK_Text,R.string.Empty_Text,
+                                                new TMCAlertDialogClass.AlertListener() {
+                                                    @Override
+                                                    public void onYes() {
+                                                        //Toast.makeText(mContext,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                                    }
+
+                                                    @Override
+                                                    public void onNo() {
+
+                                                    }
+                                                });
+                                    }
+
+
+                                    //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedOrderr);
                                     Thread t = new Thread() {
                                         public void run() {
-                                            printRecipt(selectedOrderr);
+                                            //printRecipt(selectedOrderr);
+                                         //   pos_manageOrderFragment.printReciptUsingBluetoothPrinter(selectedOrderr);
+
+
                                         }
                                     };
                                     t.start();
@@ -2230,6 +2437,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                     Thread t = new Thread() {
                                         public void run() {
                                             printRecipt(selectedBillDetails);
+
                                         }
                                     };
                                     t.start();

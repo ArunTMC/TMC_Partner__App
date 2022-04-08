@@ -55,6 +55,7 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
@@ -64,7 +65,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -166,6 +169,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     private  boolean isStockOutGoingAlreadyCalledForthisItem =false;
     public static List<String> StockBalanceChangedForThisItemList = new ArrayList<>();
+
+
+    double totalamountUserHaveAsCredit =0;
+    public  boolean isAddOrUpdateCreditOrderDetailsIsCalled = false;
 
     public NewOrderScreenFragment_mobile() {
         // Required empty public constructor
@@ -322,7 +329,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
                 showProgressBar(true);
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetMobileAppData, null,
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPOSMobileAppData, null,
                         new com.android.volley.Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(@NonNull JSONObject response) {
@@ -890,15 +897,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                             @Override
                             public void onNo() {
-
-                                if (!isOrderDetailsMethodCalled) {
-
-                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
+                                if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
+                                    GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
                                 }
-                                if (!isOrderTrackingDetailsMethodCalled) {
+                                else{
+                                    if (!isOrderDetailsMethodCalled) {
 
-                                    PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
+                                    }
+                                    if (!isOrderTrackingDetailsMethodCalled) {
+
+                                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                    }
                                 }
+
 
 
 
@@ -945,13 +957,18 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 @Override
                                 public void onNo() {
 
-                                    if (!isOrderDetailsMethodCalled) {
-
-                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
+                                    if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
+                                        GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
                                     }
-                                    if (!isOrderTrackingDetailsMethodCalled) {
+                                    else{
+                                        if (!isOrderDetailsMethodCalled) {
 
-                                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
+                                        }
+                                        if (!isOrderTrackingDetailsMethodCalled) {
+
+                                            PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                        }
                                     }
 
 
@@ -980,14 +997,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 }
                 else{
 
-                    if (!isOrderDetailsMethodCalled) {
-
-                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,true);
+                    if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
+                        GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
                     }
-                    if (!isOrderTrackingDetailsMethodCalled) {
+                    else{
+                        if (!isOrderDetailsMethodCalled) {
 
-                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,true);
+                        }
+                        if (!isOrderTrackingDetailsMethodCalled) {
+
+                            PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                        }
                     }
+
 
 
 
@@ -2550,6 +2573,49 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         }
 
 
+
+        if(String.valueOf(Payment_mode).toUpperCase().equals(Constants.CREDIT)){
+            double payableAmount_double = 0;
+            String usermobileno = "";
+            try{
+                usermobileno = "+91"+customermobileno;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try{
+                if((!finaltoPayAmountinmethod.equals("null")) && (!finaltoPayAmountinmethod.equals("")) && (!finaltoPayAmountinmethod.equals(null)) ){
+                    payableAmount_double  = Double.parseDouble(finaltoPayAmountinmethod);
+
+                }
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try {
+                if(totalamountUserHaveAsCredit == 0){
+                    AddOrUpdateDatainCreditOrderDetailsTable(payableAmount_double, orderid,usermobileno,orderplacedTime,"ADD",payableAmount_double);
+
+                }
+                else{
+                    double newamountUserHaveAsCredit =0;
+                    newamountUserHaveAsCredit = payableAmount_double + totalamountUserHaveAsCredit;
+                    AddOrUpdateDatainCreditOrderDetailsTable(newamountUserHaveAsCredit, orderid,usermobileno,orderplacedTime,"UPDATE",payableAmount_double);
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+
+
+            }
+
+
+        }
+
+
         JSONObject jsonObject = new JSONObject();
         double  CouponDiscountAmount_double =0;
         try {
@@ -3527,6 +3593,159 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
     }
+    private void AddOrUpdateDatainCreditOrderDetailsTable(double newamountUserHaveAsCredit, String orderid, String usermobileno, String orderplacedTime, String transactionType, double payableAmountDouble) {
+
+
+        if(isAddOrUpdateCreditOrderDetailsIsCalled){
+            return;
+        }
+        isAddOrUpdateCreditOrderDetailsIsCalled =true;
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("lastupdatedtime", orderplacedTime);
+            jsonObject.put("totalamountincredit", Math.round(newamountUserHaveAsCredit));
+            jsonObject.put("vendorkey", vendorKey);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String  apiString = "";
+        if(transactionType.toUpperCase().equals("ADD")){
+            apiString = Constants. api_addCreditOrderDetailsTable;
+        }
+        else if(transactionType.toUpperCase().equals("UPDATE")){
+            apiString = Constants. api_UpdateCreditOrderDetailsTable;
+        }
+
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, apiString,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+
+                        addCreditOrdersTransactionDetails(orderid,usermobileno,vendorKey,totalamountUserHaveAsCredit,payableAmountDouble,newamountUserHaveAsCredit,orderplacedTime,transactionType);
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+                    isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+    }
+
+    private void addCreditOrdersTransactionDetails(String orderid, String usermobileno, String vendorKey, double oldamountUserHaveAsCredit, double payableAmountDouble, double newamountUserHaveAsCredit, String orderplacedTime, String transactionType) {
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+            jsonObject.put("vendorkey", vendorKey);
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("transactiontime", orderplacedTime);
+            jsonObject.put("transactiontype", Constants.CREDIT_AMOUNT_ADDED);
+            jsonObject.put("orderid", orderid);
+            jsonObject.put("oldamountincredit", oldamountUserHaveAsCredit);
+            jsonObject.put("transactionvalue", Math.round(payableAmountDouble));
+            jsonObject.put("newamountincredit",Math.round( newamountUserHaveAsCredit));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addCreditOrdersTransactionDetailsTable,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                    if (message.equals("success")) {
+
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+                    isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                isAddOrUpdateCreditOrderDetailsIsCalled =false;
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
 
     private void printRecipt(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype) {
 /*
@@ -4192,7 +4411,65 @@ showProgressBar(true);
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
 
+                        if(payment_mode.toString().toUpperCase().equals(Constants.CREDIT)){
 
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString("Old Amount need to be Paid : " +String.valueOf(Math.round(totalamountUserHaveAsCredit)) + " \n");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString("total Amount need to be Paid = (Old amount + Current Bill Amount ) \n");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            String payableamountPrint = "";
+                            try{
+                                payableamountPrint = finaltoPayAmountinmethod;
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+
+                            }
+
+
+                            double payableamountdoublePrint =0;
+                            try{
+                                payableamountdoublePrint = Math.round(Double.parseDouble(String.valueOf(payableamountPrint)));
+                            }
+                            catch (Exception e){
+                                payableamountdoublePrint = 0;
+                                e.printStackTrace();
+
+                            }
+
+
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString("total Amount need to be Paid : " +  String.valueOf(Math.round(totalamountUserHaveAsCredit+payableamountdoublePrint))+ " \n");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                            BluetoothPrintDriver.printString("----------------------------------------------");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                        }
 
                         BluetoothPrintDriver.Begin();
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
@@ -4905,13 +5182,18 @@ showProgressBar(true);
                             // setTitle(R.string.title_connected_to);
                             //setTitle(mConnectedDeviceName);
                             SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
-                            if (!isOrderDetailsMethodCalled) {
-
-                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, true);
+                            if(String.valueOf(selectedPaymentMode).toUpperCase().equals(Constants.CREDIT)){
+                                GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
                             }
-                            if (!isOrderTrackingDetailsMethodCalled) {
+                            else{
+                                if (!isOrderDetailsMethodCalled) {
 
-                                PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod,true);
+                                }
+                                if (!isOrderTrackingDetailsMethodCalled) {
+
+                                    PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                }
                             }
 
 
@@ -5005,13 +5287,18 @@ showProgressBar(true);
 
                                     @Override
                                     public void onNo() {
-                                        if (!isOrderDetailsMethodCalled) {
-
-                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, false);
+                                        if(String.valueOf(selectedPaymentMode).toUpperCase().equals(Constants.CREDIT)){
+                                            GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
                                         }
-                                        if (!isOrderTrackingDetailsMethodCalled) {
+                                        else{
+                                            if (!isOrderDetailsMethodCalled) {
 
-                                            PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod,false);
+                                            }
+                                            if (!isOrderTrackingDetailsMethodCalled) {
+
+                                                PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                            }
                                         }
 
 
@@ -5090,6 +5377,123 @@ showProgressBar(true);
         }
     }
 
+    private void GetDatafromCreditOrderDetailsTable(String paymentMode, long sTime, String currenttime) {
+        totalamountUserHaveAsCredit = 0;
+        String mobileno =  "+91" + customermobileno;
+
+        try {
+            mobileno = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetCreditOrdersUsingMobilenoWithVendorkey +"?usermobileno="+mobileno+"&vendorkey="+vendorKey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+
+                            Log.d(Constants.TAG, " response: " + response);
+                            try {
+                                String jsonString =response.toString();
+                                JSONObject jsonObject = new JSONObject(jsonString);
+                                JSONArray JArray  = jsonObject.getJSONArray("content");
+                                int i1=0;
+                                int arrayLength = JArray.length();
+
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        try {
+                                            if(json.has("totalamountincredit")) {
+                                                totalamountUserHaveAsCredit = Double.parseDouble(json.getString("totalamountincredit"));
+                                            }
+                                            else{
+                                                totalamountUserHaveAsCredit =0;
+                                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                                            }
+                                        }
+                                        catch(Exception e){
+                                            e.printStackTrace();
+                                            totalamountUserHaveAsCredit =0;
+                                        }
+
+                                        if (!isOrderDetailsMethodCalled) {
+
+                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod,false);
+                                        }
+                                        if (!isOrderTrackingDetailsMethodCalled) {
+
+                                            PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                        }
+
+                                    } catch (Exception e) {
+                                        Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                        totalamountUserHaveAsCredit =0;
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                totalamountUserHaveAsCredit =0;
+                                e.printStackTrace();
+                            }
+
+
+                        } catch (Exception e) {
+                            showProgressBar(false);
+                            Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                            totalamountUserHaveAsCredit =0;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+
+                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Mobile");
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
 
 
 

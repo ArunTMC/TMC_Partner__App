@@ -1,5 +1,8 @@
 <resources>
+    <string name="USB_DialogTitle">USB Connection</string>
     <string name="app_name">TMC Partner</string>
+    <string name="USBPrinterNotConnected">No USB printer found.</string>
+
 
     //Login
     <string name="OTP_Info">We will send you One Time Password </string>
@@ -19,11 +22,14 @@
     <string name="Yes_Text">Yes </string>
     <string name="No_Text">No </string>
     <string name="Empty_Text"> </string>
+    <string name="ReConnect_Instruction"> Printer Disconnected . Please Reconnect the Printer and Click OK !!!  </string>
+
     <string name="RePrint_Instruction">Do you want to another Copy ? </string>
     <string name="Do_You_Want_to_Connect_Printer_Now">Printer Is Not Connected Yet !! Do You Want to Connect Now ???</string>
     <string name="Bluetooth_turnedOff_Information">Connection Lost!! Turn On Bluetooth </string>
     <string name="Printer_is_Disconnected">Printer is Disconnected Please Goto Settings and Connect it</string>
     <string name="Please_Wait_Until_Printer_Stop">Please Wait Until Printer Stop</string>
+    <string name="OrderPlaced_Printer_is_Disconnected">ORDER PLACED !!! But Printer is Disconnected Please Goto Settings and Connect it</string>
 
     <string name="Printer_is_Disconnected_want_to_generate_TokenNo">Printer is Disconnected . Are u sure you need to Generate Token No withOut Recipt</string>
     <string name="Vendor_logoutInstruction">Are you sure you want to Logout from this Vendor </string>
@@ -40,6 +46,12 @@
     <string name="Token_No_Error_Instruction">Cant Generate Token No </string>
     <string name="OrderCancellingInstruction">Are You Sure ! You Want to Cancel this Order  </string>
     <string name="Token_No_Not_Found_Instruction">Cant Find Token No </string>
+
+    <string name="Pos_Printer_Not_Connected">POS Printer is Not Connected</string>
+
+
+    <string name="Please_select_printer_type">Please Select the Printer type in Settings </string>
+
     <string name="Token_No_Not_Updated_Instruction">Cant Update Token No </string>
     <string name="TurnOnMenuInstruction">   Turn ON this Menu  </string>
     <string name="TurnOffMenuInstruction">  Turn OFF this Menu  </string>
@@ -228,6 +240,7 @@
     <string name="ItemStatus">Item Status         </string>
     <string name="LogOut">Log out </string>
     <string name="LogInAsAnotherVendor">LogIn as another Vendor</string>
+    <string name="Printer_Type">Select any Printer Type :   </string>
     <string name="Vendor_Name">Store Name :   </string>
     <string name="total_No_of_Points_user_have">Total No.of Points User have  :   </string>
     <string name="No_of_Points_user_can_redeem"> No.of Points User can Redeem today  :   </string>
@@ -270,7 +283,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.1 </string>
+    <string name="Version_No">Version No : 1.9.1(20) </string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

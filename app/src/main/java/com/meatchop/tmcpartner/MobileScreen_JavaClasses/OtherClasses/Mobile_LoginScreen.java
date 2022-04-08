@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,7 +22,11 @@ import com.amazonaws.mobile.client.results.SignInResult;
 import com.amazonaws.mobile.client.results.SignUpResult;
 import com.amazonaws.mobile.client.results.UserCodeDeliveryDetails;
 import com.meatchop.tmcpartner.AlertDialogClass;
+import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -32,9 +37,11 @@ import static android.content.ContentValues.TAG;
 
 public class Mobile_LoginScreen extends AppCompatActivity {
     private EditText login_mobileNo_Text;
-    private String mobileNo_String;
+    private String mobileNo_String,minimumScreenSizeForPos;
     private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItemWisereport;
     private boolean vendorLoginStatusBoolean;
+    double screenInches = Constants.default_mobileScreenSize ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +57,16 @@ public class Mobile_LoginScreen extends AppCompatActivity {
 
         loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
         loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-
+        try {
+            DisplayMetrics dm = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(dm);
+            double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+            double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+            screenInches = Math.sqrt(x + y);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
 
@@ -99,6 +115,8 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                                     MODE_PRIVATE);
 
                             vendorLoginStatusBoolean = sh.getBoolean("VendorLoginStatus",false);
+                            minimumScreenSizeForPos = sh.getString("MinimumScreenSizeForPos", String.valueOf(Constants.default_mobileScreenSize));
+
                             //Log.i("Tag","VendorLoginStatus"+vendorLoginStatusBoolean);
                             runOnUiThread(new Runnable() {
 
@@ -109,13 +127,28 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                             if (vendorLoginStatusBoolean) {
                                 loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
                                 loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
+                                Constants.default_mobileScreenSize = Integer.parseInt(minimumScreenSizeForPos);
+                                if(screenInches < Constants.default_mobileScreenSize ){
+                                    i = new Intent(Mobile_LoginScreen.this, MobileScreen_Dashboard.class);
 
-                                i = new Intent(Mobile_LoginScreen.this, MobileScreen_Dashboard.class);
+                                }else {
+
+
+                                    i = new Intent(Mobile_LoginScreen.this, Pos_Dashboard_Screen.class);
+
+                                }
                             } else {
                                 loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
                                 loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
+                                if(screenInches < Constants.default_mobileScreenSize ){
+                                    i = new Intent(Mobile_LoginScreen.this, Mobile_Vendor_Selection_Screen.class);
 
-                                i = new Intent(Mobile_LoginScreen.this, Mobile_Vendor_Selection_Screen.class);
+                                }else {
+
+
+                                    i = new Intent(Mobile_LoginScreen.this, Pos_Vendor_Selection_Screen.class);
+
+                                }
                             }
                             startActivity(i);
                             finish();

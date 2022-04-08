@@ -39,7 +39,6 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
@@ -96,7 +95,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     String MenuItemKey,vendorKey,tmcSubctgykey,tmcSubctgyname,tmcctgyname;
 
     public static String completemenuItem="",completeMarinademenuItem="",completemenuItemStockAvlDetails="";
-    String UserRole,vendorEntryKey="";
+    String UserRole,vendorEntryKey="",minimumscreensizeforpos ="";
 
     String errorCode = "0";
     Dialog dialog ;
@@ -129,6 +128,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
                     vendorKey = (shared.getString("VendorKey", ""));
                     isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+                    minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
+
                     UserRole = shared.getString("userrole", "");
                     dialog = new Dialog(MobileScreen_Dashboard.this);
                     vendorEntryKey = shared.getString("VendorKey", "");
@@ -475,7 +476,19 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                        e.printStackTrace();
                                    }
 
-                                    saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+
+                                    try{
+                                        minimumscreensizeforpos =  String.valueOf(json.get("minimumscreensizeforpos"));
+
+                                    }
+                                    catch (Exception e){
+
+                                        minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
+
+
+                                        e.printStackTrace();
+                                    }
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos);
 
 
                                 } catch (JSONException e) {
@@ -484,7 +497,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
                                     //Log.d(Constants.TAG, "e: " + e.getMessage());
                                     //Log.d(Constants.TAG, "e: " + e.toString());
-                                    saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
 
                                 }
 
@@ -492,7 +505,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
 
                         }
 
@@ -504,7 +517,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
                 //Log.d(Constants.TAG, "Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "Error: " + error.toString());
-                saveInventoryCodePermisioninSharedPreference(isinventorycheck);
+                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
 
                 error.printStackTrace();
             }
@@ -890,7 +903,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     private void getDatafromMobileApp() {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetMobileAppData, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPOSMobileAppData, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -3092,7 +3105,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-    private void saveInventoryCodePermisioninSharedPreference(boolean isinventorycheck) {
+    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos) {
 
 
         SharedPreferences sharedPreferences
@@ -3106,6 +3119,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 isinventorycheck
         );
 
+        myEdit.putString(
+                "MinimumScreenSizeForPos",
+                minimumscreensizeforpos
+        );
         myEdit.apply();
 
 
