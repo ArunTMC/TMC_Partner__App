@@ -25,15 +25,12 @@ import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static android.content.ContentValues.TAG;
 
 public class Mobile_LoginScreen extends AppCompatActivity {
     private EditText login_mobileNo_Text;
@@ -127,7 +124,7 @@ public class Mobile_LoginScreen extends AppCompatActivity {
                             if (vendorLoginStatusBoolean) {
                                 loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
                                 loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
-                                Constants.default_mobileScreenSize = Integer.parseInt(minimumScreenSizeForPos);
+                                Constants.default_mobileScreenSize = Double.parseDouble(minimumScreenSizeForPos);
                                 if(screenInches < Constants.default_mobileScreenSize ){
                                     i = new Intent(Mobile_LoginScreen.this, MobileScreen_Dashboard.class);
 

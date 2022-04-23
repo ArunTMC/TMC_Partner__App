@@ -59,6 +59,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
     String Currenttime,MenuItems,orderStatusFromArray,FormattedTime,CurrentDate,formattedDate,CurrentDay,deliverytype;
     public searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber;
     public  Pos_Orders_List Pos_Orders_List;
+
     public static  BottomSheetDialog bottomSheetDialog;
     String deliverypartnerName,orderType,CalledFrom;
     BluetoothAdapter mBluetoothAdapter =null;
@@ -92,6 +93,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         this.ordersList=sorted_ordersList;
         this.orderStatus="DELIVERED";
     }
+
+
 
 
     @Nullable
@@ -862,7 +865,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                             else{
                                 searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                                searchOrdersUsingMobileNumber.printBill(modal_manageOrders_pojo_class);
+                                searchOrdersUsingMobileNumber.printBillUsingBluetoothPrinter(modal_manageOrders_pojo_class);
 
                             }
                         }
@@ -933,7 +936,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                                             }
                                             else{
-                                                searchOrdersUsingMobileNumber.printBill(modal_manageOrders_pojo_class);
+                                                searchOrdersUsingMobileNumber.printBillUsingBluetoothPrinter(modal_manageOrders_pojo_class);
 
                                             }
                                         }
@@ -1000,7 +1003,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                                                 }
                                                 else{
-                                                    searchOrdersUsingMobileNumber.printBill(modal_manageOrders_pojo_class);
+                                                    searchOrdersUsingMobileNumber.printBillUsingBluetoothPrinter(modal_manageOrders_pojo_class);
 
                                                 }
                                             }
@@ -1052,7 +1055,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                                 }
                                 else{
-                                    searchOrdersUsingMobileNumber.printBill(modal_manageOrders_pojo_class);
+                                    searchOrdersUsingMobileNumber.printBillUsingBluetoothPrinter(modal_manageOrders_pojo_class);
 
                                 }
                             }
@@ -1606,7 +1609,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                             }
                             else{
-                                searchOrdersUsingMobileNumber.printBill(modal_manageOrders_pojo_class);
+                                searchOrdersUsingMobileNumber.printBillUsingBluetoothPrinter(modal_manageOrders_pojo_class);
 
                             }
                         }

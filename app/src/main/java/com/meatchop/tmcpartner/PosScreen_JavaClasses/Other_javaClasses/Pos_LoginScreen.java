@@ -60,6 +60,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
             double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
             double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
             screenInches = Math.sqrt(x + y);
+         //   Toast.makeText(this, String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -252,7 +253,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
                                                   Intent i;
                                                   if (vendorLoginStatusBoolean) {
                                                       //Log.i("Tag", " Navigate to dashboard according to vendor login status");
-                                                      Constants.default_mobileScreenSize = Integer.parseInt(minimumScreenSizeForPos);
+                                                      Constants.default_mobileScreenSize = Double.parseDouble(minimumScreenSizeForPos);
 
                                                       loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                                                       loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);

@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -54,7 +55,9 @@ import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_AutoCompleteWholeSaleCustomers;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
@@ -113,7 +116,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     static Adapter_NewOrderScreenFragment_Mobile adapterNewOrderScreenFragmentMobile ;
     String FormattedTime,CurrentDate,formattedDate,CurrentDay;
-    String vendorKey="",usermobileNo ="";
+    String vendorKey="",usermobileNo ="",vendorType="";
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
@@ -121,7 +124,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     String selectedPaymentMode  ="NONE SELECTED";
     String selectedOrderType  ="POS Order";
 
-    public static BottomSheetDialog bottomSheetDialog;
+    public  BottomSheetDialog bottomSheetDialog;
     BottomNavigationView bottomNavigationView;
     boolean isUpdateCouponTransactionMethodCalled=false;
     private  boolean isOrderDetailsMethodCalled =false;
@@ -161,6 +164,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     String finaltoPayAmountinmethod="";
     String mConnectedDeviceName ;
     boolean isPrinterCnnected = false;
+    public boolean shouldGetPrintNow_Global = false;
     String printerName = "";
     String printerStatus= "";
     boolean isPrinterCnnectedfromSP = false;
@@ -173,6 +177,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     double totalamountUserHaveAsCredit =0;
     public  boolean isAddOrUpdateCreditOrderDetailsIsCalled = false;
+    List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList=new ArrayList<>();
 
     public NewOrderScreenFragment_mobile() {
         // Required empty public constructor
@@ -203,6 +208,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         try{
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
+            vendorType = shared.getString("VendorType","");
+
             usermobileNo = (shared.getString("UserPhoneNumber", "+91"));
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
             StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
@@ -528,7 +535,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     private void openBottomSheetToCompleteBilling() {
 
-
         EditText customermobileno_editwidget = bottomSheetDialog.findViewById(R.id.customermobileno_editwidget);
         EditText discount_editWidget = bottomSheetDialog.findViewById(R.id.discount_editWidget);
         CheckBox userstoreNumberCheckboxWidget = bottomSheetDialog.findViewById(R.id.userstoreNumberCheckboxWidget);
@@ -538,9 +544,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         TextView discountTextWidget = bottomSheetDialog.findViewById(R.id.discountTextWidget);
         TextView toPay_textWidget = bottomSheetDialog.findViewById(R.id.toPay_textWidget);
         Spinner paymentModeSpinner_Widget = bottomSheetDialog.findViewById(R.id.paymentModeSpinner_Widget);
-
+        AutoCompleteTextView autoCompleteCustomerName_widget = bottomSheetDialog.findViewById(R.id.autoCompleteCustomerName_widget);
         Spinner orderTypeSpinner_Widget = bottomSheetDialog.findViewById(R.id.orderTypeSpinner_Widget);
 
+         LinearLayout customerName_layout = bottomSheetDialog.findViewById(R.id.customerName_layout);
         Objects.requireNonNull(itemtotal_textWidget).setText(finaltoPayAmount);
         Objects.requireNonNull(toPay_textWidget).setText(finaltoPayAmount);
         Objects.requireNonNull(discountTextWidget).setText("0");
@@ -558,6 +565,42 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         discountAmount ="0";
         discount_editWidget.setText("0");
+
+
+        if(vendorType.equals(Constants.WholeSales_VendorType)){
+            customerName_layout.setVisibility(View.VISIBLE);
+             wholeSaleCustomersArrayList.clear();
+            userstoreNumberCheckboxWidget.setVisibility(View.GONE);
+            final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
+
+            Gson gson = new Gson();
+            String json = sharedPreferencesMenuitem.getString("WholeSaleCustomerDetails", "");
+            if (json.isEmpty()) {
+                Toast.makeText( mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
+            } else {
+                Type type = new TypeToken<List<Modal_WholeSaleCustomers>>() {
+                }.getType();
+                wholeSaleCustomersArrayList  = gson.fromJson(json, type);
+            }
+
+            if(wholeSaleCustomersArrayList.size()>0){
+                Adapter_AutoCompleteWholeSaleCustomers_Mobile adapter_autoCompleteWholeSaleCustomers = new Adapter_AutoCompleteWholeSaleCustomers_Mobile(mContext,wholeSaleCustomersArrayList, NewOrderScreenFragment_mobile.this);
+                //adapter_autoCompleteWholeSaleCustomers.setHandler(newHandler());
+
+
+                autoCompleteCustomerName_widget.setAdapter(adapter_autoCompleteWholeSaleCustomers);
+
+            }
+
+        }
+        else{
+            userstoreNumberCheckboxWidget.setVisibility(View.VISIBLE);
+
+            customerName_layout.setVisibility(View.GONE);
+        }
+
+
+
         Objects.requireNonNull(userstoreNumberCheckboxWidget).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -770,6 +813,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
 
+
     private void PlaceOrdersinDatabaseaAndPrintRecipt(String paymentMode, String finaltoPayAmountinmethod, long sTime, String currenttime, List<String> cart_Item_list) {
         showProgressBar(true);
 
@@ -902,8 +946,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 }
                                 else{
                                     if (!isOrderDetailsMethodCalled) {
-
-                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
+                                        shouldGetPrintNow_Global = false;
+                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                     }
                                     if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -962,8 +1006,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     }
                                     else{
                                         if (!isOrderDetailsMethodCalled) {
-
-                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
+                                            shouldGetPrintNow_Global = false;
+                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                         }
                                         if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -1002,8 +1046,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     }
                     else{
                         if (!isOrderDetailsMethodCalled) {
-
-                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,true);
+                            shouldGetPrintNow_Global = true;
+                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                         }
                         if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -1573,6 +1617,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         if(isOrderDetailsMethodCalled){
             return;
         }
+
             showProgressBar(true);
         isOrderDetailsMethodCalled = true;
         String newOrderId = String.valueOf(sTime);
@@ -2678,6 +2723,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
+        boolean finalShouldGetPrintNow = shouldGetPrintNow;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
@@ -2690,14 +2736,14 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                         // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                         // startTwice.main();
 
-                        if(shouldGetPrintNow) {
+                        if(finalShouldGetPrintNow) {
 
                             printRecipt(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype);
 
                             //  showProgressBar(false);
                         }
                         else{
-                            if(isinventorycheck){
+                            if(!isinventorycheck){
                             turnoffProgressBarAndResetArray();
                             }
 
@@ -2865,7 +2911,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     }
 
     private void getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(String stockIncomingKey_avlDetails, String key_avlDetails, String menuItemKey_avlDetails, String receivedStock_AvlDetails, double currentBillingItemWeight_double, String itemName, String barcode, String orderid, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey, boolean isitemAvailable, boolean allowNegativeStock) {
-
+    showProgressBar(true);
         if((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" - ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil")) ) {
 
             Runnable runnable = new Runnable() {
@@ -3213,6 +3259,11 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             new Thread(runnable).start();//to work in Background
 
         }
+        else{
+            turnoffProgressBarAndResetArray();
+            Toast.makeText(mContext, "No  Menu Item Stock  details for " + itemName, Toast.LENGTH_LONG).show();
+
+        }
     }
 
     private void AddDataInStockBalanceTransactionHistory(double finalStockBalance_double, double stockBalanceBeforeMinusCurrentItem, String menuItemKey_avlDetails, String stockIncomingKey_avlDetails, String itemName, String barcode) {
@@ -3248,7 +3299,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     String message =  response.getString("message");
                     if(message.equals("success")) {
                         //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
-                        showProgressBar(false);
+                    //    showProgressBar(false);
                     }
 
 
@@ -3298,7 +3349,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     private void UpdateStockBalanceinMenuItemStockAvlDetail(String key_avlDetails, double finalStockBalance_double, boolean changeItemAvailability, boolean isitemAvailable, String menuItemKey_avlDetails, String tmcSubCtgyKey, String itemName) {
 
 
-        showProgressBar(true);
+      //  showProgressBar(true);
         JSONObject  jsonObject = new JSONObject();
         if(changeItemAvailability){
 
@@ -3349,7 +3400,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                         }
                     }
 
-                    showProgressBar(false);
+                //    showProgressBar(false);
 
                 }
             }, new Response.ErrorListener() {
@@ -3359,7 +3410,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     //Log.d(Constants.TAG, "Error: " + error.getMessage());
                     //Log.d(Constants.TAG, "Error: " + error.toString());
                     showProgressBar(false);
-                    Toast.makeText(mContext,"Failed to change express delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext,"Failed to  update Menu Item",Toast.LENGTH_LONG).show();
 
                     error.printStackTrace();
                 }
@@ -3429,64 +3480,73 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
  */
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+if(!key_avlDetails.equals("")) {
+    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, api_Update_MenuItemStockAvlDetails
+            ,
+            jsonObject, new Response.Listener<JSONObject>() {
+        @Override
+        public void onResponse(@NonNull JSONObject response) {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, api_Update_MenuItemStockAvlDetails
-                ,
-                jsonObject, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(@NonNull JSONObject response) {
+            try {
 
-                try {
-
-                    String message =  response.getString("message");
-                    if(message.equals("success")) {
-                        //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
-                        showProgressBar(false);
-                        turnoffProgressBarAndResetArray();
-
-                    }
+                String message = response.getString("message");
+                if (message.equals("success")) {
+                    //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
+                    // showProgressBar(false);
 
 
-                } catch (JSONException e) {
-                   // showProgressBar(false);
-                    Toast.makeText(mContext,"Failed to change express delivery slot status in Delivery slots",Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
+                } else {
+                    Toast.makeText(mContext, "No  Menu Item Stock Avl details for " + itemName, Toast.LENGTH_LONG).show();
+
+                }
+                if (!shouldGetPrintNow_Global) {
+                    turnoffProgressBarAndResetArray();
+
+
                 }
 
 
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(@NonNull VolleyError error) {
-                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "Error: " + error.toString());
+            } catch (JSONException e) {
                 showProgressBar(false);
-                Toast.makeText(mContext,"Failed to change express delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
-
-                error.printStackTrace();
+                turnoffProgressBarAndResetArray();
+                Toast.makeText(mContext, "Failed to  update Menu Item Stock Avl details", Toast.LENGTH_LONG).show();
+                e.printStackTrace();
             }
-        }) {
 
 
-            @NonNull
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                final Map<String, String> params = new HashMap<>();
-                params.put("Content-Type", "application/json");
+        }
+    }, new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(@NonNull VolleyError error) {
+            //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+            //Log.d(Constants.TAG, "Error: " + error.getMessage());
+            //Log.d(Constants.TAG, "Error: " + error.toString());
+            showProgressBar(false);
+            turnoffProgressBarAndResetArray();
+            Toast.makeText(mContext, "Failed to  update Menu Item Stock Avl details", Toast.LENGTH_LONG).show();
 
-                return params;
-            }
-        };
-        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-        jsonObjectRequest.setRetryPolicy(policy);
-
-        // Make the request
-        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
-
-
+            error.printStackTrace();
+        }
+    }) {
 
 
+        @NonNull
+        @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            final Map<String, String> params = new HashMap<>();
+            params.put("Content-Type", "application/json");
+
+            return params;
+        }
+    };
+    RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+    jsonObjectRequest.setRetryPolicy(policy);
+
+    // Make the request
+    Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+}
 
     }
 
@@ -3783,15 +3843,40 @@ showProgressBar(true);
 
 
                     BluetoothPrintDriver.Begin();
+                    if(vendorKey.equals("vendor_4")){
 
-                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
-                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
-                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
-                    BluetoothPrintDriver.SetAlignMode((byte) 49);
-                    BluetoothPrintDriver.printString(Title);
-                    BluetoothPrintDriver.BT_Write("\r");
-                    BluetoothPrintDriver.LF();
+                        Title = "MK Proteins";
 
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString(Title);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
+                    else {
+                        Title = "The Meat Chop";
+
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString(Title);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+
+                    }
 
                     BluetoothPrintDriver.Begin();
                     BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
@@ -4417,12 +4502,12 @@ showProgressBar(true);
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                            BluetoothPrintDriver.printString("Old Amount need to be Paid : " +String.valueOf(Math.round(totalamountUserHaveAsCredit)) + " \n");
+                            BluetoothPrintDriver.printString("Old Amount need to Pay : Rs. " +String.valueOf(Math.round(totalamountUserHaveAsCredit)) + " \n");
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
 
 
-                            BluetoothPrintDriver.Begin();
+                        /*    BluetoothPrintDriver.Begin();
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
@@ -4430,6 +4515,8 @@ showProgressBar(true);
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
 
+
+                         */
 
                             String payableamountPrint = "";
                             try{
@@ -4458,7 +4545,7 @@ showProgressBar(true);
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                            BluetoothPrintDriver.printString("total Amount need to be Paid : " +  String.valueOf(Math.round(totalamountUserHaveAsCredit+payableamountdoublePrint))+ " \n");
+                            BluetoothPrintDriver.printString("New Amount need to Pay : Rs. " +  String.valueOf(Math.round(totalamountUserHaveAsCredit+payableamountdoublePrint))+ " \n");
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
 
@@ -4596,7 +4683,7 @@ showProgressBar(true);
                 cartItem_hashmap.clear();
                 ispaymentMode_Clicked = false;
                 isOrderDetailsMethodCalled = false;
-
+                shouldGetPrintNow_Global = false;
                 isPaymentDetailsMethodCalled = false;
                 isOrderTrackingDetailsMethodCalled = false;
                 new_to_pay_Amount = 0;
@@ -5187,8 +5274,8 @@ showProgressBar(true);
                             }
                             else{
                                 if (!isOrderDetailsMethodCalled) {
-
-                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod,true);
+                                    shouldGetPrintNow_Global = true;
+                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                 }
                                 if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -5292,8 +5379,8 @@ showProgressBar(true);
                                         }
                                         else{
                                             if (!isOrderDetailsMethodCalled) {
-
-                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod,false);
+                                                shouldGetPrintNow_Global = false;
+                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                             }
                                             if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -5399,35 +5486,34 @@ showProgressBar(true);
 
                             Log.d(Constants.TAG, " response: " + response);
                             try {
-                                String jsonString =response.toString();
+                                String jsonString = response.toString();
                                 JSONObject jsonObject = new JSONObject(jsonString);
-                                JSONArray JArray  = jsonObject.getJSONArray("content");
-                                int i1=0;
+                                JSONArray JArray = jsonObject.getJSONArray("content");
+                                int i1 = 0;
                                 int arrayLength = JArray.length();
+                                if (arrayLength > 0){
 
 
-                                for(;i1<(arrayLength);i1++) {
+                                for (; i1 < (arrayLength); i1++) {
 
                                     try {
                                         JSONObject json = JArray.getJSONObject(i1);
                                         try {
-                                            if(json.has("totalamountincredit")) {
+                                            if (json.has("totalamountincredit")) {
                                                 totalamountUserHaveAsCredit = Double.parseDouble(json.getString("totalamountincredit"));
-                                            }
-                                            else{
-                                                totalamountUserHaveAsCredit =0;
-                                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                            } else {
+                                                totalamountUserHaveAsCredit = 0;
+                                                Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
 
                                             }
-                                        }
-                                        catch(Exception e){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
-                                            totalamountUserHaveAsCredit =0;
+                                            totalamountUserHaveAsCredit = 0;
                                         }
 
                                         if (!isOrderDetailsMethodCalled) {
-
-                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod,false);
+                                            shouldGetPrintNow_Global = false;
+                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                         }
                                         if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -5435,11 +5521,24 @@ showProgressBar(true);
                                         }
 
                                     } catch (Exception e) {
-                                        Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
-                                        totalamountUserHaveAsCredit =0;
+                                        Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                        totalamountUserHaveAsCredit = 0;
                                         e.printStackTrace();
                                     }
                                 }
+                            }
+                            else{
+                                    totalamountUserHaveAsCredit = 0;
+
+                                    if (!isOrderDetailsMethodCalled) {
+                                        shouldGetPrintNow_Global = false;
+                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                    }
+                                    if (!isOrderTrackingDetailsMethodCalled) {
+
+                                        PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                    }
+                            }
                             } catch (Exception e) {
                                 Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
                                 totalamountUserHaveAsCredit =0;

@@ -57,7 +57,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
-
+    String vendorKey="";
     List<Modal_ManageOrders_Pojo_Class> ordersList;
     String deliverytype="",changestatusto,orderStatus,OrderKey,orderStatusfromArray,tokenNO;
     String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay;
@@ -103,6 +103,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
     public View getView(final int pos, View view, ViewGroup v) {
         @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.pos_manageorders_listview_child, (ViewGroup) view, false);
+
+
         final TextView deliveryPartner_name_widget = listViewItem.findViewById(R.id.deliveryPartner_name_widget);
         final TextView deliveryPartner_mobileNo_widget = listViewItem.findViewById(R.id.deliveryPartner_mobileNo_widget);
         final TextView orderid_text_widget = listViewItem.findViewById(R.id.orderid_text_widget);
@@ -154,11 +156,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         final TextView ready_for_pickup_delivered_button_widget =listViewItem.findViewById(R.id.ready_for_pickup_delivered_button_widget);
 
         final TextView changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
-        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+
         printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
         printerStatus_sharedPreference   = (shared_PF_PrinterData.getString("printerStatus", ""));
-
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        vendorKey = shared.getString("VendorKey","");
         StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
         StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
         StoreAddressLine3 = (shared.getString("VendorPincode", ""));
@@ -2470,10 +2473,33 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         // PrinterFunctions.OpenPort( portName, portSettings);
         //    PrinterFunctions.CheckStatus( portName, portSettings,2);
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+       /* PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
 
+
+        */
+        PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+
+        if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "MK Proteins" + "\n");
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+        }
+        else {
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+
+        }
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);

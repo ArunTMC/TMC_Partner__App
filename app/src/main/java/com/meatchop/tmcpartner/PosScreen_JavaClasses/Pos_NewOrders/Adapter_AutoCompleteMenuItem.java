@@ -31,8 +31,7 @@ import java.util.Objects;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 
-public class
-Adapter_AutoCompleteMenuItem extends ArrayAdapter<Modal_NewOrderItems> {
+public class Adapter_AutoCompleteMenuItem extends ArrayAdapter<Modal_NewOrderItems> {
     String menulist;
     private  List<Modal_NewOrderItems> menuListFull=new ArrayList<>();
     private  Context context;

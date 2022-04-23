@@ -704,6 +704,38 @@
 
 
                         </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:gravity="center_vertical"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="4.WHOLESALE ORDER SALES"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                            <TextView
+                                android:id="@+id/wholesalesOrderSales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -718,7 +750,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="4.SWIGGY SALES"
+                                android:text="5.SWIGGY SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -754,7 +786,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="5.DUNZO SALES"
+                                android:text="6.DUNZO SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -788,7 +820,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="6.BigBasket SALES"
+                                android:text="7.BigBasket SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 

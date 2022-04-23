@@ -67,12 +67,13 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
     public DeliveredOrdersTimewiseReport deliveredOrdersTimewiseReport;
     String AdapterCalledFrom ="AppSearchOrders";
     public searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber;
-    String deliverytype="";
+    String deliverytype="",vendorKey ="", vendorname = "";
 
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+    String printerType_sharedPreference="";
 
     public Adapter_Pos_SearchOrders_usingMobileNumber(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber, String orderStatus) {
         super(mContext, R.layout.pos_manageorders_listview_child, ordersList);
@@ -106,6 +107,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         this.orderStatus="DELIVERED";
     }
 
+
     @Override
     public int getCount() {
         return super.getCount();
@@ -124,6 +126,21 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
     public View getView(final int pos, View view, ViewGroup v) {
         @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.pos_manageorders_listview_child, (ViewGroup) view, false);
+
+        SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+        printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+        // printerType_sharedPreference = String.valueOf(printerType_sharedPreference.toUpperCase());
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        vendorKey = (shared.getString("VendorKey", ""));
+        vendorname = (shared.getString("VendorName", ""));
+
+        StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
+        StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
+        StoreAddressLine3 = (shared.getString("VendorPincode", ""));
+        StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+
+
+
         final TextView deliveryPartner_name_widget = listViewItem.findViewById(R.id.deliveryPartner_name_widget);
         final TextView deliveryPartner_mobileNo_widget = listViewItem.findViewById(R.id.deliveryPartner_mobileNo_widget);
         final TextView orderid_text_widget = listViewItem.findViewById(R.id.orderid_text_widget);
@@ -171,13 +188,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         final TextView cancelled_print_button_widget = listViewItem.findViewById(R.id.cancelled_print_button_widget);
 
 
-        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
-
-        StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
-        StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
-        StoreAddressLine3 = (shared.getString("VendorPincode", ""));
-        StoreLanLine = (shared.getString("VendorMobileNumber", ""));
 
 
         final TextView changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
@@ -706,6 +717,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
                 selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
+                selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
 
                 selectedBillDetails.add(selectedOrder);
                 //  OrderdItems_desp.clear();
@@ -834,7 +846,35 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                 if (ordertype.equals(Constants.POSORDER)) {
 
-                  
+
+
+                    try {
+                        if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                            searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
+                        }
+                        else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                            //printUsingBluetoothPrinterReport();
+
+                        }
+                        else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                              printRecipt(selectedBillDetails);
+
+                        }
+                        else {
+                            Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                        }
+
+
+                    }
+                    catch(Exception e ){
+
+                        Toast.makeText(mContext,"ERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                        e.printStackTrace();
+
+                    }
 
 
 
@@ -857,7 +897,33 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     try {
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                         if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
-                            searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+                            try {
+                                if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                    searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
+                                }
+                                else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                    //printUsingBluetoothPrinterReport();
+
+                                }
+                                else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                    printRecipt(selectedBillDetails);
+
+                                }
+                                else {
+                                    Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                                }
+
+
+                            }
+                            catch(Exception e ){
+
+                                Toast.makeText(mContext,"ERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                                e.printStackTrace();
+
+                            }
 
                             try {
                                 Thread t = new Thread() {
@@ -918,13 +984,39 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedOrder.orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
                 selectedOrder.deliveryamount = modal_manageOrders_pojo_class.getDeliveryamount();
                 selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
+                selectedOrder.deliverydistance = modal_manageOrders_pojo_class.getDeliverydistance();
 
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
-                if ((ordertype.equals(Constants.POSORDER))||(ordertype.equals(Constants.SwiggyOrder))||(ordertype.equals(Constants.DunzoOrder))||(ordertype.equals(Constants.BigBasket))) {
+                if ((ordertype.equals(Constants.POSORDER))||(ordertype.equals(Constants.SwiggyOrder))||(ordertype.equals(Constants.DunzoOrder))||(ordertype.equals(Constants.BigBasket)) ||(ordertype.equals(Constants.PhoneOrder))) {
                     try {
-                        Pos_Orders_List.PrintReciptUsingUSBPrinter(selectedBillDetails);
+                        try {
+                            if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                Pos_Orders_List.PrintReciptUsingUSBPrinter(selectedBillDetails);
 
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                //printUsingBluetoothPrinterReport();
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                printRecipt(selectedBillDetails);
+
+                            }
+                            else {
+                                Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                            }
+
+
+                        }
+                        catch(Exception e ){
+
+                            Toast.makeText(mContext,"ERROR !! Printer is Not WoERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                            e.printStackTrace();
+
+                        }
                         Thread t = new Thread() {
                             public void run() {
                                // printRecipt(selectedBillDetails);
@@ -943,8 +1035,33 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     try {
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                         if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
-                            searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+                            try {
+                                if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                    searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
 
+                                }
+                                else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                    //printUsingBluetoothPrinterReport();
+
+                                }
+                                else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                    printRecipt(selectedBillDetails);
+
+                                }
+                                else {
+                                    Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                                }
+
+
+                            }
+                            catch(Exception e ){
+
+                                Toast.makeText(mContext,"ERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                                e.printStackTrace();
+
+                            }
                             try {
                                 Thread t = new Thread() {
                                     public void run() {
@@ -1011,8 +1128,39 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 selectedBillDetails.add(selectedOrder);
                 OrderdItems_desp.clear();
                 if (ordertype.equals(Constants.POSORDER)) {
+
+
                     try {
-                        Pos_Orders_List.PrintReciptUsingUSBPrinter(selectedBillDetails);
+                        if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                            Pos_Orders_List.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
+                        }
+                        else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                            //printUsingBluetoothPrinterReport();
+
+                        }
+                        else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                            printRecipt(selectedBillDetails);
+
+                        }
+                        else {
+                            Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                        }
+
+
+                    }
+                    catch(Exception e ){
+
+                        Toast.makeText(mContext,"ERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                        e.printStackTrace();
+
+                    }
+
+
+
+                    try {
 
                         Thread t = new Thread() {
                             public void run() {
@@ -1033,8 +1181,35 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
                         if ((tokenNofromArray.length() > 0) && (tokenNofromArray != null) && (!tokenNofromArray.equals(""))) {
                             try {
-                                searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
 
+
+                                try {
+                                    if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                        searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedBillDetails);
+
+                                    }
+                                    else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                        //printUsingBluetoothPrinterReport();
+
+                                    }
+                                    else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                        printRecipt(selectedBillDetails);
+
+                                    }
+                                    else {
+                                        Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                                    }
+
+
+                                }
+                                catch(Exception e ){
+
+                                    Toast.makeText(mContext,"ERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                                    e.printStackTrace();
+
+                                }
                                 Thread t = new Thread() {
                                     public void run() {
                                         //printRecipt(selectedBillDetails);
@@ -1290,8 +1465,36 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                                 modal_manageOrders_pojo_class.setTokenno(tokenNo);
                                // searchOrdersUsingMobileNumber.showProgressBar(false);
                                 notifyDataSetChanged();
-                                searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedOrderr);
-                                //printRecipt(selectedOrderr);
+
+                                try {
+                                    if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                        searchOrdersUsingMobileNumber.PrintReciptUsingUSBPrinter(selectedOrderr);
+
+                                    }
+                                    else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                        //printUsingBluetoothPrinterReport();
+
+                                    }
+                                    else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                        printRecipt(selectedOrderr);
+
+                                    }
+                                    else {
+                                        Toast.makeText(mContext,"ERROR !! There is no Printer Type",Toast.LENGTH_SHORT).show();
+
+                                    }
+
+
+                                }
+                                catch(Exception e ){
+
+                                    Toast.makeText(mContext,"ERROR !! Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+
+                                    e.printStackTrace();
+
+                                }
+
+
 
                             }
                         }
@@ -2053,9 +2256,31 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         // PrinterFunctions.OpenPort( portName, portSettings);
         //    PrinterFunctions.CheckStatus( portName, portSettings,2);
-        PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+       /* PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+
+
+        */
+        if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "MK Proteins" + "\n");
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+        }
+        else {
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+
+        }
 
 
         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);

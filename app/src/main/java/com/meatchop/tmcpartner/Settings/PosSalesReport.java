@@ -5,12 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +40,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.dantsu.escposprinter.connection.DeviceConnection;
+import com.dantsu.escposprinter.connection.usb.UsbConnection;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.itextpdf.text.BaseColor;
@@ -54,7 +61,12 @@ import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.pos.printer.AsyncEscPosPrint;
+import com.pos.printer.AsyncEscPosPrinter;
+import com.pos.printer.AsyncUsbEscPosPrint;
 import com.pos.printer.PrinterFunctions;
+import com.pos.printer.usb.UsbPrintersConnectionsLocal;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,6 +91,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
@@ -166,8 +179,6 @@ public class PosSalesReport extends AppCompatActivity {
     boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
 
 
-
-    ListView posSalesReport_Listview;
     ScrollView scrollView;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -176,6 +187,13 @@ public class PosSalesReport extends AppCompatActivity {
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+
+
+    ListView posSalesReport_Listview;
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.PosSalesReport";
+    String printerType_sharedPreference="";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -279,6 +297,13 @@ public class PosSalesReport extends AppCompatActivity {
         StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
         StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
 
+        SharedPreferences shared_PF_PrinterData = getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+        printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+       // printerType_sharedPreference = String.valueOf(printerType_sharedPreference.toUpperCase());
+
+
+
+
 
         CurrentDate = getDate();
         DateString= getDate();
@@ -313,22 +338,40 @@ public class PosSalesReport extends AppCompatActivity {
         PrintReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(screenInches>8){
+                if(Order_Item_List.size()>0) {
+                    if (screenInches > Constants.default_mobileScreenSize) {
 
-                    try {
-                                printReport();
+                        try {
+                            if (printerType_sharedPreference.equals(Constants.USB_PrinterType)) {
+                                printUsingUSBPrinterReport();
 
-                    }
-                    catch(Exception e ){
+                            } else if (printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)) {
+                                printUsingBluetoothPrinterReport();
 
-                        Toast.makeText(PosSalesReport.this,"Printer is Not Working !! Please Restart the Device",Toast.LENGTH_SHORT).show();
+                            } else if (printerType_sharedPreference.equals(Constants.POS_PrinterType)) {
+                                printUsingPOSMachineReport();
 
-                        e.printStackTrace();
+                            } else {
+                                Toast.makeText(PosSalesReport.this, "ERROR !! There is no Printer Type", Toast.LENGTH_SHORT).show();
 
+                            }
+
+
+                        }
+                        catch (Exception e) {
+
+                            Toast.makeText(PosSalesReport.this, "ERROR !! Printer is Not Working !! Please Restart the Device", Toast.LENGTH_SHORT).show();
+
+                            e.printStackTrace();
+
+                        }
+                    } else {
+                        Toast.makeText(PosSalesReport.this, "Cant Find a Printer", Toast.LENGTH_LONG).show();
                     }
                 }
                 else{
-                    Toast.makeText(PosSalesReport.this,"Cant Find a Printer",Toast.LENGTH_LONG).show();
+                    Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
@@ -338,12 +381,20 @@ public class PosSalesReport extends AppCompatActivity {
                 if (SDK_INT >= Build.VERSION_CODES.R) {
 
                     if(Environment.isExternalStorageManager()){
-                        try {
-                            exportReport();
+                        if(Order_Item_List.size()>0) {
 
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            ;
+                            try {
+                                exportReport();
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+                            }
+                        }
+                        else{
+                            Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+
                         }
                     }
                     else{
@@ -372,7 +423,21 @@ public class PosSalesReport extends AppCompatActivity {
                     } else {
                         Adjusting_Widgets_Visibility(true);
                         try {
-                            exportReport();
+                            if(Order_Item_List.size()>0) {
+
+                                try {
+                                    exportReport();
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+                                }
+                            }
+                            else{
+                                Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+
+                            }
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -390,7 +455,746 @@ public class PosSalesReport extends AppCompatActivity {
 
     }
 
-    private void printReport() {
+    private void printUsingBluetoothPrinterReport() {
+    }
+
+    private void printUsingUSBPrinterReport() {
+
+        UsbConnection usbConnection = UsbPrintersConnectionsLocal.selectFirstConnected(PosSalesReport.this);
+        UsbManager usbManager = (UsbManager) PosSalesReport.this.getSystemService(Context.USB_SERVICE);
+        if (usbConnection == null || usbManager == null) {
+            Adjusting_Widgets_Visibility(false);
+
+          /*  new AlertDialog.Builder(AddSwiggyOrders.this)
+                    .setTitle("USB Connection")
+                    .setMessage("No USB printer found.")
+                    .show();
+
+           */
+
+            new TMCAlertDialogClass(PosSalesReport.this, R.string.app_name, R.string.ReConnect_Instruction,
+                    R.string.OK_Text, R.string.Cancel_Text,
+                    new TMCAlertDialogClass.AlertListener() {
+                        @Override
+                        public void onYes() {
+                            printUsingUSBPrinterReport();
+                            return;
+                        }
+
+                        @Override
+                        public void onNo() {
+                            Toast.makeText(PosSalesReport.this, "Can't Find USB Printer", Toast.LENGTH_SHORT).show();
+                            Adjusting_Widgets_Visibility(false);
+
+                        }
+                    });
+            return;
+        }
+
+        PendingIntent permissionIntent = PendingIntent.getBroadcast(
+                PosSalesReport.this,
+                0,
+                new Intent(ACTION_USB_PERMISSION),
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0
+        );
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addCategory("POS Sales Report");
+        registerReceiver(usbReceiver_PosReport, filter);
+        usbManager.requestPermission(usbConnection.getDevice(), permissionIntent);
+
+
+
+
+
+    }
+
+
+    private final BroadcastReceiver usbReceiver_PosReport = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Set<String> category = intent.getCategories();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (PosSalesReport.this) {
+                    UsbManager usbManager = (UsbManager) PosSalesReport.this.getSystemService(Context.USB_SERVICE);
+                    UsbDevice usbDevice = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbManager != null && usbDevice != null) {
+                            new AsyncUsbEscPosPrint(
+                                    context, new AsyncEscPosPrint.OnPrintFinished() {
+                                @Override
+                                public void onError(AsyncEscPosPrinter asyncEscPosPrinter, int codeException) {
+                                    Log.e("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : An error occurred !");
+                                    try{
+                                        unregisterReceiver(usbReceiver_PosReport);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                            AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                    Toast.makeText(PosSalesReport.this, "Error in AsyncPOS USB Printer", Toast.LENGTH_SHORT).show();
+                                    Adjusting_Widgets_Visibility(false);
+
+                                }
+
+                                @Override
+                                public void onSuccess(AsyncEscPosPrinter asyncEscPosPrinter) {
+                                    Log.i("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : Print is finished !");
+
+                                    try{
+                                        unregisterReceiver(usbReceiver_PosReport);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                            AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+                                    Toast.makeText(PosSalesReport.this, "Printed Succesfully", Toast.LENGTH_SHORT).show();
+                                    Adjusting_Widgets_Visibility(false);
+
+
+
+                                }
+                            }
+                            )
+                                    .execute(getAsyncEscPosPrinterNewItem(new UsbConnection(usbManager, usbDevice)));
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    public AsyncEscPosPrinter getAsyncEscPosPrinterNewItem(DeviceConnection printerConnection) {
+        String text_to_Print = "";
+        String Title = "The Meat Chop";
+        String GSTIN = "GSTIN :33AAJCC0055D1Z9";
+        if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+
+            text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
+            text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+
+        }
+        else {
+            text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
+
+        }
+
+        //text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Contact No :" + StoreLanLine + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + GSTIN + " \n"+ " \n";
+        text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+        text_to_Print = text_to_Print + "[L] <font size='tall'>Report Name : POS Sales Report " + " \n";
+        text_to_Print = text_to_Print + "[L] <font size='normal'>Current Date : " + DateString + " \n";
+        text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+        for (int subCtgyKeyCount = 0; subCtgyKeyCount < tmcSubCtgykey.size(); subCtgyKeyCount++) {
+            String SubCtgyName, menuid, SubCtgykey;
+
+            SubCtgykey = tmcSubCtgykey.get(subCtgyKeyCount);
+            Modal_OrderDetails subCtgyName_object = SubCtgyKey_hashmap.get(SubCtgykey);
+            SubCtgyName = subCtgyName_object.getTmcsubctgyname();
+            text_to_Print = text_to_Print +"\n"+ "[L] <font size='wide'>" + SubCtgyName + "\n"+ "\n";
+
+            for (int i = 0; i < Order_Item_List.size(); i++) {
+                menuid = Order_Item_List.get(i);
+                Modal_OrderDetails itemRow = OrderItem_hashmap.get(menuid);
+
+
+                String subCtgyKey_fromHashmap = itemRow.getTmcsubctgykey();
+                if (subCtgyKey_fromHashmap.equals(SubCtgykey)) {
+                    String itemName = (itemRow.getItemname());
+
+                    int indexofbraces = itemName.indexOf("(");
+                    if (indexofbraces >= 0) {
+                        itemName = (itemName.substring(0, indexofbraces));
+
+                    }
+                    if (itemName.length() > 19) {
+                        itemName = (itemName.substring(0, 19));
+                        itemName = itemName + "..";
+                    }
+
+
+                    String KilogramString = "", Quantity = "", itemPrice = "",itemName_weight ="";
+                    try {
+                        KilogramString = itemRow.getWeightingrams();
+                        if (KilogramString != null && (!KilogramString.equals("")) && (!(KilogramString.equals("0.00Kg"))) && (!(KilogramString.equals("0")))) {
+                            Quantity = KilogramString + "g";
+                        } else {
+                            Quantity = itemRow.getQuantity() + "pc";
+                        }
+                    } catch (Exception e) {
+                        Quantity = itemRow.getQuantity() + "pc";
+
+                    }
+                    try {
+                        itemPrice = String.valueOf(itemRow.getTmcprice());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        itemPrice = "";
+                    }
+                    try {
+                        itemName_weight = itemName + "-" + Quantity;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    /*
+                    if (itemName_weight.length() == 10) {
+                        //16spaces
+                        itemName_weight = itemName_weight + "                  ";
+                    }
+                    if (itemName_weight.length() == 11) {
+                        //15spaces
+                        itemName_weight = itemName_weight + "                 ";
+                    }
+                    if (itemName_weight.length() == 12) {
+                        //14spaces
+                        itemName_weight = itemName_weight + "                ";
+                    }
+                    if (itemName_weight.length() == 13) {
+                        //13spaces
+                        itemName_weight = itemName_weight + "               ";
+                    }
+                    if (itemName_weight.length() == 14) {
+                        //12spaces
+                        itemName_weight = itemName_weight + "              ";
+                    }
+                    if (itemName_weight.length() == 15) {
+                        //11spaces
+                        itemName_weight = itemName_weight + "             ";
+                    }
+                    if (itemName_weight.length() == 16) {
+                        //10spaces
+                        itemName_weight = itemName_weight + "            ";
+                    }
+                    if (itemName_weight.length() == 17) {
+                        //9spaces
+                        itemName_weight = itemName_weight + "           ";
+                    }
+                    if (itemName_weight.length() == 18) {
+                        //8spaces
+                        itemName_weight = itemName_weight + "          ";
+                    }
+                    if (itemName_weight.length() == 19) {
+                        //7spaces
+                        itemName_weight = itemName_weight + "         ";
+                    }
+                    if (itemName_weight.length() == 20) {
+                        //6spaces
+                        itemName_weight = itemName_weight + "        ";
+                    }
+                    if (itemName_weight.length() == 21) {
+                        //5spaces
+                        itemName_weight = itemName_weight + "       ";
+                    }
+                    if (itemName_weight.length() == 22) {
+                        //4spaces
+                        itemName_weight = itemName_weight + "      ";
+                    }
+                    if (itemName_weight.length() == 23) {
+                        //3spaces
+                        itemName_weight = itemName_weight + "     ";
+                    }
+                    if (itemName_weight.length() == 24) {
+                        //2spaces
+                        itemName_weight = itemName_weight + "    ";
+                    }
+                    if (itemName_weight.length() == 25) {
+                        //1spaces
+                        itemName_weight = itemName_weight + "   ";
+                    }
+                    if (itemName_weight.length() == 26) {
+                        //0spaces
+                        itemName_weight = itemName_weight + "  ";
+                    }
+                    if (itemName_weight.length() == 27) {
+                        //0spaces
+                        itemName_weight = itemName_weight + " ";
+                    }
+                    if (itemName_weight.length() == 28) {
+                        //0spaces
+                        itemName_weight = itemName_weight + "";
+                    }
+                    if (itemName_weight.length() == 29) {
+                        //0spaces
+                        itemName_weight = itemName_weight + "";
+                    }
+                    if (itemName_weight.length() == 30) {
+                        //0spaces
+                        itemName_weight = itemName_weight + "";
+                    }
+
+
+
+                    itemPrice = "Rs. "+itemPrice;
+                    if (itemPrice.length() == 8) {
+                        //4spaces
+                        itemPrice = "     " + itemPrice;
+                    }
+                    if (itemPrice.length() == 9) {
+                        //3spaces
+                        itemPrice = "    " + itemPrice;
+                    }
+                    if (itemPrice.length() == 10) {
+                        //2spaces
+                        itemPrice = "   " + itemPrice;
+                    }
+                    if (itemPrice.length() == 11) {
+                        //1spaces
+                        itemPrice = "  " + itemPrice;
+                    }
+                    if (itemPrice.length() == 12) {
+                        //0spaces
+                        itemPrice = " " + itemPrice;
+                    }
+                    if (itemPrice.length() == 13) {
+                        //0spaces
+                        itemPrice = "" + itemPrice;
+                    }
+                    if (itemPrice.length() == 14) {
+                        //no space
+                        itemPrice = "" + itemPrice;
+                    }
+
+
+                     */
+
+
+                    //text_to_Print = text_to_Print + "[L]<font size='normal'>  " + itemName_weight + itemPrice +" \n"+" \n";
+
+                    text_to_Print = text_to_Print + "[L]<font size='normal'>  " + itemName_weight +"[R]"+ itemPrice +" \n"+" \n";
+
+                }
+            }
+        }
+        text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+
+        text_to_Print = text_to_Print + "[L] <font size='wide'>" + " Final Sales Break Up" + " \n";
+        text_to_Print = text_to_Print + "[L]<font size='normal'> ----------------------------------------------" + "\n";
+        if(paymentModeArray.size()>0){
+        text_to_Print = text_to_Print + "[L] <b><font size='normal'> POS Order Sales " + "</b>\n";
+        text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+
+        for (int i = 0; i < paymentModeArray.size(); i++) {
+            double payment_AmountDouble = 0;
+            double payment_AmountDiscDouble = 0;
+
+            String Payment_Amount = "", key = paymentModeArray.get(i);
+            Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(key);
+            Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(key);
+            String replacmentFromTextview = "",refundFromTextview = "";
+            double replacment_doubleFromTextview = 0,refund_doubleFromTextview = 0;
+
+            //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+            DecimalFormat decimalFormat = new DecimalFormat("0.00");
+            try{
+                replacmentFromTextview = replacementAmount_textwidget.getText().toString();
+            }
+            catch (Exception e){
+                replacmentFromTextview="0";
+                e.printStackTrace();
+            }
+
+            try{
+                refundFromTextview = refundAmount_textwidget.getText().toString();
+
+            }
+            catch (Exception e){
+                refundFromTextview = "0";
+                e.printStackTrace();
+            }
+            try{
+                replacment_doubleFromTextview = Math.round(Double.parseDouble(replacmentFromTextview));
+            }
+            catch (Exception e){
+                replacment_doubleFromTextview =0;
+                e.printStackTrace();
+            }
+
+            try{
+                refund_doubleFromTextview = Math.round(Double.parseDouble(refundFromTextview));
+
+            }
+            catch (Exception e){
+                refund_doubleFromTextview = 0;
+                e.printStackTrace();
+            }
+
+
+            if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+                try {
+                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                    payment_AmountDouble = payment_AmountDouble - (payment_AmountDiscDouble + refund_doubleFromTextview + replacment_doubleFromTextview ) ;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Cash Sales";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    payment_AmountDouble = 0.00;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Cash Sales";
+
+                }
+            }
+            if ((key.toUpperCase().equals("CARD"))) {
+                try {
+                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                    payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Card Sales";
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    payment_AmountDouble = 0.00;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Card Sales";
+
+                }
+            }
+            if ((key.toUpperCase().equals("UPI"))) {
+                try {
+                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                    payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Upi Sales";
+
+                } catch (Exception e) {
+                    payment_AmountDouble = 0.00;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Upi Sales";
+
+                    e.printStackTrace();
+
+                }
+            }
+            if ((key.toUpperCase().equals("CREDIT"))) {
+                try {
+                    payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                    payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                    payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Credit Sales";
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    payment_AmountDouble = 0.00;
+                    Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                    key = "Credit Sales";
+
+                }
+            }
+
+            text_to_Print = text_to_Print + "[R] <b><font size='normal'>" + key + "[R]" + "Rs : " + Payment_Amount + "</b>\n";
+
+        }
+
+            text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+        }
+
+        if(phoneOrderpaymentModeArray.size()>0) {
+            text_to_Print = text_to_Print + "[L] <b><font size='normal'> Phone Order Sales " + "</b>\n";
+            text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+
+            for (int i = 0; i < phoneOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = phoneOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = phoneOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = phoneOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals("CASH ON DELIVERY")) || (key.toUpperCase().equals("CASH"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("CARD"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCardSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals("UPI"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getUpiSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                    } catch (Exception e) {
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Upi Sales";
+
+                        e.printStackTrace();
+
+                    }
+                }
+
+                if ((key.toUpperCase().equals("CREDIT"))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getCreditSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Credit Sales";
+
+                    }
+                }
+
+              //  text_to_Print = text_to_Print + "[L] <b><font size='normal'>" + key + "     " + "Rs : " + Payment_Amount + "</b>\n";
+                text_to_Print = text_to_Print + "[R] <b><font size='normal'>" + key + "[R]" + "Rs : " + Payment_Amount + "</b>\n";
+
+            }
+
+            text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+        }
+
+        if(swiggyOrderpaymentModeArray.size()>0) {
+            text_to_Print = text_to_Print + "[L] <font size='normal'> Swiggy Order Sales " + "\n";
+            text_to_Print = text_to_Print + "[L] <font size='normal'> ----------------------------------------------" + " \n";
+
+            for (int i = 0; i < swiggyOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = swiggyOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = swiggyOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = swiggyOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals(Constants.SWIGGYORDER_PAYMENTMODE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getSwiggySales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Swiggy Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Swiggy Sales";
+
+                    }
+                }
+
+                text_to_Print = text_to_Print + "[R] <b><font size='normal'>" + key + "[R]" + "Rs : " + Payment_Amount + "</b>\n";
+
+               // text_to_Print = text_to_Print + "[L] <b><font size='normal'>" + key + "     " + "Rs : " + Payment_Amount + "</b>\n";
+
+            }
+
+            text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+        }
+
+        if(dunzoOrderpaymentModeArray.size()>0) {
+            text_to_Print = text_to_Print + "[L] <b><font size='normal'> Dunzo Order Sales " + "</b>\n";
+            text_to_Print = text_to_Print + "[L] <font size='normal'> ----------------------------------------------" + " \n";
+
+            for (int i = 0; i < dunzoOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = dunzoOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = dunzoOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = dunzoOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals(Constants.DUNZOORDER_PAYMENTMODE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getDunzoSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Dunzo Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Dunzo Sales";
+
+                    }
+                }
+                //text_to_Print = text_to_Print + "[L] <b><font size='normal'>" + key + "     " + "Rs : " + Payment_Amount + "</b>\n";
+                text_to_Print = text_to_Print + "[R] <b><font size='normal'>" + key + "[R]" + "Rs : " + Payment_Amount + "</b>\n";
+
+            }
+
+            text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+        }
+
+        if(bigBasketOrderpaymentModeArray.size()>0) {
+            text_to_Print = text_to_Print + "[L] <b><font size='normal'> Big Basket Order Sales " + "</b>\n";
+            text_to_Print = text_to_Print + "[L] <font size='normal'> ----------------------------------------------" + " \n";
+
+
+            for (int i = 0; i < bigBasketOrderpaymentModeArray.size(); i++) {
+                double payment_AmountDouble = 0;
+                double payment_AmountDiscDouble = 0;
+
+                String Payment_Amount = "", key = bigBasketOrderpaymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = bigBasketOrderpaymentModeHashmap.get(key);
+                Modal_OrderDetails Payment_Modewise_discount = bigBasketOrderpaymentMode_DiscountHashmap.get(key);
+
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+                if ((key.toUpperCase().equals(Constants.BIGBASKETORDER_PAYMENTMODE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getBigBasketSales());
+                        String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getCoupondiscount());
+                        payment_AmountDiscDouble = Double.parseDouble(discount_String);
+                        payment_AmountDouble = payment_AmountDouble - payment_AmountDiscDouble;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "BigBasket Sales";
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "BigBasket Sales";
+
+                    }
+                }
+
+                text_to_Print = text_to_Print + "[R] <b><font size='normal'>" + key + "[R]" + "Rs : " + Payment_Amount + "</b>\n";
+
+              //  text_to_Print = text_to_Print + "[L] <b><font size='normal'>" + key + "     " + "Rs : " + Payment_Amount + "</b>\n";
+
+            }
+            text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
+
+        }
+
+        for (int j = 0; j < finalBillDetails.size(); j++) {
+            String key = finalBillDetails.get(j);
+            String value = FinalBill_hashmap.get(key);
+            value = "RS : " + value;
+          /*  if (Objects.requireNonNull(value).length() == 7) {
+                //7spaces
+                value = key + "       " + value;
+            }
+            if (value.length() == 8) {
+                //6spaces
+                value = key + "      " + value;
+            }
+            if (value.length() == 9) {
+                //5spaces
+                value = key + "     " + value;
+            }
+            if (value.length() == 10) {
+                //4spaces
+                value = key + "    " + value;
+            }
+            if (value.length() == 11) {
+                //3spaces
+                value = key + "   " + value;
+            }
+            if (value.length() == 12) {
+                //2spaces
+                value = key + "  " + value;
+            }
+            if (value.length() == 13) {
+                //1spaces
+                value = key + " " + value;
+            }
+            if (value.length() == 14) {
+                //no space
+                value = key + "" + value;
+            }
+
+           */
+
+           // text_to_Print = text_to_Print + "[R] <b><font size='normal'>" + value + "</b>\n";
+            text_to_Print = text_to_Print + "[R] <b><font size='normal'>" +key+"[R]"+ value + "</b>\n";
+
+
+        }
+        AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
+        return printer.addTextToPrint(text_to_Print);
+    }
+
+
+
+    private void printUsingPOSMachineReport() {
         try {
             Printer_POJO_Class[] PrinterSuCtgyNameArray = new Printer_POJO_Class[tmcSubCtgykey.size()];
 
@@ -460,11 +1264,31 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.PortDiscovery(portName, portSettings);
 
             PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            /*PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
             //Log.i("tag", "The Meat Chop");
 
+             */
+            if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "MK Proteins" + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+            }
+            else {
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+
+            }
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, StoreAddressLine1 + "\n");
@@ -1256,12 +2080,20 @@ public class PosSalesReport extends AppCompatActivity {
             if (SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
                     // perform action when allow permission success
-                    try {
-                        exportReport();
+                    if(Order_Item_List.size()>0) {
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        ;
+                        try {
+                            exportReport();
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+                    else{
+                        Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+
                     }
                 } else {
                     Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
@@ -1273,10 +2105,20 @@ public class PosSalesReport extends AppCompatActivity {
                 if (grantResultsLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
                     // exportInvoice();
-                    try {
-                        exportReport();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if(Order_Item_List.size()>0) {
+
+                        try {
+                            exportReport();
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+                    else{
+                        Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "You denied write external storage permission.", Toast.LENGTH_LONG).show();
@@ -1353,7 +2195,7 @@ public class PosSalesReport extends AppCompatActivity {
         dunzoOrderpaymentMode_DiscountHashmap.clear();
         SubCtgywiseTotalArray.clear();
         tmcSubCtgykey.clear();
-
+        dataList.clear();
         bigBasketOrderpaymentModeArray.clear();
         bigBasketOrderpaymentMode_DiscountOrderid.clear();
         bigBasketOrderpaymentModeHashmap.clear();
@@ -2127,6 +2969,7 @@ public class PosSalesReport extends AppCompatActivity {
                                 bigBasketOrderpaymentMode_DiscountOrderid.clear();
                                 bigBasketOrderpaymentModeHashmap.clear();
                                 bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                                dataList.clear();
                                 ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
                                 adapter.notifyDataSetChanged();
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -2189,6 +3032,7 @@ public class PosSalesReport extends AppCompatActivity {
                     phoneOrderpaymentModeArray.clear();
                     phoneOrderpaymentModeHashmap.clear();
                     paymentMode_DiscountHashmap.clear();
+                    dataList.clear();
                     paymentMode_DiscountOrderid.clear();
                     phoneOrderpaymentMode_DiscountOrderid.clear();
                     phoneOrderpaymentMode_DiscountHashmap.clear();

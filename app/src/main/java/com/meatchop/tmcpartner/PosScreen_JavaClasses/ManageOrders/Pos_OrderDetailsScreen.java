@@ -35,6 +35,7 @@ import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.DeliveryPartnerSettlementReport;
 import com.meatchop.tmcpartner.Settings.GetDeliverypartnersAssignedOrders;
 import com.meatchop.tmcpartner.Settings.Pos_Orders_List;
+import com.meatchop.tmcpartner.Settings.WholeSaleOrdersList;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONArray;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
+import static com.meatchop.tmcpartner.Constants.WholeSaleOrder;
 
 public class Pos_OrderDetailsScreen extends AppCompatActivity {
 TextView mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
@@ -748,6 +750,32 @@ Button changeDeliveryPartner;
                                         }
 
 
+                                        if(fromActivityName.equals("WholeSaleOrdersList")) {
+                                            if(WholeSaleOrdersList.sorted_OrdersList.size()>0){
+                                                for(int i =0; i<WholeSaleOrdersList.sorted_OrdersList.size();i++){
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.sorted_OrdersList.get(i);
+                                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                    if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                                        WholeSaleOrdersList.adapter_pos_wholeSaleOrderList.notifyDataSetChanged();
+                                                    }
+                                                }
+                                            }
+
+                                            if(WholeSaleOrdersList.ordersList.size()>0){
+                                                for(int i =0; i<WholeSaleOrdersList.ordersList.size();i++){
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.ordersList.get(i);
+                                                    String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                    if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                                        WholeSaleOrdersList.adapter_pos_wholeSaleOrderList.notifyDataSetChanged();
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+
 
                                         if(fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder")) {
                                             try {
@@ -1265,7 +1293,7 @@ Button changeDeliveryPartner;
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
         total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
         old_total_Amount=0;
@@ -1884,6 +1912,30 @@ Button changeDeliveryPartner;
                         }
 
                     }
+                    if(fromActivityName.equals("WholeSaleOrdersList")) {
+                        if(WholeSaleOrdersList.sorted_OrdersList.size()>0){
+                            for(int i =0; i<WholeSaleOrdersList.sorted_OrdersList.size();i++){
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.sorted_OrdersList.get(i);
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                    WholeSaleOrdersList.adapter_pos_wholeSaleOrderList.notifyDataSetChanged();
+                                }
+                            }
+                        }
+
+                        if(WholeSaleOrdersList.ordersList.size()>0){
+                            for(int i =0; i<WholeSaleOrdersList.ordersList.size();i++){
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.ordersList.get(i);
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+                                    WholeSaleOrdersList.adapter_pos_wholeSaleOrderList.notifyDataSetChanged();
+                                }
+                            }
+                        }
+
+                    }
 
 
 
@@ -2163,9 +2215,14 @@ Button changeDeliveryPartner;
             startActivity(i);
         }
 
-
         if(fromActivityName.equals("PosManageOrders")) {
             Intent i = new Intent(this, Pos_Dashboard_Screen.class);
+
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+        if(fromActivityName.equals("WholeSaleOrdersList")) {
+            Intent i = new Intent(this, WholeSaleOrdersList.class);
 
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);

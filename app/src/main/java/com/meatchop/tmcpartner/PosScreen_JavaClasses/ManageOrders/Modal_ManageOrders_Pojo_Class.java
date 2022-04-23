@@ -515,6 +515,7 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         paymenttranscationimageurl = in.readString();
         isdataFetchedFromOrderTrackingDetails = in.readString();
         menuItemKey = in.readString();
+        vendorname  = in.readString();
     }
 
     public static final Creator<Modal_ManageOrders_Pojo_Class> CREATOR = new Creator<Modal_ManageOrders_Pojo_Class>() {
@@ -802,5 +803,6 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         parcel.writeString(paymenttranscationimageurl);
         parcel.writeString(isdataFetchedFromOrderTrackingDetails);
         parcel.writeString(menuItemKey);
+        parcel.writeString(vendorname);
     }
 }

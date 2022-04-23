@@ -46,6 +46,7 @@ import com.meatchop.tmcpartner.Settings.ModalOrderItemDetails;
 import com.meatchop.tmcpartner.Settings.Modal_AssignedOrders;
 import com.meatchop.tmcpartner.Settings.Modal_OrderDetails;
 import com.meatchop.tmcpartner.Settings.Pos_Orders_List;
+import com.meatchop.tmcpartner.Settings.WholeSaleOrdersList;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONArray;
@@ -871,6 +872,66 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                              //   Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
 
                                             }
+
+
+
+
+
+
+                                            if(fromActivityName.equals("WholeSaleOrdersList")) {
+
+                                                if(WholeSaleOrdersList.sorted_OrdersList.size()>0){
+                                                    for(int i =0; i<WholeSaleOrdersList.sorted_OrdersList.size();i++){
+
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.sorted_OrdersList.get(i);
+                                                        String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                            modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+
+
+                                                            try {
+                                                                WholeSaleOrdersList.adapter_mobile_wholeSaleOrderList.notifyDataSetChanged();
+
+                                                            }
+                                                            catch (Exception e){
+                                                                e.printStackTrace();
+                                                            }
+
+
+
+                                                        }
+                                                    }
+                                                }
+
+
+                                                if(WholeSaleOrdersList.ordersList.size()>0){
+                                                    for(int i =0; i<WholeSaleOrdersList.ordersList.size();i++){
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.ordersList.get(i);
+
+                                                        String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                            modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+                                                            try {
+                                                                WholeSaleOrdersList.adapter_mobile_wholeSaleOrderList.notifyDataSetChanged();
+
+                                                            }
+                                                            catch (Exception e){
+                                                                e.printStackTrace();
+                                                            }                                                        }
+                                                    }
+                                                }
+
+
+                                            }
+
+
+
+
+
                                             try {
                                                 if ((PaymentMode.equals(Constants.CASH_ON_DELIVERY)) || (PaymentMode.equals("CASH"))) {
                                                     getMerchantOrderidDetailsFromPaymentTransactionTable(orderidtoFetchPaymentmode, orderdetailskey);
@@ -1644,6 +1705,59 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
 
 
+                    if(fromActivityName.equals("WholeSaleOrdersList")) {
+
+                        if(WholeSaleOrdersList.sorted_OrdersList.size()>0){
+                            for(int i =0; i<WholeSaleOrdersList.sorted_OrdersList.size();i++){
+
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.sorted_OrdersList.get(i);
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+
+
+                                    try {
+                                        WholeSaleOrdersList.adapter_mobile_wholeSaleOrderList.notifyDataSetChanged();
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }
+                            }
+                        }
+
+
+                        if(WholeSaleOrdersList.ordersList.size()>0){
+                            for(int i =0; i<WholeSaleOrdersList.ordersList.size();i++){
+                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.ordersList.get(i);
+
+                                String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                    modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
+
+
+                                    try {
+                                        WholeSaleOrdersList.adapter_mobile_wholeSaleOrderList.notifyDataSetChanged();
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }                                                        }
+                            }
+                        }
+
+
+                    }
+
+
+
+
                 }
                 catch (Exception e ){
                     e.printStackTrace();
@@ -2370,6 +2484,12 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
        else if(fromActivityName.equals("PosOrdersList")) {
             Intent i = new Intent(this, Pos_Orders_List.class);
+
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
+        else if(fromActivityName.equals("WholeSaleOrdersList")) {
+            Intent i = new Intent(this, WholeSaleOrdersList.class);
 
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);

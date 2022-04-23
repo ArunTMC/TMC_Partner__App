@@ -71,16 +71,16 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
     double Marinadesellingprice = 0,Marinadesellingprice_withoutDiscount = 0,  MarinadesellingPriceWithoutDiscount = 0, Marinadegrossweightdouble = 0, MarinadeposPricedouble = 0, MarinadeappPricedouble = 0;
 
-    String appliedDiscountPercentage_old_transactionTable="",posPrice_old_transactionTable="",posPrice_pricePerKg_old_transactionTable="",appPrice_old_transactionTable="",appPrice_PricePerKg_old_transactionTable="",portionsize_old_transactionTable="",netweight_old_transactionTable="",grossweight_old_transactionTable="",grossweightingrams_old_transactionTable="",swiggyPrice_old_transactionTable="",dunzoPrice_old_transactionTable="",bigBasketPrice_old_transactionTable="",
+    String appliedDiscountPercentage_old_transactionTable="",posPrice_old_transactionTable="",posPrice_pricePerKg_old_transactionTable="",appPrice_old_transactionTable="",appPrice_PricePerKg_old_transactionTable="",portionsize_old_transactionTable="",netweight_old_transactionTable="",grossweight_old_transactionTable="",grossweightingrams_old_transactionTable="",wholeSalePrice_old_transactionTable="",swiggyPrice_old_transactionTable="",dunzoPrice_old_transactionTable="",bigBasketPrice_old_transactionTable="",
             finalweight_old_transactionTable="",itemcutdetailsString_old_transactionTable="",itemweightdetailsString_old_transactionTable="",weightDetailDisplayno_old_transactionTable="";
 
 
 
-    String appliedDiscountPercentage="",posPrice="",posPrice_pricePerKg="",appPrice="",appPrice_PricePerKg="",portionsize="",netweight="",grossweight="",grossweightingrams="",swiggyPrice="",dunzoPrice="",bigBasketPrice="",tmcsubctgykey="",itemName="",
+    String appliedDiscountPercentage="",posPrice="",posPrice_pricePerKg="",appPrice="",appPrice_PricePerKg="",portionsize="",netweight="",grossweight="",grossweightingrams="",swiggyPrice="",wholeSalePrice ="",dunzoPrice="",bigBasketPrice="",tmcsubctgykey="",itemName="",
             itemUniqueCode ="",pricetypeforPos="",finalweight="",itemcutdetailsString="",itemweightdetailsString="",weightDetailDisplayno="";;
     TextView defaultnetweight_textonly_widget,defaultGrossweight_textonly_widget,defaultportionsize_textonly_widget,itemName_textview_widget,itemUniqueCode_text_widget,grossweight_textview_widget,netweight_textview_widget,portionsize_textview_widget,pricetype_textview_widget,app_price_textview_widget,pos_price_textview_widget,
             selling_price_text_widget,posPrice_text_widget,appPrice_text_widget,appPrice_text_widget_appLayout,posPrice_text_widget_posLayout,swiggy_selling_price_text_widget_swiggyLayout,dunzo_selling_price_text_widget_dunzoLayout,
-            bigbasket_selling_price_text_widget_bigbasketLayout,swiggy_price_label,dunzo_price_label,bigbasket_price_label;
+            wholesale_selling_price_text_widget_wholesaleLayout,bigbasket_selling_price_text_widget_bigbasketLayout,swiggy_price_label,wholeSale_price_label,dunzo_price_label,bigbasket_price_label;
 
     LinearLayout tmcpriceperkg_layout,tmcUnitPrice_layout, cutDetailsListLayout,defaultitemweightdetailslayout,itemweightdetailslistlayout,itemPriceDetailsLayout,add_new_weightDetails_button_Layout,add_new_cutDetails_button_Layout;
 
@@ -162,10 +162,12 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
         swiggy_price_label = findViewById(R.id.swiggy_price_label);
         dunzo_price_label = findViewById(R.id.dunzo_price_label);
         bigbasket_price_label = findViewById(R.id.bigbasket_price_label);
+        wholeSale_price_label = findViewById(R.id.wholeSale_price_label);
 
         swiggy_selling_price_text_widget_swiggyLayout =findViewById(R.id.swiggy_selling_price_text_widget_swiggyLayout);
         dunzo_selling_price_text_widget_dunzoLayout = findViewById(R.id.dunzo_selling_price_text_widget_dunzoLayout);
         bigbasket_selling_price_text_widget_bigbasketLayout  =findViewById(R.id.bigbasket_selling_price_text_widget_bigbasketLayout);
+        wholesale_selling_price_text_widget_wholesaleLayout  =findViewById(R.id.wholesale_selling_price_text_widget_wholesaleLayout);
 
 
 
@@ -238,6 +240,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             swiggy_price_label.setText("Swiggy  Price (  TMC Price  )  :-   ");
             dunzo_price_label.setText("Dunzo  Price (  TMC Price  )  :-   ");
             bigbasket_price_label.setText("BigBasket  Price (  TMC Price  )  :-   ");
+            wholeSale_price_label.setText("WholeSale  Price (  TMC Price  )  :-   ");
 
         }
         else{
@@ -246,6 +249,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             swiggy_price_label.setText("Swiggy  Price (  Price Per Kg  )  :-   ");
             dunzo_price_label.setText("Dunzo  Price (  Price Per Kg  )  :-   ");
             bigbasket_price_label.setText("BigBasket  Price (  Price Per Kg  )  :-   ");
+            wholeSale_price_label.setText("WholeSale  Price (  Price Per Kg  )  :-   ");
 
        }
         weightdetailsScrollButton.setOnClickListener(new View.OnClickListener() {
@@ -302,7 +306,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
                 if(isdefaultitemAvlCutDetails && isdefaultitemAvWeightDetails) {
                     if (isTMCPrice) {
-                        if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0 && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0 && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
                                 try {
                                     showProgressBar(true);
@@ -312,6 +316,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                                     swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
                                     dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
                                     bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
+                                    wholeSalePrice= String.valueOf(wholesale_selling_price_text_widget_wholesaleLayout.getText().toString());
 
                                     //CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
 
@@ -344,7 +349,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                             Toast.makeText(ChangeMenuItemWeightAndPriceSecondScreen.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0 && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0 && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (appPrice_text_widget_appLayout.getText().length() > 0 && posPrice_text_widget_posLayout.getText().toString().length() > 0) {
                                 try {
                                     showProgressBar(true);
@@ -357,6 +362,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                                     swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
                                     dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
                                     bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
+                                    wholeSalePrice= String.valueOf(wholesale_selling_price_text_widget_wholesaleLayout.getText().toString());
 
                                     //    CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
 
@@ -603,7 +609,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             @Override
             public void onClick(View view) {
                 if (isTMCPrice) {
-                    if ( selling_price_text_widget.getText().length() > 0  &&  appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0)  {
+                    if ( selling_price_text_widget.getText().length() > 0  &&  appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0)  {
                         if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
                             showProgressBar(true);
                             try {
@@ -647,7 +653,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                 else {
                     if (isPosPrice_PricePerKgChanged && !isAppPrice_PricePerKgChanged) {
                         isPosPrice_PricePerKgChanged = false;
-                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
                                 showProgressBar(true);
                                 try {
@@ -694,7 +700,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                     }
                     else if(isAppPrice_PricePerKgChanged && !isPosPrice_PricePerKgChanged){
                         isAppPrice_PricePerKgChanged = false;
-                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0   && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
                                 try {
                                     appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
@@ -742,7 +748,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                     }
                     else if(isAppPrice_PricePerKgChanged && isPosPrice_PricePerKgChanged){
                         isAppPrice_PricePerKgChanged = false;
-                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0   && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
                                 try {
                                     appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
@@ -789,7 +795,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                         }
 
                         isPosPrice_PricePerKgChanged = false;
-                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0  && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                             if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
                                 showProgressBar(true);
                                 try {
@@ -1658,6 +1664,23 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
 
         }catch (Exception e){
             swiggyPrice_old_transactionTable = "";
+            e.printStackTrace();
+        }
+        try{
+            try{
+
+                wholeSalePrice_old_transactionTable = wholesale_selling_price_text_widget_wholesaleLayout.getText().toString();
+
+            }
+            catch (Exception e){
+                wholeSalePrice_old_transactionTable = "";
+                e.printStackTrace();
+            }
+
+
+
+        }catch (Exception e){
+            wholeSalePrice_old_transactionTable = "";
             e.printStackTrace();
         }
 
@@ -2875,6 +2898,10 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                     jsonObject.put("swiggyprice", swiggyPrice);
                 }
 
+                if(!wholeSalePrice_old_transactionTable.equals(wholeSalePrice)){
+                    jsonObject.put("wholesaleprice", wholeSalePrice);
+                }
+
                 if(!dunzoPrice_old_transactionTable.equals(dunzoPrice)){
                     jsonObject.put("dunzoprice", dunzoPrice);
                 }
@@ -3005,6 +3032,13 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             if(jsonObject.has("swiggyprice")){
                 newpricedetails.put("swiggyprice",jsonObject.get("swiggyprice"));
                 oldpricedetails.put("swiggyprice",swiggyPrice_old_transactionTable);
+            }
+
+
+
+            if(jsonObject.has("wholesaleprice")){
+                newpricedetails.put("wholesaleprice",jsonObject.get("wholesaleprice"));
+                oldpricedetails.put("wholesaleprice",wholeSalePrice_old_transactionTable);
             }
             if(jsonObject.has("dunzoprice")){
                 newpricedetails.put("dunzoprice",jsonObject.get("dunzoprice"));
@@ -3204,6 +3238,16 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                     try {
                         if(jsonObject.has("swiggyprice")) {
                             modal_menuItemSettings.setSwiggyprice(jsonObject.getString("swiggyprice"));
+                        }
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if(jsonObject.has("wholesaleprice")) {
+                            modal_menuItemSettings.setWholesaleprice(jsonObject.getString("wholesaleprice"));
                         }
 
 
@@ -3744,6 +3788,16 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
                     catch (Exception e){
                         e.printStackTrace();
                     }
+
+                    try{
+                        wholeSalePrice = String.valueOf(modal_menuItemSettings.getWholesaleprice());
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
                     try{
                         dunzoPrice = String.valueOf(modal_menuItemSettings.getDunzoprice());
 
@@ -4107,6 +4161,7 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
             swiggy_selling_price_text_widget_swiggyLayout.setText(swiggyPrice);
             dunzo_selling_price_text_widget_dunzoLayout.setText(dunzoPrice);
             bigbasket_selling_price_text_widget_bigbasketLayout.setText(bigBasketPrice);
+            wholesale_selling_price_text_widget_wholesaleLayout.setText(wholeSalePrice);
 
             app_selling_price_text_widget_appLayout.setText(String.valueOf(finalAppSellingPrice));
             pos_selling_price_text_widget_posLayout.setText(String.valueOf(finalPosSellingPrice));

@@ -4014,7 +4014,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
 
                     BluetoothPrintDriver.Begin();
-
+/*
                     BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                     BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
                     BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
@@ -4023,6 +4023,42 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                     BluetoothPrintDriver.BT_Write("\r");
                     BluetoothPrintDriver.LF();
 
+
+ */
+                    if(vendorKey.equals("vendor_4")){
+
+                        Title = "MK Proteins";
+
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString(Title);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                        BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+                    }
+                    else {
+                        Title = "The Meat Chop";
+
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString(Title);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+
+                    }
 
                     BluetoothPrintDriver.Begin();
                     BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå

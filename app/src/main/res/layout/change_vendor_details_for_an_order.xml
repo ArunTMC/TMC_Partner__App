@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:padding="15dp"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1.1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mobilebo_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Mobile No" />
+
+        <TextView
+            android:id="@+id/mobileno_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/orderid_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:text="Orderid" />
+
+        <TextView
+            android:id="@+id/orderid_textview"
+            android:gravity="center"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="-" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_weight="1.1"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tokenno_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:fontFamily="@font/open_sans_bold"
+
+            android:text="Token No" />
+
+        <TextView
+            android:id="@+id/tokenNo_textview"
+            android:layout_width="match_parent"
+            android:gravity="end"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+    </LinearLayout>
+
+</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="7dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/slotname_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+
+                android:text="Slot Name" />
+
+            <TextView
+                android:id="@+id/slotname_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="-" />
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/slotdate_label"
+                android:gravity="end"
+                android:layout_width="match_parent"
+                android:fontFamily="@font/open_sans_bold"
+
+                android:layout_height="wrap_content"
+                android:text="Slot Date" />
+
+            <TextView
+                android:id="@+id/slotdate_text"
+                android:gravity="end"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="-" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/spinner_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/TMC_Orange"
+            android:text="Choose the store where you want to move the Order" />
+
+
+        <Spinner
+            android:id="@+id/vendorName_Spinner"
+            android:layout_width="match_parent"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/orange_non_selected_button_background"
+            android:layout_height="40dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/vendorname_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Order Placed ON" />
+
+            <TextView
+                android:id="@+id/vendorname_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Black"
+                android:fontFamily="@font/open_sans_bold"
+
+                android:text="-" />
+        </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/selected_vendorname_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Order's been Moving to " />
+
+            <TextView
+                android:id="@+id/selected_vendorname_text"
+                android:layout_width="match_parent"
+                android:textColor="@color/TMC_Black"
+                android:fontFamily="@font/open_sans_bold"
+                android:layout_height="wrap_content"
+                android:text="-" />
+
+        </LinearLayout>
+
+
+
+
+
+    </LinearLayout>
+
+
+    <CheckBox
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:textColor="@color/TMC_Black"
+        android:id="@+id/changeAddresstoAnotherstore_Checkbox"
+        android:text="Permanentaly move this customer to the selected Vendor"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_marginTop="15dp"
+            android:id="@+id/changeOrderToAnotherStoreButton_bottomsheet"
+            android:layout_height="wrap_content"
+            android:text="@string/ChangeOrderToAnotherStore"
+            android:background="@drawable/button_background"
+            android:textColor="@color/TMC_White"/>
+
+</LinearLayout>

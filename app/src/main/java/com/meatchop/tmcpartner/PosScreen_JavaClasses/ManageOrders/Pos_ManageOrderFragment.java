@@ -66,6 +66,7 @@ import com.pos.printer.AsyncEscPosPrint;
 import com.pos.printer.AsyncEscPosPrinter;
 import com.pos.printer.AsyncUsbEscPosPrint;
 import com.pos.printer.Modal_USBPrinter;
+import com.pos.printer.usb.UsbPrintersConnectionsLocal;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1020,7 +1021,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             e.printStackTrace();
         }
         try {
-        UsbConnection usbConnection = UsbPrintersConnections.selectFirstConnected(mContext);
+        UsbConnection usbConnection = UsbPrintersConnectionsLocal.selectFirstConnected(mContext);
         UsbManager usbManager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
         try {
             if (usbConnection == null || usbManager == null) {
@@ -1219,8 +1220,8 @@ public class Pos_ManageOrderFragment extends Fragment {
             try {
                 JSONObject json = itemdesp.getJSONObject(i);
                 text_to_Print_miniBill = "";
-                text_to_Print_miniBill = "[c]<b><font size='tall'> Token No : "+TokenNo+"</b>\n\n";
-                text_to_Print_miniBill = text_to_Print_miniBill+"[L]<font size='normal'> Orderid "+Orderid +" \n";
+                text_to_Print_miniBill = "[c]<b><font size='big'> Token No : "+TokenNo+"</b>\n\n";
+                text_to_Print_miniBill = text_to_Print_miniBill+"[L]<b><font size='normal'>  Orderid "+Orderid +" </b>\n\n";
 
 
                 String fullitemName = String.valueOf(json.getString("itemname"));
@@ -1308,16 +1309,16 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                 if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
 
-                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <b><font size='wide'>Grill House  "+fullitemName +" </b>\n";
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]  <b><font size='wide'>Grill House  "+fullitemName+"</b>\n"+ "\n";
 
                 }
                 else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
-                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <b><font size='wide'>Ready to Cook  "+fullitemName +" </b>\n";
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]  <b><font size='wide'>Ready to Cook  "+fullitemName+"</b>\n"+ "\n";
 
                 }
                 else  {
 
-                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]<b> <font size='wide'>"+fullitemName +" </b>\n";
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]  <b><font size='wide'>"+fullitemName+"</b>\n"+"\n";
 
                 }
 
@@ -1386,17 +1387,17 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                 if((finalCutName.length()>0) && (!finalCutName.equals(null)) && (!finalCutName.equals("null"))){
 
-                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'> ---------------------------------------------- \n";
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]<font size='normal'> ---------------------------------------------- \n";
 
-                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>"+finalCutName.toUpperCase() +" \n";
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]  <font size='normal'>"+finalCutName.toUpperCase() +" \n";
 
-                    text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'> ---------------------------------------------- \n";
+                    text_to_Print_miniBill = text_to_Print_miniBill+"[L]<font size='normal'> ---------------------------------------------- \n";
 
 
                 }
                 text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
-                text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>Netweight : "+finalitemNetweight +" \n";
-                text_to_Print_miniBill = text_to_Print_miniBill+"[L] <font size='normal'>Quantity : "+ finalQuantity +" \n";
+                text_to_Print_miniBill = text_to_Print_miniBill+"[L]  <font size='normal'>Netweight : "+finalitemNetweight +" \n";
+                text_to_Print_miniBill = text_to_Print_miniBill+"[L]  <font size='normal'>Quantity : "+ finalQuantity +" \n";
 
 
                 printer.addTextToPrint(text_to_Print_miniBill);
@@ -1416,21 +1417,31 @@ public class Pos_ManageOrderFragment extends Fragment {
         String GSTIN = "GSTIN :33AAJCC0055D1Z9";
 
 
-        text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print+"[c] <font size='normal'>Fresh Meat and Seafood \n";
-        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine1 ;
-        text_to_Print = text_to_Print + "[c] <font size='normal'>" + StoreAddressLine2 + " \n";
-        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine3 + " \n";
-        text_to_Print = text_to_Print+"[c] <font size='normal'>Contact No :"+StoreLanLine +" \n";
-        text_to_Print = text_to_Print+"[c] <font size='normal'>"+GSTIN +" \n" +" \n";
-        text_to_Print = text_to_Print+"[L] <font size='normal'>OrderId : "+Orderid +" \n";
-        text_to_Print = text_to_Print+"[L] <font size='normal'>Order Placed Time : "+OrderPlacedtime +" \n";
-        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
-        text_to_Print = text_to_Print+"[L] ITEMNAME * QTY " +" \n";
-        text_to_Print = text_to_Print+"[L] <font size='normal'>                                                "+" \n";
+        if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
 
-        text_to_Print = text_to_Print+"[L] RATE                                  SUBTOTAL" +" \n";
-        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
+
+            text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
+            text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+
+        }
+        else {
+            text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
+
+        }        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        text_to_Print = text_to_Print + "[c]    <font size='normal'>" + StoreAddressLine1 ;
+        text_to_Print = text_to_Print + "<font size='normal'>" + StoreAddressLine2 + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine3 + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Contact No :" + StoreLanLine + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + GSTIN + " \n"+ " \n";
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>OrderId : "+Orderid +" \n";
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>Order Placed Time : "+OrderPlacedtime +" \n";
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
+        text_to_Print = text_to_Print+"[L]  ITEMNAME * QTY " +" \n";
+
+        //text_to_Print = text_to_Print+"[L] RATE                                  SUBTOTAL" +" \n";
+        text_to_Print = text_to_Print+"[L]  RATE"+"[R]      "+"  SUBTOTAL" +" \n";
+
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
         try {
@@ -1678,47 +1689,47 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                 if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
 
-                    text_to_Print = text_to_Print+"[L] <b><font size='normal'>Grill House  "+fullitemName +" </b>\n";
+                    text_to_Print = text_to_Print+"[L]  <b><font size='normal'>Grill House  "+fullitemName +" </b>\n";
 
 
                     if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
 
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
 
                     }
                     if(!finalgrossweight.equals("")) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Grossweight : "+finalgrossweight +" \n";
 
                     }
-                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+                    text_to_Print = text_to_Print+"[L]  <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
 
                 }
                 else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
-                    text_to_Print = text_to_Print+"[L]<b> <font size='normal'>Ready to Cook  "+fullitemName +" </b>\n";
+                    text_to_Print = text_to_Print+"[L]<b>  <font size='normal'>Ready to Cook  "+fullitemName +" </b>\n";
 
                     if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
 
 
                     }
                     if(!finalgrossweight.equals("")) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Grossweight : "+finalgrossweight +" \n";
 
                     }
 
 
 
-                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+                    text_to_Print = text_to_Print+"[L]  <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
 
                 }
                 else  {
 
-                    text_to_Print = text_to_Print+"[L] <b><font size='normal'>"+String.valueOf(fullitemName)  +"</b> \n";
+                    text_to_Print = text_to_Print+"[L]  <b><font size='normal'>"+String.valueOf(fullitemName)  +"</b> \n";
 
 
 
                     if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
 
                     }
 
@@ -1727,10 +1738,10 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                     if(!finalgrossweight.equals("")) {
 
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Grossweight : "+finalgrossweight +" \n";
 
                     }
-                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+                    text_to_Print = text_to_Print+"[L]  <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
 
                 }
 
@@ -1780,7 +1791,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                 itemwise_price = "Rs. " + itemwise_price;
                 itemwise_Subtotal = "Rs." + itemwise_Subtotal;
 
-
+/*
                 if (itemwise_price.length() == 4) {
                     //21spaces
                     itemwise_price = itemwise_price + "                            ";
@@ -1891,14 +1902,16 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
 
+ */
 
-                text_to_Print = text_to_Print+"[L] <font size='normal'>"+itemwise_price + itemwise_Subtotal +" \n";
 
-                text_to_Print = text_to_Print+"[L] <font size='normal'>                                                "+" \n";
+                text_to_Print = text_to_Print+"[L]  <font size='normal'>"+itemwise_price + "[R] "+itemwise_Subtotal +" \n";
+
+                text_to_Print = text_to_Print+"[L]  <font size='normal'>                                                "+" \n";
 
 
             }
-            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1907,6 +1920,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
         PayableAmount = "Rs." + String.valueOf(totalAmountFromAddingSubtotal);
+       /*
         if (PayableAmount.length() == 4) {
             //21spaces
             PayableAmount = PayableAmount + "                                   " + PayableAmount;
@@ -1969,16 +1983,19 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
 
 
+        */
 
 
-        text_to_Print = text_to_Print+"[L]" +PayableAmount+" \n";
 
-        text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+        text_to_Print = text_to_Print+"[L]  " +PayableAmount+" [R] "+PayableAmount+" \n";
+
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
         if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
             couponDiscount_double = Double.parseDouble (CouponDiscount);
+            CouponDiscount = "Rs. "+CouponDiscount;
             if (OrderType.equals(Constants.APPORDER)) {
-                if (CouponDiscount.length() == 4) {
+             /*   if (CouponDiscount.length() == 4) {
                     //20spaces
                     //NEW TOTAL =4
                     CouponDiscount = "Coupon Discount                         " + CouponDiscount;
@@ -2030,11 +2047,16 @@ public class Pos_ManageOrderFragment extends Fragment {
                     //NEW TOTAL =9
                     CouponDiscount = "Coupon Discount               " + CouponDiscount;
                 }
+                */
+
+                text_to_Print = text_to_Print+"[L]  Coupon Discount "+"[R]      " +CouponDiscount+" \n";
+
+
             }
 
             if (OrderType.equals(Constants.POSORDER)) {
                 couponDiscount_double = Double.parseDouble (CouponDiscount);
-
+                /*
                 if (CouponDiscount.length() == 4) {
                     //20spaces
                     //NEW TOTAL =4
@@ -2087,12 +2109,14 @@ public class Pos_ManageOrderFragment extends Fragment {
                     //NEW TOTAL =9
                     CouponDiscount = "Discount Amount              " + CouponDiscount;
                 }
+                */
+                text_to_Print = text_to_Print+"[L]  Discount Amount "+"[R]      " +CouponDiscount+" \n";
             }
 
 
-            text_to_Print = text_to_Print+"[L]" +CouponDiscount+" \n";
+        //    text_to_Print = text_to_Print+"[L]" +CouponDiscount+" \n";
 
-            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
 
@@ -2117,7 +2141,7 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
 
         if( deliveryAmount_double>0) {
-            if (DeliveryAmount.length() == 4) {
+           /* if (DeliveryAmount.length() == 4) {
                 //25spaces
                 //DeliveryAmount =15
                 DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
@@ -2164,16 +2188,20 @@ public class Pos_ManageOrderFragment extends Fragment {
                 DeliveryAmount = "Delivery Amount               " + DeliveryAmount;
             }
 
-            text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
 
-            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+            */
+            text_to_Print = text_to_Print+"[L]  Delivery Amount "+"[R]      " +DeliveryAmount+" \n";
+
+        //    text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
+
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
 
         }
 
         String NetTotal = "Rs." + String.valueOf(totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt);
-        if (NetTotal.length() == 4) {
+       /* if (NetTotal.length() == 4) {
             //27spaces+4spaces
             //NEW TOTAL =9
             NetTotal = "NET TOTAL                             " + NetTotal;
@@ -2221,46 +2249,49 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
 
 
-
-        text_to_Print = text_to_Print+"[L]" +NetTotal+" \n";
-
-        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
+        */
+        text_to_Print = text_to_Print+"[L]  NET TOTAL  "+"[R]      " +NetTotal+" \n";
 
 
+        //text_to_Print = text_to_Print+"[L]" +NetTotal+" \n";
 
-        text_to_Print = text_to_Print+"[L]<b>Payment Mode : " +PaymentMode+" </b>\n";
-
-        text_to_Print = text_to_Print+"[L]Mobile No : " +MobileNumber+" \n"+" \n";
-
-        text_to_Print = text_to_Print+"[c]<font size='tall'> TOKENNO: " +TokenNo+" \n";
-
-        text_to_Print = text_to_Print+"[L]<font size='normal'>                                                "+" \n";
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
-        text_to_Print = text_to_Print+"[L]<font size='normal'>Slot Name : " +Slotname+" \n";
+
+        text_to_Print = text_to_Print+"[L]  <b>Payment Mode : " +PaymentMode+" </b>\n";
+
+        text_to_Print = text_to_Print+"[L]  Mobile No : " +MobileNumber+" \n"+" \n";
+
+        text_to_Print = text_to_Print+"[c]  <b><font size='big'> TOKEN NO: "+TokenNo+"</b>\n";
+
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>                                                "+" \n";
 
 
-        text_to_Print = text_to_Print+"[L]Slot Date : " +SlotDate+" \n";
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>Slot Name : " +Slotname+"\n";
+
+
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>Slot Date : " +SlotDate+" \n";
 
 
 
         if(Slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)){
-            text_to_Print = text_to_Print+"[L]Order Placed time : " +OrderPlacedtime+" \n";
+            text_to_Print = text_to_Print+"[L]  Order Placed time : " +OrderPlacedtime+" \n";
 
 
         }
-        text_to_Print = text_to_Print+"[L]Delivery time : " +DeliveryTime+" \n";
+        text_to_Print = text_to_Print+"[L]  Delivery time : " +DeliveryTime+" \n";
 
-        text_to_Print = text_to_Print+"[L]Delivery type : " +DeliveryType+" \n";
-        text_to_Print = text_to_Print+"[L]Distance from Store  : " +DistanceFromStore+" Kms"+" \n";
+        text_to_Print = text_to_Print+"[L]  <b>Delivery type : " +DeliveryType+"</b> \n";
+        text_to_Print = text_to_Print+"[L]  Distance from Store  : " +DistanceFromStore+" Kms"+" \n";
 
-        text_to_Print = text_to_Print+"[L]Address : " +" \n";
-        text_to_Print = text_to_Print+"[L] "+ Address +" \n";
+        text_to_Print = text_to_Print+"[L]  Address : " +" \n";
+        text_to_Print = text_to_Print+"[L]   "+ Address +" \n";
 
 
 
         if(!Notes.equals("")) {
-            text_to_Print = text_to_Print+"[c]<b><font size='big'>Notes : " +Notes+" </b>\n\n";
+            text_to_Print = text_to_Print+"[c]  <b><font size='big'>Notes : " +Notes+" </b>\n\n";
 
 
         }
@@ -2271,7 +2302,7 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
         text_to_Print = text_to_Print+"[L] " +" \n";
 
-        text_to_Print = text_to_Print+"[L] <b>Thank You For Choosing Us !!!! " +"</b> \n";
+        text_to_Print = text_to_Print+"[c]   <b>Thank You For Choosing Us !!!! " +"</b> \n";
 
         text_to_Print = text_to_Print+"[L] " +" \n";
         text_to_Print = text_to_Print+"[L] " +" \n";
@@ -3269,13 +3300,40 @@ public class Pos_ManageOrderFragment extends Fragment {
 
             BluetoothPrintDriver.Begin();
 
-            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
-            BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
-            BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
-            BluetoothPrintDriver.SetAlignMode((byte) 49);
-            BluetoothPrintDriver.printString(Title);
-            BluetoothPrintDriver.BT_Write("\r");
-            BluetoothPrintDriver.LF();
+            BluetoothPrintDriver.Begin();
+            if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+                Title = "MK Proteins";
+
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString(Title);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+            }
+            else {
+                Title = "The Meat Chop";
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString(Title);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+
+            }
 
 
             BluetoothPrintDriver.Begin();

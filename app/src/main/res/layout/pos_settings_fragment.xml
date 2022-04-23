@@ -388,6 +388,27 @@
                 </LinearLayout>
 
 
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/wholesale_orders_list"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/WholeSaleOrdersList"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -576,6 +597,28 @@
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
+                    android:id="@+id/addWholeSaleOrders_placing_layout"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/AddWholeSaleOrders"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
                     android:id="@+id/editPaymentModeOftheOrder"
                     android:visibility="visible"
                     android:orientation="vertical">
@@ -606,7 +649,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:fontFamily="@font/open_sans_semibold"
-                        android:text="MobileNowise Credit Orders List"
+                        android:text="Credit Order Details MobileNowise"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp"
 
@@ -761,8 +804,25 @@
                 </LinearLayout>
 
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/WholeSaleSalesReport"
 
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/WholeSale_Sales_Report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
 
 
                 <LinearLayout
@@ -1076,6 +1136,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="70dp"
                     android:gravity="center_vertical"
+                    android:visibility="gone"
                     android:layout_marginBottom="15dp"
                     android:id="@+id/printerParentLayout"
                     android:orientation="vertical">

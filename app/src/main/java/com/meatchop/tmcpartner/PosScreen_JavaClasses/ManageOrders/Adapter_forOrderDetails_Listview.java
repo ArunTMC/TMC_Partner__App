@@ -65,7 +65,7 @@ public class Adapter_forOrderDetails_Listview extends ArrayAdapter<Modal_ManageO
         double subtotal = (Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()));
         double quantity = (Double.parseDouble(modal_manageOrders_pojo_class.getQuantity()));
         subtotal= subtotal*quantity;
-        itemSubtotal_widget.setText(String.valueOf(subtotal));
+        itemSubtotal_widget.setText(String.valueOf(Math.round(subtotal)));
         return  listViewItem ;
     }
 

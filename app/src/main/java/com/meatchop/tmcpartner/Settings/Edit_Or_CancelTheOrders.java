@@ -886,7 +886,19 @@ public static List<Modal_ManageOrders_Pojo_Class> ordersList;
                         }
 
 
-                        if(json.has("orderdetailskey")){
+
+
+                    if(json.has("vendorname")){
+                        manageOrdersPojoClass.vendorname =  String.valueOf(json.get("vendorname"));
+
+                    }
+                    else{
+                        manageOrdersPojoClass.vendorname ="";
+                    }
+
+
+
+                    if(json.has("orderdetailskey")){
                             manageOrdersPojoClass.orderdetailskey =  String.valueOf(json.get("orderdetailskey"));
 
                         }

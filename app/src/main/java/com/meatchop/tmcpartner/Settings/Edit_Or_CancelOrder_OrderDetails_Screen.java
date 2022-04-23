@@ -4,18 +4,24 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +47,7 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mob
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_vendor;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -77,7 +84,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     public String vendorLongitude;
     public String customerlatitude;
     public String vendorLatitude;
-    public String vendorKey;
+    public String vendorKey,vendorName;
     public String vendorUserMobileno;
     public String customerLongitutde;
     public String paymentmode;
@@ -103,11 +110,24 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     public static BottomSheetDialog bottomSheetDialog;
     public static LinearLayout loadingPanel;
     public static LinearLayout loadingpanelmask;
-    Button changePaymentMode_button,cancelOrder_button,changeDeliveryPartner;
+    Button changePaymentMode_button,cancelOrder_button,changeDeliveryPartner,changeOrderToAnotherStore;
     private  String isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders;
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     public static Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
     boolean isordertrackingcalled = false;
+    int itemDetailLength = 0;
+    int itemDetailLoopCount = 0;
+    boolean isUpdateItemDetailsCompleted = false;
+    boolean isUpdateOrderTrackingCompleted = false;
+    ArrayList<String> VendorName_arrayList=new ArrayList<>();;
+    private JSONArray result;
+    private String pos_vendorMobileNumber;
+    private String selectedvendorNameString,selectedvendorKeyString,vendortype,vendorNameString;
+    List<Modal_vendor> vendorList=new ArrayList<>();
+
+    String toastFromOrderItemDetails ="";
+
+    private  ArrayAdapter vendorlist_aAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,9 +179,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         AddressLayout = findViewById(R.id.AddressLayout);
         cancelOrder_button = findViewById(R.id.cancelOrder_button);
         deliveryCharges_text_widget = findViewById(R.id.deliveryCharges_text_widget);
-
+        changeOrderToAnotherStore  = findViewById(R.id.changeOrderToAnotherStore);
         changePaymentMode_button = findViewById(R.id.changePaymentMode_button);
         deliveryPartnerList = new ArrayList<>();
+        getAreawiseVendorName();
+
 
 
         try {
@@ -171,7 +193,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             vendorLatitude = (shared.getString("VendorLatitude", "12.9406"));
             vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
             UserPhoneNumber = (shared.getString("UserPhoneNumber", "+91"));
-
+            vendorName= (shared.getString("VendorName", ""));
            vendorKey = (shared.getString("VendorKey", ""));
             vendorUserMobileno = (shared.getString("UserPhoneNumber", ""));
             UserRole = shared.getString("userrole", "");
@@ -264,244 +286,49 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             userkey = "";
         }
 
+        changeOrderToAnotherStore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                String orderDetailsKey =  "",orderTrackingDetailsKey = "",userAddressKey ="";
+                        try{
+                            orderDetailsKey = modal_manageOrders_pojo_class.getOrderdetailskey().toString();
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            orderDetailsKey =  "";
+                        }
+
+                        try{
+                            userAddressKey = modal_manageOrders_pojo_class.getUseraddresskey().toString();
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            userAddressKey =  "";
+                        }
+
+                        try{
+                            orderTrackingDetailsKey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails().toString();
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                            orderTrackingDetailsKey = "";
+                        }
+
+                displayBottomSheetWithVendorDetails(orderDetailsKey,orderTrackingDetailsKey,userAddressKey);
+
+
+
+
+            }
+        });
 
         if((isFromEditOrders.equals("TRUE")) && (Edit_Or_CancelTheOrders.showcreditorderscheckbox.isChecked()) &&(!isordertrackingcalled)){
         //    modal_manageOrders_pojo_class = getOrderTrackingDetailsAlso(modal_manageOrders_pojo_class,orderid);
           //  Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in method" , Toast.LENGTH_LONG).show();
 
             Adjusting_Widgets_Visibility(true);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_orderid + orderid,null,
-                    new com.android.volley.Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(@NonNull JSONObject response) {
-                            try {
-                                Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
-                                try{
-                                   // Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in response" , Toast.LENGTH_LONG).show();
-                                    isordertrackingcalled =true;
-                                    JSONArray JArray  = response.getJSONArray("content");
-                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                                    int i1=0;
-                                    int arrayLength = JArray.length();
-                                    //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
-
-
-                                    for(;i1<(arrayLength);i1++) {
-
-                                        try {
-                                            JSONObject json = JArray.getJSONObject(i1);
-                                            if(json.has("key")){
-                                                modal_manageOrders_pojo_class.keyfromtrackingDetails = String.valueOf(json.get("key"));
-
-                                            }
-                                            else{
-
-                                                modal_manageOrders_pojo_class.keyfromtrackingDetails ="";
-                                            }
-
-
-                                            if(json.has("orderstatus")){
-                                                modal_manageOrders_pojo_class.orderstatus = String.valueOf(json.get("orderstatus"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.orderstatus ="";
-                                            }
-
-
-                                            if(json.has("orderdeliverytime")){
-                                                modal_manageOrders_pojo_class.orderdeliveredtime =  String.valueOf(json.get("orderdeliverytime"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.orderdeliveredtime ="";
-                                            }
-                                            if(json.has("useraddresskey")){
-                                                modal_manageOrders_pojo_class.useraddresskey =  String.valueOf(json.get("useraddresskey"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.useraddresskey ="";
-                                            }
-
-
-                                            if(json.has("orderreadytime")){
-                                                modal_manageOrders_pojo_class.orderreadytime = String.valueOf(json.get("orderreadytime"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.orderreadytime ="";
-                                            }
-
-
-                                            if(json.has("orderpickeduptime")){
-                                                modal_manageOrders_pojo_class.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.orderpickeduptime ="";
-                                            }
-
-
-                                            if(json.has("orderconfirmedtime")){
-                                                modal_manageOrders_pojo_class.orderconfirmedtime =  String.valueOf(json.get("orderconfirmedtime"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.orderconfirmedtime ="";
-                                            }
-
-                                            if(json.has("useraddresslat")){
-                                                modal_manageOrders_pojo_class.useraddresslat =  String.valueOf(json.get("useraddresslat"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.useraddresslat ="";
-                                            }
-
-
-                                            if(json.has("useraddresslong")){
-                                                modal_manageOrders_pojo_class.useraddresslon =  String.valueOf(json.get("useraddresslong"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.useraddresslon ="";
-                                            }
-
-
-
-
-                                            try {
-                                                if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
-
-
-                                                    if (json.has("deliverydistance")) {
-
-                                                        String deliverydistance = String.valueOf(json.get("deliverydistance"));
-                                                        if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
-                                                            modal_manageOrders_pojo_class.deliverydistance = String.valueOf(json.get("deliverydistance"));
-
-                                                        } else {
-                                                            modal_manageOrders_pojo_class.deliverydistance = "0";
-
-                                                        }
-                                                    } else {
-                                                        modal_manageOrders_pojo_class.deliverydistance = "0";
-                                                    }
-
-
-                                                }
-                                            } catch (Exception E) {
-                                                modal_manageOrders_pojo_class.deliverydistance = "0";
-                                                E.printStackTrace();
-                                            }
-
-
-                                            if (json.has("deliveryusername")) {
-                                                modal_manageOrders_pojo_class.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.deliveryPartnerName ="";
-                                            }
-                                            if (json.has("deliveryuserkey")) {
-                                                modal_manageOrders_pojo_class.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));
-                                                ;
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.deliveryPartnerKey ="";
-                                            }
-                                            if (json.has("deliveryusermobileno")) {
-                                                modal_manageOrders_pojo_class.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
-
-                                            }
-                                            else{
-                                                modal_manageOrders_pojo_class.deliveryPartnerMobileNo ="";
-                                            }
-
-
-
-
-
-                                            updateDatainLocalArray(modal_manageOrders_pojo_class);
-
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-
-
-                                    }
-
-                                }
-                                catch (Exception e){
-                                    e.printStackTrace();
-                                }
-
-
-
-                            }
-                            catch (Exception e){
-
-                                e.printStackTrace();
-                            }
-
-
-
-                        }
-
-                    },new com.android.volley.Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(@NonNull VolleyError error) {
-                    try {
-                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "There is no Credited Orders " , Toast.LENGTH_LONG).show();
-
-
-                        Adjusting_Widgets_Visibility(false);
-
-                        error.printStackTrace();
-
-
-                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            })
-            {
-                @Override
-                public Map<String, String> getParams() throws AuthFailureError {
-                    final Map<String, String> params = new HashMap<>();
-                    params.put("vendorkey", "vendor_1");
-                    params.put("orderplacedtime", "11 Jan 2021");
-
-                    return params;
-                }
-
-
-
-                @NonNull
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    final Map<String, String> header = new HashMap<>();
-                    header.put("Content-Type", "application/json");
-
-                    return header;
-                }
-            };
-            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-            // Make the request
-            Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
-
-            Adjusting_Widgets_Visibility(false);
-
-
-
-
+            FetchOrdersFromOrderTrackingDatabase(orderid,true);
 
         }
 
@@ -727,6 +554,1196 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             }
         });
     }
+
+    private void displayBottomSheetWithVendorDetails(String orderDetailsKey, String orderTrackingDetailsKey, String userAddressKey) {
+
+        bottomSheetDialog = new BottomSheetDialog(Edit_Or_CancelOrder_OrderDetails_Screen.this);
+        bottomSheetDialog.setContentView(R.layout.change_vendor_details_for_an_order);
+        CheckBox changeAddresstoAnotherstore_Checkbox = bottomSheetDialog.findViewById(R.id.changeAddresstoAnotherstore_Checkbox);
+        Spinner vendorName_Spinner = bottomSheetDialog.findViewById(R.id.vendorName_Spinner);
+        TextView mobileno_textview = bottomSheetDialog.findViewById(R.id.mobileno_textview);
+        TextView orderid_textview = bottomSheetDialog.findViewById(R.id.orderid_textview);
+        TextView tokenNo_textview = bottomSheetDialog.findViewById(R.id.tokenNo_textview);
+        TextView slotdate_text = bottomSheetDialog.findViewById(R.id.slotdate_text);
+        TextView slotname_text = bottomSheetDialog.findViewById(R.id.slotname_text);
+        TextView selected_vendorname_text = bottomSheetDialog.findViewById(R.id.selected_vendorname_text);
+        TextView vendorname_text = bottomSheetDialog.findViewById(R.id.vendorname_text);
+        Button changeOrderToAnotherStoreButton_bottomsheet= bottomSheetDialog.findViewById(R.id.changeOrderToAnotherStoreButton_bottomsheet);
+       if((userAddressKey.equals(""))||(userAddressKey.equals(null))||(userAddressKey.equals("null"))||(userAddressKey.equals("-"))){
+           changeAddresstoAnotherstore_Checkbox.setVisibility(View.GONE);
+        }
+        else{
+           changeAddresstoAnotherstore_Checkbox.setVisibility(View.VISIBLE);
+
+       }
+        vendorlist_aAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, VendorName_arrayList);
+        vendorName_Spinner.setAdapter(vendorlist_aAdapter);
+
+
+        for(int i =0; i<vendorList.size();i++){
+            Modal_vendor modal_vendor = vendorList.get(i);
+            String key ="", name ="";
+            try {
+                key = modal_vendor.getKey();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            if(key.equals(vendorKey)){
+                try {
+                    name = modal_vendor.getVendorname().toString();
+                    vendorname_text.setText(name);
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+
+
+        vendorName_Spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                selectedvendorNameString =getVendorData(position,"name");
+                if (!selectedvendorNameString.toUpperCase().equals(modal_manageOrders_pojo_class.getVendorname().toString().toUpperCase())){
+                    selectedvendorKeyString=getVendorData(position,"key");
+                    selected_vendorname_text.setText(selectedvendorNameString);
+
+                }
+                else{
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "You Can't Select the same Store Name", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
+
+
+
+
+
+        try{
+            mobileno_textview.setText(modal_manageOrders_pojo_class.getUsermobile().toString());
+        }
+        catch (Exception e){
+            mobileno_textview.setText(" -- ");
+            e.printStackTrace();
+        }
+
+
+        try{
+            orderid_textview .setText(modal_manageOrders_pojo_class.getOrderid().toString());
+        }
+        catch (Exception e){
+            orderid_textview.setText(" -- ");
+            e.printStackTrace();
+        }
+
+
+
+        try{
+            tokenNo_textview .setText(modal_manageOrders_pojo_class.getTokenno().toString());
+        }
+        catch (Exception e){
+            tokenNo_textview.setText(" -- ");
+
+            e.printStackTrace();
+        }
+
+        try{
+            slotdate_text  .setText(modal_manageOrders_pojo_class.getSlotdate().toString());
+        }
+        catch (Exception e){
+
+            slotdate_text.setText(" -- ");
+            e.printStackTrace();
+        }
+
+        try{
+            slotname_text  .setText(modal_manageOrders_pojo_class.getSlotname().toString());
+        }
+        catch (Exception e){
+
+            slotname_text.setText(" -- ");
+            e.printStackTrace();
+        }
+
+
+
+
+
+        changeOrderToAnotherStoreButton_bottomsheet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(vendorName.equals(selectedvendorNameString)){
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Please Select Valid Store Name", Toast.LENGTH_SHORT).show();
+
+                }
+                else {
+                    if ((selectedvendorKeyString.equals(" nil ")) || (selectedvendorNameString.equals(" nil "))) {
+                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Please Select Valid Store Name", Toast.LENGTH_SHORT).show();
+                    } else {
+/*
+                        AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                //TODO your background code
+                                FetchOrdersFromOrderItemDetailsDatabase(orderid);
+
+                            }
+                        });
+
+ */
+                        bottomSheetDialog.cancel();
+                        Adjusting_Widgets_Visibility(true);
+                        new AsyncCaller().execute();
+
+                        if(userAddressKey.equals("") || userAddressKey.equals(" ") || userAddressKey.equals("null") || userAddressKey.equals(null)){
+
+                        }
+                        else {
+                            if (changeAddresstoAnotherstore_Checkbox.isChecked()) {
+                                changeVendorDetailsInAddressTable(userAddressKey);
+
+                            } else {
+
+                            }
+                        }
+
+
+
+                        if (orderDetailsKey.equals("")) {
+                            FetchOrdersFromOrderDetailsDatabase(orderid);
+/*
+                            AsyncTask.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //TODO your background code
+                                    FetchOrdersFromOrderDetailsDatabase(orderid);
+
+                                }
+                            });
+
+ */
+                        } else {
+                            changeVendorDetailsInOrderDetails(orderDetailsKey);
+                        }
+                        if (orderTrackingDetailsKey.equals("")) {
+                            FetchOrdersFromOrderTrackingDatabase(orderid, false);
+/*
+                            AsyncTask.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //TODO your background code
+                                    FetchOrdersFromOrderTrackingDatabase(orderid, false);
+
+                                }
+                            });
+
+ */
+                        } else {
+                            changeVendorDetailsInOrderTrackingDetails(orderDetailsKey);
+                        }
+
+
+                    }
+                }
+            }
+        });
+
+
+        bottomSheetDialog.show();
+
+
+
+
+
+
+    }
+
+    private void changeVendorDetailsInAddressTable(String userAddressKey) {
+
+
+        JSONObject  jsonObject = new JSONObject();
+
+
+        try {
+            jsonObject.put("key",userAddressKey);
+            jsonObject.put("vendorkey",selectedvendorKeyString);
+            jsonObject.put("vendorname",selectedvendorNameString);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateAddressTable
+                ,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+
+                    String message =  response.getString("message").toUpperCase();
+                    if(message.equals("SUCCESS")) {
+
+                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Vendor Details updated in Address table", Toast.LENGTH_LONG).show();
+
+
+                    }
+                    else{
+                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Can't update Vendor Details in Address table", Toast.LENGTH_LONG).show();
+
+                       // Adjusting_Widgets_Visibility(false);
+                    }
+
+
+                } catch (JSONException e) {
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Can't update Vendor Details in Address table", Toast.LENGTH_LONG).show();
+
+                    // showProgressBar(false);
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Can't update Vendor Details in Address table", Toast.LENGTH_LONG).show();
+
+
+
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+    }
+
+    private void FetchOrdersFromOrderItemDetailsDatabase(String orderid) {
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderItemDetailsusingOrderid + orderid,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                            try{
+                                JSONArray JArray  = response.getJSONArray("content");
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                String orderItemdetailsKey ="";
+                                itemDetailLength = arrayLength;
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        if(json.has("key")){
+                                            orderItemdetailsKey = String.valueOf(json.get("key"));
+                                        }
+                                        else{
+
+                                            orderItemdetailsKey ="";
+                                        }
+
+
+
+
+                                    }
+                                    catch (Exception e){
+                                        orderItemdetailsKey="";
+
+                                        e.printStackTrace();
+                                    }
+
+
+
+
+                                 //   Handler handler = new Handler();
+                                    String finalOrderItemdetailsKey = orderItemdetailsKey;
+                                    int finalarraylength = i1;
+                                    itemDetailLoopCount = i1;
+                                    if(!finalOrderItemdetailsKey.equals("")){
+                                        changeVendorDetailsInOrderItemDetails(finalOrderItemdetailsKey, finalarraylength);
+
+                                    }
+                                     /*       handler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    if(!finalOrderItemdetailsKey.equals("")){
+                                                        Adjusting_Widgets_Visibility(true);
+                                                        changeVendorDetailsInOrderItemDetails(finalOrderItemdetailsKey, finalarraylength);
+
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }, 50);
+
+
+                                      */
+
+                                }
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+
+                        }
+                        catch (Exception e){
+
+                            e.printStackTrace();
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                   /* Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Error in Fetching Orders Item Details " , Toast.LENGTH_LONG).show();
+
+
+                                }
+                            });
+                        }
+                    }, 50);
+
+
+                    */
+                    toastFromOrderItemDetails = "Error in Fetching Orders Item Details ";
+                    //Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Error in Fetching Orders Item Details " , Toast.LENGTH_LONG).show();
+
+                    error.printStackTrace();
+
+
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void changeVendorDetailsInOrderItemDetails(String finalOrderItemdetailsKey, int finalarraylength) {
+
+
+
+
+        JSONObject  jsonObject = new JSONObject();
+
+
+        try {
+            jsonObject.put("key",finalOrderItemdetailsKey);
+            jsonObject.put("vendorkey",selectedvendorKeyString);
+            jsonObject.put("vendorname",selectedvendorNameString);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_updateOrderItemDetailsTable
+                ,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+
+                    String message =  response.getString("message").toUpperCase();
+                    if(message.equals("SUCCESS")) {
+
+                    if(finalarraylength==itemDetailLength){
+                        isUpdateItemDetailsCompleted = true;
+                    }
+                      //  Adjusting_Widgets_Visibility(false);
+
+                    }
+                    else{
+                        toastFromOrderItemDetails = "Can't update Vendor Details in Item Details";
+
+                       //
+                        // Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Can't update Vendor Details in Item Details", Toast.LENGTH_LONG).show();
+                        isUpdateItemDetailsCompleted = false;
+
+                      //  Adjusting_Widgets_Visibility(false);
+                    }
+
+
+                } catch (JSONException e) {
+                    // showProgressBar(false);
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                toastFromOrderItemDetails = "Can't update Vendor Details in Item Details";
+               // Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Can't update Vendor Details in Item Details", Toast.LENGTH_LONG).show();
+                isUpdateItemDetailsCompleted = false;
+
+              //  Adjusting_Widgets_Visibility(false);
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void FetchOrdersFromOrderTrackingDatabase(String orderid, boolean IsFetchedFromONCreate) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_orderid + orderid,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                            try{
+                                // Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in response" , Toast.LENGTH_LONG).show();
+                                isordertrackingcalled =true;
+                                JSONArray JArray  = response.getJSONArray("content");
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        if(json.has("key")){
+                                            modal_manageOrders_pojo_class.keyfromtrackingDetails = String.valueOf(json.get("key"));
+
+                                        }
+                                        else{
+
+                                            modal_manageOrders_pojo_class.keyfromtrackingDetails ="";
+                                        }
+
+
+                                        if(json.has("orderstatus")){
+                                            modal_manageOrders_pojo_class.orderstatus = String.valueOf(json.get("orderstatus"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.orderstatus ="";
+                                        }
+
+
+                                        if(json.has("orderdeliverytime")){
+                                            modal_manageOrders_pojo_class.orderdeliveredtime =  String.valueOf(json.get("orderdeliverytime"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.orderdeliveredtime ="";
+                                        }
+                                        if(json.has("useraddresskey")){
+                                            modal_manageOrders_pojo_class.useraddresskey =  String.valueOf(json.get("useraddresskey"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.useraddresskey ="";
+                                        }
+
+
+                                        if(json.has("orderreadytime")){
+                                            modal_manageOrders_pojo_class.orderreadytime = String.valueOf(json.get("orderreadytime"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.orderreadytime ="";
+                                        }
+
+
+                                        if(json.has("orderpickeduptime")){
+                                            modal_manageOrders_pojo_class.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.orderpickeduptime ="";
+                                        }
+
+
+                                        if(json.has("orderconfirmedtime")){
+                                            modal_manageOrders_pojo_class.orderconfirmedtime =  String.valueOf(json.get("orderconfirmedtime"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.orderconfirmedtime ="";
+                                        }
+
+                                        if(json.has("useraddresslat")){
+                                            modal_manageOrders_pojo_class.useraddresslat =  String.valueOf(json.get("useraddresslat"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.useraddresslat ="";
+                                        }
+
+
+                                        if(json.has("useraddresslong")){
+                                            modal_manageOrders_pojo_class.useraddresslon =  String.valueOf(json.get("useraddresslong"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.useraddresslon ="";
+                                        }
+
+
+
+
+                                        try {
+                                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+
+
+                                                if (json.has("deliverydistance")) {
+
+                                                    String deliverydistance = String.valueOf(json.get("deliverydistance"));
+                                                    if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                                        modal_manageOrders_pojo_class.deliverydistance = String.valueOf(json.get("deliverydistance"));
+
+                                                    } else {
+                                                        modal_manageOrders_pojo_class.deliverydistance = "0";
+
+                                                    }
+                                                } else {
+                                                    modal_manageOrders_pojo_class.deliverydistance = "0";
+                                                }
+
+
+                                            }
+                                        } catch (Exception E) {
+                                            modal_manageOrders_pojo_class.deliverydistance = "0";
+                                            E.printStackTrace();
+                                        }
+
+
+                                        if (json.has("deliveryusername")) {
+                                            modal_manageOrders_pojo_class.deliveryPartnerName = String.valueOf(json.get("deliveryusername"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.deliveryPartnerName ="";
+                                        }
+                                        if (json.has("deliveryuserkey")) {
+                                            modal_manageOrders_pojo_class.deliveryPartnerKey = String.valueOf(json.get("deliveryuserkey"));
+                                            ;
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.deliveryPartnerKey ="";
+                                        }
+                                        if (json.has("deliveryusermobileno")) {
+                                            modal_manageOrders_pojo_class.deliveryPartnerMobileNo = String.valueOf(json.get("deliveryusermobileno"));
+
+                                        }
+                                        else{
+                                            modal_manageOrders_pojo_class.deliveryPartnerMobileNo ="";
+                                        }
+
+
+
+
+
+                                        if(IsFetchedFromONCreate){
+                                                updateDatainLocalArray(modal_manageOrders_pojo_class);
+
+                                        }
+                                        else{
+                                            changeVendorDetailsInOrderTrackingDetails(orderTrackingDetailskey);
+
+                                            /*
+                                            Handler handler = new Handler();
+                                            handler.postDelayed(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+
+                                                            changeVendorDetailsInOrderTrackingDetails(orderTrackingDetailskey);
+                                                        }
+                                                    });
+                                                }
+                                            }, 50);
+
+                                             */
+
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+                                }
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+
+                        }
+                        catch (Exception e){
+
+                            e.printStackTrace();
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Error in Fetching Tracking Orders " , Toast.LENGTH_LONG).show();
+
+                    if(IsFetchedFromONCreate) {
+                        Adjusting_Widgets_Visibility(false);
+                    }
+                   /* Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Error in Fetching Tracking Orders " , Toast.LENGTH_LONG).show();
+
+                                    if(IsFetchedFromONCreate) {
+                                        Adjusting_Widgets_Visibility(false);
+                                    }
+                                }
+                            });
+                        }
+                    }, 50);
+
+
+                    */
+
+                    error.printStackTrace();
+
+
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+
+
+    }
+
+
+    private void FetchOrdersFromOrderDetailsDatabase(String orderid) {
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid + orderid,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        try {
+                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                            try{
+                                JSONArray JArray  = response.getJSONArray("content");
+                                int i1=0;
+                                int arrayLength = JArray.length();
+                                for(;i1<(arrayLength);i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        if(json.has("key")){
+                                            modal_manageOrders_pojo_class.orderdetailskey = String.valueOf(json.get("key"));
+                                            orderdetailsKey = String.valueOf(json.get("key"));
+                                        }
+                                        else{
+
+                                            modal_manageOrders_pojo_class.orderdetailskey ="";
+                                        }
+
+
+
+
+                                    }
+                                    catch (Exception e){
+                                        modal_manageOrders_pojo_class.orderdetailskey ="";
+
+                                        e.printStackTrace();
+                                    }
+
+                                    changeVendorDetailsInOrderDetails(orderdetailsKey);
+/*
+
+                                        Handler handler = new Handler();
+                                        handler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+
+                                                      //  changeVendorDetailsInOrderDetails(orderdetailsKey);
+                                                    }
+                                                });
+                                            }
+                                        }, 50);
+
+
+
+ */
+                                }
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+
+                        }
+                        catch (Exception e){
+
+                            e.printStackTrace();
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {/*
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Error in Fetching Orders Details " , Toast.LENGTH_LONG).show();
+
+
+                                }
+                            });
+                        }
+                    }, 50);
+
+*/
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Error in Fetching Orders Details " , Toast.LENGTH_LONG).show();
+
+
+                    error.printStackTrace();
+
+
+                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+
+
+    }
+
+    private void changeVendorDetailsInOrderDetails(String orderDetailsKey) {
+
+
+        JSONObject  jsonObject = new JSONObject();
+
+
+        try {
+            jsonObject.put("key",orderDetailsKey);
+            jsonObject.put("vendorkey",selectedvendorKeyString);
+            jsonObject.put("vendorname",selectedvendorNameString);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_Update_OrderDetailsTableNew
+                ,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    final boolean[] isProgressBarTurnedOffinDoWhile = {false};
+                    String message =  response.getString("message").toUpperCase();
+                        if(message.equals("SUCCESS")) {
+                            if(itemDetailLoopCount==itemDetailLength) {
+                                if(isUpdateItemDetailsCompleted) {
+                                    if (isUpdateOrderTrackingCompleted) {
+                                        isProgressBarTurnedOffinDoWhile[0] = true;
+                                        Adjusting_Widgets_Visibility(false);
+                                        updateChangesinLocalArray(orderid,selectedvendorKeyString,"vendorkey");
+                                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "This Order has changed to another vendor Succesfully", Toast.LENGTH_LONG).show();
+
+                                    } else {
+                                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Waiting to Update in OrderTrackingDetails", Toast.LENGTH_LONG).show();
+
+                                    }
+                                }
+                                else{
+                                  //  Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Failed to Update in OrderItemDetails", Toast.LENGTH_LONG).show();
+
+                                }
+                            }
+                            else{
+                                Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Waiting to Update in OrderItemDetails", Toast.LENGTH_LONG).show();
+
+                            }
+
+                            if(!isProgressBarTurnedOffinDoWhile[0]) {
+                                if (isUpdateItemDetailsCompleted) {
+                                    if (isUpdateOrderTrackingCompleted) {
+                                        isProgressBarTurnedOffinDoWhile[0] = true;
+                                        Adjusting_Widgets_Visibility(false);
+                                        updateChangesinLocalArray(orderid,selectedvendorKeyString,"vendorkey");
+
+                                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "This Order has changed to another vendor Succesfully", Toast.LENGTH_LONG).show();
+
+                                    } else {
+                                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "Waiting to Update in OrderTrackingDetails", Toast.LENGTH_LONG).show();
+
+                                    }
+                                } else {
+                                    if (isUpdateOrderTrackingCompleted) {
+                                        isProgressBarTurnedOffinDoWhile[0] = true;
+                                        Adjusting_Widgets_Visibility(false);
+                                        updateChangesinLocalArray(orderid,selectedvendorKeyString,"vendorkey");
+
+                                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "This Order has changed to another vendor Succesfully", Toast.LENGTH_LONG).show();
+
+                                    } else {
+                                        do {
+                                            isProgressBarTurnedOffinDoWhile[0] = true;
+                                            Adjusting_Widgets_Visibility(false);
+                                            updateChangesinLocalArray(orderid,selectedvendorKeyString,"vendorkey");
+
+                                            Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "This Order has changed to another vendor Succesfully", Toast.LENGTH_LONG).show();
+
+                                        }
+                                        while (!isUpdateOrderTrackingCompleted);
+
+                                    }
+                                }
+                            }
+
+                    }
+                    else{
+                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,"Failed on Orderdetails on change the Order to Another Store",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                } catch (JSONException e) {
+                    // showProgressBar(false);
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,"Failed on change on first try catch the Order to Another Store",Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,"Failed on error response orderdetails  change outgoing type as cancelled",Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+    }
+
+
+    private void changeVendorDetailsInOrderTrackingDetails(String orderTrackingdetailskey) {
+
+
+
+
+
+        JSONObject  jsonObject = new JSONObject();
+
+
+        try {
+            jsonObject.put("key",orderTrackingdetailskey);
+            jsonObject.put("vendorkey",selectedvendorKeyString);
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_Update_OrderTrackingTableNew
+                ,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+
+                    String message =  response.getString("message").toUpperCase();
+                    if(message.equals("SUCCESS")) {
+                        isUpdateOrderTrackingCompleted = true;
+
+
+
+                    }
+                    else{
+                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,"Failed to change the Order tracking to Another Store",Toast.LENGTH_LONG).show();
+                        isUpdateOrderTrackingCompleted = false;
+
+                    }
+
+
+                } catch (JSONException e) {
+                    isUpdateOrderTrackingCompleted = false;
+
+                    // showProgressBar(false);
+                    Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,"Failed to change the Order to Another Store in Tracking",Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,"Failed to change the Order tracking to Another Store in Tracking",Toast.LENGTH_LONG).show();
+                isUpdateOrderTrackingCompleted = false;
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+
+
+
+
+    }
+
+
+
+
 
     private void getMenuItemStockAvlDetailsUsingKeyAndGetStockOutGoingDetails(String menuitemStockAvlDetailsKey, String stockIncomingKeyFromMenuItem) {
         Adjusting_Widgets_Visibility(true);
@@ -1987,7 +3004,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
 
-                                if(!menuitemStockAvlDetailsKey[0].equals("") && !menuitemStockAvlDetailsKey[0].equals(" - ") && !menuitemStockAvlDetailsKey[0].equals(" ") && !menuitemStockAvlDetailsKey[0].equals("nil") && (!menuitemStockAvlDetailsKey[0].equals("null"))&& (menuitemStockAvlDetailsKey[0] != null)){
+                                if(!menuitemStockAvlDetailsKey[0].equals("") && !menuitemStockAvlDetailsKey[0].equals(" nil ") && !menuitemStockAvlDetailsKey[0].equals(" ") && !menuitemStockAvlDetailsKey[0].equals("nil") && (!menuitemStockAvlDetailsKey[0].equals("null"))&& (menuitemStockAvlDetailsKey[0] != null)){
 
 
 
@@ -2305,7 +3322,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     }
 
     private void getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetailsOld(String stockincomingkey_outGngDetails, String stockIncomingKey_avlDetails, String receivedStock_AvlDetails, String currentTimeAndDate, String menuitemkey_avlDetail, String itemname_outGngDetails, String barcode_avlDetail, String stockOutgoingentryKey_outGngDetails, String cancelled_Outgoingqty_OutGngDetails, String key_avlDetails) {
-        if((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" - ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil"))) {
+        if((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" nil ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil"))) {
 
             Runnable runnable = new Runnable() {
                 @Override
@@ -2797,6 +3814,433 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
     }
 
+
+    private void getAreawiseVendorName() {
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofVendors +"?modulename=Store",null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        //Log.d(Constants.TAG, "Response: " + response);
+                        try {
+
+                            result  = response.getJSONArray("content");
+                            //Log.d(Constants.TAG, "Response: " + result);
+                            int i1=0;
+                            int arrayLength = result.length();
+                            //Log.d("Constants.TAG", "Response: " + arrayLength);
+                            VendorName_arrayList.add(" nil ");
+                            Modal_vendor empty_modal_vendor = new Modal_vendor();
+                            empty_modal_vendor.setVendorname(" nil ");
+                            empty_modal_vendor.setKey(" nil ");
+                            vendorList.add(empty_modal_vendor);
+                            for(;i1<=(arrayLength-1);i1++) {
+
+                                try {
+                                    JSONObject json = result.getJSONObject(i1);
+
+                                    try{
+                                        if(json.has("vendortype")) {
+                                            vendortype = String.valueOf(json.get("vendortype")).toUpperCase();
+                                        }
+                                        else{
+                                            vendortype = "";
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        vendortype = "";
+                                        e.printStackTrace();
+                                    }
+                                    if(!vendortype.toString().equals(Constants.Warehouse_VendorType)) {
+                                        try {
+                                            vendorNameString = String.valueOf(json.get("name"));
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        //Log.d(Constants.TAG, "JsonName: " + pos_vendorNameString);
+
+                                        if ((!VendorName_arrayList.contains(vendorNameString))) {
+                                            VendorName_arrayList.add(vendorNameString);
+
+                                        }
+
+                                        Modal_vendor modal_vendor = new Modal_vendor();
+
+
+                                        try {
+
+                                            if(json.has("name")){
+
+                                                modal_vendor.setVendorname( String.valueOf(json.get("name")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendorname( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendorname( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+
+                                            if(json.has("vendortype")){
+
+                                                modal_vendor.setVendortype( String.valueOf(json.get("vendortype")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendortype( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendortype( String.valueOf(""));
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        try {
+
+                                            if(json.has("minimumscreensizeforpos")){
+
+                                                modal_vendor.setMinimumscreensizeforpos( String.valueOf(json.get("minimumscreensizeforpos")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setMinimumscreensizeforpos( String.valueOf(Constants.default_mobileScreenSize));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setMinimumscreensizeforpos( String.valueOf(Constants.default_mobileScreenSize));
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+
+                                            if(json.has("vendormobile")){
+
+                                                modal_vendor.setVendormobile( String.valueOf(json.get("vendormobile")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendormobile( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendormobile( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+
+                                            if(json.has("status")){
+                                                modal_vendor.setStatus( String.valueOf(json.get("status")));
+
+
+                                            }
+                                            else{
+                                                modal_vendor.setStatus( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            modal_vendor.setStatus( String.valueOf(""));
+
+                                        }
+
+
+                                        try {
+                                            if(json.has("key")){
+                                                modal_vendor.setKey( String.valueOf(json.get("key")));
+
+
+                                            }
+                                            else{
+                                                modal_vendor.setKey( String.valueOf(""));
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setKey( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+                                            if(json.has("inventorycheck")){
+                                                modal_vendor.setInventorycheck( String.valueOf(json.get("inventorycheck")));
+
+
+                                            }
+                                            else{
+                                                modal_vendor.setInventorycheck( String.valueOf(""));
+
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setInventorycheck( String.valueOf(""));
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+                                            if(json.has("istestvendor")){
+
+                                                modal_vendor.setIstestvendor( String.valueOf(json.get("istestvendor")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setIstestvendor( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setIstestvendor( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            if(json.has("pincode")){
+
+                                                modal_vendor.setPincode( String.valueOf(json.get("pincode")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setPincode( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setPincode( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+///////////////////////////////////
+                                        try {
+                                            if(json.has("addressline1")){
+
+                                                modal_vendor.setAddressline1( String.valueOf(json.get("addressline1")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setAddressline1( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setAddressline1( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            if(json.has("addressline2")){
+
+                                                modal_vendor.setAddressline2( String.valueOf(json.get("addressline2")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setAddressline2( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setAddressline2( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        try {
+                                            if(json.has("vendorfssaino")){
+
+                                                modal_vendor.setVendorfssaino( String.valueOf(json.get("vendorfssaino")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setVendorfssaino( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setVendorfssaino( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+                                        try {
+                                            if(json.has("defaultprintertype")){
+
+                                                modal_vendor.setDefaultprintertype( String.valueOf(json.get("defaultprintertype")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setDefaultprintertype( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setDefaultprintertype( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            if(json.has("locationlat")){
+
+                                                modal_vendor.setLocationlat( String.valueOf(json.get("locationlat")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setLocationlat( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setLocationlat( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+
+                                        try {
+                                            if(json.has("locationlong")){
+
+                                                modal_vendor.setLocationlong( String.valueOf(json.get("locationlong")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setLocationlong( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setLocationlong( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        try {
+                                            if(json.has("inventorycheckpos")){
+
+                                                modal_vendor.setInventorycheckpos( String.valueOf(json.get("inventorycheckpos")));
+
+                                            }
+                                            else{
+                                                modal_vendor.setInventorycheckpos( String.valueOf(""));
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            modal_vendor.setInventorycheckpos( String.valueOf(""));
+
+
+                                            e.printStackTrace();
+                                        }
+
+
+
+                                        vendorList.add(modal_vendor);
+
+
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    //Log.d(Constants.TAG, "e: " + e.toString());
+
+                                }
+
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        vendorlist_aAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, VendorName_arrayList);
+                        Adjusting_Widgets_Visibility(false);
+
+                    }
+
+                },new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+
+                error.printStackTrace();
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Store");
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+    }
 
     private void getMenuItemArrayFromSharedPreferences() {
         final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -3969,6 +5413,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                 modal_manageOrders_forOrderDetailList1.setOrderstatus(changing_Value);
                                 orderStatustext_widget.setText(changing_Value);
                             }
+                            if (havetoChange_variable.equals("vendorkey")) {
+                                modal_manageOrders_forOrderDetailList1.setVendorkey(changing_Value);
+                            }
                         }
                     }
                 }
@@ -3984,6 +5431,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                         if (havetoChange_variable.equals("OrderStatus")) {
                             modal_manageOrders_forOrderDetailList1.setOrderstatus(changing_Value);
                             orderStatustext_widget.setText(changing_Value);
+                        }
+                        if (havetoChange_variable.equals("vendorkey")) {
+                            modal_manageOrders_forOrderDetailList1.setVendorkey(changing_Value);
                         }
                     }
                 }
@@ -4002,6 +5452,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                 modal_manageOrders_forOrderDetailList1.setOrderstatus(changing_Value);
                                 orderStatustext_widget.setText(changing_Value);
                             }
+                            if (havetoChange_variable.equals("vendorkey")) {
+                                modal_manageOrders_forOrderDetailList1.setVendorkey(changing_Value);
+                            }
                         }
                     }
                 }
@@ -4017,6 +5470,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                         if (havetoChange_variable.equals("OrderStatus")) {
                             modal_manageOrders_forOrderDetailList1.setOrderstatus(changing_Value);
                             orderStatustext_widget.setText(changing_Value);
+                        }
+                        if (havetoChange_variable.equals("vendorkey")) {
+                            modal_manageOrders_forOrderDetailList1.setVendorkey(changing_Value);
                         }
                     }
                 }
@@ -4254,4 +5710,60 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             //bottomNavigationView.setVisibility(View.VISIBLE);
 
         }}
+
+
+
+
+
+
+    //Doing the same with this method as we did with getName()
+    private String getVendorData(int position,String fieldName){
+        String data="";
+        try {
+            Modal_vendor  vendor = vendorList.get(position);
+            data = vendor.getGet(fieldName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+    private class AsyncCaller extends AsyncTask<Void, Void, Void>
+    {
+
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+            Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, toastFromOrderItemDetails, Toast.LENGTH_SHORT).show();
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //this method will be running on UI thread
+        }
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            //this method will be running on background thread so don't update UI frome here
+            //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
+
+            FetchOrdersFromOrderItemDetailsDatabase(orderid);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, toastFromOrderItemDetails, Toast.LENGTH_SHORT).show();
+            //this method will be running on UI thread
+
+        }
+
+    }
+
+
+
 }

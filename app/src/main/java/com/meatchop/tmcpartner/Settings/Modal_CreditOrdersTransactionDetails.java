@@ -4,8 +4,16 @@ import java.io.Serializable;
 
 public class Modal_CreditOrdersTransactionDetails implements Serializable {
 
-    String key,newamountincredit,oldamountincredit,orderid,transactiontime,transactiontype,transactionvalue,usermobileno,vendorkey;
+    String key="",newamountincredit="0",oldamountincredit="0",orderid="",transactiontime="",transactiontype="",transactionvalue="0",usermobileno="",vendorkey="";
+    String transactiontimelong = "0";
 
+    public String getTransactiontimelong() {
+        return transactiontimelong;
+    }
+
+    public void setTransactiontimelong(String transactiontimelong) {
+        this.transactiontimelong = transactiontimelong;
+    }
 
     public String getKey() {
         return key;

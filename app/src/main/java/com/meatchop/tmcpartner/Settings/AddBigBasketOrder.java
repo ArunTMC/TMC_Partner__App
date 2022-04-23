@@ -5,7 +5,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,6 +38,8 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.dantsu.escposprinter.connection.DeviceConnection;
+import com.dantsu.escposprinter.connection.usb.UsbConnection;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
@@ -38,7 +48,13 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.pos.printer.AsyncEscPosPrint;
+import com.pos.printer.AsyncEscPosPrinter;
+import com.pos.printer.AsyncUsbEscPosPrint;
+import com.pos.printer.Modal_USBPrinter;
 import com.pos.printer.PrinterFunctions;
+import com.pos.printer.usb.UsbPrintersConnectionsLocal;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetails;
@@ -93,6 +110,16 @@ public class AddBigBasketOrder extends AppCompatActivity {
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.AddBigBasketOrder";
+
+    String printerType_sharedPreference = "";
+    String printerStatus_sharedPreference = "";
+
+    Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,7 +155,15 @@ public class AddBigBasketOrder extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        try{
+            SharedPreferences shared_PF_PrinterData = getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+            printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+            printerStatus_sharedPreference   = (shared_PF_PrinterData.getString("printerStatus", ""));
 
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         getMenuItemFromSharedPreferences();
 
         //completemenuItem= getMenuItemfromString(MenuItems);
@@ -1649,47 +1684,137 @@ public class AddBigBasketOrder extends AppCompatActivity {
                     if (message.equals("success")) {
                         // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                         // startTwice.main();
-                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,"0",ordertype);
-                        /*cart_Item_List.clear();
-
-                        cartItem_hashmap.clear();
-                        StockBalanceChangedForThisItemList.clear();
-
-                        new_to_pay_Amount = 0;
-                        old_taxes_and_charges_Amount = 0;
-                        old_total_Amount = 0;
-                        createEmptyRowInListView("empty");
-                        CallAdapter();
-                        //discountAmount = "0";
-
-                        // discount_Edit_widget.setText("0");
-                        finaltoPayAmount = "0";
-                        //  discount_rs_text_widget.setText(discountAmount);
-                        OrderTypefromSpinner = "POS Order";
-                        //   orderTypeSpinner.setSelection(0);
-                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
 
 
+                        try {
+                            if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                PrintReciptForNewItemUsingUSBPrinter(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,"0",ordertype);
 
-                        customermobileno_edittextwidget.setText("");
-                        bigbasketOrdersCustomermobileno.setText("");
-                        isPrintedSecondTime = false;
-                        ispaymentMode_Clicked = false;
-                        isOrderDetailsMethodCalled = false;
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                //printReciptUsingBluetoothPrinter(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,"0",ordertype);
 
-                        isPaymentDetailsMethodCalled = false;
-                        isOrderTrackingDetailsMethodCalled = false;
-                        totalAmounttopay=0;
-                        finalamounttoPay=0;
-                        showProgressBar(false);
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                if(i != -1){
+                                    printReciptUsingPOSMachinePrinter(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode,"0",ordertype);
+
+                                }
+                                else{
+                                    new TMCAlertDialogClass(AddBigBasketOrder.this, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
+                                            R.string.OK_Text,R.string.Empty_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+                                                    cart_Item_List.clear();
+                                                    cartItem_hashmap.clear();
+                                                    StockBalanceChangedForThisItemList.clear();
+
+                                                    new_to_pay_Amount = 0;
+                                                    old_taxes_and_charges_Amount = 0;
+                                                    old_total_Amount = 0;
+                                                    createEmptyRowInListView("empty");
+                                                    CallAdapter();
+                                                    //discountAmount = "0";
+
+                                                    // discount_Edit_widget.setText("0");
+                                                    finaltoPayAmount = "0";
+                                                    //  discount_rs_text_widget.setText(discountAmount);
+                                                    OrderTypefromSpinner = "POS Order";
+                                                    //   orderTypeSpinner.setSelection(0);
+                                                    total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                                    taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                                    total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
 
 
-                       //Toast.makeText(getApplicationContext(),"OrderDetails is  updated in DB",Toast.LENGTH_SHORT).show();
+
+                                                    customermobileno_edittextwidget.setText("");
+                                                    bigbasketOrdersCustomermobileno.setText("");
+                                                    isPrintedSecondTime = false;
+                                                    ispaymentMode_Clicked = false;
+                                                    isOrderDetailsMethodCalled = false;
+
+                                                    isPaymentDetailsMethodCalled = false;
+                                                    isOrderTrackingDetailsMethodCalled = false;
+                                                    totalAmounttopay=0;
+                                                    finalamounttoPay=0;
+                                                    showProgressBar(false);
+                                                
+                                                
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
 
 
-                         */
+                                }
+
+                            }
+                            else {
+                                new TMCAlertDialogClass(AddBigBasketOrder.this, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
+                                        R.string.OK_Text,R.string.Empty_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+                                                cart_Item_List.clear();
+                                                cartItem_hashmap.clear();
+                                                StockBalanceChangedForThisItemList.clear();
+
+                                                new_to_pay_Amount = 0;
+                                                old_taxes_and_charges_Amount = 0;
+                                                old_total_Amount = 0;
+                                                createEmptyRowInListView("empty");
+                                                CallAdapter();
+                                                //discountAmount = "0";
+
+                                                // discount_Edit_widget.setText("0");
+                                                finaltoPayAmount = "0";
+                                                //  discount_rs_text_widget.setText(discountAmount);
+                                                OrderTypefromSpinner = "POS Order";
+                                                //   orderTypeSpinner.setSelection(0);
+                                                total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                                taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                                total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+
+
+                                                customermobileno_edittextwidget.setText("");
+                                                bigbasketOrdersCustomermobileno.setText("");
+                                                isPrintedSecondTime = false;
+                                                ispaymentMode_Clicked = false;
+                                                isOrderDetailsMethodCalled = false;
+
+                                                isPaymentDetailsMethodCalled = false;
+                                                isOrderTrackingDetailsMethodCalled = false;
+                                                totalAmounttopay=0;
+                                                finalamounttoPay=0;
+                                                showProgressBar(false);//Toast.makeText(AddBigBasketOrder.this,"Please Generate Token Number Again",Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+
+                                            }
+                                        });
+                            }
+
+
+                        }
+                        catch(Exception e ){
+                            e.printStackTrace();
+
+
+                        }
+
+
+
+
+
+                     
                     }
                     else{
 
@@ -1738,6 +1863,883 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+
+
+    private void PrintReciptForNewItemUsingUSBPrinter(String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String finalCouponDiscountAmount, String ordertype) {
+
+        modal_usbPrinter = new Modal_USBPrinter();
+        try{
+
+            modal_usbPrinter.orderplacedTime = Currenttime;
+            modal_usbPrinter.userMobile = userMobile;
+            modal_usbPrinter.tokenno = tokenno;
+            modal_usbPrinter.itemTotalwithoutGst = itemTotalwithoutGst;
+            modal_usbPrinter.taxAmount = taxAmount;
+            modal_usbPrinter.payableAmount = payableAmount;
+            modal_usbPrinter.orderid = orderid;
+            modal_usbPrinter.cart_Item_List = cart_item_list;
+            modal_usbPrinter.cartItem_hashmap = cartItem_hashmap;
+            modal_usbPrinter.payment_mode = payment_mode;
+            modal_usbPrinter.finalCouponDiscountAmount = finalCouponDiscountAmount;
+            modal_usbPrinter.ordertype = ordertype;
+
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        UsbConnection usbConnection = UsbPrintersConnectionsLocal.selectFirstConnected(AddBigBasketOrder.this);
+        UsbManager usbManager = (UsbManager) AddBigBasketOrder.this.getSystemService(Context.USB_SERVICE);
+
+        if (usbConnection == null || usbManager == null) {
+            showProgressBar(false);
+
+          /*  new AlertDialog.Builder(AddBigBasketOrder.this)
+                    .setTitle("USB Connection")
+                    .setMessage("No USB printer found.")
+                    .show();
+
+           */
+
+            new TMCAlertDialogClass(AddBigBasketOrder.this, R.string.app_name, R.string.ReConnect_Instruction,
+                    R.string.OK_Text, R.string.Cancel_Text,
+                    new TMCAlertDialogClass.AlertListener() {
+                        @Override
+                        public void onYes() {
+                            PrintReciptForNewItemUsingUSBPrinter(userMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_item_list, cartItem_hashmap, payment_mode,finalCouponDiscountAmount,ordertype);
+
+                            return;
+                        }
+
+                        @Override
+                        public void onNo() {
+                            AddBigBasketOrder.cart_Item_List.clear();
+                            AddBigBasketOrder.cartItem_hashmap.clear();
+                            cart_Item_List.clear();
+                            cartItem_hashmap.clear();
+                            StockBalanceChangedForThisItemList.clear();
+
+                            new_to_pay_Amount = 0;
+                            old_taxes_and_charges_Amount = 0;
+                            old_total_Amount = 0;
+                            createEmptyRowInListView("empty");
+                            CallAdapter();
+                            //discountAmount = "0";
+
+                            // discount_Edit_widget.setText("0");
+                            finaltoPayAmount = "0";
+                            //  discount_rs_text_widget.setText(discountAmount);
+                            OrderTypefromSpinner = "POS Order";
+                            //   orderTypeSpinner.setSelection(0);
+                            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+
+
+                            customermobileno_edittextwidget.setText("");
+                            bigbasketOrdersCustomermobileno.setText("");
+                            isPrintedSecondTime = false;
+                            ispaymentMode_Clicked = false;
+                            isOrderDetailsMethodCalled = false;
+
+                            isPaymentDetailsMethodCalled = false;
+                            isOrderTrackingDetailsMethodCalled = false;
+                            totalAmounttopay=0;
+                            finalamounttoPay=0;
+                            showProgressBar(false);
+
+                        }
+                    });
+            return;
+        }
+
+        PendingIntent permissionIntent = PendingIntent.getBroadcast(
+                AddBigBasketOrder.this,
+                0,
+                new Intent(ACTION_USB_PERMISSION),
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0
+        );
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addCategory("Add BigBasket Orders");
+        registerReceiver(usbReceiver_newItem, filter);
+        usbManager.requestPermission(usbConnection.getDevice(), permissionIntent);
+
+
+
+
+
+    }
+
+
+
+    private final BroadcastReceiver usbReceiver_newItem = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Set<String> category = intent.getCategories();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (AddBigBasketOrder.this) {
+                    UsbManager usbManager = (UsbManager) AddBigBasketOrder.this.getSystemService(Context.USB_SERVICE);
+                    UsbDevice usbDevice = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (usbManager != null && usbDevice != null) {
+                            new AsyncUsbEscPosPrint(
+                                    context, new AsyncEscPosPrint.OnPrintFinished() {
+                                @Override
+                                public void onError(AsyncEscPosPrinter asyncEscPosPrinter, int codeException) {
+                                    Log.e("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : An error occurred !");
+                                    try{
+                                        unregisterReceiver(usbReceiver_newItem);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                            AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    AddBigBasketOrder.cart_Item_List.clear();
+                                    AddBigBasketOrder.cartItem_hashmap.clear();
+                                    cart_Item_List.clear();
+                                    cartItem_hashmap.clear();
+                                    StockBalanceChangedForThisItemList.clear();
+
+                                    new_to_pay_Amount = 0;
+                                    old_taxes_and_charges_Amount = 0;
+                                    old_total_Amount = 0;
+                                    createEmptyRowInListView("empty");
+                                    CallAdapter();
+                                    //discountAmount = "0";
+
+                                    // discount_Edit_widget.setText("0");
+                                    finaltoPayAmount = "0";
+                                    //  discount_rs_text_widget.setText(discountAmount);
+                                    OrderTypefromSpinner = "POS Order";
+                                    //   orderTypeSpinner.setSelection(0);
+                                    total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                    taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                    total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+
+
+                                    customermobileno_edittextwidget.setText("");
+                                    bigbasketOrdersCustomermobileno.setText("");
+                                    isPrintedSecondTime = false;
+                                    ispaymentMode_Clicked = false;
+                                    isOrderDetailsMethodCalled = false;
+
+                                    isPaymentDetailsMethodCalled = false;
+                                    isOrderTrackingDetailsMethodCalled = false;
+                                    totalAmounttopay=0;
+                                    finalamounttoPay=0;
+                                    showProgressBar(false);
+
+                                }
+
+                                @Override
+                                public void onSuccess(AsyncEscPosPrinter asyncEscPosPrinter) {
+                                    Log.i("Async.OnPrintFinished", "AsyncEscPosPrint.OnPrintFinished : Print is finished !");
+
+                                    try{
+                                        unregisterReceiver(usbReceiver_newItem);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        if(AsyncEscPosPrinter.getPrinterConnection().isConnected()){
+                                            AsyncEscPosPrinter.getPrinterConnection().disconnect();
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                    if (!isPrintedSecondTime) {
+                                        //isPrintedSecondTime = true;
+                                        //showProgressBar(true);
+
+                                        HashMap<String, Modal_NewOrderItems> cartItem_hashmap = new HashMap();
+                                        List<String> cart_Item_List = new ArrayList<>();
+                                        String orderplacedTime = "" ; String userMobile = "" ; String tokenno = "" ; String itemTotalwithoutGst = "" ; String taxAmount = "" ; String payableAmount = "" ; String orderid = "" ;  String payment_mode = "" ; String finalCouponDiscountAmount = "" ; String ordertype ="";
+                                        try{
+                                            cartItem_hashmap = modal_usbPrinter.getCartItem_hashmap();
+                                            cart_Item_List = modal_usbPrinter.getCart_Item_List();
+                                            orderplacedTime = modal_usbPrinter.getOrderplacedTime();
+                                            userMobile = modal_usbPrinter.getUserMobile();
+                                            tokenno = modal_usbPrinter.getTokenno();
+                                            itemTotalwithoutGst = modal_usbPrinter.getItemTotalwithoutGst();
+                                            taxAmount = modal_usbPrinter.getTaxAmount();
+                                            payableAmount = modal_usbPrinter.getPayableAmount();
+                                            orderid = modal_usbPrinter.getOrderid();
+                                            payment_mode = modal_usbPrinter.getPayment_mode();
+                                            finalCouponDiscountAmount = modal_usbPrinter.getFinalCouponDiscountAmount();
+                                            ordertype = modal_usbPrinter.getOrdertype();
+
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                        String finalOrderplacedTime = orderplacedTime;
+                                        String finalUserMobile = userMobile;
+                                        String finalTokenno = tokenno;
+                                        String finalItemTotalwithoutGst = itemTotalwithoutGst;
+                                        String finalTaxAmount = taxAmount;
+                                        String finalPayableAmount = payableAmount;
+                                        String finalOrderid = orderid;
+                                        List<String> finalCart_Item_List = cart_Item_List;
+                                        HashMap<String, Modal_NewOrderItems> finalCartItem_hashmap = cartItem_hashmap;
+                                        String finalPayment_mode = payment_mode;
+                                        String finalCouponDiscountAmount1 = finalCouponDiscountAmount;
+                                        String finalOrdertype = ordertype;
+                                        new TMCAlertDialogClass(AddBigBasketOrder.this, R.string.app_name, R.string.RePrint_Instruction,
+                                                R.string.Yes_Text, R.string.No_Text,
+                                                new TMCAlertDialogClass.AlertListener() {
+                                                    @Override
+                                                    public void onYes() {
+                                                        isPrintedSecondTime = true;
+                                                        PrintReciptForNewItemUsingUSBPrinter(finalUserMobile, finalTokenno, finalItemTotalwithoutGst, finalTaxAmount, finalPayableAmount, finalOrderid, finalCart_Item_List, finalCartItem_hashmap, finalPayment_mode,finalCouponDiscountAmount1,finalOrdertype);
+
+
+                                                    }
+
+                                                    @Override
+                                                    public void onNo() {
+                                                        AddBigBasketOrder.cart_Item_List.clear();
+                                                        AddBigBasketOrder.cartItem_hashmap.clear();
+                                                        finalCart_Item_List.clear();
+                                                        finalCartItem_hashmap.clear();
+                                                        StockBalanceChangedForThisItemList.clear();
+
+                                                        new_to_pay_Amount = 0;
+                                                        old_taxes_and_charges_Amount = 0;
+                                                        old_total_Amount = 0;
+                                                        createEmptyRowInListView("empty");
+                                                        CallAdapter();
+                                                        //discountAmount = "0";
+
+                                                        // discount_Edit_widget.setText("0");
+                                                        finaltoPayAmount = "0";
+                                                        //  discount_rs_text_widget.setText(discountAmount);
+                                                        OrderTypefromSpinner = "POS Order";
+                                                        //   orderTypeSpinner.setSelection(0);
+                                                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+
+
+                                                        customermobileno_edittextwidget.setText("");
+                                                        bigbasketOrdersCustomermobileno.setText("");
+                                                        isPrintedSecondTime = false;
+                                                        ispaymentMode_Clicked = false;
+                                                        isOrderDetailsMethodCalled = false;
+
+                                                        isPaymentDetailsMethodCalled = false;
+                                                        isOrderTrackingDetailsMethodCalled = false;
+                                                        totalAmounttopay=0;
+                                                        finalamounttoPay=0;
+                                                        showProgressBar(false);
+                                                    }
+                                                });
+
+
+                                    }
+                                    else {
+                                        AddBigBasketOrder.cart_Item_List.clear();
+                                        AddBigBasketOrder.cartItem_hashmap.clear();
+                                        cart_Item_List.clear();
+                                        cartItem_hashmap.clear();
+                                        StockBalanceChangedForThisItemList.clear();
+
+                                        new_to_pay_Amount = 0;
+                                        old_taxes_and_charges_Amount = 0;
+                                        old_total_Amount = 0;
+                                        createEmptyRowInListView("empty");
+                                        CallAdapter();
+                                        //discountAmount = "0";
+
+                                        // discount_Edit_widget.setText("0");
+                                        finaltoPayAmount = "0";
+                                        //  discount_rs_text_widget.setText(discountAmount);
+                                        OrderTypefromSpinner = "POS Order";
+                                        //   orderTypeSpinner.setSelection(0);
+                                        total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
+                                        taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
+                                        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
+
+
+
+                                        customermobileno_edittextwidget.setText("");
+                                        bigbasketOrdersCustomermobileno.setText("");
+                                        isPrintedSecondTime = false;
+                                        ispaymentMode_Clicked = false;
+                                        isOrderDetailsMethodCalled = false;
+
+                                        isPaymentDetailsMethodCalled = false;
+                                        isOrderTrackingDetailsMethodCalled = false;
+                                        totalAmounttopay=0;
+                                        finalamounttoPay=0;
+                                        showProgressBar(false);
+                                    }
+
+                                }
+                            }
+                            )
+                                    .execute(getAsyncEscPosPrinterNewItem(new UsbConnection(usbManager, usbDevice)));
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+
+
+    @SuppressLint("SimpleDateFormat")
+    public AsyncEscPosPrinter getAsyncEscPosPrinterNewItem(DeviceConnection printerConnection) {
+
+
+        SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
+        HashMap<String, Modal_NewOrderItems> cartItem_hashmap = new HashMap();
+        List<String> cart_Item_List = new ArrayList<>();
+        String orderplacedTime = "";
+        String userMobile = "";
+        String tokenno = "";
+        String itemTotalwithoutGst = "";
+        String taxAmount = "";
+        String payableAmount = "";
+        String orderid = "";
+        String payment_mode = "";
+        String finalCouponDiscountAmount = "";
+        String ordertype = "";
+        try {
+            cartItem_hashmap = modal_usbPrinter.getCartItem_hashmap();
+            cart_Item_List = modal_usbPrinter.getCart_Item_List();
+            orderplacedTime = modal_usbPrinter.getOrderplacedTime();
+            userMobile = modal_usbPrinter.getUserMobile();
+            tokenno = modal_usbPrinter.getTokenno();
+            itemTotalwithoutGst = modal_usbPrinter.getItemTotalwithoutGst();
+            taxAmount = modal_usbPrinter.getTaxAmount();
+            payableAmount = modal_usbPrinter.getPayableAmount();
+            orderid = modal_usbPrinter.getOrderid();
+            payment_mode = modal_usbPrinter.getPayment_mode();
+            finalCouponDiscountAmount = modal_usbPrinter.getFinalCouponDiscountAmount();
+            ordertype = modal_usbPrinter.getOrdertype();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String text_to_Print = "";
+        String Title = "The Meat Chop";
+
+        String GSTIN = "GSTIN :33AAJCC0055D1Z9";
+
+
+        if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+
+            text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
+            text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+
+        }
+        else {
+            text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
+
+        }
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Contact No :" + StoreLanLine + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + GSTIN + " \n"+ " \n";
+
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + orderplacedTime + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'># " + orderid + " \n";
+        text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
+        text_to_Print = text_to_Print + "[L]  ITEMNAME * QTY " + " \n";
+        text_to_Print = text_to_Print + "[L]  RATE"+"[R]      "+"  SUBTOTAL" +" \n";
+
+        //text_to_Print = text_to_Print + "[L] RATE                                  SUBTOTAL" + " \n";
+        text_to_Print = text_to_Print + "[L]  ----------------------------------------------" + " \n";
+
+
+        if (cart_Item_List.size() == cartItem_hashmap.size()) {
+
+            double oldSavedAmount = 0;
+            String CouponDiscount = "0";
+            String Gstt = " ", subtotal = " ", quantity = " ", price = " ", weight = " ";
+
+            for (int i = 0; i < cart_Item_List.size(); i++) {
+                String itemDetails = "";
+                double savedAmount;
+                String itemUniqueCode = cart_Item_List.get(i);
+                Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
+
+                String itemName = "";
+                try {
+                    itemName = String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+                }
+                catch (Exception e) {
+                    String itemUniqueCode1 = cart_Item_List.get(i);
+                    Modal_NewOrderItems modal_newOrderItems1 = cartItem_hashmap.get(itemUniqueCode1);
+                    try {
+                        itemName = String.valueOf(Objects.requireNonNull(modal_newOrderItems1).getItemname());
+                    }
+                    catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                }
+
+                int indexofbraces = itemName.indexOf("(");
+                if (indexofbraces >= 0) {
+                    itemName = itemName.substring(0, indexofbraces);
+
+                }
+                if (itemName.length() > 21) {
+                    itemName = itemName.substring(0, 21);
+                    itemName = itemName + "...";
+                }
+                try {
+                    price = String.valueOf(modal_newOrderItems.getItemFinalPrice());
+                    if (price.equals("null")) {
+                        price = "  ";
+                    }
+                } catch (Exception e) {
+                    price = "0";
+                    e.printStackTrace();
+                }
+
+                try {
+                    weight = modal_newOrderItems.getItemFinalWeight().toString();
+                } catch (Exception e) {
+                    weight = "0";
+                    e.printStackTrace();
+                }
+
+                try {
+                    Gstt = modal_newOrderItems.getGstAmount();
+
+                } catch (Exception e) {
+                    Gstt = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    savedAmount = Double.parseDouble(modal_newOrderItems.getSavedAmount());
+                } catch (Exception e) {
+                    savedAmount = 0;
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    oldSavedAmount = savedAmount + oldSavedAmount;
+                } catch (Exception e) {
+                    weight = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    subtotal = modal_newOrderItems.getSubTotal_perItem();
+                } catch (Exception e) {
+                    subtotal = "0";
+                    e.printStackTrace();
+                }
+
+                try {
+                    quantity = modal_newOrderItems.getQuantity();
+                } catch (Exception e) {
+                    quantity = "0";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    itemName = itemName + "  *  " + weight + " ( " + quantity + " ) ";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                text_to_Print = text_to_Print + "[L]  <b><font size='normal'>" + itemName + " </b>\n";
+
+/*
+                if (price.length() == 4) {
+                    //14spaces
+                    price = price + "                ";
+                }
+                if (price.length() == 5) {
+                    //13spaces
+                    price = price + "               ";
+                }
+                if (price.length() == 6) {
+                    //12spaces
+                    price = price + "              ";
+                }
+                if (price.length() == 7) {
+                    //11spaces
+                    price = price + "             ";
+                }
+                if (price.length() == 8) {
+                    //10spaces
+                    price = price + "            ";
+                }
+                if (price.length() == 9) {
+                    //9spaces
+                    price = price + "           ";
+                }
+                if (price.length() == 10) {
+                    //8spaces
+                    price = price + "          ";
+                }
+                if (price.length() == 11) {
+                    //7spaces
+                    price = price + "         ";
+                }
+                if (price.length() == 12) {
+                    //6spaces
+                    price = price + "        ";
+                }
+                if (price.length() == 13) {
+                    //5spaces
+                    price = price + "       ";
+                }
+                if (price.length() == 14) {
+                    //4spaces
+                    price = price + "      ";
+                }
+                if (price.length() == 15) {
+                    //3spaces
+                    price = price + "     ";
+                }
+                if (price.length() == 16) {
+                    //2spaces
+                    price = price + "    ";
+                }
+                if (price.length() == 17) {
+                    //1spaces
+                    price = price + "   ";
+                }
+                if (price.length() == 18) {
+                    //1spaces
+                    price = price + " ";
+                }
+
+
+                if (Gstt.length() == 7) {
+                    //1spaces
+                    Gstt = Gstt + " ";
+                }
+                if (Gstt.length() == 8) {
+                    //0space
+                    Gstt = Gstt + "";
+                }
+                if (Gstt.length() == 9) {
+                    //no space
+                    Gstt = Gstt;
+                }
+                if (subtotal.length() == 4) {
+                    //5spaces
+                    subtotal = "       " + subtotal;
+                }
+                if (subtotal.length() == 5) {
+                    //6spaces
+                    subtotal = "       " + subtotal;
+                }
+                if (subtotal.length() == 6) {
+                    //8spaces
+                    subtotal = "         " + subtotal;
+                }
+                if (subtotal.length() == 7) {
+                    //7spaces
+                    subtotal = "        " + subtotal;
+                }
+                if (subtotal.length() == 8) {
+                    //6spaces
+                    subtotal = "      " + subtotal;
+                }
+                if (subtotal.length() == 9) {
+                    //5spaces
+                    subtotal = "      " + subtotal;
+                }
+                if (subtotal.length() == 10) {
+                    //4spaces
+                    subtotal = "     " + subtotal;
+                }
+                if (subtotal.length() == 11) {
+                    //3spaces
+                    subtotal = "    " + subtotal;
+                }
+                if (subtotal.length() == 12) {
+                    //2spaces
+                    subtotal = "   " + subtotal;
+                }
+                if (subtotal.length() == 13) {
+                    //1spaces
+                    subtotal = "  " + subtotal;
+                }
+                if (subtotal.length() == 14) {
+                    //no space
+                    subtotal = " " + subtotal;
+                }
+
+
+ */
+                itemDetails = price + Gstt + subtotal;
+                text_to_Print = text_to_Print + "[L]  <font size='normal'>" + price  +"[R]        "+ subtotal +" \n";
+
+               // text_to_Print = text_to_Print + "[L] <font size='normal'>" + itemDetails + " \n";
+                text_to_Print = text_to_Print+"[L]<font size='normal'>                                                "+" \n";
+
+            }
+
+            text_to_Print = text_to_Print + "[L]  ----------------------------------------------" + " \n";
+
+
+            finaltoPayAmount = finaltoPayAmount;
+            taxAmount = "Rs. " + taxAmount;
+            itemTotalwithoutGst = "Rs. " + itemTotalwithoutGst;
+/*
+            if (itemTotalwithoutGst.length() == 7) {
+                //10spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "            ";
+            }
+            if (itemTotalwithoutGst.length() == 8) {
+                //9spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "           ";
+            }
+            if (itemTotalwithoutGst.length() == 9) {
+                //8spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "          ";
+            }
+            if (itemTotalwithoutGst.length() == 10) {
+                //7spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "         ";
+            }
+            if (itemTotalwithoutGst.length() == 11) {
+                //6spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "        ";
+            }
+            if (itemTotalwithoutGst.length() == 12) {
+                //5spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "       ";
+            }
+            if (itemTotalwithoutGst.length() == 13) {
+                //4spaces
+                itemTotalwithoutGst = itemTotalwithoutGst + "      ";
+            }
+
+            if (taxAmount.length() == 7) {
+                //1spaces
+                taxAmount = taxAmount + "";
+            }
+            if (taxAmount.length() == 8) {
+                //0space
+                taxAmount = taxAmount + "";
+            }
+            if (taxAmount.length() == 9) {
+                //no space
+                taxAmount = taxAmount;
+            }
+
+            if (finaltoPayAmount.length() == 6) {
+                //8spaces
+                finaltoPayAmount = "         " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 7) {
+                //7spaces
+                finaltoPayAmount = "        " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 8) {
+                //6spaces
+                finaltoPayAmount = "       " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 9) {
+                //5spaces
+                finaltoPayAmount = "      " + finaltoPayAmount;
+            }
+            if (finaltoPayAmount.length() == 10) {
+                //4spaces
+                finaltoPayAmount = "     " + finaltoPayAmount;
+            }
+
+
+ */
+
+          //  text_to_Print = text_to_Print + "[L] " + itemTotalwithoutGst + taxAmount + finaltoPayAmount + " \n";
+            text_to_Print = text_to_Print + "[L]  <font size='normal'>" + itemTotalwithoutGst  +"[R]        "+ "Rs. "+finaltoPayAmount +" \n";
+
+
+            text_to_Print = text_to_Print + "[L]  ----------------------------------------------" + " \n";
+
+            CouponDiscount = finalCouponDiscountAmount;
+            if (!CouponDiscount.equals("0")) {
+                CouponDiscount = "Rs. " + CouponDiscount + ".00";
+
+                if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
+
+         /*           if (CouponDiscount.length() == 4) {
+                        //20spaces
+                        //NEW TOTAL =4
+                        CouponDiscount = "Discount Amount                     " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 5) {
+                        //21spaces
+                        //NEW TOTAL =5
+                        CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 6) {
+                        //20spaces
+                        //NEW TOTAL =6
+                        CouponDiscount = "Discount Amount                  " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 7) {
+                        //19spaces
+                        //NEW TOTAL =7
+                        CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 8) {
+                        //18spaces
+                        //NEW TOTAL =8
+                        CouponDiscount = " Discount Amount                " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 9) {
+                        //17spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = " Discount Amount               " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 10) {
+                        //16spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = " Discount Amount              " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 11) {
+                        //15spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount              " + CouponDiscount;
+                    }
+                    if (CouponDiscount.length() == 12) {
+                        //14spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount             " + CouponDiscount;
+                    }
+
+                    if (CouponDiscount.length() == 13) {
+                        //13spaces
+                        //NEW TOTAL =9
+                        CouponDiscount = "Discount Amount             " + CouponDiscount;
+
+                    }
+
+
+ */
+                   // text_to_Print = text_to_Print + "[L]" + CouponDiscount + " \n";
+                text_to_Print = text_to_Print+"[L]  Coupon Discount "+"[R]      " +CouponDiscount+" \n";
+
+                text_to_Print = text_to_Print + "[L]  ----------------------------------------------" + " \n";
+
+                }
+            }
+
+/*
+        if (payableAmount.length() > 6) {
+
+                if (payableAmount.length() == 7) {
+                    //24spaces
+                    //NEW TOTAL =9
+                    payableAmount = " NET TOTAL                         Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 8) {
+                    //23spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                         Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 9) {
+                    //22spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                       Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 10) {
+                    //21spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                      Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 11) {
+                    //20spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                     Rs. " + payableAmount;
+                }
+                if (payableAmount.length() == 12) {
+                    //19spaces
+                    //NEW TOTAL =9
+                    payableAmount = "  NET TOTAL                    Rs. " + payableAmount;
+                }
+            } else {
+                payableAmount = " NET TOTAL                      Rs.  " + payableAmount;
+
+            }
+            */
+
+            //text_to_Print = text_to_Print + "[L]" + payableAmount + " \n";
+            text_to_Print = text_to_Print+"[L]  NET TOTAL  "+"[R]       Rs. " +payableAmount+" \n";
+            text_to_Print = text_to_Print + "[L]  ----------------------------------------------" + " \n";
+
+
+
+            text_to_Print = text_to_Print + "[L]  Order Type : " + String.valueOf(ordertype) + " \n";
+
+
+            text_to_Print = text_to_Print + "[L]  Payment Mode : " + String.valueOf(payment_mode) + " \n";
+
+
+            text_to_Print = text_to_Print + "[L]  Mobile No : " + String.valueOf(userMobile) + " \n" + " \n";
+
+
+            text_to_Print = text_to_Print + "[C]    Thank you for choosing us !!!" + " \n";
+
+        }
+        else {
+            Toast.makeText(AddBigBasketOrder.this, "Size of Cart is not matched", Toast.LENGTH_SHORT).show();
+        }
+
+
+        AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
+        return printer.addTextToPrint(text_to_Print);
+
+
+    }
+
+
+
+
+
+
+
+
+
+
 
     private void uploadMenuAvailabilityStatusTranscationinDB(String userPhoneNumber, String menuItemName, boolean availability, String menuItemSubCtgykey, String vendorkey, String dateandtime, String menuItemKey, String message, String menuItemStockAvlDetailskey, boolean allowNegative, String itemStockAvlDetailskey) {
 
@@ -1820,6 +2822,10 @@ public class AddBigBasketOrder extends AppCompatActivity {
     }
 
 
+    
+    
+    
+    
     private void getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(String stockIncomingKey_avlDetails, String key_avlDetails, String menuItemKey_avlDetails, String receivedStock_AvlDetails, double currentBillingItemWeight_double, String itemName, String barcode, String orderid, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey, boolean isitemAvailable, boolean allowNegativeStock) {
 
         if((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" - ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil")) ) {
@@ -3001,7 +4007,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
 
 
-    private  void printRecipt(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt, String ordertype) {
+    private  void printReciptUsingPOSMachinePrinter(String userMobile, String tokenno, String itemTotalwithoutGst, String totaltaxAmount, String payableAmount, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cart_Item_hashmap, String payment_mode, String discountAmountt, String ordertype) {
         try {
             Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
             double oldSavedAmount = 0;
@@ -3037,10 +4043,35 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
             // PrinterFunctions.OpenPort( portName, portSettings);
             //    PrinterFunctions.CheckStatus( portName, portSettings,2);
-            PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+           /* PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
             PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+
+
+            */
+            PrinterFunctions.SelectPrintMode(portName, portSettings, 0);
+
+            if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "MK Proteins" + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+            }
+            else {
+
+               PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
+
+            }
+
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -3627,7 +4658,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
             isOrderTrackingDetailsMethodCalled = false;
             totalAmounttopay=0;
             finalamounttoPay=0;
-
+            showProgressBar(false);
              /*   pointsalreadyredeemDouble=0;
                 totalpointsuserhave_afterapplypoints=0;
                 pointsenteredToredeem_double=0;
@@ -3647,7 +4678,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
                 discountAmountLayout.setVisibility(View.VISIBLE);
 
               */
-            showProgressBar(false);
+
 
             //  }
 

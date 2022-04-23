@@ -33,7 +33,6 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_vendor;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -54,7 +53,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private String mobile_vendorKey;
     private String mobile_vendorMobileNumber;
     private String mobile_vendorAddressline1,mobile_vendorAddressline2,mobile_vendorPincode;
-    private String mobile_vendorStatus, mobile_vendorFssaino,minimumscreensizeforpos;
+    private String mobile_vendorStatus, mobile_vendorFssaino,minimumscreensizeforpos,mobile_VendorType;
     private String mobile_vendorLatitude;
     private String mobile_vendorLongitude,newtoken="",vendortype = "";
     private ArrayAdapter mobile_spinner_aAdapter;
@@ -193,7 +192,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                                         vendortype = "";
                                         e.printStackTrace();
                                     }
-                                    if(vendortype.toString().equals(Constants.Store_VendorType)) {
+                                    if(!vendortype.toString().equals(Constants.Warehouse_VendorType)) {
                                         try {
                                             mobile_vendorNameString = String.valueOf(json.get("name"));
 
@@ -827,7 +826,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
                             loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                             loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                            Constants.default_mobileScreenSize = Integer.parseInt(minimumscreensizeforpos);
+                            Constants.default_mobileScreenSize = Double.parseDouble(minimumscreensizeforpos);
 
                             Intent i;
                             if(screenInches < Constants.default_mobileScreenSize ){
@@ -910,6 +909,9 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                 mobile_vendorNameString
         );
         myEdit.putString(
+                "VendorType",
+                mobile_VendorType);
+        myEdit.putString(
                 "MinimumScreenSizeForPos",
                 minimumscreensizeforpos
         );
@@ -984,7 +986,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         mobile_vendorStatus=getVendorData(position,"status");
         mobile_vendorFssaino =getVendorData(position,"vendorfssaino");
         minimumscreensizeforpos = getVendorData(position,"minimumscreensizeforpos");
-
+        mobile_VendorType = getVendorData(position,"vendortype");
         mobile_vendorLatitude =getVendorData(position,"locationlat");
         mobile_vendorLongitude =getVendorData(position,"locationlong");
         try {

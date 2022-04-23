@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.R;
 import com.squareup.picasso.Picasso;
 
@@ -49,7 +51,7 @@ public GetDeliverypartnersAssignedOrders mobile_manageOrders1;
     public static BottomSheetDialog bottomSheetDialog;
     Uri ImageUri;
     int rotationAngle=0;
-
+    double screenInches;
 
 public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, GetDeliverypartnersAssignedOrders mobile_manageOrders1) {
             super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
@@ -83,7 +85,11 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             final CardView cardLayout =listViewItem.findViewById(R.id.cardLayout);
 
             //   final Button changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
-
+            DisplayMetrics dm = new DisplayMetrics();
+            mobile_manageOrders1.getWindowManager().getDefaultDisplay().getMetrics(dm);
+            double x = Math.pow(dm.widthPixels/dm.xdpi,2);
+            double y = Math.pow(dm.heightPixels/dm.ydpi,2);
+            screenInches = Math.sqrt(x+y);
             //
             final TextView moblieNo_text_widget = listViewItem.findViewById(R.id.moblieNo_text_widget);
             final TextView tokenNo_text_widget = listViewItem.findViewById(R.id.tokenNo_text_widget);
@@ -170,13 +176,26 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             order_item_list_parentLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent (mContext, MobileScreen_OrderDetails1.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("From","MobileGetDeliveryPartnerAssignedOrder");
-                    bundle.putParcelable("data", modal_manageOrders_pojo_class);
-                    intent.putExtras(bundle);
 
-                    mContext.startActivity(intent);
+                    if(screenInches>Constants.default_mobileScreenSize){
+                        Intent intent = new Intent (mContext, Pos_OrderDetailsScreen.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("From","MobileGetDeliveryPartnerAssignedOrder");
+                        bundle.putParcelable("data", modal_manageOrders_pojo_class);
+                        intent.putExtras(bundle);
+
+                        mContext.startActivity(intent);
+                    }
+                    else{
+                        Intent intent = new Intent (mContext, MobileScreen_OrderDetails1.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("From","MobileGetDeliveryPartnerAssignedOrder");
+                        bundle.putParcelable("data", modal_manageOrders_pojo_class);
+                        intent.putExtras(bundle);
+
+                        mContext.startActivity(intent);
+                    }
+
                 }
             });
 

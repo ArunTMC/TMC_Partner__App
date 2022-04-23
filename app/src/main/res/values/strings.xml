@@ -217,6 +217,7 @@
     <string name="RaisedTicketDetailsForRating">Raised Ticket Details For Rating</string>
 
     <string name="PosOrdersList">Pos Orders List </string>
+    <string name="WholeSaleOrdersList">WholeSale Orders List </string>
     <string name="CancelledOrdersList">Cancelled Orders List </string>
     <string name="ConsolidatedRatingDetails">Consolidated Rating Details Report </string>
     <string name="RaisedTicketsdetails">Raised Tickets For Rating</string>
@@ -226,6 +227,7 @@
     <string name="EditPaymentModeoftheOrder">Edit  Orders  </string>
     <string name="DeliveredOrdersTimewise_report">Delivered Orders Timewise Report </string>
     <string name="ChangePaymentMode">Change Payment Mode </string>
+    <string name="ChangeOrderToAnotherStore">Change Order to Another Store </string>
     <string name="CancelOrder">Cancel Order </string>
     <string name="GenerateOrderDetailsDump">Generate OrderDetails Dump  </string>
     <string name="GenerateTrackingOrderDetailsDump">Generate OrderTracking Details Dump  </string>
@@ -233,6 +235,7 @@
     <string name="PlotOrdersLocation">Plot Orders Location   </string>
     <string name="AddSwiggyOrders">Add Swiggy Orders </string>
     <string name="AddBigBasketOrders">Add BigBasket Orders </string>
+    <string name="AddWholeSaleOrders">Add WholeSale Orders </string>
 
     <string name="AddDunzoOrders">Add Dunzo Orders </string>
     <string name="SelectItemCtgy">Select Item Category  : </string>
@@ -252,6 +255,8 @@
     <string name="Consolidated_Sales_Report">Consolidated Sales Report </string>
     <string name="Pos_Sales_Report">POS Sales Report </string>
     <string name="App_Sales_Report">APP Sales Report </string>
+
+    <string name="WholeSale_Sales_Report">WholeSale Sales Report </string>
     <string name="Delivery_Partner_settlement_report">Delivery Partner Settlement Report </string>
     <string name="Consolidated_Sales_Report_Weekwise">Consolidated Sales Report Weekwise </string>
     <string name="Mobile_Billing_Screen">Mobile Billing Screen</string>
@@ -283,7 +288,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.1(20) </string>
+    <string name="Version_No">Version No : 1.9.2.1 </string>
     <string name="scanning">scanning for devices...</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

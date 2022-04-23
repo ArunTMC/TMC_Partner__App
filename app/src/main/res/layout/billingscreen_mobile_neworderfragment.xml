@@ -7,120 +7,169 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:orientation="horizontal">
+        android:layout_height="170dp"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_weight="1.4"
-        android:orientation="vertical">
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/TMC_Orange"
-            android:textSize="13sp"
-            android:paddingEnd="20dp"
-            android:gravity="center_vertical"
-            android:fontFamily="@font/open_sans"
-            android:text="Enter Customer Mobile Number :" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="45sp"
-            android:textColor="@color/TMC_Primary_Text_Color"
-            android:textSize="16sp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:id="@+id/customermobileno_editwidget"
-            android:gravity="center_vertical"
-            android:inputType="phone"
-            android:maxEms="10"
-            android:digits="0123456789"
-            android:hint="9593217537"
-            android:textColorHint="@color/TMC_Hint_Color"
-            android:background="@drawable/pale_orange_background"
-            android:fontFamily="@font/open_sans_semibold"
-            android:text="" />
+            android:layout_weight="1.4"
+            android:orientation="vertical"
+            android:padding="10dp">
 
-        <CheckBox
-            android:id="@+id/userstoreNumberCheckboxWidget"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/TMC_Primary_Text_Color"
-            android:textSize="13sp"
-            android:fontFamily="@font/open_sans_semibold"
-            android:checked="false"
-            android:buttonTint="@color/TMC_Orange"
-            android:text="Use Store Phone Number" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:text="Enter Customer Mobile Number :"
+                android:textColor="@color/TMC_Orange"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/customermobileno_editwidget"
+                android:layout_width="match_parent"
+                android:layout_height="45sp"
+                android:background="@drawable/pale_orange_background"
+                android:digits="0123456789"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:hint="9593217537"
+                android:inputType="phone"
+                android:maxEms="10"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text=""
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textSize="16sp" />
+
+            <CheckBox
+                android:id="@+id/userstoreNumberCheckboxWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/TMC_Orange"
+                android:checked="false"
+                android:fontFamily="@font/open_sans_semibold"
+                android:text="Use Store Phone Number"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="13sp" />
 
 
-    </LinearLayout>
+        </LinearLayout>
+
         <View
-        android:layout_width="10dp"
-        android:layout_height="150dp"
+            android:layout_width="10dp"
+            android:layout_height="150dp"
 
-        android:background="@drawable/vertical_line"
-        />
+            android:background="@drawable/vertical_line" />
 
 
         <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_weight="2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="vertical"
 
-        android:orientation="vertical">
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans"
+                android:gravity="center_vertical"
+                android:paddingStart="10dp"
+                android:paddingEnd="20dp"
+                android:text="Enter Discount : "
+                android:textColor="@color/TMC_Orange"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/discount_editWidget"
+                android:layout_width="match_parent"
+                android:layout_height="45sp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/pale_orange_background"
+                android:digits="0123456789"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical"
+                android:hint="0"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text=""
+
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textSize="16sp" />
+
+
+            <Button
+                android:id="@+id/apply_discount_buttonWidget"
+                android:layout_width="125dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/button_background"
+                android:text="Apply Discount"
+                android:textColor="@color/TMC_White"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:orientation="vertical"
+        android:id="@+id/customerName_layout"
+        android:padding="10dp">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+
+            android:background="@drawable/border_line"
+            />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/TMC_Orange"
-            android:textSize="13sp"
-            android:paddingStart="10dp"
-            android:paddingEnd="20dp"
-            android:gravity="center_vertical"
             android:fontFamily="@font/open_sans"
-            android:text="Enter Discount : " />
-        <EditText
-            android:id="@+id/discount_editWidget"
+            android:gravity="center_vertical"
+            android:paddingEnd="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Enter Customer Name :"
+            android:textColor="@color/TMC_Orange"
+            android:textSize="13sp" />
+
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteCustomerName_widget"
             android:layout_width="match_parent"
             android:layout_height="45sp"
-            android:textColor="@color/TMC_Primary_Text_Color"
-            android:textSize="16sp"
+            android:background="@drawable/pale_orange_background"
+            android:layout_marginEnd="30dp"
+            android:fontFamily="@font/open_sans_semibold"
+            android:gravity="center_vertical"
+            android:hint="Customer Name"
+            android:inputType="textCapSentences"
+            android:completionThreshold="1"
+
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
-            android:gravity="center_vertical"
-            android:inputType="phone"
-            android:maxLength="10"
-            android:background="@drawable/pale_orange_background"
-            android:layout_marginTop="20dp"
-            android:hint="0"
+            android:textColor="@color/TMC_Primary_Text_Color"
             android:textColorHint="@color/TMC_Hint_Color"
-
-            android:digits="0123456789"
-            android:fontFamily="@font/open_sans_semibold"
-            android:text="" />
+            android:textSize="16sp" />
 
 
-
-        <Button
-            android:layout_width="125dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:textSize="12sp"
-            android:text="Apply Discount"
-            android:textColor="@color/TMC_White"
-            android:id="@+id/apply_discount_buttonWidget"
-            android:background="@drawable/button_background"/>
 
     </LinearLayout>
-    </LinearLayout>
-
-
-
 
     <View
         android:layout_width="match_parent"
@@ -303,7 +352,6 @@
             android:layout_height="wrap_content"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"
-            android:layout_marginTop="10dp"
             android:orientation="horizontal">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -314,7 +362,7 @@
                 android:visibility="visible"
 
                 android:layout_weight="1"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:orientation="vertical">
 
 
@@ -391,7 +439,7 @@
                 android:visibility="visible"
 
                 android:paddingEnd="3dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:orientation="vertical">
 
 

@@ -7,7 +7,15 @@ public class Modal_NewOrderItems extends Throwable implements Serializable {
     inventorydetails, stockincomingkey,istmcpriceperkgitemedited,dunzoAmount,bigbasketAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
-    public String editTextValue,bigbasketprice,swiggyprice,dunzoprice;
+    public String editTextValue,bigbasketprice,swiggyprice,dunzoprice,wholesaleprice;
+
+    public String getWholesaleprice() {
+        return wholesaleprice;
+    }
+
+    public void setWholesaleprice(String wholesaleprice) {
+        this.wholesaleprice = wholesaleprice;
+    }
 
     public String getBigbasketprice() {
         return bigbasketprice;

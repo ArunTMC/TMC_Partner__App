@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="15dp"
+    android:paddingBottom="15dp"
+    android:paddingStart="40dp"
+    android:paddingEnd="40dp"
+    android:orientation="vertical">
+
+
+    <EditText
+        android:id="@+id/payingAmountEditText"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/pale_orange_background"
+        android:digits="0123456789"
+        android:fontFamily="@font/open_sans_semibold"
+        android:gravity="center_vertical"
+        android:hint="Enter the given amount"
+        android:inputType="phone"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text=""
+        android:textColor="@color/TMC_Primary_Text_Color"
+        android:textColorHint="@color/TMC_Hint_Color"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="" />
+
+        <Button
+            android:id="@+id/addCreditPayment_button"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="5dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:background="@drawable/orange_selected_button_background"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="   Add Payment   "
+
+            android:textAllCaps="false"
+            android:textColor="@color/TMC_White"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+</LinearLayout>

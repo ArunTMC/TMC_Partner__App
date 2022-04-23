@@ -27,7 +27,6 @@ import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen;
 import com.meatchop.tmcpartner.NukeSSLCerts;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -42,7 +41,7 @@ import java.util.Map;
 
 public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private EditText vendor_login_password_edittext;
-    private String pos_vendorNameString,UserRole,vendortype;
+    private String pos_vendorNameString,UserRole,pos_vendorKeyType;
     private String pos_password;
     private String pos_userPhoneNumber;
     private String pos_vendorKey;
@@ -101,6 +100,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 pos_vendorAddressline2=getVendorData(position,"addressline2");
                 pos_vendorPincode=getVendorData(position,"pincode");
                 pos_vendorStatus=getVendorData(position,"status");
+                pos_vendorKeyType =getVendorData(position,"vendortype");
                 pos_vendorFssaino =getVendorData(position,"vendorfssaino");
                 minimumscreensizeforpos = getVendorData(position,"minimumscreensizeforpos");
                 defaultprintertype = getVendorData(position,"defaultprintertype");
@@ -184,17 +184,17 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
 
                                     try{
                                         if(json.has("vendortype")) {
-                                            vendortype = String.valueOf(json.get("vendortype")).toUpperCase();
+                                            pos_vendorKeyType = String.valueOf(json.get("vendortype")).toUpperCase();
                                         }
                                         else{
-                                            vendortype = "";
+                                            pos_vendorKeyType = "";
                                         }
                                     }
                                     catch (Exception e){
-                                        vendortype = "";
+                                        pos_vendorKeyType = "";
                                         e.printStackTrace();
                                     }
-                                    if(vendortype.toString().equals(Constants.Store_VendorType)) {
+                                    if(!pos_vendorKeyType.toString().equals(Constants.Warehouse_VendorType)) {
                                         try {
                                             pos_vendorNameString = String.valueOf(json.get("name"));
 
@@ -718,7 +718,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                             Adjusting_Widgets_Visibility(false);
                             saveVendorLoginStatus();
                             Intent i;
-                            Constants.default_mobileScreenSize = Integer.parseInt(minimumscreensizeforpos);
+                            Constants.default_mobileScreenSize = Double.parseDouble(minimumscreensizeforpos);
                             if(screenInches < Constants.default_mobileScreenSize ){
                                  i =new Intent(Pos_Vendor_Selection_Screen.this, Mobile_LoginScreen.class);
 
@@ -812,6 +812,9 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
         myEdit.putString(
                 "VendorKey",
                 pos_vendorKey);
+        myEdit.putString(
+                "VendorType",
+                pos_vendorKeyType);
         myEdit.putString(
                 "VendorName",
                 pos_vendorNameString

@@ -52,6 +52,7 @@ import com.pos.printer.AsyncEscPosPrint;
 import com.pos.printer.AsyncEscPosPrinter;
 import com.pos.printer.AsyncUsbEscPosPrint;
 import com.pos.printer.Modal_USBPrinter;
+import com.pos.printer.usb.UsbPrintersConnectionsLocal;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -1289,7 +1290,7 @@ public class Pos_Orders_List extends AppCompatActivity {
             e.printStackTrace();
         }
         try{
-            UsbConnection usbConnection = UsbPrintersConnections.selectFirstConnected(Pos_Orders_List.this);
+            UsbConnection usbConnection = UsbPrintersConnectionsLocal.selectFirstConnected(Pos_Orders_List.this);
             UsbManager usbManager = (UsbManager) Pos_Orders_List.this.getSystemService(Context.USB_SERVICE);
 
             if (usbConnection == null || usbManager == null) {
@@ -1479,21 +1480,33 @@ public class Pos_Orders_List extends AppCompatActivity {
 
         String GSTIN = "GSTIN :33AAJCC0055D1Z9";
 
+        if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
 
-        text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print+"[c] <font size='normal'>Fresh Meat and Seafood \n";
-        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine1 ;
-        text_to_Print = text_to_Print + "[c] <font size='normal'>" + StoreAddressLine2 + " \n";
-        text_to_Print = text_to_Print + "[c]   <font size='normal'>" + StoreAddressLine3 + " \n";
-        text_to_Print = text_to_Print+"[c] <font size='normal'>Contact No :"+StoreLanLine +" \n";
-        text_to_Print = text_to_Print+"[c] <font size='normal'>"+GSTIN +" \n" +" \n";
-        text_to_Print = text_to_Print+"[L] <font size='normal'>OrderId : "+Orderid +" \n";
-        text_to_Print = text_to_Print+"[L] <font size='normal'>Order Placed Time : "+OrderPlacedtime +" \n";
-        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
-        text_to_Print = text_to_Print+"[L] ITEMNAME * QTY " +" \n";
-        text_to_Print = text_to_Print+"[L] <font size='normal'>                                                "+" \n";
-        text_to_Print = text_to_Print+"[L] RATE                                  SUBTOTAL" +" \n";
-        text_to_Print = text_to_Print+"[L] ----------------------------------------------" +" \n";
+
+            text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
+            text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+
+        }
+        else {
+            text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
+
+        }
+     //   text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        text_to_Print = text_to_Print + "[c]    <font size='normal'>" + StoreAddressLine1 ;
+        text_to_Print = text_to_Print + "<font size='normal'>" + StoreAddressLine2 + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine3 + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Contact No :" + StoreLanLine + " \n";
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>" + GSTIN + " \n"+ " \n";
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>OrderId : "+Orderid +" \n";
+        text_to_Print = text_to_Print+"[L]  <font size='normal'>Order Placed Time : "+OrderPlacedtime +" \n";
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
+        text_to_Print = text_to_Print+"[L]  ITEMNAME * QTY " +" \n";
+
+        //text_to_Print = text_to_Print+"[L] RATE                                  SUBTOTAL" +" \n";
+        text_to_Print = text_to_Print+"[L]  RATE"+"[R]      "+"  SUBTOTAL" +" \n";
+
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
         try {
@@ -1739,51 +1752,49 @@ public class Pos_Orders_List extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-
-
                 if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
 
+                    text_to_Print = text_to_Print+"[L]  <b><font size='normal'>Grill House  "+fullitemName +" </b>\n";
 
-                    text_to_Print = text_to_Print+"[L] <b><font size='normal'>Grill House  "+fullitemName +" </b>\n";
 
                     if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
 
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
 
                     }
                     if(!finalgrossweight.equals("")) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Grossweight : "+finalgrossweight +" \n";
 
                     }
-                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+                    text_to_Print = text_to_Print+"[L]  <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
 
                 }
                 else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
-                    text_to_Print = text_to_Print+"[L]<b> <font size='normal'>Ready to Cook  "+fullitemName +" </b>\n";
+                    text_to_Print = text_to_Print+"[L]<b>  <font size='normal'>Ready to Cook  "+fullitemName +" </b>\n";
 
                     if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
 
 
                     }
                     if(!finalgrossweight.equals("")) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Grossweight : "+finalgrossweight +" \n";
 
                     }
 
 
 
-                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+                    text_to_Print = text_to_Print+"[L]  <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
 
                 }
                 else  {
-                    text_to_Print = text_to_Print+"[L] <b><font size='normal'>"+String.valueOf(fullitemName)  +"</b> \n";
 
+                    text_to_Print = text_to_Print+"[L]  <b><font size='normal'>"+String.valueOf(fullitemName)  +"</b> \n";
 
 
 
                     if((finalCutName.length()>0) && (!finalCutName.equals("null")) && (!finalCutName.equals(null))) {
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Cut Name : "+finalCutName.toUpperCase() +" \n";
 
                     }
 
@@ -1792,13 +1803,12 @@ public class Pos_Orders_List extends AppCompatActivity {
 
                     if(!finalgrossweight.equals("")) {
 
-                        text_to_Print = text_to_Print+"[L] <font size='normal'>Grossweight : "+finalgrossweight +" \n";
+                        text_to_Print = text_to_Print+"[L]  <font size='normal'>Grossweight : "+finalgrossweight +" \n";
 
                     }
-                    text_to_Print = text_to_Print+"[L] <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
+                    text_to_Print = text_to_Print+"[L]  <font size='normal'>"+ String.valueOf("Netweight : "+ finalitemNetweight+" , "+"Quantity : " + "(" + String.valueOf(finalQuantity) + ")") +" \n";
 
                 }
-
 
 
 
@@ -1838,14 +1848,14 @@ public class Pos_Orders_List extends AppCompatActivity {
                 }
 
 
-
-                itemwise_Subtotal = String.valueOf(itemwise_Subtotal_double);
-                itemwise_price = String.valueOf(itemwise_Subtotal_double);
+                totalAmountFromAddingSubtotal = Math.round(totalAmountFromAddingSubtotal);
+                itemwise_Subtotal = String.valueOf(Math.round(itemwise_Subtotal_double));
+                itemwise_price = String.valueOf(Math.round(itemwise_Subtotal_double));
 
                 itemwise_price = "Rs. " + itemwise_price;
                 itemwise_Subtotal = "Rs." + itemwise_Subtotal;
 
-
+/*
                 if (itemwise_price.length() == 4) {
                     //21spaces
                     itemwise_price = itemwise_price + "                            ";
@@ -1958,14 +1968,19 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
 
+ */
 
-                text_to_Print = text_to_Print+"[L]<font size='normal'>"+itemwise_price + itemwise_Subtotal +" \n";
 
-                text_to_Print = text_to_Print+"[L] <font size='normal'>                                                "+" \n";
+              //  text_to_Print = text_to_Print+"[L]<font size='normal'>"+itemwise_price + itemwise_Subtotal +" \n";
+
+                text_to_Print = text_to_Print+"[L]  <font size='normal'>"+itemwise_price + "[R] "+itemwise_Subtotal +" \n";
+
+                text_to_Print = text_to_Print+"[L]  <font size='normal'>                                                "+" \n";
+
 
 
             }
-            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1974,7 +1989,7 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
         PayableAmount = "Rs." + String.valueOf(totalAmountFromAddingSubtotal);
-        if (PayableAmount.length() == 4) {
+      /*  if (PayableAmount.length() == 4) {
             //21spaces
             PayableAmount = PayableAmount + "                                   " + PayableAmount;
         }
@@ -2036,15 +2051,20 @@ public class Pos_Orders_List extends AppCompatActivity {
         }
 
 
+       */
 
-        text_to_Print = text_to_Print+"[L]" +PayableAmount+" \n";
 
-        text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+      //  text_to_Print = text_to_Print+"[L]" +PayableAmount+" \n";
+
+
+        text_to_Print = text_to_Print+"[L]  " +PayableAmount+" [R] "+PayableAmount+" \n";
+
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
         if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
             couponDiscount_double = Double.parseDouble (CouponDiscount);
             if (OrderType.equals(Constants.APPORDER)) {
-                if (CouponDiscount.length() == 4) {
+           /*     if (CouponDiscount.length() == 4) {
                     //20spaces
                     //NEW TOTAL =4
                     CouponDiscount = "Coupon Discount                         " + CouponDiscount;
@@ -2096,11 +2116,15 @@ public class Pos_Orders_List extends AppCompatActivity {
                     //NEW TOTAL =9
                     CouponDiscount = "Coupon Discount               " + CouponDiscount;
                 }
+
+            */
+                text_to_Print = text_to_Print+"[L]  Coupon Discount "+"[R]      " +CouponDiscount+" \n";
+
             }
 
             if (OrderType.equals(Constants.POSORDER)) {
                 couponDiscount_double = Double.parseDouble (CouponDiscount);
-
+/*
                 if (CouponDiscount.length() == 4) {
                     //20spaces
                     //NEW TOTAL =4
@@ -2153,12 +2177,16 @@ public class Pos_Orders_List extends AppCompatActivity {
                     //NEW TOTAL =9
                     CouponDiscount = "Discount Amount              " + CouponDiscount;
                 }
+
+ */
+                text_to_Print = text_to_Print+"[L]  Discount Amount "+"[R]      " +CouponDiscount+" \n";
+
             }
 
 
-            text_to_Print = text_to_Print+"[L]" +CouponDiscount+" \n";
+          //  text_to_Print = text_to_Print+"[L]" +CouponDiscount+" \n";
 
-            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
 
@@ -2183,7 +2211,7 @@ public class Pos_Orders_List extends AppCompatActivity {
         }
 
         if( deliveryAmount_double>0) {
-            if (DeliveryAmount.length() == 4) {
+        /*    if (DeliveryAmount.length() == 4) {
                 //25spaces
                 //DeliveryAmount =15
                 DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
@@ -2230,16 +2258,19 @@ public class Pos_Orders_List extends AppCompatActivity {
                 DeliveryAmount = "Delivery Amount               " + DeliveryAmount;
             }
 
-            text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
 
-            text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+         */
+            text_to_Print = text_to_Print+"[L]  Delivery Amount "+"[R]      " +DeliveryAmount+" \n";
 
+            //    text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
+
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
         }
 
-        String NetTotal = "Rs." + String.valueOf(totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt);
-        if (NetTotal.length() == 4) {
+        String NetTotal = "Rs." + String.valueOf(Math.round(totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt));
+        /*if (NetTotal.length() == 4) {
             //27spaces+4spaces
             //NEW TOTAL =9
             NetTotal = "NET TOTAL                             " + NetTotal;
@@ -2286,17 +2317,20 @@ public class Pos_Orders_List extends AppCompatActivity {
             NetTotal = "NET TOTAL                     " + NetTotal;
         }
 
+         */
 
 
-        text_to_Print = text_to_Print+"[L]" +NetTotal+" \n";
+        text_to_Print = text_to_Print+"[L]  NET TOTAL  "+"[R]      " +NetTotal+" \n";
 
-        text_to_Print = text_to_Print+"[L]----------------------------------------------" +" \n";
+     //   text_to_Print = text_to_Print+"[L]" +NetTotal+" \n";
+
+        text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
 
-        text_to_Print = text_to_Print+"[L]<b>Payment Mode : " +PaymentMode+" </b>\n";
+        text_to_Print = text_to_Print+"[L]  <b>Payment Mode : " +PaymentMode+" </b>\n";
 
-        text_to_Print = text_to_Print+"[L]Mobile No : " +MobileNumber+" \n"+" \n";
+        text_to_Print = text_to_Print+"[L]  Mobile No : " +MobileNumber+" \n"+" \n";
 /*
         text_to_Print = text_to_Print+"[c]<font size='big'> TOKENNO: " +TokenNo+" \n";
 
@@ -2337,7 +2371,7 @@ public class Pos_Orders_List extends AppCompatActivity {
  */
         text_to_Print = text_to_Print+"[L] " +" \n";
 
-        text_to_Print = text_to_Print+"[c] <b>Thank You For Choosing Us !!!! " +"</b> \n";
+        text_to_Print = text_to_Print+"[c] <b>   Thank You For Choosing Us !!!! " +"</b> \n";
 
         text_to_Print = text_to_Print+"[L] " +" \n";
         text_to_Print = text_to_Print+"[L] " +" \n";

@@ -32,7 +32,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.CreditOrders_MobileNumberwiseTransactionScreen"></activity>
+        <activity android:name=".Settings.WholeSaleOrdersList"></activity>
+        <activity android:name=".Settings.WholeSaleOrderSalesReport" />
+        <activity android:name=".Settings.CreditOrders_MobileNumberwiseTransactionScreen" />
         <activity android:name=".Settings.CreditOrders_MobileNumberwise_Report" />
         <activity android:name=".MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen" />
         <activity android:name=".Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen" />
@@ -42,13 +44,18 @@
         <activity android:name=".Settings.ChangeMenuItemWeightAndPriceSecondScreen" />
         <activity android:name=".Settings.OrderAndRatingDetailsScreen" />
         <activity android:name=".Settings.RaisedTicketDetailsForRating" />
-        <activity android:name=".Settings.AddBigBasketOrder" />
         <activity android:name=".MobileScreen_JavaClasses.Mobile_NewOrders.CartActivity_Mobile_NewOrdersScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_SecondScreen" />
         <activity android:name=".Settings.DatewiseRatingreport_FirstScreen" />
         <activity android:name=".Settings.MenuItemAvailabilityStatusReport" />
         <activity
             android:name=".Settings.AddDunzoOrders"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".Settings.AddWholeSalesOrder"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".Settings.AddBigBasketOrder"
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".Settings.AddSwiggyOrders"
@@ -154,7 +161,61 @@
                 <action android:name="com.android.example.USB_PERMISSION.ManageOrders" />
             </intent-filter>
         </receiver>
-
+        <receiver android:name=".Settings.AddSwiggyOrders">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.AddSwiggyOrders" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.AddWholeSalesOrder">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.AddWholeSalesOrder" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.AddBigBasketOrder">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.AddBigBasketOrder" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.AddDunzoOrders">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.AddDunzoOrders" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.PosSalesReport">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.PosSalesReport" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.App_Sales_Report_Subctgywise">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.AppSalesReportSubCtgyWise" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.ConsolidatedSalesReportWeekwise">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.ConsolidatedSalesReportWeekwise" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.WholeSaleOrderSalesReport">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.WholeSaleOrderSalesReport" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.searchOrdersUsingMobileNumber">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.APPOrdersList" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.Pos_Orders_List">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.POSOrdersList" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".Settings.WholeSaleOrdersList">
+            <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.WholeSaleOrdersList" />
+            </intent-filter>
+        </receiver>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

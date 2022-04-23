@@ -602,6 +602,7 @@ tools:context=".Settings.searchOrdersUsingMobileNumber">
             android:paddingStart="6dp"
             android:paddingEnd="6dp"
             android:orientation="horizontal"
+            android:id="@+id/bluetoothPrinterStatusShowingLayout"
             android:gravity="center_vertical"
             >
 

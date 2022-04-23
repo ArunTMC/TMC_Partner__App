@@ -109,7 +109,7 @@ public class SettingsFragment extends Fragment {
             changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
+    LinearLayout wholesale_orders_list,WholeSaleSalesReport,addWholeSaleOrders_placing_layout,mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -283,7 +283,9 @@ public class SettingsFragment extends Fragment {
         posPrinterRadiobutton = view.findViewById(R.id.posPrinterRadiobutton);
         nonePrinterRadiobutton = view.findViewById(R.id.nonePrinterRadiobutton);
         mobilenowisecreditOrderslist = view.findViewById(R.id.mobilenowisecreditOrderslist);
-
+        addWholeSaleOrders_placing_layout = view.findViewById(R.id.addWholeSaleOrders_placing_layout);
+        WholeSaleSalesReport = view.findViewById(R.id.WholeSaleSalesReport);
+        wholesale_orders_list  = view.findViewById(R.id.wholesale_orders_list);
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -295,24 +297,24 @@ public class SettingsFragment extends Fragment {
         vendorName = shared.getString("VendorName", "");
         UserRole = shared.getString("userrole", "");
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
-
+        SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
+        String printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
+        printerType_sharedPreference = String.valueOf(printerType_sharedPreference.toUpperCase());
         try{
-            SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
-           String printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
             if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
-                changeSelectedPrinterType(posPrinterRadiobutton.getId(),true);
+               // changeSelectedPrinterType(posPrinterRadiobutton.getId(),true);
 
             }
             else if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
-                changeSelectedPrinterType(usbRadiobutton.getId(),true);
+              //  changeSelectedPrinterType(usbRadiobutton.getId(),true);
 
             }
             else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
-                changeSelectedPrinterType(bluetoothPrinterRadiobutton.getId(),true);
+              //  changeSelectedPrinterType(bluetoothPrinterRadiobutton.getId(),true);
 
             }
             else{
-                changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
+               // changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
 
             }
         }
@@ -334,6 +336,8 @@ public class SettingsFragment extends Fragment {
         viewordersLinearLayout.setVisibility(GONE);
         manageordersLinearLayout.setVisibility(GONE);
         dataAnalyticsLinearLayout.setVisibility(GONE);
+
+
 
         nonePrinterRadiobutton.setOnClickListener(new OnClickListener() {
             @Override
@@ -473,8 +477,15 @@ public class SettingsFragment extends Fragment {
             mobilePrinterConnectLayout.setVisibility(VISIBLE);
             dataAnalyticsLinearLayout.setVisibility(GONE);
             add_refund_replace_order_layout.setVisibility(GONE);
-            printerParentLayout.setVisibility(VISIBLE);
-            connect_printer_button_widget.setVisibility(GONE);
+            printerParentLayout.setVisibility(GONE);
+            if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                connect_printer_button_widget.setVisibility(VISIBLE);
+
+            }
+            else{
+                connect_printer_button_widget.setVisibility(GONE);
+
+            }
         } else {
             //if Mobile
             addBigbasketOrders_placing_layout.setVisibility(GONE);
@@ -482,15 +493,14 @@ public class SettingsFragment extends Fragment {
             swiggyOrderPlacing_layout.setVisibility(GONE);
             printerParentLayout.setVisibility(GONE);
             connect_printer_button_widget.setVisibility(VISIBLE);
+            add_refund_replace_order_layout.setVisibility(VISIBLE);
 
             if((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))){
                 editPaymentModeOftheOrder.setVisibility(VISIBLE);
-                add_refund_replace_order_layout.setVisibility(VISIBLE);
 
             }
             else{
                 editPaymentModeOftheOrder.setVisibility(GONE);
-                add_refund_replace_order_layout.setVisibility(GONE);
 
             }
 
@@ -584,6 +594,30 @@ public class SettingsFragment extends Fragment {
         } else {
             // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
+
+
+        wholesale_orders_list.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, WholeSaleOrdersList.class);
+                startActivity(intent);
+            }
+        });
+        WholeSaleSalesReport.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, WholeSaleOrderSalesReport.class);
+                startActivity(intent);
+            }
+        });
+        addWholeSaleOrders_placing_layout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, AddWholeSalesOrder.class);
+                startActivity(intent);
+            }
+        });
+
         add_refund_replace_order_layout.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

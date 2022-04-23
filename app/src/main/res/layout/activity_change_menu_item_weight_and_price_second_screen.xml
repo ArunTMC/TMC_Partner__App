@@ -965,7 +965,84 @@
                                     android:alpha=".6"
                                     android:visibility="visible"
                                     android:background="@drawable/verticalbroder" />
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/wholeSale_price_layout"
+                                android:orientation="vertical">
 
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="18sp"
+                                    android:layout_weight="1"
+
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_bold_italic"
+                                    android:text="WHOLESALE PRICE  : " />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="13sp"
+                                    android:layout_marginTop="2dp"
+                                    android:layout_marginBottom="2dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Note :- WholeSale Price Value Can be Zero" />
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="65dp"
+                                        android:layout_marginTop="10dp"
+                                        android:layout_weight="1"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:gravity="center_vertical"
+                                        android:id="@+id/wholeSale_price_label"
+
+                                        android:text="WholeSale  Price (  Price Per Kg  )  :-   "
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp" />
+
+
+                                    <EditText
+                                        android:id="@+id/wholesale_selling_price_text_widget_wholesaleLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="40dp"
+                                        android:layout_weight="2"
+                                        android:background="@color/TMC_PaleOrange"
+                                        android:digits="0123456789"
+                                        android:focusedByDefault="false"
+                                        android:fontFamily="@font/open_sans_semibold"
+
+                                        android:gravity="center_vertical|center"
+                                        android:imeOptions="actionDone"
+                                        android:inputType="phone"
+                                        android:paddingStart="8dp"
+                                        android:text="  "
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+
+                                        android:textSize="14sp" />
+
+
+                                </LinearLayout>
+                            </LinearLayout>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginTop="3dp"
+                                android:alpha=".6"
+                                android:visibility="visible"
+                                android:background="@drawable/verticalbroder" />
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -1015,7 +1092,6 @@
 
 
                                     <EditText
-                                        android:paddingStart="8dp"
                                         android:id="@+id/dunzo_selling_price_text_widget_dunzoLayout"
                                         android:layout_width="match_parent"
                                         android:layout_height="40dp"
@@ -1023,11 +1099,12 @@
                                         android:background="@color/TMC_PaleOrange"
                                         android:digits="0123456789"
                                         android:focusedByDefault="false"
-
                                         android:fontFamily="@font/open_sans_semibold"
+
                                         android:gravity="center_vertical|center"
                                         android:imeOptions="actionDone"
                                         android:inputType="phone"
+                                        android:paddingStart="8dp"
                                         android:text="  "
                                         android:textColor="@color/TMC_Primary_Text_Color"
 

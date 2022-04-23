@@ -2,7 +2,7 @@ package com.meatchop.tmcpartner;
 
 public class Constants {
 
-    public static int default_mobileScreenSize  = 7;
+    public static double default_mobileScreenSize  = 6.3;
     public static final String Enter_the_mobile_no_text ="Enter the Mobile Number";
     public static final String Order_Value_should_be_above  ="Order Value Should Be Above : ";
     public static final String PointusercanRedeemtoday  ="Can't redeem more than users limit per day";
@@ -20,6 +20,8 @@ public class Constants {
 
     public static final String CantApplyDiscountInstruction  =" Can't Apply discount when Cart is Empty";
     public static final String AddedRedeemPointsCancelledInstruction  ="Redeem Points Added in this Order is cancelled . So Kindly Add again";
+    public static final String AmountShouldBeGreaterThanZero ="Amount Should Be Greataer Than Zero";
+    public static final String GivenAmountAmountShouldnotBeGreateThanCreditValue ="Given Amount Should not be Greater than Credit Value";
 
     public static final String RecievedAmountShouldBeGreaterthanZero  ="Recieved Amount Should be Greater than Zero";
     public static final String RecievedAmountCantbeEmpty  ="Recieved Amount Column Can't Be Empty";
@@ -66,6 +68,7 @@ public class Constants {
     public static final String DunzoOrder ="DUNZOORDER";
     public static final String SwiggyOrder ="SWIGGYORDER";
     public static final String BigBasket ="BIGBASKETORDER";
+    public static final String WholeSaleOrder ="WHOLESALEORDER";
 
     public static final String PhoneOrder ="PHONEORDER";
 
@@ -92,6 +95,7 @@ public class Constants {
 
     public static final String Store_VendorType ="STORE";
     public static final String Warehouse_VendorType ="WAREHOUSE";
+    public static final String WholeSales_VendorType ="WHOLESALEVENDOR";
 
     public static final String Bluetooth_PrinterType ="Bluetooth Printer";
     public static final String USB_PrinterType ="USB Printer";
@@ -119,6 +123,7 @@ public class Constants {
 
 
     public static final String api_getListofSubCtgy = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=SubCategory";
+    public static final String api_getListofWholeSaleCustomers = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getallwholesalecustomerdetails";
 
     public static final String api_getListofVendors = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list";
     public static final String api_verifyVendorPassword ="https://9z1mg6qh3a.execute-api.ap-south-1.amazonaws.com/stage/resource";
@@ -149,6 +154,7 @@ public class Constants {
     //"https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/resource";
     //"https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsapporders";
 
+    public static final String api_GetWholeSalesOrdersListForDateVendorKey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/wholesalesorderdetailsfordateandvendorkey";
 
     public static final String api_GetOrderDetailsusingPaymentmode_vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetailsforpaymentmodeandvendorkey";
 
@@ -157,13 +163,17 @@ public class Constants {
 
 
 
+    public static final String api_GetOrderItemDetailsusingOrderid = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderitemdetailsfororderid?orderid=";
+
     public static final String api_GetOrderDetailsusingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetails?orderid=";
     public static final String api_GetOrderDetailsusingMobileno_vendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/orderdetailswithmobilenovendorkey";
     public static final String api_GetTrackingOrderDetails_orderid ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetails?orderid=";
     public static final String api_GetRatingDetailsUsingOrderid= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/ratingdetailsfororder?orderid=";
     public static final String api_GetOrderDetailsusingMobilenowithIndex = "https://pna7nowovg.execute-api.ap-south-1.amazonaws.com/dev/orderdetailswithmobileno";
+    public static final String api_GetTrackingOrderDetailsusingMobileno_vendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/ordertrackingdetailswithmobilenovendorkey";
 
 
+    public static final String api_GetWholeSalesOrderswithDate_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/wholesalesorderdetailsforreport";
     public static final String api_GetTrackingOrderDetailswithDate_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackingorderdetailsusingdateforreport";
     public static final String api_GetTrackingOrderDetailsUsingSlotDate_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackorderdetailsusingslotdateforreport";
     public static final String api_GetTrackingOrderDetails_forReport_AppOrders_and_PosOrders ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettrackorderdetailsforposandapporders";
@@ -174,7 +184,7 @@ public class Constants {
 
     public static final String api_MenuAvailabilityTransaction ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getmenuavailabilitytransctionstatus";
 
-     public static final String api_GetTrackingOrderDetailsforDate_Vendorkey_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdertailsfordate";
+    public static final String api_GetTrackingOrderDetailsforDate_Vendorkey_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdertailsfordate";
     public static final String api_GetTrackingOrderDetailsforDate_Vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdertailsfordatenew";
     public static final String api_GetTrackingOrderDetails_cancelledOrders="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailscancelledorders";
 
@@ -213,6 +223,9 @@ public class Constants {
     public static final String api_updateRaisedTicketsTablewithkey ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/ratingticketdetails?modulename=RatingTicket";
     public static final String api_updateMenuItemDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MenuNew";
     public static final String api_updateMarinadeMenuItemPriceDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MarinadeMenuNew";
+
+    public static final String api_updateOrderItemDetailsTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/orderitemdetails";
+    public static final String api_updateAddressTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/address?modulename=Adrs";
 
     public static final String api_updateMarinadeMenuItemDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/menu?modulename=MarinadeMenuNew";
     public static final String api_updateTrackingOrderTable ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/trackingorderdetails?modulename=TrackOrder";
@@ -262,6 +275,8 @@ public class Constants {
 
 
     public static final String api_Update_StockIncomingUsingKey ="https://3ve1c962t7.execute-api.ap-south-1.amazonaws.com/dev/update/inventorystockincomingnew";
+    public static final String api_Update_OrderDetailsTableNew ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/updateorderdetailsforkeynew" ;
+    public static final String api_Update_OrderTrackingTableNew ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/updateordertrackingdetailsforkeynew";
 
 
     public static final  String getApi_getMenuItemStockAvlDetailsUsingKey  = "https://69na3bh009.execute-api.ap-south-1.amazonaws.com/Dev/get/menuitemstockavldetails/key?key=";

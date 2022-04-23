@@ -253,8 +253,8 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
 
                             }
                             modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(item_total));
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) );
-                            modal_newOrderItems.setGrossweight((String.valueOf(weight) ));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight)  + "g");
+                            modal_newOrderItems.setGrossweight((String.valueOf(weight) ) + "g");
 
                             //Log.e("TAg", "weight item_total" + item_total);
 
@@ -287,8 +287,8 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
 
                             }
                             modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(priceperKg));
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight));
-                            modal_newOrderItems.setGrossweight((String.valueOf(weight)));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g");
+                            modal_newOrderItems.setGrossweight((String.valueOf(weight)) + "g");
 
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -339,9 +339,9 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
 
                             }
                             modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(total));
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g");
                             //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            modal_newOrderItems.setGrossweight((String.valueOf(weight)));
+                            modal_newOrderItems.setGrossweight((String.valueOf(weight)) + "g");
 
                             //  holder.itemWeight_edittextwidget.setText(String.valueOf(total));
                             AddBigBasketOrder.adapter_addBigBasketOrdersRecyclerview.notifyDataSetChanged();
@@ -698,8 +698,8 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
 
                         modal_newOrderItems.setItemFinalPrice(String.valueOf(item_total));
                         modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(item_total));
-                        modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) );
-                        modal_newOrderItems.setGrossweight((String.valueOf(weight) ));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g" );
+                        modal_newOrderItems.setGrossweight((String.valueOf(weight) ) + "g");
 
                         //Log.e("TAg", "weight item_total" + item_total);
 
@@ -718,8 +718,8 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
                     if (weight == 1000) {
                         modal_newOrderItems.setItemFinalPrice(String.valueOf(priceperKg));
                         modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(priceperKg));
-                        modal_newOrderItems.setItemFinalWeight(String.valueOf(weight));
-                        modal_newOrderItems.setGrossweight((String.valueOf(weight)));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g");
+                        modal_newOrderItems.setGrossweight((String.valueOf(weight)) + "g");
 
                         //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
                         //itemWeight_edittextwidget.setText(String.valueOf(weight));
@@ -756,9 +756,9 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
 
                         modal_newOrderItems.setItemFinalPrice(String.valueOf(total));
                         modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(total));
-                        modal_newOrderItems.setItemFinalWeight(String.valueOf(weight));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g");
                         //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                        modal_newOrderItems.setGrossweight((String.valueOf(weight)));
+                        modal_newOrderItems.setGrossweight((String.valueOf(weight)) + "g");
 
                         //   itemWeight_edittextwidget.setText(String.valueOf(weight));
                         AddBigBasketOrder.recyclerView.post(new Runnable()

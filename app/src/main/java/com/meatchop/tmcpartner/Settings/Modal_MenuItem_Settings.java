@@ -7,12 +7,21 @@ public class Modal_MenuItem_Settings extends Throwable {
     boolean isshowavailabilityFromInventoryDetails = false;
 
     public String showinapp,allownegativestock, barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
-            inventorydetails,itemcutdetails,itemweightdetails,totalnoofmenuitem,noofmenuitemavailable,noofmenuitemavailableinpercentage,bigbasketprice,dunzoprice,swiggyprice,reportname,marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
+            inventorydetails,itemcutdetails,itemweightdetails,totalnoofmenuitem,noofmenuitemavailable,noofmenuitemavailableinpercentage,bigbasketprice,dunzoprice,swiggyprice,wholesaleprice,reportname,marinadeKey,marinadeItemAvailability,marinadeBarcode,marinadeItemUniqueCode,showinmenuboard,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,
             vendorname,displayno, grossweight,grossweightingrams,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage,tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
     private String editTextValue;
     boolean isMarinadeItem;
+
+
+    public String getWholesaleprice() {
+        return wholesaleprice;
+    }
+
+    public void setWholesaleprice(String wholesaleprice) {
+        this.wholesaleprice = wholesaleprice;
+    }
 
     public String getMenuItemKeyFromInventoryDetails() {
         return menuItemKeyFromInventoryDetails;
