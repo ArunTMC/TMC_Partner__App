@@ -26,7 +26,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="50dp"
-
+                    android:visibility="visible"
                     android:layout_marginTop="15dp"
                     android:orientation="horizontal">
 
@@ -155,6 +155,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/open_sans_bold"
                             android:text="@string/Bill_Details"
+                            android:visibility="gone"
                             android:textColor="@color/TMC_Primary_Text_Color"
                             android:textSize="30sp" />
 
@@ -518,8 +519,6 @@
                                     android:textSize="25sp" />
 
 
-
-
                                 <Button
                                     android:id="@+id/discount_widget"
                                     android:layout_width="180dp"
@@ -534,6 +533,7 @@
                                     android:textColor="@color/TMC_White"
                                     android:textSize="20sp"
                                     android:visibility="visible" />
+
                                 <Button
                                     android:id="@+id/check_redeemPoints_widget"
                                     android:layout_width="180dp"

@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -120,19 +121,32 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         OrderdItems_desp = new ArrayList<>();
 
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(searchScreen_OrderDetails .this);
+         //   Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+               // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         Bundle bundle = getIntent().getExtras();
         Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = bundle.getParcelable("data");
         try{
-            customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
-            customerLongitutde =String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
-            CalculateDistanceviaApi(distancebetweencustomer_vendortext_widget);
-
 
             String order_status = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
             String order_type =modal_manageOrders_pojo_class.getOrderType().toUpperCase();
@@ -205,7 +219,13 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
             }
 
 
+            if(order_type.equals(Constants.APPORDER)){
+                customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
+                customerLongitutde =String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
+                CalculateDistanceviaApi(distancebetweencustomer_vendortext_widget);
 
+
+            }
 
             if(!order_status.equals(Constants.NEW_ORDER_STATUS)&&(!order_type.equals("POSORDER"))) {
 
@@ -275,8 +295,12 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
                 startActivityForResult(intent,1234);
 
                */
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                 String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                showBottomSheetDialog(Orderkey);
+                showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
 
 
@@ -461,14 +485,14 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
 
 
 
-    private void showBottomSheetDialog(String orderkey) {
+    private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
 
         bottomSheetDialog = new BottomSheetDialog(searchScreen_OrderDetails.this);
         bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
 
         ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(searchScreen_OrderDetails.this, deliveryPartnerList,orderkey,"AppOrdersListOrderDetails", deliverypartnerName);
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(searchScreen_OrderDetails.this, deliveryPartnerList,orderkey,"AppOrdersListOrderDetails", deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
         ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 

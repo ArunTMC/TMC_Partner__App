@@ -7,20 +7,25 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -41,6 +46,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
+import com.gu.toolargetool.TooLargeTool;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderScreenFragment_mobile;
@@ -68,6 +74,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -92,11 +99,12 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     boolean isMenuListSavedLocally = false;
 
     boolean isinventorycheck = false;
+    boolean orderdetailsnewschema = false;
 
     String MenuItemKey,vendorKey,tmcSubctgykey,tmcSubctgyname,tmcctgyname;
 
     public static String completemenuItem="",completeMarinademenuItem="",completemenuItemStockAvlDetails="";
-    String UserRole,vendorEntryKey="",minimumscreensizeforpos ="";
+    String UserRole,vendorEntryKey="",minimumscreensizeforpos ="" , defaultprintertype ="";
 
     String errorCode = "0";
     Dialog dialog ;
@@ -111,6 +119,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_screen__dashboard);
+        TooLargeTool.startLogging(getApplication());
+
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
         new NukeSSLCerts();
@@ -119,6 +129,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         loadingPanel = findViewById(R.id.loadingPanel);
         bottomNavigationView = findViewById(R.id.bottomnav);
         Adjusting_Widgets_Visibility(true);
+       String size =  getDisplaySize(MobileScreen_Dashboard.this);
+     //   Toast.makeText(this, size, Toast.LENGTH_SHORT).show();
         SavePrinterConnectionDatainSharedPreferences();
         newOrders_menuItem_fragment = new NewOrders_MenuItem_Fragment();
         mobile_manageOrders1  = new Mobile_ManageOrders1();
@@ -133,6 +145,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
                     minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
                     vendorType = shared.getString("VendorType","");
+                    orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+                  // orderdetailsnewschema = false;
 
                     UserRole = shared.getString("userrole", "");
                     dialog = new Dialog(MobileScreen_Dashboard.this);
@@ -151,9 +165,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     tmcSubctgykey = getIntent().getStringExtra("tmcSubctgykey");
                     tmcSubctgyname = getIntent().getStringExtra("tmcSubctgyname");
                     tmcctgyname = getIntent().getStringExtra("tmcctgyname");
-                    Log.d(TAG, "tmcSubctgykey "+tmcSubctgykey);
-                    Log.d(TAG, "tmcSubctgyname "+tmcSubctgyname);
-                    Log.d(TAG, "tmcctgyname "+tmcctgyname);
+              //      Log.d(TAG, "tmcSubctgykey "+tmcSubctgykey);
+            //        Log.d(TAG, "tmcSubctgyname "+tmcSubctgyname);
+                //    Log.d(TAG, "tmcctgyname "+tmcctgyname);
 
                     checkForInternetConnectionAndGetMenuItemAndMobileAppData();
 
@@ -336,16 +350,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             if (isConnected()) {
                 //Toast.makeText(getApplicationContext(), "Internet Connected", Toast.LENGTH_SHORT).show();
               //  Log.i("Start time ",getDate_and_time());
-                String time = getDate_and_time();
                 getDatafromVendorTable(vendorEntryKey);
-               Log.i("1111111111Statrt time ",getDate_and_time());
                completemenuItemStockAvlDetails =   getMenuItemStockAvlDetails();
 
                 getDatafromMobileApp();
                 //  ConnectPrinter();
                 getDeliveryPartnerList();
-                getMenuItemCutDetails();
-                getMenuItemWeightDetails();
+               // getMenuItemCutDetails();
+               // getMenuItemWeightDetails();
                 completemenuItem = getMenuItemusingStoreId(vendorKey);
                 completeMarinademenuItem =  getMarinadeMenuItemusingStoreId(vendorKey);
                 if(vendorType.equals(Constants.WholeSales_VendorType)) {
@@ -611,6 +623,20 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                        e.printStackTrace();
                                    }
+                                    try{
+                                        //defaultprintertype =  String.valueOf(json.get("defaultprintertype"));
+                                        defaultprintertype = String.valueOf(Constants.Bluetooth_PrinterType);
+
+                                    }
+                                    catch (Exception e){
+
+                                        defaultprintertype = String.valueOf(Constants.Bluetooth_PrinterType);
+
+
+                                        e.printStackTrace();
+                                    }
+
+
 
 
                                     try{
@@ -624,7 +650,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                         e.printStackTrace();
                                     }
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
 
 
                                 } catch (JSONException e) {
@@ -633,7 +659,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
                                     //Log.d(Constants.TAG, "e: " + e.getMessage());
                                     //Log.d(Constants.TAG, "e: " + e.toString());
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
 
                                 }
 
@@ -641,7 +667,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
+                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
 
                         }
 
@@ -653,7 +679,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
                 //Log.d(Constants.TAG, "Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "Error: " + error.toString());
-                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
+                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
 
                 error.printStackTrace();
             }
@@ -1061,7 +1087,22 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 try {
                                     JSONObject json = JArray.getJSONObject(i1);
 
-                                    JSONArray array  = json.getJSONArray("redeemdata ");
+                                    try{
+                                        orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
+                                      // orderdetailsnewschema = false;
+                                        saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+
+
+
+
+                                    }
+                                    catch (Exception e){
+                                        saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                        e.printStackTrace();
+                                    }
+
+
+                                    JSONArray array  = json.getJSONArray("redeemdata");
 
                                     for(int i=0; i < array.length(); i++) {
                                         JSONObject redeemdata_json = array.getJSONObject(i);
@@ -1207,6 +1248,16 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     }
 
+    private void saveorderdetailsnewschemainSharedPreferences(boolean orderdetailsnewschema) {
+        final SharedPreferences sharedPreferences = getSharedPreferences("orderdetailsnewschema", MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("orderdetailsnewschema", orderdetailsnewschema);
+
+        editor.apply();
+
+
+    }
 
 
     private void getDeliveryPartnerList() {
@@ -3268,7 +3319,25 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos) {
+    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos, boolean isorderdetailsnewschema) {
+
+        SharedPreferences printerDatasharedPreferences
+                = getSharedPreferences("PrinterConnectionData",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor printerDatamyEdit
+                = printerDatasharedPreferences.edit();
+
+        printerDatamyEdit.putString(
+                "printerType",
+                defaultprintertype);
+
+        printerDatamyEdit.putString(
+                "printerStatus",
+                "Success");
+        printerDatamyEdit.apply();
+
+
 
 
         SharedPreferences sharedPreferences
@@ -3282,12 +3351,21 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 isinventorycheck
         );
 
+
         myEdit.putString(
                 "MinimumScreenSizeForPos",
                 minimumscreensizeforpos
         );
-        myEdit.apply();
+        myEdit.putBoolean(
+                "orderdetailsnewschema",
+                orderdetailsnewschema
+        );
+        myEdit.putBoolean(
+                "orderdetailsnewschema_settings",
+                orderdetailsnewschema
+        );
 
+        myEdit.apply();
 
     }
     private void saveMenuIteminSharedPreference(List<Modal_MenuItem> menuList) {
@@ -3343,7 +3421,28 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         }
 
     }
+    static String getDisplaySize(Activity activity) {
+        double x = 0, y = 0;
+        int mWidthPixels, mHeightPixels;
+        try {
+            WindowManager windowManager = activity.getWindowManager();
+            Display display = windowManager.getDefaultDisplay();
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            display.getMetrics(displayMetrics);
+            Point realSize = new Point();
+            Display.class.getMethod("getRealSize", Point.class).invoke(display, realSize);
+            mWidthPixels = realSize.x;
+            mHeightPixels = realSize.y;
+            DisplayMetrics dm = new DisplayMetrics();
+            activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+            x = Math.pow(mWidthPixels / dm.xdpi, 2);
+            y = Math.pow(mHeightPixels / dm.ydpi, 2);
 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return String.format(Locale.US, "%.2f", Math.sqrt(x + y));
+    }
 
     private void SavePrinterConnectionDatainSharedPreferences() {
         SharedPreferences sharedPreferences

@@ -120,7 +120,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_marginStart="13dp"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_semibold"
-                        android:text="Date"
+                        android:text="Select Date"
                         android:gravity="center_vertical"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="12sp" />
@@ -133,17 +133,20 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_marginStart="13dp"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_bold"
-                        android:text="10 Jan 2021"
+                        android:text="/"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp" />
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/generateReport_Layout"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="right">
+                    android:layout_weight=".8"
+                    android:gravity="right"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="30dp"
+                    android:id="@+id/fetchData_Layout"
+                    android:orientation="vertical">
 
 
                     <TextView
@@ -151,29 +154,15 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:layout_height="match_parent"
                         android:layout_marginStart="13dp"
                         android:layout_marginEnd="13dp"
-                        android:layout_weight="3"
+                        android:layout_weight="1"
                         android:fontFamily="@font/open_sans_semibold"
-                        android:gravity="center_vertical|end"
-                        android:text="Generate Report"
+                        android:gravity="center_vertical"
+                        android:text="Fetch Data"
                         android:textColor="@color/TMC_Orange"
                         android:textSize="16sp" />
 
-
                 </LinearLayout>
-                <LinearLayout
-                    android:id="@+id/PrintReport_Layout"
-                    android:layout_width="60dp"
-                    android:layout_height="match_parent"
-                    android:gravity="right">
-                    <ImageView
-                        android:id="@+id/imageView5"
-                        android:layout_width="30dp"
 
-                        android:layout_height="40dp"
-                        android:layout_gravity="center_vertical|end"
-                        app:srcCompat="@mipmap/printer" />
-
-                </LinearLayout>
 
             </LinearLayout>
 
@@ -187,17 +176,99 @@ tools:context=".Settings.Consolidated_Sales_Report">
 
 
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@drawable/border_line" />
 
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:background="@drawable/border_line" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="10dp"
+
+                    android:text="No.of.orders :- " />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="16sp"
+                    android:id="@+id/appOrdersCount_textwidget"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center"
+
+                    android:text="0" />
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".8"
+                android:gravity="end"
+                android:layout_marginStart="20dp"
+
+                android:id="@+id/generateReport_Layout"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/TMC_Black"
+                    android:textSize="16sp"
+
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical|end"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="13dp"
+                    android:text="Export Report" />
+
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/PrintReport_Layout"
+                android:layout_width="40dp"
+                android:layout_marginEnd="10dp"
+                android:layout_height="40dp"
+                android:gravity="right">
+
+                <ImageView
+                    android:id="@+id/imageView5"
+                    android:layout_width="30dp"
+
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical|end"
+                    app:srcCompat="@mipmap/printer" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@drawable/border_line" />
+
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="30dp"
+        android:visibility="gone"
+
         android:orientation="horizontal">
 
 
@@ -208,6 +279,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
             android:textSize="16sp"
             android:fontFamily="@font/open_sans_semibold"
             android:gravity="center_vertical"
+
             android:layout_marginStart="13dp"
             android:text="Items Report" />
 
@@ -217,7 +289,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
         android:layout_width="match_parent"
         android:scrollIndicators="none"
         android:scrollbars="none"
-
+        android:visibility="visible"
         android:id="@+id/scrollView"
         android:layout_height="match_parent">
 
@@ -227,16 +299,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
 
             android:orientation="vertical" >
 
-
-
-
-
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                android:background="@drawable/border_line" />
-            <LinearLayout
+               <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
@@ -536,10 +599,6 @@ tools:context=".Settings.Consolidated_Sales_Report">
 
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp"
-                    android:background="@drawable/border_line" />
 
 
                 <LinearLayout
@@ -955,7 +1014,14 @@ tools:context=".Settings.Consolidated_Sales_Report">
         </LinearLayout>
 
     </ScrollView>
-
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="20sp"
+            android:id="@+id/instruction_textview"
+            android:text="Select Date and Click Fetch Data"
+            android:textColor="@color/TMC_Primary_Text_Color"
+            android:gravity="center"/>
 </LinearLayout>
 </LinearLayout>
 
@@ -982,7 +1048,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
     app:layout_constraintTop_toTopOf="parent"
     android:gravity="center"
     android:layout_centerInParent="true"
-    android:visibility="visible">
+    android:visibility="gone">
 
     <com.wang.avi.AVLoadingIndicatorView
         android:id="@+id/loadinganim_layout"

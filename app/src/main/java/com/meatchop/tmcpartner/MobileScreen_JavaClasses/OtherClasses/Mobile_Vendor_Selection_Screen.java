@@ -34,6 +34,7 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_vendor;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.json.JSONArray;
@@ -86,11 +87,25 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         loadingPanel_dailyItemWisereport.setVisibility(View.VISIBLE);
         loadingpanelmask_dailyItemWisereport.setVisibility(View.VISIBLE);
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(Mobile_Vendor_Selection_Screen.this);
+            //Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                //   Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
 
 
         SharedPreferences sh

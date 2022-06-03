@@ -49,6 +49,8 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -122,6 +124,17 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         int spinnerselecteditem_Count =1;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
+
+
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -178,11 +191,31 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = (shared.getString("VendorKey", ""));
             vendorname = (shared.getString("VendorName", ""));
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-            double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-            screenInches = Math.sqrt(x + y);
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+           // orderdetailsnewschema = false;
+
+            try {
+                ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+                screenInches = screenSizeOfTheDevice.getDisplaySize(GenerateOrderDetailsDump .this);
+                //Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                try {
+                    DisplayMetrics dm = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                    double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                    screenInches = Math.sqrt(x + y);
+                  //  Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e1){
+                    e1.printStackTrace();
+                }
+
+
+            }
 
 
         }
@@ -205,11 +238,22 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                 ordersList.clear();
                 sorted_OrdersList.clear();
                 array_of_orderId.clear();
+                if(orderdetailsnewschema){
+                    String oldformat = convertnewFormatDateintoOldFormat(TodaysDate);
+                    dateSelector_text.setText(oldformat);
+                    fromdateSelector_text.setText(oldformat);
+                    todateSelector_text.setText(oldformat);
 
-                dateSelector_text.setText(TodaysDate);
-              //  getOrderDetailsUsingOrderOrderPlacedDate(TodaysDate, vendorKey, orderStatus);
-                fromdateSelector_text.setText(TodaysDate);
-                todateSelector_text.setText(TodaysDate);
+                }
+                else{
+
+                    dateSelector_text.setText(TodaysDate);
+                    //  getOrderDetailsUsingOrderOrderPlacedDate(TodaysDate, vendorKey, orderStatus);
+                    fromdateSelector_text.setText(TodaysDate);
+                    todateSelector_text.setText(TodaysDate);
+
+                }
+
 
             }
             catch (Exception e){
@@ -338,7 +382,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
             @Override public boolean onTouch(View view, MotionEvent motionEvent) { isSpinnerTouch=true; return false; }});
 
 
-        daysCountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+     /*   daysCountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 if (isSpinnerTouch) {
@@ -382,6 +426,8 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
 
+      */
+
 
 
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
@@ -400,7 +446,27 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
                 isSearchButtonClicked = false;
 
-                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+                if(orderdetailsnewschema){
+                    String newformat = convertOldFormatDateintoNewFormat(todatestring);
+                    dateSelector_text.setText(todatestring);
+                    fromdateSelector_text.setText(todatestring);
+                    todateSelector_text.setText(todatestring);
+                    callVendorOrderDetailsSeviceAndInitCallBack(newformat,newformat,vendorKey);
+
+                }
+                else{
+
+                    dateSelector_text.setText(todatestring);
+                    fromdateSelector_text.setText(todatestring);
+                    todateSelector_text.setText(todatestring);
+                    //  Adjusting_Widgets_Visibility(true);
+
+                    getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+
+                }
+
+
+
 
             }
         });
@@ -702,7 +768,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
         DatePicker datePicker = fromdatepicker.getDatePicker();
 
-        c.add(Calendar.DATE, -30);
+        c.add(Calendar.YEAR, -3);
         // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
         Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
         long oneMonthAhead = c.getTimeInMillis();
@@ -766,7 +832,28 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                             //getOrderForSelectedDate(DateString, vendorKey);
                             showProgressBar(true);
                             todatestring = todateSelector_text.getText().toString();
-                            calculate_the_dateandgetData(fromdatestring,todatestring);
+
+
+                            if(orderdetailsnewschema){
+                                String FromdateAsNewFormat =convertOldFormatDateintoNewFormat(fromdatestring);
+                                String TodateAsNewFormat =convertOldFormatDateintoNewFormat(DateString);
+
+                                callVendorOrderDetailsSeviceAndInitCallBack(FromdateAsNewFormat, TodateAsNewFormat,vendorKey);
+
+
+                            }
+                            else{
+
+
+                                //  Adjusting_Widgets_Visibility(true);
+
+                                calculate_the_dateandgetData(fromdatestring,todatestring);
+
+                            }
+
+
+
+
 //                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
 
                         }
@@ -890,8 +977,22 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
                             showProgressBar(true);
                             todatestring=DateString;
                             fromdatestring = dateSelector_text.getText().toString();
+                            if(orderdetailsnewschema){
+                                String FromdateAsNewFormat =convertOldFormatDateintoNewFormat(fromdatestring);
+                                String TodateAsNewFormat =convertOldFormatDateintoNewFormat(todatestring);
 
-                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+                                callVendorOrderDetailsSeviceAndInitCallBack(FromdateAsNewFormat, TodateAsNewFormat,vendorKey);
+
+
+                            }
+                            else{
+
+
+                                //  Adjusting_Widgets_Visibility(true);
+
+                                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+
+                            }
 
                         }
                         catch (Exception e ){
@@ -902,6 +1003,59 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         datepicker.show();
 
     }
+
+
+
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        if(isVendorOrdersTableServiceCalled){
+            showProgressBar(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+                ordersList =  orderslist_fromResponse;
+
+                orderinstruction.setVisibility(View.GONE);
+                // addDateinDatesArray(FromDate,ToDate);
+                DisplayOrderListDatainListView(ordersList);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + "That didn't work!");
+                showProgressBar(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+        ordersList.clear();
+        sorted_OrdersList.clear();
+        array_of_orderId.clear();
+
+        showProgressBar(true);
+        mVolleyService = new VendorOrdersTableService(mResultCallback,GenerateOrderDetailsDump.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingFromToSlotDate_vendorkey + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate;
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingFromToSlotDate_vendorkey + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate;
+
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+
+
+
 
     private void getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(String previousDateString, String todaysdate, String vendorKey) {
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi Called: " );
@@ -1003,7 +1157,24 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
     }
 
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
 
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
 
 
     private long getMillisecondsFromDate(String dateString) {
@@ -1497,7 +1668,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
 
-               appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+               appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
 
 
@@ -1527,6 +1698,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
             if (ordersList.size() > 0) {
+                appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
                 Adapter_Edit_Or_CancelTheOrders adapter_edit_or_cancelTheOrders = new Adapter_Edit_Or_CancelTheOrders(GenerateOrderDetailsDump.this, ordersList, GenerateOrderDetailsDump.this,false);
                 manageOrders_ListView.setAdapter(adapter_edit_or_cancelTheOrders);
@@ -1908,7 +2080,7 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
         calendar.setTime(date);
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
-        calendar.add(Calendar.DATE, 6);
+        calendar.add(Calendar.DATE, 10);
 
 
 
@@ -1930,6 +2102,34 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
 
+    private String convertnewFormatDateintoOldFormat(String todaysdate) {
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            String CurrentDay = day.format(date);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(date);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
+
+
+
     private String getDatewithNameofthePreviousDay() {
         Calendar calendar = Calendar.getInstance();
 
@@ -1941,18 +2141,24 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
+
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            String PreviousdayDate = df.format(c1);
+            return PreviousdayDate;
+
+        }
+        else {
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
-       // System.out.println("todays Date  " + CurrentDate);
-        System.out.println("PreviousdayDate Date  " + PreviousdayDate);
-
-
-        return PreviousdayDate;
+            return PreviousdayDate;
+        }
     }
 
 
@@ -2084,24 +2290,34 @@ public class GenerateOrderDetailsDump extends AppCompatActivity {
 
 
     private String getDatewithNameoftheDay() {
-        Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        String CurrentDay = day.format(c);
+        Calendar calendar = Calendar.getInstance();
+        Date c = calendar.getTime();
 
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
 
-
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        String  CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
-
-
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+        }
+        else {
 
 
-        return CurrentDate;
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            String CurrentDay = day.format(c);
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+        }
     }
 
 

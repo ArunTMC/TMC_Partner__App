@@ -46,6 +46,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
@@ -124,6 +126,17 @@ public class AddWholeSalesOrder extends AppCompatActivity {
     Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
 
 
+
+    String vendorName ="";
+    boolean orderdetailsnewschema = false;
+    Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
+    boolean  isCustomerOrdersTableServiceCalled = false;
+    Context mContext;
+
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,12 +159,14 @@ public class AddWholeSalesOrder extends AppCompatActivity {
             vendorKey = shared.getString("VendorKey", "");
             usermobileNo = (shared.getString("UserPhoneNumber", "+"));
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+            vendorName = shared.getString("VendorName", "");
 
             StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
-
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+           // orderdetailsnewschema = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -544,6 +559,34 @@ public class AddWholeSalesOrder extends AppCompatActivity {
             return;
         }
         else {
+
+
+
+            if(!isCustomerOrdersTableServiceCalled){
+                try{
+                    if(orderdetailsnewschema){
+                        mContext = AddWholeSalesOrder.this;
+                        String customerMobileNo = wholeSaleOrdersCustomermobileno.getText().toString();
+                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+
+                        String  CouponDiscountAmount ="0";
+                        String payableAmount =  total_Rs_to_Pay_text_widget.getText().toString();
+                        isCustomerOrdersTableServiceCalled =true;
+                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, AddWholeSalesOrder.cart_Item_List, AddWholeSalesOrder.cartItem_hashmap, paymentMode,CouponDiscountAmount,Currenttime,customerMobileNo,Constants.WholeSaleOrder,vendorKey,vendorName, sTime,payableAmount);
+                        asyncTask.execute();
+
+                    }
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+
+                }
+            }
+
+
+
+
             ispaymentMode_Clicked = true;
             if (!isOrderDetailsMethodCalled) {
 
@@ -557,6 +600,26 @@ public class AddWholeSalesOrder extends AppCompatActivity {
 
 
         }
+
+
+    }
+
+    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext) {
+        mResultCallback_Add_CustomerOrder_TrackingTableInterface = new Add_CustomerOrder_TrackingTableInterface() {
+
+
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                isCustomerOrdersTableServiceCalled = false;
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                isCustomerOrdersTableServiceCalled = false;
+
+                // Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
+            }
+        };
 
 
     }
@@ -590,9 +653,17 @@ public class AddWholeSalesOrder extends AppCompatActivity {
         double totalgrossweightingrams_doubleFromLoop = 0, totalgrossFromInsideAndOutsideLoop = 0;
 
 
-        String slotname = "EXPRESSDELIVERY";
+        String slotname = "";
+        if(orderdetailsnewschema){
+            slotname = "";
 
-        String orderPlacedDate = CurrentDate;
+        }
+        else{
+            slotname = "EXPRESSDELIVERY";
+
+        }
+
+        String orderPlacedDate = getDate();
 
         String slottimerange = "";
         String UserMobile = "+91" + wholeSaleOrdersCustomermobileno.getText().toString();
@@ -1610,7 +1681,6 @@ public class AddWholeSalesOrder extends AppCompatActivity {
 
             jsonObject.put("deliverytype", deliverytype);
             jsonObject.put("slotname", slotname);
-            jsonObject.put("slotdate", "");
             jsonObject.put("slottimerange", "");
 
             jsonObject.put("orderid", orderid);
@@ -1618,7 +1688,16 @@ public class AddWholeSalesOrder extends AppCompatActivity {
             jsonObject.put("tokenno", (tokenno));
             jsonObject.put("userid", userid);
 
-            jsonObject.put("usermobile", UserMobile);
+            if(orderdetailsnewschema) {
+                jsonObject.put("usermobileno", UserMobile);
+                jsonObject.put("slotdate", orderPlacedDate);
+
+            }
+            else{
+                jsonObject.put("usermobile", UserMobile);
+                jsonObject.put("slotdate", "");
+
+            }
             jsonObject.put("vendorkey", vendorkey);
             jsonObject.put("vendorname", vendorName);
             jsonObject.put("payableamount", Double.parseDouble(payableAmount));
@@ -1636,9 +1715,25 @@ public class AddWholeSalesOrder extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
+
+
+
+
+        String Api_To_PlaceOrderInOrderDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInOrderDetails = Constants.api_AddVendorOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInOrderDetails = Constants.api_addOrderDetailsInOrderDetailsTable;
+
+        }
+
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInOrderDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -3656,7 +3751,11 @@ public class AddWholeSalesOrder extends AppCompatActivity {
         try {
             orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
+            if(orderdetailsnewschema){
 
+                orderTrackingTablejsonObject.put("slotdate",getDate());
+
+            }
             orderTrackingTablejsonObject.put("usermobileno","+91" + wholeSaleOrdersCustomermobileno.getText().toString());
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
@@ -3671,13 +3770,25 @@ public class AddWholeSalesOrder extends AppCompatActivity {
         }
 
 
-        //Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderTrackingDetailsTable,
+
+
+
+        String Api_To_PlaceOrderInTrackingDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_AddVendorTrackingOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_addOrderDetailsInOrderTrackingDetailsTable;
+
+        }
+
+
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInTrackingDetails,
                 orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -3955,6 +4066,36 @@ public class AddWholeSalesOrder extends AppCompatActivity {
             MenuItem = gson.fromJson(json, type);
         }
 
+    }
+
+    private String getDate() {
+        Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
+
+            return CurrentDate;
+
+        }
+        else {
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
     }
 
     public String getDate_and_time() {

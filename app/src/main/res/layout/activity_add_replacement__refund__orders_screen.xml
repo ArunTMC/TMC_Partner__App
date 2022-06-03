@@ -482,6 +482,12 @@
             android:id="@+id/orderidItemListview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/refundParentLayout"
+                android:padding="1dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -512,6 +518,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+
                 android:padding="14dp">
 
                 <TextView
@@ -532,27 +539,27 @@
                     android:paddingStart="15dp"
 
                     android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/refundAmt_editwidget"
-                    android:layout_width="match_parent"
-                    android:layout_weight="1"
-                    android:layout_height="45sp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/pale_orange_background"
-                    android:digits="0123456789"
-                    android:fontFamily="@font/open_sans_semibold"
-                    android:gravity="center_vertical"
-                    android:hint="100"
-                    android:inputType="phone"
-                    android:maxLength="10"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:text=""
-                    android:textColor="@color/TMC_Primary_Text_Color"
-                    android:textColorHint="@color/TMC_Hint_Color"
-                    android:textSize="16sp" />
 
 
+                    <EditText
+                        android:id="@+id/refundAmt_editwidget"
+                        android:layout_width="match_parent"
+                        android:layout_height="45sp"
+                        android:layout_marginTop="5dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/pale_orange_background"
+                        android:digits="0123456789"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:gravity="center_vertical"
+                        android:hint="100"
+                        android:inputType="phone"
+                        android:maxLength="10"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text=""
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textColorHint="@color/TMC_Hint_Color"
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/addRefund_buttonWidget"
@@ -568,6 +575,8 @@
                         android:textColor="@color/TMC_White"
                         android:textSize="12sp" />
                 </LinearLayout>
+            </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -628,6 +637,7 @@
 
 
             </LinearLayout>
+
             <View
                 android:id="@+id/dividedr"
                 android:layout_width="match_parent"
@@ -637,7 +647,12 @@
                 android:background="@drawable/border_line" />
 
 
-
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/replacementParentLayout"
+                android:padding="1dp">
             <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -753,7 +768,7 @@
 
                     android:layout_marginTop="5dp"
                     android:layout_marginStart="17dp"
-                    android:text="990.00"
+                    android:text="990.00 "
                     android:textColor="@color/TMC_Primary_Text_Color"
                     android:textSize="18sp" />
             </LinearLayout>
@@ -792,14 +807,20 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/newOrders_recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
 
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp">
 
 
         </androidx.recyclerview.widget.RecyclerView>
-    </LinearLayout>
+
+
+
+            </LinearLayout>
+
+
+        </LinearLayout>
         </ScrollView>
     </LinearLayout>
 

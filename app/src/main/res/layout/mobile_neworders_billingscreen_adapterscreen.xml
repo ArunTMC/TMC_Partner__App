@@ -166,15 +166,18 @@
                     <EditText
                         android:id="@+id/mobile_weight_textwidget"
                         android:layout_width="100dp"
-                        android:layout_height="30dp"
+                        android:layout_height="match_parent"
                         android:layout_marginStart="10dp"
+                        android:layout_marginTop="5dp"
                         android:layout_marginEnd="10dp"
                         android:background="@drawable/pale_orange_background"
+                        android:digits="0123456789g"
+                        android:gravity="center"
+                        android:imeOptions="actionGo"
+                        android:singleLine="true"
+
                         android:inputType="number"
                         android:text="1000gm"
-                        android:digits="0123456789g"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="15sp" />
                 </LinearLayout>

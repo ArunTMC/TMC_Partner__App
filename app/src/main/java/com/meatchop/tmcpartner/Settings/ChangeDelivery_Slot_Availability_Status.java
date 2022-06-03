@@ -66,16 +66,34 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(ChangeDelivery_Slot_Availability_Status.this);
+            //Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+               // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", ""));
         TodaysPreOrdersSlotList = new ArrayList<>();
         TomorrowsPreOrdersSlotList = new ArrayList<>();
-        checkforDeliverySlotDetails();
+      //  checkforDeliverySlotDetails();
+        checkforDeliverySlots();
 
 
 
@@ -84,11 +102,11 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
 
-                    changeStatusintheDeliverySlotDetails("ACTIVE");
+                    //changeStatusintheDeliverySlotDetails("ACTIVE");
                     changeStatusintheDeliverySlot(deliverySlotKey,"ACTIVE");
                     //   changeStatusintheMobiledataDeliverySlot("");
                 } else {
-                    changeStatusintheDeliverySlotDetails("INACTIVE");
+                  //  changeStatusintheDeliverySlotDetails("INACTIVE");
                     changeStatusintheDeliverySlot(deliverySlotKey,"INACTIVE");
                     // changeStatusintheMobiledataDeliverySlot("");
 
@@ -206,10 +224,11 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
                                     if(status.equals("ACTIVE")){
                                         isActiveinDeliverySlots=true;
-
+                                        isActiveinDeliverySlotDetails=true;
                                     }
                                     if(status.equals("INACTIVE")){
                                         isActiveinDeliverySlots=false;
+                                        isActiveinDeliverySlotDetails=false;
 
                                     }
 

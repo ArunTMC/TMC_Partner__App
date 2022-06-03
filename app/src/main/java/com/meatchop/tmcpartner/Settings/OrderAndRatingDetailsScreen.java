@@ -25,6 +25,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_orderDetails_itemDesp_listview1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -59,7 +60,7 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
     boolean isTrackingCalled =false, isOrderDetailsCalled =false, isRatingDetailsCalled =false;
     List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
     double screenInches;
-
+    boolean orderdetailsnewschema = false;
     boolean isOrderDetailsScreenOpened =  false;
             RaisedTicketDetailsForRating raisedTicketDetailsForRating;
     @Override
@@ -75,6 +76,8 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
              vendorKey = shared.getString("VendorKey", "");
             vendorName = shared.getString("VendorName", "");
             vendorLatitude = (shared.getString("VendorLatitude", ""));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+
             vendorLongitude = (shared.getString("VendorLongitute", ""));
         }
         catch (Exception e){
@@ -151,7 +154,10 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
 
     if( !isOrderDetailsScreenOpened || modal_orderDetails_tracking_ratingDetails.equals(new Modal_OrderDetails_Tracking_RatingDetails()) || modal_orderDetails_tracking_ratingDetails.equals(null)) {
         if (!orderid.equals("")) {
-            getOrderDetailsUsingOrderid(orderid);
+
+                getOrderDetailsUsingOrderid(orderid);
+
+
 
         } else {
             Toast.makeText(OrderAndRatingDetailsScreen.this, " Orderid is Empty ", Toast.LENGTH_LONG).show();
@@ -941,12 +947,28 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                DisplayMetrics dm = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(dm);
-                double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-                double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-                screenInches = Math.sqrt(x+y);
+                try {
+                    ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+                    screenInches = screenSizeOfTheDevice.getDisplaySize(OrderAndRatingDetailsScreen .this);
+                 //   Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    try {
+                        DisplayMetrics dm = new DisplayMetrics();
+                        getWindowManager().getDefaultDisplay().getMetrics(dm);
+                        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                        screenInches = Math.sqrt(x + y);
+                       // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
 
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+
+
+                }
                 add_amount_ForBillDetails(OrderdItems_desp);
                 Adapter_Mobile_orderDetails_itemDesp_listview1 adapter_forOrderDetails_listview = new Adapter_Mobile_orderDetails_itemDesp_listview1(OrderAndRatingDetailsScreen.this, OrderdItems_desp);
                 itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
@@ -1133,226 +1155,238 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
     private void getOrderTrackingUsingOrderid(String orderid) {
         showProgressBar(true);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_orderid + orderid,null,
-                new com.android.volley.Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(@NonNull JSONObject response) {
-                        try {
-                            Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
-                            try{
-                                // Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in response" , Toast.LENGTH_LONG).show();
-
-                                JSONArray JArray  = response.getJSONArray("content");
-                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                                int i1=0;
-                                int arrayLength = JArray.length();
-                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
-                                for(;i1<(arrayLength);i1++) {
+        String Api_toGetOrderTrackingDetailsUsingOrderid = "";
 
-                                    try {
-                                        JSONObject json = JArray.getJSONObject(i1);
-                                        if (json.has("key")) {
-                                            modal_orderDetails_tracking_ratingDetails.keyfromtrackingDetails = String.valueOf(json.get("key"));
+        if(orderid.length()>1 ) {
+            if (orderdetailsnewschema) {
+                Api_toGetOrderTrackingDetailsUsingOrderid = Constants.api_GetVendorTrackingDetailsUsingOrderid_vendorkey + "?orderid=" + orderid + "&vendorkey=" + vendorKey;
+            } else {
+                Api_toGetOrderTrackingDetailsUsingOrderid = Constants.api_GetTrackingOrderDetails_orderid + orderid;
+            }
+        }
+        else{
+            Toast.makeText(OrderAndRatingDetailsScreen.this, "There is No orderid " , Toast.LENGTH_SHORT).show();
 
-                                        } else {
+        }
 
-                                            modal_orderDetails_tracking_ratingDetails.keyfromtrackingDetails = "";
-                                        }
+        if(!Api_toGetOrderTrackingDetailsUsingOrderid.equals("")) {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Api_toGetOrderTrackingDetailsUsingOrderid, null,
+                    new com.android.volley.Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(@NonNull JSONObject response) {
+                            try {
+                                Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
+                                try {
+                                    // Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in response" , Toast.LENGTH_LONG).show();
 
-
-                                        if (json.has("orderstatus")) {
-                                            modal_orderDetails_tracking_ratingDetails.orderstatus = String.valueOf(json.get("orderstatus"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.orderstatus = "";
-                                        }
-
-
-                                        if (json.has("orderdeliverytime")) {
-                                            modal_orderDetails_tracking_ratingDetails.orderdeliverytime = String.valueOf(json.get("orderdeliverytime"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.orderdeliverytime = "";
-                                        }
-                                        if (json.has("useraddresskey")) {
-                                            modal_orderDetails_tracking_ratingDetails.useraddresskey = String.valueOf(json.get("useraddresskey"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.useraddresskey = "";
-                                        }
+                                    JSONArray JArray = response.getJSONArray("content");
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                    int i1 = 0;
+                                    int arrayLength = JArray.length();
+                                    //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
-                                        if (json.has("orderreadytime")) {
-                                            modal_orderDetails_tracking_ratingDetails.orderreadytime = String.valueOf(json.get("orderreadytime"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.orderreadytime = "";
-                                        }
-
-
-                                        if (json.has("orderpickeduptime")) {
-                                            modal_orderDetails_tracking_ratingDetails.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.orderpickeduptime = "";
-                                        }
-
-
-                                        if (json.has("orderconfirmedtime")) {
-                                            modal_orderDetails_tracking_ratingDetails.orderconfirmedtime = String.valueOf(json.get("orderconfirmedtime"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.orderconfirmedtime = "";
-                                        }
-
-
-                                        if (json.has("useraddresslat")) {
-                                            modal_orderDetails_tracking_ratingDetails.useraddresslat = String.valueOf(json.get("useraddresslat"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.useraddresslat = "";
-                                        }
-
-
-                                        if (json.has("useraddresslong")) {
-                                            modal_orderDetails_tracking_ratingDetails.useraddresslon = String.valueOf(json.get("useraddresslong"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.useraddresslon = "";
-                                        }
-
+                                    for (; i1 < (arrayLength); i1++) {
 
                                         try {
+                                            JSONObject json = JArray.getJSONObject(i1);
+                                            if (json.has("key")) {
+                                                modal_orderDetails_tracking_ratingDetails.keyfromtrackingDetails = String.valueOf(json.get("key"));
 
-
-                                            if (json.has("deliverydistanceinkm")) {
-
-                                                String deliverydistance = String.valueOf(json.get("deliverydistanceinkm"));
-                                                if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
-                                                    modal_orderDetails_tracking_ratingDetails.deliverydistance = String.valueOf(json.get("deliverydistanceinkm"));
-
-                                                } else {
-                                                    modal_orderDetails_tracking_ratingDetails.deliverydistance = "0";
-
-                                                }
                                             } else {
-                                                modal_orderDetails_tracking_ratingDetails.deliverydistance = "0";
+
+                                                modal_orderDetails_tracking_ratingDetails.keyfromtrackingDetails = "";
                                             }
 
 
-                                        } catch (Exception E) {
-                                            modal_orderDetails_tracking_ratingDetails.deliverydistance = "0";
-                                            E.printStackTrace();
+                                            if (json.has("orderstatus")) {
+                                                modal_orderDetails_tracking_ratingDetails.orderstatus = String.valueOf(json.get("orderstatus"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.orderstatus = "";
+                                            }
+
+
+                                            if (json.has("orderdeliverytime")) {
+                                                modal_orderDetails_tracking_ratingDetails.orderdeliverytime = String.valueOf(json.get("orderdeliverytime"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.orderdeliverytime = "";
+                                            }
+                                            if (json.has("useraddresskey")) {
+                                                modal_orderDetails_tracking_ratingDetails.useraddresskey = String.valueOf(json.get("useraddresskey"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.useraddresskey = "";
+                                            }
+
+
+                                            if (json.has("orderreadytime")) {
+                                                modal_orderDetails_tracking_ratingDetails.orderreadytime = String.valueOf(json.get("orderreadytime"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.orderreadytime = "";
+                                            }
+
+
+                                            if (json.has("orderpickeduptime")) {
+                                                modal_orderDetails_tracking_ratingDetails.orderpickeduptime = String.valueOf(json.get("orderpickeduptime"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.orderpickeduptime = "";
+                                            }
+
+
+                                            if (json.has("orderconfirmedtime")) {
+                                                modal_orderDetails_tracking_ratingDetails.orderconfirmedtime = String.valueOf(json.get("orderconfirmedtime"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.orderconfirmedtime = "";
+                                            }
+
+
+                                            if (json.has("useraddresslat")) {
+                                                modal_orderDetails_tracking_ratingDetails.useraddresslat = String.valueOf(json.get("useraddresslat"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.useraddresslat = "";
+                                            }
+
+
+                                            if (json.has("useraddresslong")) {
+                                                modal_orderDetails_tracking_ratingDetails.useraddresslon = String.valueOf(json.get("useraddresslong"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.useraddresslon = "";
+                                            }
+
+
+                                            try {
+
+
+                                                if (json.has("deliverydistanceinkm")) {
+
+                                                    String deliverydistance = String.valueOf(json.get("deliverydistanceinkm"));
+                                                    if (!deliverydistance.equals(null) && (!deliverydistance.equals("null"))) {
+                                                        modal_orderDetails_tracking_ratingDetails.deliverydistance = String.valueOf(json.get("deliverydistanceinkm"));
+
+                                                    } else {
+                                                        modal_orderDetails_tracking_ratingDetails.deliverydistance = "0";
+
+                                                    }
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.deliverydistance = "0";
+                                                }
+
+
+                                            } catch (Exception E) {
+                                                modal_orderDetails_tracking_ratingDetails.deliverydistance = "0";
+                                                E.printStackTrace();
+                                            }
+
+
+                                            if (json.has("deliveryusername")) {
+                                                modal_orderDetails_tracking_ratingDetails.deliveryusername = String.valueOf(json.get("deliveryusername"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.deliveryusername = "";
+                                            }
+                                            if (json.has("deliveryuserkey")) {
+                                                modal_orderDetails_tracking_ratingDetails.deliveryuserkey = String.valueOf(json.get("deliveryuserkey"));
+                                                ;
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.deliveryuserkey = "";
+                                            }
+                                            if (json.has("deliveryusermobileno")) {
+                                                modal_orderDetails_tracking_ratingDetails.deliveryusermobileno = String.valueOf(json.get("deliveryusermobileno"));
+
+                                            } else {
+                                                modal_orderDetails_tracking_ratingDetails.deliveryusermobileno = "";
+                                            }
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+
+
                                         }
 
 
-                                        if (json.has("deliveryusername")) {
-                                            modal_orderDetails_tracking_ratingDetails.deliveryusername = String.valueOf(json.get("deliveryusername"));
+                                        if (arrayLength - 1 == i1) {
+                                            isTrackingCalled = true;
+                                            getRatingDetailsUsingOrderid(orderid);
 
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.deliveryusername = "";
+                                            //      displaydatainScreen(modal_orderDetails_tracking_ratingDetails,"FromTracking");
                                         }
-                                        if (json.has("deliveryuserkey")) {
-                                            modal_orderDetails_tracking_ratingDetails.deliveryuserkey = String.valueOf(json.get("deliveryuserkey"));
-                                            ;
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.deliveryuserkey = "";
-                                        }
-                                        if (json.has("deliveryusermobileno")) {
-                                            modal_orderDetails_tracking_ratingDetails.deliveryusermobileno = String.valueOf(json.get("deliveryusermobileno"));
-
-                                        } else {
-                                            modal_orderDetails_tracking_ratingDetails.deliveryusermobileno = "";
-                                        }
-
-
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        
 
                                     }
 
 
-                                    if (arrayLength - 1 == i1) {
-                                        isTrackingCalled = true;
-                                        getRatingDetailsUsingOrderid(orderid);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
 
-                                  //      displaydatainScreen(modal_orderDetails_tracking_ratingDetails,"FromTracking");
-                                    }
 
                                 }
 
 
+                            } catch (Exception e) {
 
-                            }
-                            catch (Exception e){
+
                                 e.printStackTrace();
-                                
-
                             }
 
 
-
-                        }
-                        catch (Exception e){
-                            
-
-                            e.printStackTrace();
                         }
 
+                    }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    try {
+                        Toast.makeText(OrderAndRatingDetailsScreen.this, "There is no Credited Orders ", Toast.LENGTH_LONG).show();
 
 
+                        error.printStackTrace();
+
+
+                        //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-
-                },new com.android.volley.Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(@NonNull VolleyError error) {
-                try {
-                    Toast.makeText(OrderAndRatingDetailsScreen.this, "There is no Credited Orders " , Toast.LENGTH_LONG).show();
-
-
-                    
-
-                    error.printStackTrace();
-
-
-                    //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
                 }
-                catch (Exception e){
-                    e.printStackTrace();
+            }) {
+                @Override
+                public Map<String, String> getParams() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("vendorkey", "vendor_1");
+                    params.put("orderplacedtime", "11 Jan 2021");
+
+                    return params;
                 }
-            }
-        })
-        {
-            @Override
-            public Map<String, String> getParams() throws AuthFailureError {
-                final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
-                params.put("orderplacedtime", "11 Jan 2021");
-
-                return params;
-            }
 
 
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> header = new HashMap<>();
+                    header.put("Content-Type", "application/json");
 
-            @NonNull
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                final Map<String, String> header = new HashMap<>();
-                header.put("Content-Type", "application/json");
+                    return header;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                return header;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            // Make the request
+            Volley.newRequestQueue(OrderAndRatingDetailsScreen.this).add(jsonObjectRequest);
 
-        // Make the request
-        Volley.newRequestQueue(OrderAndRatingDetailsScreen.this).add(jsonObjectRequest);
+        }
+        else{
 
+            Toast.makeText(OrderAndRatingDetailsScreen.this, "There is No Apiii " , Toast.LENGTH_SHORT).show();
 
+        }
 
     }
 
@@ -1360,360 +1394,388 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
 
         showProgressBar(true);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid+orderid ,null,
-                new com.android.volley.Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(@NonNull JSONObject response) {
-                        try {
-                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
 
+        String Api_toCallOrderDetailsUsingOrderid = "";
+        if(orderdetailsnewschema){
+            if(orderid.length()>1 ){
+                Api_toCallOrderDetailsUsingOrderid = Constants.api_GetVendorOrderDetailsUsingOrderid_vendorkey+ "?vendorkey="+vendorKey+"&orderid="+orderid;
+            }
+            else{
+                Toast.makeText(OrderAndRatingDetailsScreen.this, "orderid :"+orderid+" , vendorkey: "+vendorKey , Toast.LENGTH_SHORT).show();
+            }
+
+
+        }
+        else{
+            Api_toCallOrderDetailsUsingOrderid = Constants.api_GetOrderDetailsusingOrderid+orderid;
+
+        }
+
+
+        if(!Api_toCallOrderDetailsUsingOrderid.equals("")) {
+
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Api_toCallOrderDetailsUsingOrderid , null,
+                    new com.android.volley.Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(@NonNull JSONObject response) {
                             try {
+                                Log.d(Constants.TAG, "GETADDRESS Response: " + response);
 
-                                String ordertype="#";
+                                try {
 
-                                //converting jsonSTRING into array
-                                JSONArray JArray  = response.getJSONArray("content");
-                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                                int i1=0;
-                                int arrayLength = JArray.length();
-                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
-                                if(arrayLength>1){
-                                    Toast.makeText(OrderAndRatingDetailsScreen.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+                                    String ordertype = "#";
 
-                                }
+                                    //converting jsonSTRING into array
+                                    JSONArray JArray = response.getJSONArray("content");
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                    int i1 = 0;
+                                    int arrayLength = JArray.length();
+                                    //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                    if (arrayLength > 1) {
+                                        Toast.makeText(OrderAndRatingDetailsScreen.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
 
-                                for(;i1<(arrayLength);i1++) {
+                                    }
 
-                                    try {
-
-                                        JSONObject json = JArray.getJSONObject(i1);
+                                    for (; i1 < (arrayLength); i1++) {
 
                                         try {
-                                            if (json.has("coupondiscount")) {
-                                                modal_orderDetails_tracking_ratingDetails.coupondiscount = json.getString("coupondiscount");
-                                            } else {
+
+                                            JSONObject json = JArray.getJSONObject(i1);
+
+                                            try {
+                                                if (json.has("coupondiscount")) {
+                                                    modal_orderDetails_tracking_ratingDetails.coupondiscount = json.getString("coupondiscount");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.coupondiscount = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.coupondiscount = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.coupondiscount = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("couponkey")) {
-                                                modal_orderDetails_tracking_ratingDetails.couponkey = json.getString("couponkey");
-                                            } else {
+                                            try {
+                                                if (json.has("couponkey")) {
+                                                    modal_orderDetails_tracking_ratingDetails.couponkey = json.getString("couponkey");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.couponkey = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.couponkey = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.couponkey = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("deliveryamount")) {
-                                                modal_orderDetails_tracking_ratingDetails.deliveryamount = json.getString("deliveryamount");
-                                            } else {
+                                            try {
+                                                if (json.has("deliveryamount")) {
+                                                    modal_orderDetails_tracking_ratingDetails.deliveryamount = json.getString("deliveryamount");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.deliveryamount = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.deliveryamount = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.deliveryamount = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("deliverytype")) {
-                                                modal_orderDetails_tracking_ratingDetails.deliverytype = json.getString("deliverytype");
-                                            } else {
+                                            try {
+                                                if (json.has("deliverytype")) {
+                                                    modal_orderDetails_tracking_ratingDetails.deliverytype = json.getString("deliverytype");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.deliverytype = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.deliverytype = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.deliverytype = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("gstamount")) {
-                                                modal_orderDetails_tracking_ratingDetails.gstamount = json.getString("gstamount");
-                                            } else {
+                                            try {
+                                                if (json.has("gstamount")) {
+                                                    modal_orderDetails_tracking_ratingDetails.gstamount = json.getString("gstamount");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.gstamount = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.gstamount = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.gstamount = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("isdeliveryslotfree")) {
-                                                modal_orderDetails_tracking_ratingDetails.isdeliveryslotfree = json.getString("isdeliveryslotfree");
-                                            } else {
+                                            try {
+                                                if (json.has("isdeliveryslotfree")) {
+                                                    modal_orderDetails_tracking_ratingDetails.isdeliveryslotfree = json.getString("isdeliveryslotfree");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.isdeliveryslotfree = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.isdeliveryslotfree = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.isdeliveryslotfree = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("key")) {
-                                                modal_orderDetails_tracking_ratingDetails.key = json.getString("key");
-                                            } else {
+                                            try {
+                                                if (json.has("key")) {
+                                                    modal_orderDetails_tracking_ratingDetails.key = json.getString("key");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.key = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.key = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.key = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("merchantorderid")) {
-                                                modal_orderDetails_tracking_ratingDetails.merchantorderid = json.getString("merchantorderid");
-                                            } else {
+                                            try {
+                                                if (json.has("merchantorderid")) {
+                                                    modal_orderDetails_tracking_ratingDetails.merchantorderid = json.getString("merchantorderid");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.merchantorderid = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.merchantorderid = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.merchantorderid = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("notes")) {
-                                                modal_orderDetails_tracking_ratingDetails.notes = json.getString("notes");
-                                            } else {
+                                            try {
+                                                if (json.has("notes")) {
+                                                    modal_orderDetails_tracking_ratingDetails.notes = json.getString("notes");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.notes = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.notes = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.notes = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("orderid")) {
-                                                modal_orderDetails_tracking_ratingDetails.orderid = json.getString("orderid");
-                                            } else {
+                                            try {
+                                                if (json.has("orderid")) {
+                                                    modal_orderDetails_tracking_ratingDetails.orderid = json.getString("orderid");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.orderid = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.orderid = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.orderid = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("orderplaceddate")) {
-                                                modal_orderDetails_tracking_ratingDetails.orderplaceddate = json.getString("orderplaceddate");
-                                            } else {
+                                            try {
+                                                if (json.has("orderplaceddate")) {
+                                                    modal_orderDetails_tracking_ratingDetails.orderplaceddate = json.getString("orderplaceddate");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.orderplaceddate = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.orderplaceddate = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.orderplaceddate = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("orderplacedtime")) {
-                                                modal_orderDetails_tracking_ratingDetails.orderplacedtime = json.getString("orderplacedtime");
-                                            } else {
+                                            try {
+                                                if (json.has("orderplacedtime")) {
+                                                    modal_orderDetails_tracking_ratingDetails.orderplacedtime = json.getString("orderplacedtime");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.orderplacedtime = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.orderplacedtime = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.orderplacedtime = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("ordertype")) {
-                                                modal_orderDetails_tracking_ratingDetails.ordertype = json.getString("ordertype");
-                                            } else {
+                                            try {
+                                                if (json.has("ordertype")) {
+                                                    modal_orderDetails_tracking_ratingDetails.ordertype = json.getString("ordertype");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.ordertype = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.ordertype = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.ordertype = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("payableamount")) {
-                                                modal_orderDetails_tracking_ratingDetails.payableamount = json.getString("payableamount");
-                                            } else {
+                                            try {
+                                                if (json.has("payableamount")) {
+                                                    modal_orderDetails_tracking_ratingDetails.payableamount = json.getString("payableamount");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.payableamount = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.payableamount = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.payableamount = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("paymentmode")) {
-                                                modal_orderDetails_tracking_ratingDetails.paymentmode = json.getString("paymentmode");
-                                            } else {
+                                            try {
+                                                if (json.has("paymentmode")) {
+                                                    modal_orderDetails_tracking_ratingDetails.paymentmode = json.getString("paymentmode");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.paymentmode = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.paymentmode = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.paymentmode = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("slotdate")) {
-                                                modal_orderDetails_tracking_ratingDetails.slotdate = json.getString("slotdate");
-                                            } else {
+                                            try {
+                                                if (json.has("slotdate")) {
+                                                    modal_orderDetails_tracking_ratingDetails.slotdate = json.getString("slotdate");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.slotdate = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.slotdate = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.slotdate = "";
-                                        }
 
 ///////////////////////////////////////////
 
-                                        try {
-                                            if (json.has("slottimerange")) {
-                                                modal_orderDetails_tracking_ratingDetails.slottimerange = json.getString("slottimerange");
-                                            } else {
+                                            try {
+                                                if (json.has("slottimerange")) {
+                                                    modal_orderDetails_tracking_ratingDetails.slottimerange = json.getString("slottimerange");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.slottimerange = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.slottimerange = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.slottimerange = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("tokenno")) {
-                                                modal_orderDetails_tracking_ratingDetails.tokenno = json.getString("tokenno");
-                                            } else {
+                                            try {
+                                                if (json.has("tokenno")) {
+                                                    modal_orderDetails_tracking_ratingDetails.tokenno = json.getString("tokenno");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.tokenno = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.tokenno = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.tokenno = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("useraddress")) {
-                                                modal_orderDetails_tracking_ratingDetails.useraddress = json.getString("useraddress");
-                                            } else {
+                                            try {
+                                                if (json.has("useraddress")) {
+                                                    modal_orderDetails_tracking_ratingDetails.useraddress = json.getString("useraddress");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.useraddress = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.useraddress = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.useraddress = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("userkey")) {
-                                                modal_orderDetails_tracking_ratingDetails.userkey = json.getString("userkey");
-                                            } else {
+                                            try {
+                                                if (json.has("userkey")) {
+                                                    modal_orderDetails_tracking_ratingDetails.userkey = json.getString("userkey");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.userkey = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.userkey = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.userkey = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("usermobile")) {
-                                                modal_orderDetails_tracking_ratingDetails.usermobile = json.getString("usermobile");
-                                            } else {
+                                            try {
+                                                if (json.has("usermobile")) {
+                                                    modal_orderDetails_tracking_ratingDetails.usermobile = json.getString("usermobile");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.usermobile = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.usermobile = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.usermobile = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("vendorkey")) {
-                                                modal_orderDetails_tracking_ratingDetails.vendorkey = json.getString("vendorkey");
-                                            } else {
+                                            try {
+                                                if (json.has("vendorkey")) {
+                                                    modal_orderDetails_tracking_ratingDetails.vendorkey = json.getString("vendorkey");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.vendorkey = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.vendorkey = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.vendorkey = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("vendorname")) {
-                                                modal_orderDetails_tracking_ratingDetails.vendorname = json.getString("vendorname");
-                                            } else {
+                                            try {
+                                                if (json.has("vendorname")) {
+                                                    modal_orderDetails_tracking_ratingDetails.vendorname = json.getString("vendorname");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.vendorname = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.vendorname = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.vendorname = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("slotname")) {
-                                                modal_orderDetails_tracking_ratingDetails.slotname = json.getString("slotname");
-                                            } else {
+                                            try {
+                                                if (json.has("slotname")) {
+                                                    modal_orderDetails_tracking_ratingDetails.slotname = json.getString("slotname");
+                                                } else {
+                                                    modal_orderDetails_tracking_ratingDetails.slotname = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 modal_orderDetails_tracking_ratingDetails.slotname = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            modal_orderDetails_tracking_ratingDetails.slotname = "";
-                                        }
 
 
-                                        try {
-                                            if (json.has("itemdesp")) {
-                                                JSONArray itemdesp = json.getJSONArray("itemdesp");
+                                            try {
+                                                if (json.has("itemdesp")) {
+                                                    JSONArray itemdesp = json.getJSONArray("itemdesp");
 
-                                                modal_orderDetails_tracking_ratingDetails.itemdesp = itemdesp;
-                                                modal_orderDetails_tracking_ratingDetails.itemdesp_String = itemdesp.toString();
+                                                    modal_orderDetails_tracking_ratingDetails.itemdesp = itemdesp;
+                                                    modal_orderDetails_tracking_ratingDetails.itemdesp_String = itemdesp.toString();
 
 
+                                                } else {
 
-                                            } else {
+                                                }
+                                            } catch (Exception e) {
 
+                                                e.printStackTrace();
                                             }
-                                        } catch (Exception e) {
+
+
+                                        } catch (JSONException e) {
+
 
                                             e.printStackTrace();
                                         }
 
 
-                                    } catch (JSONException e) {
-                                        
+                                        if (arrayLength - 1 == i1) {
 
-                                        e.printStackTrace();
+                                            isOrderDetailsCalled = true;
+                                            getOrderTrackingUsingOrderid(orderid);
+                                            //displaydatainScreen(modal_orderDetails_tracking_ratingDetails, "FromOrderDetails");
+                                        }
                                     }
 
 
-                                    if (arrayLength - 1 == i1) {
+                                } catch (JSONException e) {
 
-                                        isOrderDetailsCalled =true;
-                                        getOrderTrackingUsingOrderid(orderid);
-                                        //displaydatainScreen(modal_orderDetails_tracking_ratingDetails, "FromOrderDetails");
-                                    }
+
+                                    e.printStackTrace();
+
+
                                 }
 
 
+                            } catch (Exception e) {
 
-                            } catch (JSONException e) {
-                                
 
                                 e.printStackTrace();
 
@@ -1721,70 +1783,55 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
                             }
 
 
-
-
-                        }
-                        catch (Exception e){
-                            
-
-                            e.printStackTrace();
-
-
-
                         }
 
+                    }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    try {
+                        Toast.makeText(OrderAndRatingDetailsScreen.this, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
 
 
+                        Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                        Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                        error.printStackTrace();
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-
-                },new com.android.volley.Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(@NonNull VolleyError error) {
-                try {
-                    Toast.makeText(OrderAndRatingDetailsScreen.this, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
-
-                    
-
-
-                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
-                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
-
-                    error.printStackTrace();
-
-
                 }
-                catch (Exception e){
-                    e.printStackTrace();
+            }) {
+                @Override
+                public Map<String, String> getParams() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("vendorkey", "vendor_1");
+                    params.put("orderplacedtime", "11 Jan 2021");
+
+                    return params;
                 }
-            }
-        })
-        {
-            @Override
-            public Map<String, String> getParams() throws AuthFailureError {
-                final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
-                params.put("orderplacedtime", "11 Jan 2021");
-
-                return params;
-            }
 
 
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> header = new HashMap<>();
+                    header.put("Content-Type", "application/json");
 
-            @NonNull
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                final Map<String, String> header = new HashMap<>();
-                header.put("Content-Type", "application/json");
+                    return header;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                return header;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            // Make the request
+            Volley.newRequestQueue(OrderAndRatingDetailsScreen.this).add(jsonObjectRequest);
 
-        // Make the request
-        Volley.newRequestQueue(OrderAndRatingDetailsScreen.this).add(jsonObjectRequest);
+        }
+        else{
+            Toast.makeText(OrderAndRatingDetailsScreen.this, "There is No Api " , Toast.LENGTH_SHORT).show();
 
-
+        }
 
 
 

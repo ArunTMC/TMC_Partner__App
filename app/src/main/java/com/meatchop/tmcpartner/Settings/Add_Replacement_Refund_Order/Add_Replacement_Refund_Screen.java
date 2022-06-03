@@ -14,7 +14,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -23,10 +22,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.AlertDialogClass;
-import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -60,6 +60,13 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
     boolean is_gotResultFromOrderTracking = false;
     boolean is_gotResultFromOrderDetails = false;
 
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +89,8 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
             vendorName = shared.getString("VendorName","");
             vendorkey  = shared.getString("VendorKey","");
             vendorName_textWidget.setText(String.valueOf(vendorName));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+           // orderdetailsnewschema = true;
 
         }
         catch(Exception e){
@@ -92,22 +101,46 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String mobileno = customermobileno_editwidget.getText().toString();
-                if(mobileno.length()==10){
+                if(mobileno.length()==10) {
                     finalordersDetailsList.clear();
                     ordersDetailsList.clear();
                     ordersTrackingList.clear();
-                    mobileno = "+91"+mobileno;
-                    showProgressBar(true);
-                    String finalMobileno = mobileno;
-                    AsyncTask.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            //TODO your background code
-                            FetchOrdersFromOrderTrackingDatabase(vendorName, finalMobileno);
+                    mobileno = "+91" + mobileno;
 
-                        }
-                    });
-                    FetchOrdersFromOrderDetailsDatabase(vendorName , mobileno);
+                    is_gotResultFromOrderDetails =false;
+                    is_gotResultFromOrderTracking = false;
+
+                    String UserMobileNumberEncoded  = mobileno;
+                    try {
+                        UserMobileNumberEncoded = URLEncoder.encode(mobileno, "utf-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    showProgressBar(true);
+                    if (orderdetailsnewschema) {
+                        String toDate = getDatewithNameoftheDay();
+                        String fromDate = getNameDateoftheDay2weeksBack();
+
+                        callVendorOrderDetailsSeviceAndInitCallBack(fromDate, toDate, vendorkey,UserMobileNumberEncoded);
+
+
+                    }
+                    else {
+
+                        String finalMobileno = mobileno;
+                       AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                //TODO your background code
+                        FetchOrdersFromOrderTrackingDatabase(vendorName, finalMobileno);
+
+                            }
+                        });
+
+                         FetchOrdersFromOrderDetailsDatabase(vendorName, mobileno);
+                    }
                 }
             }
         });
@@ -159,9 +192,9 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                                 int arrayLength = JArray.length();
                                 ////Toast.makeText(Add_Replacement_Refund_Screen.this, "Response in Tracking", //Toast.LENGTH_SHORT).show();
 
-                                if(message.equals("SUCCESS")){
+                                if(arrayLength>0){
                                     for (;i1<arrayLength;i1++){
-                                        String orderStatus ="";
+                                        String orderStatus ="",orderplacedtime ="";
                                         try {
                                             JSONObject json = JArray.getJSONObject(i1);
                                             Modal_ManageOrders_Pojo_Class manageOrdersPojoClass = new Modal_ManageOrders_Pojo_Class();
@@ -187,21 +220,49 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
                                                 try {
-                                                    if (json.has("orderplaceddate")) {
-                                                        manageOrdersPojoClass.orderplaceddate = String.valueOf(json.get("orderplaceddate"));
-                                                        orderplaceddate = String.valueOf(json.get("orderplaceddate"));
+                                                    if (json.has("orderplacedtime")) {
+                                                        manageOrdersPojoClass.orderplacedtime = String.valueOf(json.get("orderplacedtime"));
+                                                        orderplacedtime = String.valueOf(json.get("orderplacedtime"));
                                                     } else {
-                                                        manageOrdersPojoClass.orderplaceddate = "";
+                                                        manageOrdersPojoClass.orderplacedtime = "";
+                                                        orderplacedtime ="";
                                                     }
                                                 } catch (Exception e) {
-                                                    manageOrdersPojoClass.orderplaceddate = "";
+                                                    manageOrdersPojoClass.orderplacedtime = "";
+                                                    orderplacedtime ="";
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try {
+                                                    if (json.has("slotdate")) {
+                                                        manageOrdersPojoClass.slotdate = String.valueOf(json.get("slotdate"));
+                                                    } else {
+                                                        manageOrdersPojoClass.slotdate = "";
+                                                    }
+                                                } catch (Exception e) {
+                                                    manageOrdersPojoClass.slotdate = "";
 
                                                     e.printStackTrace();
                                                 }
 
 
                                                 try {
-                                                    String predicteddateanddayandtime = getDatewithNameofthePreviousDay();
+                                                    if (json.has("orderdeliverytime")) {
+                                                        manageOrdersPojoClass.orderdeliveredtime = String.valueOf(json.get("orderdeliverytime"));
+                                                    } else {
+                                                        manageOrdersPojoClass.orderdeliveredtime = "";
+                                                    }
+                                                } catch (Exception e) {
+                                                    manageOrdersPojoClass.orderdeliveredtime = "";
+
+                                                    e.printStackTrace();
+                                                }
+
+
+
+                                                try {
+                                                    String predicteddateanddayandtime = getNameDateoftheDay2weeksBack();
                                                     long predictedLongForDate = 0;
                                                     try {
                                                         if (predicteddateanddayandtime.equals("") || predicteddateanddayandtime.equals("Null")) {
@@ -221,7 +282,7 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                                                         if (predicteddateanddayandtime.equals("") || predicteddateanddayandtime.equals("Null")) {
                                                             currentTimeLong = 0;
                                                         } else {
-                                                            currentTimeLong = Long.parseLong(getLongValuefortheDate(orderplaceddate));
+                                                            currentTimeLong = Long.parseLong(getLongValuefortheDate(orderplacedtime));
                                                         }
                                                     } catch (Exception e) {
                                                         currentTimeLong = 0;
@@ -230,7 +291,7 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                                                     }
 
 
-                                                    if (predicteddateanddayandtime.length() > 0 && orderplaceddate.length() > 0) {
+                                                    if (predicteddateanddayandtime.length() > 0 && orderplacedtime.length() > 0) {
 
 
                                                         if (predictedLongForDate <= currentTimeLong) {
@@ -268,6 +329,10 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                                     }
 
 
+
+                                }
+                                else{
+                                    is_gotResultFromOrderTracking = true;
 
                                 }
 
@@ -360,7 +425,7 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                                 int i1 = 0;
                                 int arrayLength = JArray.length();
 
-                                if(message.equals("SUCCESS")){
+                                if(arrayLength>0){
                                     for (;i1<arrayLength;i1++){
 
                                         try {
@@ -604,7 +669,7 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
                                             //ordersDetailsList.add(manageOrdersPojoClass);
                                             try {
-                                                String predicteddateanddayandtime = getDatewithNameofthePreviousDay();
+                                                String predicteddateanddayandtime = getNameDateoftheDay2weeksBack();
                                                 long predictedLongForDate = 0;
                                               try {
                                                   if (predicteddateanddayandtime.equals("") || predicteddateanddayandtime.equals("Null")) {
@@ -659,7 +724,10 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
                                         if(arrayLength - i1 == 1 ){
-                                            do {
+
+                                            callMergeData();
+
+                                            /*do {
                                                 Handler handler = new Handler();
                                                 handler.postDelayed(new Runnable() {
                                                     @Override
@@ -677,8 +745,20 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                                                         });
                                                     }
                                                 }, 500);
+
+
+                                                if (is_gotResultFromOrderTracking) {
+                                                    is_gotResultFromOrderDetails = true;
+                                                    //Toast.makeText(Add_Replacement_Refund_Screen.this, "orderStatus in details" + String.valueOf(ordersDetailsList.size()), //Toast.LENGTH_SHORT).show();
+                                                    MergeAndDisplaytheData();
+
+                                                }
+
+
+
                                             }
                                             while (!is_gotResultFromOrderTracking);
+                                            */
 
                                         }
 
@@ -688,7 +768,12 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
                                 }
+                                    else{
+                                    is_gotResultFromOrderDetails = true;
+                                    //Toast.makeText(Add_Replacement_Refund_Screen.this, "orderStatus in details" + String.valueOf(ordersDetailsList.size()), //Toast.LENGTH_SHORT).show();
+                                    MergeAndDisplaytheData();
 
+                                }
                             } catch (Exception e) {
                                 MergeAndDisplaytheData();
                                 is_gotResultFromOrderDetails = true;
@@ -746,9 +831,35 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
         }
     }
 
+    private void callMergeData() {
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (is_gotResultFromOrderTracking) {
+                            is_gotResultFromOrderDetails = true;
+                            //Toast.makeText(Add_Replacement_Refund_Screen.this, "orderStatus in details" + String.valueOf(ordersDetailsList.size()), //Toast.LENGTH_SHORT).show();
+                            MergeAndDisplaytheData();
+
+                        }
+                        else{
+                            callMergeData();
+                        }
+                    }
+                });
+            }
+        }, 500);
+
+
+
+
+    }
+
     private void MergeAndDisplaytheData() {
-        is_gotResultFromOrderDetails =false;
-        is_gotResultFromOrderTracking = false;
         //Toast.makeText(Add_Replacement_Refund_Screen.this, "orderStatus in Tracking"+String.valueOf("Merge called"), //Toast.LENGTH_SHORT).show();
     if(ordersDetailsList.size()>0) {
         if (ordersTrackingList.size() > 0) {
@@ -756,39 +867,49 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
             orders_listview.setVisibility(View.VISIBLE);
             try {
                 for (int i = 0; i < ordersTrackingList.size(); i++) {
-                    String orderidFromTracking = "", orderStatus = "";
-                    orderidFromTracking = ordersTrackingList.get(i).getOrderid().toString();
-                    orderStatus = ordersTrackingList.get(i).getOrderstatus().toString();
+                    String orderidFromTracking = "", orderStatus = "",orderDeliveredTime = "";
+                    try{
+                        orderidFromTracking = ordersTrackingList.get(i).getOrderid().toString();
 
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try{
+                        orderStatus = ordersTrackingList.get(i).getOrderstatus().toString();
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try{
+                        orderDeliveredTime = ordersTrackingList.get(i).getOrderdeliveredtime().toString();
+                        if(orderDeliveredTime.equals("") || orderDeliveredTime.equals("null") ){
+                            orderDeliveredTime = ordersTrackingList.get(i).getSlotdate().toString();
+
+                        }
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     for (int j = 0; j < ordersDetailsList.size(); j++) {
                         String orderidFromDetails = "";
                         orderidFromDetails = ordersDetailsList.get(j).getOrderid().toString();
 
                         if (orderidFromDetails.equals(orderidFromTracking)) {
                             ordersDetailsList.get(j).setOrderstatus(orderStatus);
+                            ordersDetailsList.get(j).setOrderdeliveredtime(orderDeliveredTime);
 
                             finalordersDetailsList.add(ordersDetailsList.get(j));
                         }
 
                     }
                     if (ordersTrackingList.size() - i == 1) {
-                        Collections.sort(finalordersDetailsList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                                return object2.getOrderplacedtime_in_long().compareTo(object1.getOrderplacedtime_in_long());
-                            }
-                        });
-                        Adapter_Refund_Replacement_Listview adapter_replacement_refundProcess = new Adapter_Refund_Replacement_Listview(Add_Replacement_Refund_Screen.this, finalordersDetailsList, Add_Replacement_Refund_Screen.this);
-                        orders_listview.setAdapter(adapter_replacement_refundProcess);
 
+                        DisplayDataInUI(finalordersDetailsList);
 
-                        try {
-                            orderscount_textwidget.setText(String.valueOf(finalordersDetailsList.size()));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-
-                        showProgressBar(false);
                     }
                 }
 
@@ -799,9 +920,12 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
                 e.printStackTrace();
             }
-        } else {
+        }
+        else {
+            DisplayDataInUI(ordersDetailsList);
+
             //Toast.makeText(Add_Replacement_Refund_Screen.this, "Merge 222", //Toast.LENGTH_SHORT).show();
-            Collections.sort(ordersDetailsList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+         /*   Collections.sort(ordersDetailsList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
                 public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
                     return object2.getOrderplacedtime_in_long().compareTo(object1.getOrderplacedtime_in_long());
                 }
@@ -818,6 +942,9 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
             showProgressBar(false);
+
+
+          */
         }
     }
     else{
@@ -836,6 +963,74 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
     }
+
+    private void DisplayDataInUI(List<Modal_ManageOrders_Pojo_Class> finalordersDetailsList) {
+
+        Collections.sort(finalordersDetailsList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                return object2.getOrderplacedtime_in_long().compareTo(object1.getOrderplacedtime_in_long());
+            }
+        });
+        Adapter_Refund_Replacement_Listview adapter_replacement_refundProcess = new Adapter_Refund_Replacement_Listview(Add_Replacement_Refund_Screen.this, finalordersDetailsList, Add_Replacement_Refund_Screen.this);
+        orders_listview.setAdapter(adapter_replacement_refundProcess);
+
+
+        try {
+            orderscount_textwidget.setText(String.valueOf(finalordersDetailsList.size()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        orderinstruction_textview.setVisibility(View.GONE);
+        orders_listview.setVisibility(View.VISIBLE);
+
+        showProgressBar(false);
+
+
+    }
+
+
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey, String userMobileNo) {
+        if(isVendorOrdersTableServiceCalled){
+            showProgressBar(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+
+               // mobile_jsonString = String.valueOf(jsonObject);
+                finalordersDetailsList = orderslist_fromResponse;
+                DisplayDataInUI(orderslist_fromResponse);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + "That didn't work!");
+                showProgressBar(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+         mVolleyService = new VendorOrdersTableService(mResultCallback,Add_Replacement_Refund_Screen.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingFromToSlotDate_vendorkey_mobileno + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate+"&usermobileno="+userMobileNo;
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingFromToSlotDate_vendorkey_mobileno + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate+"&usermobileno="+userMobileNo;
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+
+
 
     public String getLongValuefortheDate(String orderplacedtime) {
         String longvalue = "";
@@ -941,27 +1136,73 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
     }
 
 
-    private String getDatewithNameofthePreviousDay() {
+
+
+
+    private String getDatewithNameoftheDay() {
+
+
+        Calendar calendar = Calendar.getInstance();
+        Date c = calendar.getTime();
+
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+           String CurrentDate = df.format(c);
+            return CurrentDate;
+
+        }
+        else {
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            String CurrentDay = day.format(c);
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            String CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+        }
+    }
+
+
+
+    private String getNameDateoftheDay2weeksBack() {
         Calendar calendar = Calendar.getInstance();
 
 
 
-        calendar.add(Calendar.DATE,-14);
+        calendar.add(Calendar.DATE,-19);
 
 
 
         Date c1 = calendar.getTime();
+        if(orderdetailsnewschema) {
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
-
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
-        String  PreviousdayDate = df1.format(c1);
-        PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
+            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
+            String PreviousdayDate = df1.format(c1);
 
 
+            return PreviousdayDate;
 
-        return PreviousdayDate;
+        }
+        else {
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
+            String PreviousdayDate = df1.format(c1);
+            PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
+
+
+            return PreviousdayDate;
+        }
     }
 
 

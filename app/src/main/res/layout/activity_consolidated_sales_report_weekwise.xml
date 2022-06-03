@@ -846,6 +846,15 @@
                 </LinearLayout>
 
             </ScrollView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="20sp"
+                android:id="@+id/instruction_textview"
+
+                android:text="Select Date and Click Fetch Data"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:gravity="center"/>
 
         </LinearLayout>
     </LinearLayout>

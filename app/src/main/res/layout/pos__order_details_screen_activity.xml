@@ -435,7 +435,8 @@
                             android:textSize="22sp" />
 
                         <TextView
-                            android:id="@+id/slotNametext_widget"
+                            android:id="@+id/slotDatetext_widget"
+
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -463,7 +464,7 @@
                             android:textSize="22sp" />
 
                         <TextView
-                            android:id="@+id/slotDatetext_widget"
+                            android:id="@+id/slotNametext_widget"
 
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

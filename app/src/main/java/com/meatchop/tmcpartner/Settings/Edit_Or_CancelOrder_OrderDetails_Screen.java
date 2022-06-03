@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -42,6 +42,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_orderDetails_itemDesp_listview1;
 import com.meatchop.tmcpartner.NukeSSLCerts;
@@ -50,6 +52,8 @@ import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOr
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_vendor;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -92,7 +96,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     public String payableAmount;
     public String userkey,UserRole,UserPhoneNumber;
 
-    public String tokenNo;
+    public String tokenNo,customerMobileNo ="";
     public String deliverydistance;
     public String orderdetailsKey;
     public String orderTrackingDetailskey;
@@ -127,7 +131,17 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
     String toastFromOrderItemDetails ="";
 
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
     private  ArrayAdapter vendorlist_aAdapter;
+    Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
+    Context mContext;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -184,7 +198,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         deliveryPartnerList = new ArrayList<>();
         getAreawiseVendorName();
 
-
+        mContext = Edit_Or_CancelOrder_OrderDetails_Screen.this;
 
         try {
             SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
@@ -194,9 +208,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             vendorLongitude = (shared.getString("VendorLongitute", "80.1496"));
             UserPhoneNumber = (shared.getString("UserPhoneNumber", "+91"));
             vendorName= (shared.getString("VendorName", ""));
-           vendorKey = (shared.getString("VendorKey", ""));
+            vendorKey = (shared.getString("VendorKey", ""));
             vendorUserMobileno = (shared.getString("UserPhoneNumber", ""));
             UserRole = shared.getString("userrole", "");
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+          //  orderdetailsnewschema = true;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,11 +232,28 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
         OrderdItems_desp = new ArrayList<>();
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-        screenInches = Math.sqrt(x + y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(Edit_Or_CancelOrder_OrderDetails_Screen .this);
+            //Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+            //    Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         Bundle bundle = getIntent().getExtras();
          modal_manageOrders_pojo_class = bundle.getParcelable("data");
@@ -328,7 +361,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
           //  Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in method" , Toast.LENGTH_LONG).show();
 
             Adjusting_Widgets_Visibility(true);
-            FetchOrdersFromOrderTrackingDatabase(orderid,true);
+            FetchOrdersFromOrderTrackingDatabase(orderid,true,vendorKey);
 
         }
 
@@ -357,16 +390,21 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                    String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                    String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                     if(!deliverypartnerName.equals("null")) {
 
+
                         String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                        showBottomSheetDialog_deliveryPartnerList(Orderkey,deliverypartnerName);
+                        showBottomSheetDialog_deliveryPartnerList(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
                     }
                     else{
 
                         String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                        showBottomSheetDialog_deliveryPartnerList(Orderkey,"null");
+                        showBottomSheetDialog_deliveryPartnerList(Orderkey,"null",orderid,customerMobileNo,vendorkey);
 
                     }
                 }
@@ -534,8 +572,12 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                 }
                                 //GetStockOutGoingDetailsEntries(orderid);
 
+                                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
 
-                               ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime);
+
+                                ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
                             }
 
                             @Override
@@ -735,8 +777,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                         } else {
                             changeVendorDetailsInOrderDetails(orderDetailsKey);
                         }
-                        if (orderTrackingDetailsKey.equals("")) {
-                            FetchOrdersFromOrderTrackingDatabase(orderid, false);
+
+
+
+                            if (orderTrackingDetailsKey.equals("")) {
+                                FetchOrdersFromOrderTrackingDatabase(orderid, false, vendorKey);
 /*
                             AsyncTask.execute(new Runnable() {
                                 @Override
@@ -748,9 +793,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                             });
 
  */
-                        } else {
-                            changeVendorDetailsInOrderTrackingDetails(orderDetailsKey);
-                        }
+                            } else {
+                                changeVendorDetailsInOrderTrackingDetails(orderDetailsKey);
+                            }
 
 
                     }
@@ -1092,8 +1137,19 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
     }
 
-    private void FetchOrdersFromOrderTrackingDatabase(String orderid, boolean IsFetchedFromONCreate) {
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetTrackingOrderDetails_orderid + orderid,null,
+    private void FetchOrdersFromOrderTrackingDatabase(String orderid, boolean IsFetchedFromONCreate, String vendorKey) {
+
+        String Api_toGetOrderTrackingDetailsUsingOrderid = "";
+
+        if(orderdetailsnewschema) {
+            Api_toGetOrderTrackingDetailsUsingOrderid = Constants.api_GetVendorTrackingDetailsUsingOrderid_vendorkey+"?orderid="+orderid+"&vendorkey="+vendorKey;
+        }
+        else{
+            Api_toGetOrderTrackingDetailsUsingOrderid = Constants.api_GetTrackingOrderDetails_orderid + orderid;
+        }
+
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,Api_toGetOrderTrackingDetailsUsingOrderid ,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1374,7 +1430,19 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
     private void FetchOrdersFromOrderDetailsDatabase(String orderid) {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid + orderid,null,
+
+        String Api_toGetOrderTrackingDetailsUsingOrderid = "";
+
+        if(orderdetailsnewschema) {
+            Api_toGetOrderTrackingDetailsUsingOrderid = Constants.api_GetVendorOrderDetailsUsingOrderid_vendorkey+"?orderid="+orderid+"&vendorkey="+vendorKey;
+        }
+        else{
+            Api_toGetOrderTrackingDetailsUsingOrderid = Constants.api_GetOrderDetailsusingOrderid + orderid;
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Api_toGetOrderTrackingDetailsUsingOrderid,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -4401,6 +4469,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             e.printStackTrace();
         }
         if(isFromEditOrders.equals("FALSE")){
+            changeOrderToAnotherStore.setVisibility(View.GONE);
             changePaymentMode_button.setVisibility(View.GONE);
             cancelOrder_button.setVisibility(View.GONE);
             changeDeliveryPartner.setVisibility(View.GONE);
@@ -4500,10 +4569,12 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
         if(modal_manageOrders_pojo_class.getUsermobile()!=null){
             mobileNotext_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getUsermobile()));
+            customerMobileNo =String.valueOf(modal_manageOrders_pojo_class.getUsermobile());
+
         }
         else{
             mobileNotext_widget.setText("");
-
+            customerMobileNo = "";
         }
 
         if(modal_manageOrders_pojo_class.getSlottimerange()!=null){
@@ -4944,7 +5015,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         return modal_manageOrders_pojo_class;
     }
 
-    private void showBottomSheetDialog_deliveryPartnerList(String orderkey, String deliverypartnerName) {
+    private void showBottomSheetDialog_deliveryPartnerList(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
 
         String fromActivityName="";
         bottomSheetDialog = new BottomSheetDialog(Edit_Or_CancelOrder_OrderDetails_Screen.this);
@@ -4952,7 +5023,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
         ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(Edit_Or_CancelOrder_OrderDetails_Screen.this, deliveryPartnerList,orderkey,fromActivityName+"EditOrders",deliverypartnerName);
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(Edit_Or_CancelOrder_OrderDetails_Screen.this, deliveryPartnerList,orderkey,fromActivityName+"EditOrders",deliverypartnerName,orderid,customerMobileNo,vendorkey);
+
 
         ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 
@@ -4988,10 +5060,13 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 app_radioGroup.check(R.id.paytm);
 
             }
+
             else if(paymentmode.equals(Constants.CREDIT)){
                 app_radioGroup.check(R.id.credit);
 
             }
+
+
             else{
                 app_radioGroup.check(R.id.cash_on_Delivery);
                 Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,
@@ -5020,6 +5095,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 app_radioGroup.check(R.id.credit_pos);
 
             }
+
+
 
 
             else{
@@ -5109,8 +5186,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 bottomSheetDialog.dismiss();
                 Adjusting_Widgets_Visibility(true);
                 AddNewEntryinPaymentTransaction("","","",modal_manageOrders_pojo_class.getUsermobile().toString() ,orderid,paymentModeString,"","SUCCESS",payableAmount,getDate_and_time(),userkey);
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
 
-                Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid);
+                Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
             }
         });
 
@@ -5259,28 +5339,75 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
 
-    private void ChangeStatusOftheOrder(String changestatusto, String OrderKey, String currenttime) {
+    private void ChangeStatusOftheOrder(String changestatusto, String OrderKey, String currenttime, String orderid, String customerMobileNo, String vendorkey) {
         JSONObject  jsonObject = new JSONObject();
-        try {
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-
-                 jsonObject.put("ordercancelledtime", currenttime);
-
-                Log.i("tag","listenertoken"+ "");
+        String Api_toChangeStatusinTrackingDetailsUsingOrderid = "";
 
 
+        if(orderdetailsnewschema){
+           try {
+               jsonObject.put("orderid", orderid);
+               jsonObject.put("orderstatus", changestatusto);
+               jsonObject.put("vendorkey", vendorkey);
+
+               jsonObject.put("ordercancelledtime", currenttime);
 
 
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+           } catch (JSONException e) {
+               e.printStackTrace();
+               Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
-        }
+           }
+
+
+            Api_toChangeStatusinTrackingDetailsUsingOrderid = Constants.api_UpdateVendorTrackingOrderDetails;
+
+            JSONObject customerDetails_JsonObject = new JSONObject();
+
+            try {
+
+                customerDetails_JsonObject.put("orderid", orderid);
+                customerDetails_JsonObject.put("orderstatus", changestatusto);
+                customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+
+                customerDetails_JsonObject.put("ordercancelledtime", currenttime);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerTrackingOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+            initUpdateCustomerOrderDetailsInterface(mContext);
+            Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+            asyncTask_TO_update.execute();
+
+       }
+       else{
+           try {
+               jsonObject.put("key", OrderKey);
+               jsonObject.put("orderstatus", changestatusto);
+
+               jsonObject.put("ordercancelledtime", currenttime);
+
+
+
+
+           } catch (JSONException e) {
+               e.printStackTrace();
+               Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+           }
+
+
+            Api_toChangeStatusinTrackingDetailsUsingOrderid = Constants.api_updateTrackingOrderTable;
+       }
+
+
         Log.d(Constants.TAG, "Request Payload: " + jsonObject);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeStatusinTrackingDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -5326,30 +5453,99 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
 
     }
+    private void initUpdateCustomerOrderDetailsInterface(Context mContext) {
+
+        mResultCallback_UpdateCustomerOrderDetailsTableInterface  = new Update_CustomerOrderDetails_TrackingTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try{
+                 //   Toast.makeText(mContext, "Succesfully Updated in Customer Details", Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                try{
+                   // Toast.makeText(mContext, "Failed to Updated in Customer Details", Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        };
+    }
 
 
-    private void Change_Payment_Mode_Of_the_Order(String orderdetailsKey, String paymentModeString, String orderid) {
-
+    private void Change_Payment_Mode_Of_the_Order(String orderdetailsKey, String paymentModeString, String orderid, String customerMobileNo, String vendorkey) {
 
         JSONObject  jsonObject = new JSONObject();
-        try {
-            jsonObject.put("key", orderdetailsKey);
-            jsonObject.put("paymentmode", paymentModeString);
-            Log.i("tag","listenertoken"+ "");
+        String Api_toUpdateinOrderDetailsUsingOrderid = "";
+
+
+        if(orderdetailsnewschema){
+            try {
+                jsonObject.put("orderid", orderid);
+                jsonObject.put("vendorkey", vendorkey);
+
+                jsonObject.put("paymentmode", paymentModeString);
 
 
 
 
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+            }
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
-            Adjusting_Widgets_Visibility(false);
+            Api_toUpdateinOrderDetailsUsingOrderid = Constants.api_UpdateVendorOrderDetails+"?usermobileno="+ customerMobileNo +"&orderid="+orderid;
+
+            JSONObject customerDetails_JsonObject = new JSONObject();
+
+            try {
+
+                customerDetails_JsonObject.put("orderid", orderid);
+                customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+
+                customerDetails_JsonObject.put("paymentmode", paymentModeString);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerOrderDetails +"?usermobileno="+ customerMobileNo +"&orderid="+orderid;
+
+            initUpdateCustomerOrderDetailsInterface(mContext);
+            Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+            asyncTask_TO_update.execute();
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updatePaymentMode_OrderDetailsTable,
+        else{
+            try {
+                jsonObject.put("key", orderdetailsKey);
+                jsonObject.put("paymentmode", paymentModeString);
+                Log.i("tag","listenertoken"+ "");
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+                Adjusting_Widgets_Visibility(false);
+
+            }
+
+            Api_toUpdateinOrderDetailsUsingOrderid = Constants.api_Update_OrderDetails;
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toUpdateinOrderDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {

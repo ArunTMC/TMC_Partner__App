@@ -34,7 +34,8 @@ import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
-import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,7 +60,7 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
     LinearLayout PrintReport_Layout, generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
     String vendorKey,orderDetailsJsonString="";
-    TextView  appOrdersPacksCount_textwidget,dateSelector_text,appOrdersCount_textwidget,listviewInstruction_textview;
+    TextView  fetchData,appOrdersPacksCount_textwidget,dateSelector_text,appOrdersCount_textwidget,listviewInstruction_textview;
     ListView posSalesReport_Listview;
 
     double screenInches;
@@ -86,6 +87,13 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
     public static HashMap<String, Modal_ManageOrders_Pojo_Class> menuItemKey_CutWeightdetailsHashmap = new HashMap();
 
 
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+    public static List<Modal_ManageOrders_Pojo_Class> orderList = new ArrayList<>();
+
 
 
     String deliveryTimeForExpr_Delivery;
@@ -101,8 +109,8 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
         NukeSSLCerts.nuke();
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
+        fetchData = findViewById(R.id.fetchData);
         appOrdersPacksCount_textwidget = findViewById(R.id.appOrdersPacksCount_textwidget);
-        generateReport_Layout = findViewById(R.id.generateReport_Layout);
         appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
         posSalesReport_Listview = findViewById(R.id.posSalesReport_Listview);
         listviewInstruction_textview = findViewById(R.id.listviewInstruction_textview);
@@ -136,25 +144,36 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
 
         try {
 
-            dateSelector_text.setText(CurrentDate);
+
+            dateSelector_text.setText(Constants.Empty_Date_Format);
+            DateString = (Constants.Empty_Date_Format);
         }
         catch (Exception e ){
             e.printStackTrace();
         }
-
 
         try {
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-            double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-            screenInches = Math.sqrt(x + y);
-
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(SlotwiseAppOrderslist .this);
+          //  Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
         }
-        catch (Exception e ){
+        catch (Exception e){
             e.printStackTrace();
-        }
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                //Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
 
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
 
         try {
@@ -179,6 +198,7 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                     MODE_PRIVATE);
 
             vendorKey = sharedPreferences.getString("VendorKey", "");
+            orderdetailsnewschema = (sharedPreferences.getBoolean("orderdetailsnewschema_settings", false));
 
         }
         catch (Exception e ){
@@ -246,6 +266,23 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
        */
 
 
+        fetchData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (orderdetailsnewschema) {
+                    String dateAsnewFormat = convertOldFormatDateintoNewFormat(DateString);
+                    callVendorOrderDetailsServiceAndInitCallBack(dateAsnewFormat, dateAsnewFormat, vendorKey);
+
+
+                } else {
+
+                    getOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+
+                }
+
+            }
+        });
 
 
         SlotrangeSelector_spinner.setOnTouchListener(new View.OnTouchListener() {
@@ -263,13 +300,27 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                 if(spinner_check==1) {
                     try {
                         selectedTimeRange_spinner = SlotrangeSelector_spinner.getSelectedItem().toString();
-                        if(orderDetailsJsonString.length()>0){
-                            Adjusting_Widgets_Visibility(true);
 
-                            Filterdata(selectedTimeRange_spinner, orderDetailsJsonString);
+                        if (orderdetailsnewschema) {
+
+                            if (orderList.size() > 0) {
+                                Adjusting_Widgets_Visibility(true);
+
+                                processArrayAndgetData( orderList);
+                            } else {
+                                Toast.makeText(SlotwiseAppOrderslist.this, "There is No Data to Display", Toast.LENGTH_LONG).show();
+                            }
+
                         }
                         else{
-                            Toast.makeText(SlotwiseAppOrderslist.this, "There is No Data to Display", Toast.LENGTH_LONG).show();
+
+                            if (orderDetailsJsonString.length() > 0) {
+                                Adjusting_Widgets_Visibility(true);
+
+                                Filterdata(selectedTimeRange_spinner, orderDetailsJsonString);
+                            } else {
+                                Toast.makeText(SlotwiseAppOrderslist.this, "There is No Data to Display", Toast.LENGTH_LONG).show();
+                            }
                         }
                     }
                     catch (Exception e ){
@@ -306,6 +357,1471 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                 }
             }
         });
+
+
+    }
+
+    private void callVendorOrderDetailsServiceAndInitCallBack(String slotDate, String dateAsnewFormat1, String vendorKey) {
+        Adjusting_Widgets_Visibility(true);
+
+        if(isVendorOrdersTableServiceCalled){
+            Adjusting_Widgets_Visibility(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                if(orderslist_fromResponse.size()>0) {
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("content", orderslist_fromResponse);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    isVendorOrdersTableServiceCalled = false;
+
+                    orderList = orderslist_fromResponse;
+                    processArrayAndgetData(orderList);
+                }
+                else{
+
+
+                    Adjusting_Widgets_Visibility(false);
+                    isVendorOrdersTableServiceCalled = false;
+
+                    try{
+                        menuItemname_array.clear();
+                        orderid_hashmap.clear();
+                        menuItemname_hashmap.clear();
+                        SubCtgyName_hashmap.clear();
+                        tmcSubCtgyName.clear();
+                        orderList.clear();
+                        dataList.clear();
+                        menuItemKey_CutWeightdetailsHashmap.clear();
+                        menuItemKey_CutWeightdetails.clear();
+                        listviewInstruction_textview.setVisibility(View.VISIBLE);
+                        posSalesReport_Listview.setVisibility(View.GONE);
+                          listviewInstruction_textview.setText("There is no orders on this Date");
+                              appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
+
+
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled = false;
+
+                try{
+                    menuItemname_array.clear();
+                    orderid_hashmap.clear();
+                    menuItemname_hashmap.clear();
+                    SubCtgyName_hashmap.clear();
+                    tmcSubCtgyName.clear();
+                    orderList.clear();
+                    dataList.clear();
+                    menuItemKey_CutWeightdetailsHashmap.clear();
+                    menuItemKey_CutWeightdetails.clear();
+                    listviewInstruction_textview.setVisibility(View.VISIBLE);
+                    posSalesReport_Listview.setVisibility(View.GONE);
+                      listviewInstruction_textview.setText("There is no orders on this Date");
+                              appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
+
+
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                Toast.makeText(SlotwiseAppOrderslist.this, "There is Some error on this data", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+
+            }
+        };
+        try{
+            menuItemname_array.clear();
+            orderid_hashmap.clear();
+            menuItemname_hashmap.clear();
+            SubCtgyName_hashmap.clear();
+            tmcSubCtgyName.clear();
+            orderList.clear();
+            dataList.clear();
+            menuItemKey_CutWeightdetailsHashmap.clear();
+            menuItemKey_CutWeightdetails.clear();
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        mVolleyService = new VendorOrdersTableService(mResultCallback,SlotwiseAppOrderslist.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+slotDate+"&vendorkey="+vendorKey;
+
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+
+
+
+    }
+
+    private void processArrayAndgetData(List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+
+        try{
+            menuItemname_array.clear();
+            orderid_hashmap.clear();
+            menuItemname_hashmap.clear();
+            SubCtgyName_hashmap.clear();
+            tmcSubCtgyName.clear();
+            menuItemKey_CutWeightdetailsHashmap.clear();
+            menuItemKey_CutWeightdetails.clear();
+            Adjusting_Widgets_Visibility(true);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        String selectedslot = selectedTimeRange_spinner;
+        int arrayLength = orderslist_fromResponse.size();
+        for(int i1 =0 ;i1<arrayLength; i1++){
+
+            Modal_ManageOrders_Pojo_Class pojo_class_fromresponseArray = new Modal_ManageOrders_Pojo_Class();
+
+            pojo_class_fromresponseArray = orderslist_fromResponse.get(i1);
+
+            String slottimerange = "",orderid ="",tokenno="", deliverytype="",menuitemkey ="",menuitemkeyCutWeight ="",slotname;
+
+
+
+
+            try {
+
+            try {
+                    deliverytype = String.valueOf(pojo_class_fromresponseArray.getDeliverytype());
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                deliverytype = "";
+
+            }
+
+                try {
+                    slotname = String.valueOf(pojo_class_fromresponseArray.getSlotname());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    slotname = "";
+
+                }
+
+
+
+            try {
+                    slottimerange = String.valueOf(pojo_class_fromresponseArray.getSlottimerange());
+                    if (deliverytype.contains(Constants.STOREPICKUP_DELIVERYTYPE)) {
+                        slottimerange = Constants.STOREPICKUP_DELIVERYTYPE;
+                    }
+                    else {
+                        if (String.valueOf(slotname).toUpperCase().equals(Constants.EXPRESSDELIVERY_SLOTNAME) || String.valueOf(slotname).toUpperCase().equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
+                            slottimerange = Constants.EXPRESSDELIVERY_SLOTNAME;
+                        }
+                    }
+               }
+            catch (Exception e){
+                e.printStackTrace();
+                slottimerange = "";
+
+            }
+
+
+            try{
+                if(selectedslot.equals("All")) {
+                    try{
+
+                        orderid = String.valueOf(pojo_class_fromresponseArray.getOrderid());
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+                    boolean isAllslotAvailable = checkifslottimefororderidislreadyAvailabelinArray("All");
+                    try{
+                        if (isAllslotAvailable) {
+
+                            ArrayList<String> slottime_array = orderid_hashmap.get("All");
+                            slottime_array.add(orderid);
+
+
+                        } else {
+
+                            ArrayList<String> slottime_array = new ArrayList<>();
+                            slottime_array.add(orderid);
+
+                            orderid_hashmap.put("All", slottime_array);
+                        }
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try{
+                            tokenno = String.valueOf(pojo_class_fromresponseArray.getTokenno());
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+
+                    try {
+                        JSONArray jsonArray = new JSONArray();
+                            try{
+                                jsonArray = pojo_class_fromresponseArray.getItemdesp();
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                            try{
+
+                                if(jsonArray.length()<=0){
+                                    jsonArray = new JSONArray(pojo_class_fromresponseArray.getItemdesp_string());
+
+                                }
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                int older_quantity_from_hashmap = 0,
+                                        new_quantity = 0;
+
+                                JSONObject itemdespjson = jsonArray.getJSONObject(i);
+                                String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "",weight="",cutname="";
+                                try {
+
+                                    if (itemdespjson.has("tmcsubctgykey")) {
+                                        tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                    } else {
+                                        tmcSubCtgyKey = "";
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    tmcSubCtgyKey = "";
+                                }
+
+
+                                try {
+                                    if (itemdespjson.has("menuitemid")) {
+                                        menuitemkey = String.valueOf(itemdespjson.get("menuitemid"));
+
+                                    } else {
+                                        menuitemkey = "";
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                    menuitemkey = "";
+
+                                }
+
+
+
+
+
+                                try {
+                                    if (itemdespjson.has("itemname")) {
+                                        if(tmcSubCtgyKey.equals("tmcsubctgy_16")){
+                                            //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                            itemName = "Grill House "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                        }
+                                        else  if(tmcSubCtgyKey.equals("tmcsubctgy_15")){
+                                            // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                            itemName = "Ready to Cook "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                        }
+                                        else{
+                                            itemName = itemdespjson.getString("itemname");
+
+                                        }
+                                    } else {
+                                        itemName = "";
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    itemName = "";
+                                }
+
+
+                                try {
+
+                                    if (itemdespjson.has("quantity")) {
+                                        quantity = (itemdespjson.getString("quantity"));
+                                    } else {
+                                        quantity = "";
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    quantity = "";
+                                }
+
+
+
+
+
+                                try {
+                                    tmcsubctgyname = getSubCtgyNameusingSubCtgykey(tmcSubCtgyKey);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    tmcsubctgyname = "";
+                                }
+
+                                try {
+
+                                    if (itemdespjson.has("netweight")) {
+                                        weight = (itemdespjson.getString("netweight"));
+
+                                    } else {
+                                        weight = "";
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    weight = "";
+                                }
+                                if(weight.equals("") || weight.equals("null")){
+                                    try {
+
+                                        if (itemdespjson.has("grossweight")) {
+                                            weight = (itemdespjson.getString("grossweight"));
+
+                                        } else {
+                                            weight = "";
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        weight = "";
+                                    }
+                                }
+
+                                if(weight.equals("") || weight.equals("null")){
+                                    try {
+
+                                        if (itemdespjson.has("portionsize")) {
+                                            weight = (itemdespjson.getString("portionsize"));
+
+                                        } else {
+                                            weight = "";
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        weight = "";
+                                    }
+                                }
+
+                                try {
+                                    if (itemdespjson.has("cutname")) {
+                                        cutname = String.valueOf(itemdespjson.get("cutname"));
+
+                                    } else {
+                                        cutname = "";
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                    cutname = "";
+
+                                }
+
+                                try{
+                                    menuitemkeyCutWeight = menuitemkey+weight+cutname;
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                                try{
+                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                        Log.i("MENUITEM SubCtgy",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                    }
+
+                                    if (!tmcSubCtgyName.contains(tmcsubctgyname)) {
+                                        try{
+                                            tmcSubCtgyName.add(tmcsubctgyname);
+                                            Modal_ManageOrders_Pojo_Class modal = new Modal_ManageOrders_Pojo_Class();
+                                            modal.tmcSubCtgyKey = tmcSubCtgyKey;
+                                            modal.tmcSubCtgyName = tmcsubctgyname;
+                                            modal.totaltmcsubctgyquantity = quantity;
+                                            SubCtgyName_hashmap.put(tmcsubctgyname, modal);
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                    } else {
+                                        try{
+                                            Modal_ManageOrders_Pojo_Class modal = SubCtgyName_hashmap.get(tmcsubctgyname);
+                                            int quantityfromhashmap = 0;
+                                            quantityfromhashmap = Integer.parseInt(modal.getTotaltmcsubctgyquantity());
+                                            int newquantity = Integer.parseInt(quantity);
+                                            newquantity = quantityfromhashmap + newquantity;
+                                            modal.setTotaltmcsubctgyquantity(String.valueOf(newquantity));
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+
+                                try{
+                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                        Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                    }
+                                    if (menuItemKey_CutWeightdetails.contains(menuitemkeyCutWeight)) {
+
+                                        boolean inismenuItemAvailaleinCutWeighthashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                        if (!inismenuItemAvailaleinCutWeighthashmap) {
+                                            try{
+                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                modal_manageOrders_pojo_class.itemName = itemName;
+                                                modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                modal_manageOrders_pojo_class.quantity = quantity;
+                                                modal_manageOrders_pojo_class.tokenno = tokenno+" - "+quantity;
+                                                modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                modal_manageOrders_pojo_class.cutname = cutname;
+                                                menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                        } else {
+                                            try{
+                                                if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                                    Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                                }
+
+                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                int newQuantity = Integer.parseInt(quantity);
+                                                quantityfrommap = quantityfrommap + newQuantity;
+                                                String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                tokennoFromHashmap = tokennoFromHashmap + "," + tokenno+" - "+quantity;
+                                                modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+
+
+
+
+
+                                    }
+
+
+
+                                    else {
+
+                                        try{
+                                            menuItemKey_CutWeightdetails.add(menuitemkeyCutWeight);
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                        boolean inismenuItemAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                        try{
+
+
+                                            if (!inismenuItemAvailaleinhashmap) {
+                                                try{
+
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                    modal_manageOrders_pojo_class.itemName = itemName;
+                                                    modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                    modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                    modal_manageOrders_pojo_class.quantity = quantity;
+                                                    modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                    modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                    modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                    modal_manageOrders_pojo_class.cutname = cutname;
+                                                    menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            } else {
+                                                try{
+
+                                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                                        Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                                    }
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                    int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                    int newQuantity = Integer.parseInt(quantity);
+                                                    quantityfrommap = quantityfrommap + newQuantity;
+                                                    String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                    tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                    modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                    modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+
+
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+
+
+
+                                try{
+
+                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                        Log.i("MENUITEM",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                    }
+                                    if (menuItemname_array.contains(menuitemkey)) {
+
+
+                                        boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+                                        if (!inismenuItemAvailaleinhashmap) {
+                                            try{
+                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                modal_manageOrders_pojo_class.itemName = itemName;
+                                                modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                modal_manageOrders_pojo_class.quantity = quantity;
+                                                modal_manageOrders_pojo_class.tokenno = tokenno+" - "+quantity;
+                                                modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                modal_manageOrders_pojo_class.cutname = cutname;
+                                                menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                        } else {
+                                            try{
+
+
+                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                int newQuantity = Integer.parseInt(quantity);
+                                                quantityfrommap = quantityfrommap + newQuantity;
+                                                String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                tokennoFromHashmap = tokennoFromHashmap + "," + tokenno+" - "+quantity;
+                                                modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+
+/*
+                                        boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
+
+                                        if (isItemNamesTokenNoisAvailable) {
+                                            ArrayList<String> tokenNoArray_fromHashmap = tokenNo_hashmap.get(itemName);
+                                            Objects.requireNonNull(tokenNoArray_fromHashmap).add(tokenno);
+                                        } else {
+                                            ArrayList<String> tokenNoArray = new ArrayList<>();
+                                            tokenNoArray.add(tokenno);
+                                            tokenNo_hashmap.put(itemName, tokenNoArray);
+                                        }
+
+                                        boolean isItemNamesQuantityisAvailable = checkifquantityislreadyAvailabelinArray(itemName);
+                                        if (isItemNamesQuantityisAvailable) {
+                                            older_quantity_from_hashmap = Integer.parseInt(Objects.requireNonNull(quantity_hashmap.get(itemName)));
+                                            new_quantity = Integer.parseInt(quantity);
+                                            older_quantity_from_hashmap = older_quantity_from_hashmap + new_quantity;
+                                            quantity_hashmap.put(itemName, String.valueOf(older_quantity_from_hashmap));
+                                        } else {
+                                            quantity_hashmap.put(itemName, String.valueOf(itemdespjson.getString("quantity")));
+
+                                        }
+
+
+                                        boolean isSlotTimeNameisAvailable = checkifslottimeisAlreadyAvailabelinArray(itemName);
+                                        if (isSlotTimeNameisAvailable) {
+                                            ArrayList<String> slottimeArray_fromHashmap = slottimeRange_hashmap.get(itemName);
+                                            Objects.requireNonNull(slottimeArray_fromHashmap).add(slottimerange);
+                                        } else {
+                                            ArrayList<String> slottimeArray = new ArrayList<>();
+                                            slottimeArray.add(slottimerange);
+                                            slottimeRange_hashmap.put(itemName, slottimeArray);
+                                        }
+
+*/
+
+                                    }
+                                    else {
+
+/*
+                                                try{
+                                                    menuItemKey_CutWeightdetails.add(menuitemkey);
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+                                                boolean inismenuItemCutWeightAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                try{
+
+
+                                                    if (!inismenuItemCutWeightAvailaleinhashmap) {
+                                                        try{
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                            modal_manageOrders_pojo_class.itemName = itemName;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                            modal_manageOrders_pojo_class.quantity = quantity;
+                                                            modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+
+                                                            menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    } else {
+                                                        try{
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                            int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                            int newQuantity = Integer.parseInt(quantity);
+                                                            quantityfrommap = quantityfrommap + newQuantity;
+                                                            String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                            tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                            modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+
+ */
+
+
+
+
+                                        try{
+                                            menuItemname_array.add(menuitemkey);
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                        boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+                                        try{
+
+
+                                            if (!inismenuItemAvailaleinhashmap) {
+                                                try{
+
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                    modal_manageOrders_pojo_class.itemName = itemName;
+                                                    modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                    modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                    modal_manageOrders_pojo_class.quantity = quantity;
+                                                    modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                    modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                    modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                    modal_manageOrders_pojo_class.cutname = cutname;
+                                                    menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            } else {
+                                                try{
+
+                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                    int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                    int newQuantity = Integer.parseInt(quantity);
+                                                    quantityfrommap = quantityfrommap + newQuantity;
+                                                    String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                    tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                    modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                    modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+/*
+                                        boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
+                                        if (isItemNamesTokenNoisAvailable) {
+                                            ArrayList<String> tokenNoArray_fromHashmap = tokenNo_hashmap.get(itemName);
+                                            tokenNoArray_fromHashmap.add(tokenno);
+                                        } else {
+                                            ArrayList<String> tokenNoArray = new ArrayList<>();
+                                            tokenNoArray.add(tokenno);
+                                            tokenNo_hashmap.put(itemName, tokenNoArray);
+                                        }
+
+                                        boolean isItemNamesQuantityisAvailable = checkifquantityislreadyAvailabelinArray(itemName);
+                                        if (isItemNamesQuantityisAvailable) {
+                                            older_quantity_from_hashmap = Integer.parseInt(Objects.requireNonNull(quantity_hashmap.get(itemName)));
+                                            new_quantity = Integer.parseInt(itemdespjson.getString("quantity"));
+                                            older_quantity_from_hashmap = older_quantity_from_hashmap + new_quantity;
+                                            quantity_hashmap.put(itemName, String.valueOf(older_quantity_from_hashmap));
+                                        } else {
+                                            quantity_hashmap.put(itemName, String.valueOf(itemdespjson.getString("quantity")));
+
+                                        }
+
+
+                                        boolean isSlotTimeNameisAvailable = checkifslottimeisAlreadyAvailabelinArray(itemName);
+                                        if (isSlotTimeNameisAvailable) {
+                                            ArrayList<String> slottimeArray_fromHashmap = slottimeRange_hashmap.get(itemName);
+                                            slottimeArray_fromHashmap.add(slottimerange);
+                                        } else {
+                                            ArrayList<String> slottimeArray = new ArrayList<>();
+                                            slottimeArray.add(slottimerange);
+                                            slottimeRange_hashmap.put(itemName, slottimeArray);
+                                        }
+
+
+*/
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
+                }
+                else {
+                    try{
+
+
+                        if (slottimerange.equals(selectedslot)) {
+                            try{
+                                    orderid = String.valueOf(pojo_class_fromresponseArray.getOrderid());
+
+
+
+                            }
+                            catch (Exception e){
+                                orderid = "";
+
+                                e.printStackTrace();
+                            }
+
+
+                            boolean isslotimeAvailable = checkifslottimefororderidislreadyAvailabelinArray(slottimerange);
+
+                            try{
+
+
+                                if (isslotimeAvailable) {
+                                    try{
+
+
+                                        ArrayList<String> slottime_array = orderid_hashmap.get(slottimerange);
+                                        slottime_array.add(orderid);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                                else {
+                                    try{
+
+
+                                        ArrayList<String> slottime_array = new ArrayList<>();
+                                        slottime_array.add(orderid);
+
+                                        orderid_hashmap.put(slottimerange, slottime_array);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            try{
+
+                                 tokenno = String.valueOf(pojo_class_fromresponseArray.getTokenno());
+
+
+                            }
+                            catch (Exception e){
+                                tokenno = "";
+
+                                e.printStackTrace();
+                            }
+
+
+                            try {
+
+                                JSONArray jsonArray = new JSONArray();
+                                try{
+                                    jsonArray = pojo_class_fromresponseArray.getItemdesp();
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+                                try{
+
+                                    if(jsonArray.length()<=0){
+                                        jsonArray = new JSONArray(pojo_class_fromresponseArray.getItemdesp_string());
+
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                        int older_quantity_from_hashmap = 0,
+                                                new_quantity = 0;
+
+                                        JSONObject itemdespjson = jsonArray.getJSONObject(i);
+                                        String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "", weight = "",cutname="";
+                                        try {
+                                            try {
+                                                if (itemdespjson.has("menuitemid")) {
+                                                    menuitemkey = String.valueOf(itemdespjson.get("menuitemid"));
+
+                                                } else {
+                                                    menuitemkey = "";
+                                                }
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                                menuitemkey = "";
+
+                                            }
+
+
+                                            if (itemdespjson.has("tmcsubctgykey")) {
+                                                tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                            } else {
+                                                tmcSubCtgyKey = "";
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            tmcSubCtgyKey = "";
+                                        }
+                                        try {
+                                            if (itemdespjson.has("itemname")) {
+                                                if(tmcSubCtgyKey.equals("tmcsubctgy_16")){
+                                                    //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                                    itemName = "Grill House "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                                }
+                                                else  if(tmcSubCtgyKey.equals("tmcsubctgy_15")){
+                                                    // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                                    itemName = "Ready to Cook "+String.valueOf( itemdespjson.getString("itemname"));
+
+                                                }
+                                                else{
+                                                    itemName = itemdespjson.getString("itemname");
+
+                                                }
+                                            } else {
+                                                itemName = "";
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            itemName = "";
+                                        }
+
+                                        try {
+
+                                            if (itemdespjson.has("tmcsubctgykey")) {
+                                                tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                            } else {
+                                                tmcSubCtgyKey = "";
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            tmcSubCtgyKey = "";
+                                        }
+                                        try {
+
+                                            if (itemdespjson.has("quantity")) {
+                                                quantity = (itemdespjson.getString("quantity"));
+                                            } else {
+                                                quantity = "";
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            quantity = "";
+                                        }
+
+                                        try {
+
+                                            if (itemdespjson.has("netweight")) {
+                                                weight = (itemdespjson.getString("netweight"));
+
+                                            } else {
+                                                weight = "";
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            weight = "";
+                                        }
+                                        if (weight.equals("") || weight.equals("null")) {
+                                            try {
+
+                                                if (itemdespjson.has("grossweight")) {
+                                                    weight = (itemdespjson.getString("grossweight"));
+
+                                                } else {
+                                                    weight = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                weight = "";
+                                            }
+                                        }
+
+                                        if (weight.equals("") || weight.equals("null")) {
+                                            try {
+
+                                                if (itemdespjson.has("portionsize")) {
+                                                    weight = (itemdespjson.getString("portionsize"));
+
+                                                } else {
+                                                    weight = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                weight = "";
+                                            }
+                                        }
+
+
+                                        try {
+                                            tmcsubctgyname = getSubCtgyNameusingSubCtgykey(tmcSubCtgyKey);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            tmcsubctgyname = "";
+                                        }
+
+
+
+
+
+
+
+
+                                        try{
+                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                                Log.i("MENUITEM SubCtgy",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                            }
+
+                                            if (!tmcSubCtgyName.contains(tmcsubctgyname)) {
+                                                try{
+
+
+                                                    tmcSubCtgyName.add(tmcsubctgyname);
+                                                    Modal_ManageOrders_Pojo_Class modal = new Modal_ManageOrders_Pojo_Class();
+                                                    modal.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                    modal.tmcSubCtgyName = tmcsubctgyname;
+                                                    modal.totaltmcsubctgyquantity = quantity;
+                                                    SubCtgyName_hashmap.put(tmcsubctgyname, modal);
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+                                            }
+                                            else {
+                                                try{
+
+
+                                                    Modal_ManageOrders_Pojo_Class modal = SubCtgyName_hashmap.get(tmcsubctgyname);
+                                                    int quantityfromhashmap = 0;
+                                                    quantityfromhashmap = Integer.parseInt(modal.getTotaltmcsubctgyquantity());
+                                                    int newquantity = Integer.parseInt(quantity);
+                                                    newquantity = quantityfromhashmap + newquantity;
+                                                    modal.setTotaltmcsubctgyquantity(String.valueOf(newquantity));
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+
+
+
+                                        try {
+                                            if (itemdespjson.has("cutname")) {
+                                                cutname = String.valueOf(itemdespjson.get("cutname"));
+
+                                            } else {
+                                                cutname = "";
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                            cutname = "";
+
+                                        }
+
+                                        try{
+                                            menuitemkeyCutWeight = itemName+weight+cutname;
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+
+
+
+
+                                        try{
+                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                                Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+                                            }
+                                            if (menuItemKey_CutWeightdetails.contains(menuitemkeyCutWeight)) {
+
+                                                boolean inismenuItemAvailaleinCutWeighthashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                if (!inismenuItemAvailaleinCutWeighthashmap) {
+                                                    try{
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                        modal_manageOrders_pojo_class.itemName = itemName;
+                                                        modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                        modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                        modal_manageOrders_pojo_class.quantity = quantity;
+                                                        modal_manageOrders_pojo_class.tokenno = tokenno+" - "+quantity;
+                                                        modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                        modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                        modal_manageOrders_pojo_class.cutname = cutname;
+                                                        menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+                                                    }
+                                                    catch (Exception e){
+                                                        e.printStackTrace();
+                                                    }
+
+                                                } else {
+                                                    try{
+
+
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                        int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                        int newQuantity = Integer.parseInt(quantity);
+                                                        quantityfrommap = quantityfrommap + newQuantity;
+                                                        String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                        tokennoFromHashmap = tokennoFromHashmap + "," + tokenno+" - "+quantity;
+                                                        modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                        modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                    }
+                                                    catch (Exception e){
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+
+
+
+
+
+                                            }
+
+
+
+                                            else {
+                                                try{
+                                                    menuItemKey_CutWeightdetails.add(menuitemkeyCutWeight);
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+                                                boolean inismenuItemAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                try{
+
+
+                                                    if (!inismenuItemAvailaleinhashmap) {
+                                                        try{
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                            modal_manageOrders_pojo_class.itemName = itemName;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                            modal_manageOrders_pojo_class.quantity = quantity;
+                                                            modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                            modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                            modal_manageOrders_pojo_class.cutname = cutname;
+                                                            menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    } else {
+                                                        try{
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                            int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                            int newQuantity = Integer.parseInt(quantity);
+                                                            quantityfrommap = quantityfrommap + newQuantity;
+                                                            String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                            tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                            modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+                                            }
+
+
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try{
+                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
+                                                Log.i("MENUITEM",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+
+                                            }
+                                            if (menuItemname_array.contains(menuitemkey)) {
+
+                                                boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+                                                try{
+
+
+
+                                                    if (!inismenuItemAvailaleinhashmap) {
+                                                        try{
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                            modal_manageOrders_pojo_class.itemName = itemName;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                            modal_manageOrders_pojo_class.quantity = quantity;
+                                                            modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                            modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                            modal_manageOrders_pojo_class.cutname = cutname;
+                                                            menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+
+
+                                                    else {
+                                                        try{
+
+
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                            int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                            int newQuantity = Integer.parseInt(quantity);
+                                                            quantityfrommap = quantityfrommap + newQuantity;
+                                                            String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                            tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                            modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                        }
+                                                        catch (Exception e){
+
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+/*
+                                            boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
+
+                                            if (isItemNamesTokenNoisAvailable) {
+                                                ArrayList<String> tokenNoArray_fromHashmap = tokenNo_hashmap.get(itemName);
+                                                Objects.requireNonNull(tokenNoArray_fromHashmap).add(tokenno);
+                                            } else {
+                                                ArrayList<String> tokenNoArray = new ArrayList<>();
+                                                tokenNoArray.add(tokenno);
+                                                tokenNo_hashmap.put(itemName, tokenNoArray);
+                                            }
+
+                                            boolean isItemNamesQuantityisAvailable = checkifquantityislreadyAvailabelinArray(itemName);
+                                            if (isItemNamesQuantityisAvailable) {
+                                                older_quantity_from_hashmap = Integer.parseInt(Objects.requireNonNull(quantity_hashmap.get(itemName)));
+                                                new_quantity = Integer.parseInt(quantity);
+                                                older_quantity_from_hashmap = older_quantity_from_hashmap + new_quantity;
+                                                quantity_hashmap.put(itemName, String.valueOf(older_quantity_from_hashmap));
+                                            } else {
+                                                quantity_hashmap.put(itemName, String.valueOf(itemdespjson.getString("quantity")));
+
+                                            }
+
+
+                                            boolean isSlotTimeNameisAvailable = checkifslottimeisAlreadyAvailabelinArray(itemName);
+                                            if (isSlotTimeNameisAvailable) {
+                                                ArrayList<String> slottimeArray_fromHashmap = slottimeRange_hashmap.get(itemName);
+                                                Objects.requireNonNull(slottimeArray_fromHashmap).add(slottimerange);
+                                            } else {
+                                                ArrayList<String> slottimeArray = new ArrayList<>();
+                                                slottimeArray.add(slottimerange);
+                                                slottimeRange_hashmap.put(itemName, slottimeArray);
+                                            }
+*/
+
+                                            }
+                                            else {
+                                                try{
+
+
+                                                    menuItemname_array.add(menuitemkey);
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+
+                                                try{
+
+
+                                                    if (!inismenuItemAvailaleinhashmap) {
+                                                        try{
+
+
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                            modal_manageOrders_pojo_class.itemName = itemName;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                            modal_manageOrders_pojo_class.quantity = quantity;
+                                                            modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                            modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                            modal_manageOrders_pojo_class.cutname = cutname;
+                                                            menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                    else {
+                                                        try{
+
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                            int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                            int newQuantity = Integer.parseInt(quantity);
+                                                            quantityfrommap = quantityfrommap + newQuantity;
+                                                            String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                            tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                            modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                        }
+                                                        catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
+
+                                                    }
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+/*
+                                            boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
+                                            if (isItemNamesTokenNoisAvailable) {
+                                                ArrayList<String> tokenNoArray_fromHashmap = tokenNo_hashmap.get(itemName);
+                                                tokenNoArray_fromHashmap.add(tokenno);
+                                            } else {
+                                                ArrayList<String> tokenNoArray = new ArrayList<>();
+                                                tokenNoArray.add(tokenno);
+                                                tokenNo_hashmap.put(itemName, tokenNoArray);
+                                            }
+
+                                            boolean isItemNamesQuantityisAvailable = checkifquantityislreadyAvailabelinArray(itemName);
+                                            if (isItemNamesQuantityisAvailable) {
+                                                older_quantity_from_hashmap = Integer.parseInt(Objects.requireNonNull(quantity_hashmap.get(itemName)));
+                                                new_quantity = Integer.parseInt(itemdespjson.getString("quantity"));
+                                                older_quantity_from_hashmap = older_quantity_from_hashmap + new_quantity;
+                                                quantity_hashmap.put(itemName, String.valueOf(older_quantity_from_hashmap));
+                                            } else {
+                                                quantity_hashmap.put(itemName, String.valueOf(itemdespjson.getString("quantity")));
+
+                                            }
+
+
+                                            boolean isSlotTimeNameisAvailable = checkifslottimeisAlreadyAvailabelinArray(itemName);
+                                            if (isSlotTimeNameisAvailable) {
+                                                ArrayList<String> slottimeArray_fromHashmap = slottimeRange_hashmap.get(itemName);
+                                                slottimeArray_fromHashmap.add(slottimerange);
+                                            } else {
+                                                ArrayList<String> slottimeArray = new ArrayList<>();
+                                                slottimeArray.add(slottimerange);
+                                                slottimeRange_hashmap.put(itemName, slottimeArray);
+                                            }
+*/
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+
+                }
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+
+            }
+
+
+
+
+            if(arrayLength-i1==1){
+                try {
+                    if (menuItemname_hashmap.size() > 0 && menuItemname_array.size() > 0) {
+                        //  prepareData(selectedslot,tokenNo_hashmap,quantity_hashmap,slottimeRange_hashmap,menuItemname_array,orderid_hashmap,menuItemname_hashmap, tmcSubCtgyName);
+                        try {
+                            prepareData(selectedslot, menuItemname_array, orderid_hashmap, menuItemname_hashmap, tmcSubCtgyName);
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                    else {
+                        listviewInstruction_textview.setVisibility(View.VISIBLE);
+                        posSalesReport_Listview.setVisibility(View.GONE);
+                        Adjusting_Widgets_Visibility(false);
+                        listviewInstruction_textview.setText("This Slot have No Orders");
+                        appOrdersCount_textwidget.setText("0");
+                        appOrdersPacksCount_textwidget.setText("0");
+                        spinner_check=0;
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+
+
+        }
+
 
 
     }
@@ -349,7 +1865,12 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                     //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getLocalizedMessage());
                     //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.getMessage());
                     //Log.d(Constants.TAG, "getOrderDetailsUsingApi Error: " + error.toString());
-                    listviewInstruction_textview.setText("There is No Orders on this date");
+                    listviewInstruction_textview.setVisibility(View.VISIBLE);
+                    posSalesReport_Listview.setVisibility(View.GONE);
+                      listviewInstruction_textview.setText("There is no orders on this Date");
+                              appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
+
                     error.printStackTrace();
                 }
             }) {
@@ -409,6 +1930,7 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
             menuItemname_hashmap.clear();
             SubCtgyName_hashmap.clear();
             tmcSubCtgyName.clear();
+            orderList.clear();
             menuItemKey_CutWeightdetailsHashmap.clear();
             menuItemKey_CutWeightdetails.clear();
             Adjusting_Widgets_Visibility(true);
@@ -429,213 +1951,181 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
             int arrayLength = JArray.length();
             //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
-
-            for(;i1<(arrayLength);i1++) {
-
-                try {
-                    JSONObject json = JArray.getJSONObject(i1);
-                    //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
-                    String slottimerange = "",orderid ="",tokenno="", deliverytype="",menuitemkey ="",menuitemkeyCutWeight ="";
-
-
+            if(arrayLength>0) {
+                for (; i1 < (arrayLength); i1++) {
 
                     try {
-                        if (json.has("deliverytype")) {
-                            deliverytype = String.valueOf(json.get("deliverytype"));
+                        JSONObject json = JArray.getJSONObject(i1);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray orderStatus: " + String.valueOf(json.get("orderStatus")));
+                        String slottimerange = "", orderid = "", tokenno = "", deliverytype = "", menuitemkey = "", menuitemkeyCutWeight = "";
 
-                        } else {
+
+                        try {
+                            if (json.has("deliverytype")) {
+                                deliverytype = String.valueOf(json.get("deliverytype"));
+
+                            } else {
+                                deliverytype = "";
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                             deliverytype = "";
+
                         }
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        deliverytype = "";
-
-                    }
 
 
-
-
-                    try {
-                        if (json.has("slottimerange")) {
-                            slottimerange = String.valueOf(json.get("slottimerange"));
-                            if (deliverytype.contains(Constants.STOREPICKUP_DELIVERYTYPE)) {
-                                slottimerange = Constants.STOREPICKUP_DELIVERYTYPE;
-                            }
-                            else {
-                                if (slottimerange.contains("mins")) {
-                                    slottimerange = Constants.EXPRESSDELIVERY_SLOTNAME;
+                        try {
+                            if (json.has("slottimerange")) {
+                                slottimerange = String.valueOf(json.get("slottimerange"));
+                                if (deliverytype.contains(Constants.STOREPICKUP_DELIVERYTYPE)) {
+                                    slottimerange = Constants.STOREPICKUP_DELIVERYTYPE;
+                                } else {
+                                    if (slottimerange.contains("mins")) {
+                                        slottimerange = Constants.EXPRESSDELIVERY_SLOTNAME;
+                                    }
                                 }
+                            } else {
+                                slottimerange = "";
                             }
-                        } else {
+                        } catch (Exception e) {
+                            e.printStackTrace();
                             slottimerange = "";
+
                         }
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                        slottimerange = "";
 
-                    }
+                        try {
+                            if (selectedslot.equals("All")) {
+                                try {
+                                    if (json.has("orderid")) {
+                                        orderid = String.valueOf(json.get("orderid"));
 
-                    try{
-                        if(selectedslot.equals("All")) {
-                            try{
-                                if (json.has("orderid")) {
-                                    orderid = String.valueOf(json.get("orderid"));
+                                    } else {
+                                        orderid = "";
+                                    }
 
-                                } else {
-                                    orderid = "";
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
 
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                            }
+
+                                boolean isAllslotAvailable = checkifslottimefororderidislreadyAvailabelinArray("All");
+                                try {
+                                    if (isAllslotAvailable) {
+
+                                        ArrayList<String> slottime_array = orderid_hashmap.get("All");
+                                        slottime_array.add(orderid);
 
 
-                            boolean isAllslotAvailable = checkifslottimefororderidislreadyAvailabelinArray("All");
-                            try{
-                                if (isAllslotAvailable) {
+                                    } else {
 
-                                    ArrayList<String> slottime_array = orderid_hashmap.get("All");
-                                    slottime_array.add(orderid);
+                                        ArrayList<String> slottime_array = new ArrayList<>();
+                                        slottime_array.add(orderid);
 
+                                        orderid_hashmap.put("All", slottime_array);
+                                    }
 
-                                } else {
-
-                                    ArrayList<String> slottime_array = new ArrayList<>();
-                                    slottime_array.add(orderid);
-
-                                    orderid_hashmap.put("All", slottime_array);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
 
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                            }
+                                try {
+                                    if (json.has("tokenno")) {
+                                        tokenno = String.valueOf(json.get("tokenno"));
 
-                            try{
-                                if (json.has("tokenno")) {
-                                    tokenno = String.valueOf(json.get("tokenno"));
+                                    } else {
+                                        tokenno = "";
+                                    }
 
-                                } else {
-                                    tokenno = "";
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
 
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                            }
 
+                                try {
 
+                                    if (json.has("itemdesp")) {
 
-                            try {
+                                        JSONArray jsonArray = json.getJSONArray("itemdesp");
+                                        for (int i = 0; i < jsonArray.length(); i++) {
+                                            int older_quantity_from_hashmap = 0,
+                                                    new_quantity = 0;
 
-                                if (json.has("itemdesp")) {
+                                            JSONObject itemdespjson = jsonArray.getJSONObject(i);
+                                            String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "", weight = "", cutname = "";
+                                            try {
 
-                                    JSONArray jsonArray = json.getJSONArray("itemdesp");
-                                    for (int i = 0; i < jsonArray.length(); i++) {
-                                        int older_quantity_from_hashmap = 0,
-                                                new_quantity = 0;
-
-                                        JSONObject itemdespjson = jsonArray.getJSONObject(i);
-                                        String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "",weight="",cutname="";
-                                        try {
-
-                                            if (itemdespjson.has("tmcsubctgykey")) {
-                                                tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
-                                            } else {
+                                                if (itemdespjson.has("tmcsubctgykey")) {
+                                                    tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                                } else {
+                                                    tmcSubCtgyKey = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 tmcSubCtgyKey = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            tmcSubCtgyKey = "";
-                                        }
 
 
-                                        try {
-                                            if (itemdespjson.has("menuitemid")) {
-                                                menuitemkey = String.valueOf(itemdespjson.get("menuitemid"));
+                                            try {
+                                                if (itemdespjson.has("menuitemid")) {
+                                                    menuitemkey = String.valueOf(itemdespjson.get("menuitemid"));
 
-                                            } else {
+                                                } else {
+                                                    menuitemkey = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 menuitemkey = "";
+
                                             }
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                            menuitemkey = "";
-
-                                        }
 
 
+                                            try {
+                                                if (itemdespjson.has("itemname")) {
+                                                    if (tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                                                        //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                                        itemName = "Grill House " + String.valueOf(itemdespjson.getString("itemname"));
 
+                                                    } else if (tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                                                        // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                                        itemName = "Ready to Cook " + String.valueOf(itemdespjson.getString("itemname"));
 
+                                                    } else {
+                                                        itemName = itemdespjson.getString("itemname");
 
-                                        try {
-                                            if (itemdespjson.has("itemname")) {
-                                                if(tmcSubCtgyKey.equals("tmcsubctgy_16")){
-                                                    //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
-                                                    itemName = "Grill House "+String.valueOf( itemdespjson.getString("itemname"));
-
+                                                    }
+                                                } else {
+                                                    itemName = "";
                                                 }
-                                                else  if(tmcSubCtgyKey.equals("tmcsubctgy_15")){
-                                                    // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
-                                                    itemName = "Ready to Cook "+String.valueOf( itemdespjson.getString("itemname"));
-
-                                                }
-                                                else{
-                                                    itemName = itemdespjson.getString("itemname");
-
-                                                }
-                                            } else {
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 itemName = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            itemName = "";
-                                        }
 
 
-                                        try {
+                                            try {
 
-                                            if (itemdespjson.has("quantity")) {
-                                                quantity = (itemdespjson.getString("quantity"));
-                                            } else {
+                                                if (itemdespjson.has("quantity")) {
+                                                    quantity = (itemdespjson.getString("quantity"));
+                                                } else {
+                                                    quantity = "";
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                                 quantity = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            quantity = "";
-                                        }
-
-                                        
 
 
-
-                                        try {
-                                            tmcsubctgyname = getSubCtgyNameusingSubCtgykey(tmcSubCtgyKey);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            tmcsubctgyname = "";
-                                        }
-
-                                        try {
-
-                                            if (itemdespjson.has("netweight")) {
-                                                weight = (itemdespjson.getString("netweight"));
-
-                                            } else {
-                                                weight = "";
+                                            try {
+                                                tmcsubctgyname = getSubCtgyNameusingSubCtgykey(tmcSubCtgyKey);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                tmcsubctgyname = "";
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            weight = "";
-                                        }
-                                        if(weight.equals("") || weight.equals("null")){
+
                                             try {
 
-                                                if (itemdespjson.has("grossweight")) {
-                                                    weight = (itemdespjson.getString("grossweight"));
+                                                if (itemdespjson.has("netweight")) {
+                                                    weight = (itemdespjson.getString("netweight"));
 
                                                 } else {
                                                     weight = "";
@@ -644,153 +2134,100 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                 e.printStackTrace();
                                                 weight = "";
                                             }
-                                        }
+                                            if (weight.equals("") || weight.equals("null")) {
+                                                try {
 
-                                        if(weight.equals("") || weight.equals("null")){
+                                                    if (itemdespjson.has("grossweight")) {
+                                                        weight = (itemdespjson.getString("grossweight"));
+
+                                                    } else {
+                                                        weight = "";
+                                                    }
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    weight = "";
+                                                }
+                                            }
+
+                                            if (weight.equals("") || weight.equals("null")) {
+                                                try {
+
+                                                    if (itemdespjson.has("portionsize")) {
+                                                        weight = (itemdespjson.getString("portionsize"));
+
+                                                    } else {
+                                                        weight = "";
+                                                    }
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    weight = "";
+                                                }
+                                            }
+
                                             try {
-
-                                                if (itemdespjson.has("portionsize")) {
-                                                    weight = (itemdespjson.getString("portionsize"));
+                                                if (itemdespjson.has("cutname")) {
+                                                    cutname = String.valueOf(itemdespjson.get("cutname"));
 
                                                 } else {
-                                                    weight = "";
+                                                    cutname = "";
                                                 }
                                             } catch (Exception e) {
                                                 e.printStackTrace();
-                                                weight = "";
-                                            }
-                                        }
-
-                                        try {
-                                            if (itemdespjson.has("cutname")) {
-                                                cutname = String.valueOf(itemdespjson.get("cutname"));
-
-                                            } else {
                                                 cutname = "";
-                                            }
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                            cutname = "";
-
-                                        }
-
-                                        try{
-                                            menuitemkeyCutWeight = menuitemkey+weight+cutname;
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-                                        try{
-                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                Log.i("MENUITEM SubCtgy",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
 
                                             }
 
-                                            if (!tmcSubCtgyName.contains(tmcsubctgyname)) {
-                                                try{
-                                                    tmcSubCtgyName.add(tmcsubctgyname);
-                                                    Modal_ManageOrders_Pojo_Class modal = new Modal_ManageOrders_Pojo_Class();
-                                                    modal.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                    modal.tmcSubCtgyName = tmcsubctgyname;
-                                                    modal.totaltmcsubctgyquantity = quantity;
-                                                    SubCtgyName_hashmap.put(tmcsubctgyname, modal);
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
-
-                                            } else {
-                                                try{
-                                                    Modal_ManageOrders_Pojo_Class modal = SubCtgyName_hashmap.get(tmcsubctgyname);
-                                                    int quantityfromhashmap = 0;
-                                                    quantityfromhashmap = Integer.parseInt(modal.getTotaltmcsubctgyquantity());
-                                                    int newquantity = Integer.parseInt(quantity);
-                                                    newquantity = quantityfromhashmap + newquantity;
-                                                    modal.setTotaltmcsubctgyquantity(String.valueOf(newquantity));
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
-
+                                            try {
+                                                menuitemkeyCutWeight = menuitemkey + weight + cutname;
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
+                                            try {
+                                                if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                    Log.i("MENUITEM SubCtgy", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
 
+                                                }
 
-                                        try{
-                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
-
-                                            }
-                                            if (menuItemKey_CutWeightdetails.contains(menuitemkeyCutWeight)) {
-
-                                                boolean inismenuItemAvailaleinCutWeighthashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
-                                                if (!inismenuItemAvailaleinCutWeighthashmap) {
-                                                    try{
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                                                        modal_manageOrders_pojo_class.itemName = itemName;
-                                                        modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                        modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
-                                                        modal_manageOrders_pojo_class.quantity = quantity;
-                                                        modal_manageOrders_pojo_class.tokenno = tokenno+" - "+quantity;
-                                                        modal_manageOrders_pojo_class.ItemFinalWeight = weight;
-                                                        modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
-                                                        modal_manageOrders_pojo_class.cutname = cutname;
-                                                        menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
-                                                    }
-                                                    catch (Exception e){
+                                                if (!tmcSubCtgyName.contains(tmcsubctgyname)) {
+                                                    try {
+                                                        tmcSubCtgyName.add(tmcsubctgyname);
+                                                        Modal_ManageOrders_Pojo_Class modal = new Modal_ManageOrders_Pojo_Class();
+                                                        modal.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                        modal.tmcSubCtgyName = tmcsubctgyname;
+                                                        modal.totaltmcsubctgyquantity = quantity;
+                                                        SubCtgyName_hashmap.put(tmcsubctgyname, modal);
+                                                    } catch (Exception e) {
                                                         e.printStackTrace();
                                                     }
 
                                                 } else {
-                                                    try{
-                                                        if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                            Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
-
-                                                        }
-
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
-                                                        int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
-                                                        int newQuantity = Integer.parseInt(quantity);
-                                                        quantityfrommap = quantityfrommap + newQuantity;
-                                                        String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
-                                                        tokennoFromHashmap = tokennoFromHashmap + "," + tokenno+" - "+quantity;
-                                                        modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
-                                                        modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                    }
-                                                    catch (Exception e){
+                                                    try {
+                                                        Modal_ManageOrders_Pojo_Class modal = SubCtgyName_hashmap.get(tmcsubctgyname);
+                                                        int quantityfromhashmap = 0;
+                                                        quantityfromhashmap = Integer.parseInt(modal.getTotaltmcsubctgyquantity());
+                                                        int newquantity = Integer.parseInt(quantity);
+                                                        newquantity = quantityfromhashmap + newquantity;
+                                                        modal.setTotaltmcsubctgyquantity(String.valueOf(newquantity));
+                                                    } catch (Exception e) {
                                                         e.printStackTrace();
                                                     }
+
                                                 }
-
-
-
-
-
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
 
 
-
-                                            else {
-
-                                                try{
-                                                    menuItemKey_CutWeightdetails.add(menuitemkeyCutWeight);
+                                            try {
+                                                if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                    Log.i("MENUITEM CUTWEIGHT ", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
 
                                                 }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
+                                                if (menuItemKey_CutWeightdetails.contains(menuitemkeyCutWeight)) {
 
-                                                boolean inismenuItemAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
-                                                try{
-
-
-                                                    if (!inismenuItemAvailaleinhashmap) {
-                                                        try{
-
+                                                    boolean inismenuItemAvailaleinCutWeighthashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                    if (!inismenuItemAvailaleinCutWeighthashmap) {
+                                                        try {
                                                             Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
                                                             modal_manageOrders_pojo_class.itemName = itemName;
                                                             modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
@@ -801,18 +2238,17 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                             modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
                                                             modal_manageOrders_pojo_class.cutname = cutname;
                                                             menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
-
-                                                        }
-                                                        catch (Exception e){
+                                                        } catch (Exception e) {
                                                             e.printStackTrace();
                                                         }
-                                                    } else {
-                                                        try{
 
-                                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                                Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
+                                                    } else {
+                                                        try {
+                                                            if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                                Log.i("MENUITEM CUTWEIGHT ", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
 
                                                             }
+
                                                             Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
                                                             int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
                                                             int newQuantity = Integer.parseInt(quantity);
@@ -821,72 +2257,115 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                             tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
                                                             modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
                                                             modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                        }
-                                                        catch (Exception e){
+                                                        } catch (Exception e) {
                                                             e.printStackTrace();
                                                         }
                                                     }
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
 
-                                            }
-
-
-
-                                            }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-
-
-
-
-                                        try{
-
-                                            if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                Log.i("MENUITEM",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
-
-                                            }
-                                            if (menuItemname_array.contains(menuitemkey)) {
-
-
-                                                boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
-                                                if (!inismenuItemAvailaleinhashmap) {
-                                                    try{
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                                                        modal_manageOrders_pojo_class.itemName = itemName;
-                                                        modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                        modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
-                                                        modal_manageOrders_pojo_class.quantity = quantity;
-                                                        modal_manageOrders_pojo_class.tokenno = tokenno+" - "+quantity;
-                                                        modal_manageOrders_pojo_class.ItemFinalWeight = weight;
-                                                        modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
-                                                        modal_manageOrders_pojo_class.cutname = cutname;
-                                                        menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
-                                                    }
-                                                    catch (Exception e){
-                                                        e.printStackTrace();
-                                                    }
 
                                                 } else {
-                                                    try{
 
+                                                    try {
+                                                        menuItemKey_CutWeightdetails.add(menuitemkeyCutWeight);
 
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
-                                                        int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
-                                                        int newQuantity = Integer.parseInt(quantity);
-                                                        quantityfrommap = quantityfrommap + newQuantity;
-                                                        String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
-                                                        tokennoFromHashmap = tokennoFromHashmap + "," + tokenno+" - "+quantity;
-                                                        modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
-                                                        modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                    }
-                                                    catch (Exception e){
+                                                    } catch (Exception e) {
                                                         e.printStackTrace();
                                                     }
+
+                                                    boolean inismenuItemAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                    try {
+
+
+                                                        if (!inismenuItemAvailaleinhashmap) {
+                                                            try {
+
+                                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                                modal_manageOrders_pojo_class.itemName = itemName;
+                                                                modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                                modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                                modal_manageOrders_pojo_class.quantity = quantity;
+                                                                modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                                modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                                modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                                modal_manageOrders_pojo_class.cutname = cutname;
+                                                                menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        } else {
+                                                            try {
+
+                                                                if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                                    Log.i("MENUITEM CUTWEIGHT ", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
+
+                                                                }
+                                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                                int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                                int newQuantity = Integer.parseInt(quantity);
+                                                                quantityfrommap = quantityfrommap + newQuantity;
+                                                                String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                                tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                                modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                                modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
                                                 }
+
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+
+                                                if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                    Log.i("MENUITEM", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
+
+                                                }
+                                                if (menuItemname_array.contains(menuitemkey)) {
+
+
+                                                    boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+                                                    if (!inismenuItemAvailaleinhashmap) {
+                                                        try {
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                            modal_manageOrders_pojo_class.itemName = itemName;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                            modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                            modal_manageOrders_pojo_class.quantity = quantity;
+                                                            modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                            modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                            modal_manageOrders_pojo_class.cutname = cutname;
+                                                            menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+
+                                                    } else {
+                                                        try {
+
+
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                            int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                            int newQuantity = Integer.parseInt(quantity);
+                                                            quantityfrommap = quantityfrommap + newQuantity;
+                                                            String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                            tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                            modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                            modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
 
 /*
                                         boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
@@ -924,8 +2403,7 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
 
 */
 
-                                            }
-                                            else {
+                                                } else {
 
 /*
                                                 try{
@@ -982,58 +2460,52 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
  */
 
 
+                                                    try {
+                                                        menuItemname_array.add(menuitemkey);
 
-
-                                                try{
-                                                    menuItemname_array.add(menuitemkey);
-
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
-
-                                                boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
-                                                try{
-
-
-                                                    if (!inismenuItemAvailaleinhashmap) {
-                                                        try{
-
-                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                                                            modal_manageOrders_pojo_class.itemName = itemName;
-                                                            modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                            modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
-                                                            modal_manageOrders_pojo_class.quantity = quantity;
-                                                            modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
-                                                            modal_manageOrders_pojo_class.ItemFinalWeight = weight;
-                                                            modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
-                                                            modal_manageOrders_pojo_class.cutname = cutname;
-                                                            menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
-
-                                                        }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
-                                                    } else {
-                                                        try{
-
-                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
-                                                            int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
-                                                            int newQuantity = Integer.parseInt(quantity);
-                                                            quantityfrommap = quantityfrommap + newQuantity;
-                                                            String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
-                                                            tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
-                                                            modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
-                                                            modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                        }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                     }
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
+
+                                                    boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+                                                    try {
+
+
+                                                        if (!inismenuItemAvailaleinhashmap) {
+                                                            try {
+
+                                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                                modal_manageOrders_pojo_class.itemName = itemName;
+                                                                modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                                modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                                modal_manageOrders_pojo_class.quantity = quantity;
+                                                                modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                                modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                                modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                                modal_manageOrders_pojo_class.cutname = cutname;
+                                                                menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        } else {
+                                                            try {
+
+                                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                                int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                                int newQuantity = Integer.parseInt(quantity);
+                                                                quantityfrommap = quantityfrommap + newQuantity;
+                                                                String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                                tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                                modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                                modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
 /*
                                         boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
                                         if (isItemNamesTokenNoisAvailable) {
@@ -1069,198 +2541,174 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
 
 
 */
-                                            }
+                                                }
 
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
                                         }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
+                                    } else {
+                                        Log.i(Constants.TAG, "Can't Get itemDesp");
                                     }
-                                } else {
-                                    Log.i(Constants.TAG, "Can't Get itemDesp");
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
 
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                            //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
-                        }
-                        else {
-                            try{
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray ordersList: " + ordersList);
+                            } else {
+                                try {
 
 
-                                if (slottimerange.equals(selectedslot)) {
-                                    try{
-                                        if (json.has("orderid")) {
-                                            orderid = String.valueOf(json.get("orderid"));
+                                    if (slottimerange.equals(selectedslot)) {
+                                        try {
+                                            if (json.has("orderid")) {
+                                                orderid = String.valueOf(json.get("orderid"));
 
-                                        } else {
+                                            } else {
+                                                orderid = "";
+                                            }
+
+                                        } catch (Exception e) {
                                             orderid = "";
-                                        }
 
-                                    }
-                                    catch (Exception e){
-                                        orderid = "";
-
-                                        e.printStackTrace();
-                                    }
-
-
-                                    boolean isslotimeAvailable = checkifslottimefororderidislreadyAvailabelinArray(slottimerange);
-
-                                    try{
-
-
-                                        if (isslotimeAvailable) {
-                                            try{
-
-
-                                                ArrayList<String> slottime_array = orderid_hashmap.get(slottimerange);
-                                                slottime_array.add(orderid);
-                                            }
-                                            catch (Exception e){
-                                                e.printStackTrace();
-                                            }
-
-                                        }
-                                        else {
-                                            try{
-
-
-                                                ArrayList<String> slottime_array = new ArrayList<>();
-                                                slottime_array.add(orderid);
-
-                                                orderid_hashmap.put(slottimerange, slottime_array);
-                                            }
-                                            catch (Exception e){
-                                                e.printStackTrace();
-                                            }
+                                            e.printStackTrace();
                                         }
 
 
-                                    }
-                                    catch (Exception e){
-                                        e.printStackTrace();
-                                    }
-                                    try{
+                                        boolean isslotimeAvailable = checkifslottimefororderidislreadyAvailabelinArray(slottimerange);
+
+                                        try {
 
 
-                                        if (json.has("tokenno")) {
-                                            tokenno = String.valueOf(json.get("tokenno"));
-
-                                        } else {
-                                            tokenno = "";
-                                        }
-
-                                    }
-                                    catch (Exception e){
-                                        tokenno = "";
-
-                                        e.printStackTrace();
-                                    }
-
-
-                                    try {
-
-                                        if (json.has("itemdesp")) {
-
-                                            JSONArray jsonArray = json.getJSONArray("itemdesp");
-                                            for (int i = 0; i < jsonArray.length(); i++) {
-                                                int older_quantity_from_hashmap = 0,
-                                                        new_quantity = 0;
-
-                                                JSONObject itemdespjson = jsonArray.getJSONObject(i);
-                                                String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "", weight = "",cutname="";
+                                            if (isslotimeAvailable) {
                                                 try {
-                                                    try {
-                                                        if (itemdespjson.has("menuitemid")) {
-                                                            menuitemkey = String.valueOf(itemdespjson.get("menuitemid"));
-
-                                                        } else {
-                                                            menuitemkey = "";
-                                                        }
-                                                    }
-                                                    catch (Exception e){
-                                                        e.printStackTrace();
-                                                        menuitemkey = "";
-
-                                                    }
 
 
-                                                    if (itemdespjson.has("tmcsubctgykey")) {
-                                                        tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
-                                                    } else {
-                                                        tmcSubCtgyKey = "";
-                                                    }
+                                                    ArrayList<String> slottime_array = orderid_hashmap.get(slottimerange);
+                                                    slottime_array.add(orderid);
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
-                                                    tmcSubCtgyKey = "";
                                                 }
+
+                                            } else {
                                                 try {
-                                                    if (itemdespjson.has("itemname")) {
-                                                        if(tmcSubCtgyKey.equals("tmcsubctgy_16")){
-                                                            //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
-                                                            itemName = "Grill House "+String.valueOf( itemdespjson.getString("itemname"));
+
+
+                                                    ArrayList<String> slottime_array = new ArrayList<>();
+                                                    slottime_array.add(orderid);
+
+                                                    orderid_hashmap.put(slottimerange, slottime_array);
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                        try {
+
+
+                                            if (json.has("tokenno")) {
+                                                tokenno = String.valueOf(json.get("tokenno"));
+
+                                            } else {
+                                                tokenno = "";
+                                            }
+
+                                        } catch (Exception e) {
+                                            tokenno = "";
+
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+
+                                            if (json.has("itemdesp")) {
+
+                                                JSONArray jsonArray = json.getJSONArray("itemdesp");
+                                                for (int i = 0; i < jsonArray.length(); i++) {
+                                                    int older_quantity_from_hashmap = 0,
+                                                            new_quantity = 0;
+
+                                                    JSONObject itemdespjson = jsonArray.getJSONObject(i);
+                                                    String itemName, tmcSubCtgyKey, tmcsubctgyname = "", quantity = "", weight = "", cutname = "";
+                                                    try {
+                                                        try {
+                                                            if (itemdespjson.has("menuitemid")) {
+                                                                menuitemkey = String.valueOf(itemdespjson.get("menuitemid"));
+
+                                                            } else {
+                                                                menuitemkey = "";
+                                                            }
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                            menuitemkey = "";
 
                                                         }
-                                                        else  if(tmcSubCtgyKey.equals("tmcsubctgy_15")){
-                                                            // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
-                                                            itemName = "Ready to Cook "+String.valueOf( itemdespjson.getString("itemname"));
 
-                                                        }
-                                                        else{
-                                                            itemName = itemdespjson.getString("itemname");
 
+                                                        if (itemdespjson.has("tmcsubctgykey")) {
+                                                            tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                                        } else {
+                                                            tmcSubCtgyKey = "";
                                                         }
-                                                    } else {
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        tmcSubCtgyKey = "";
+                                                    }
+                                                    try {
+                                                        if (itemdespjson.has("itemname")) {
+                                                            if (tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                                                                //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                                                itemName = "Grill House " + String.valueOf(itemdespjson.getString("itemname"));
+
+                                                            } else if (tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                                                                // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                                                itemName = "Ready to Cook " + String.valueOf(itemdespjson.getString("itemname"));
+
+                                                            } else {
+                                                                itemName = itemdespjson.getString("itemname");
+
+                                                            }
+                                                        } else {
+                                                            itemName = "";
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                         itemName = "";
                                                     }
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                    itemName = "";
-                                                }
 
-                                                try {
+                                                    try {
 
-                                                    if (itemdespjson.has("tmcsubctgykey")) {
-                                                        tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
-                                                    } else {
+                                                        if (itemdespjson.has("tmcsubctgykey")) {
+                                                            tmcSubCtgyKey = itemdespjson.getString("tmcsubctgykey");
+                                                        } else {
+                                                            tmcSubCtgyKey = "";
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                         tmcSubCtgyKey = "";
                                                     }
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                    tmcSubCtgyKey = "";
-                                                }
-                                                try {
+                                                    try {
 
-                                                    if (itemdespjson.has("quantity")) {
-                                                        quantity = (itemdespjson.getString("quantity"));
-                                                    } else {
+                                                        if (itemdespjson.has("quantity")) {
+                                                            quantity = (itemdespjson.getString("quantity"));
+                                                        } else {
+                                                            quantity = "";
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                         quantity = "";
                                                     }
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                    quantity = "";
-                                                }
 
-                                                try {
-
-                                                    if (itemdespjson.has("netweight")) {
-                                                        weight = (itemdespjson.getString("netweight"));
-
-                                                    } else {
-                                                        weight = "";
-                                                    }
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                    weight = "";
-                                                }
-                                                if (weight.equals("") || weight.equals("null")) {
                                                     try {
 
-                                                        if (itemdespjson.has("grossweight")) {
-                                                            weight = (itemdespjson.getString("grossweight"));
+                                                        if (itemdespjson.has("netweight")) {
+                                                            weight = (itemdespjson.getString("netweight"));
 
                                                         } else {
                                                             weight = "";
@@ -1269,177 +2717,116 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                         e.printStackTrace();
                                                         weight = "";
                                                     }
-                                                }
+                                                    if (weight.equals("") || weight.equals("null")) {
+                                                        try {
 
-                                                if (weight.equals("") || weight.equals("null")) {
+                                                            if (itemdespjson.has("grossweight")) {
+                                                                weight = (itemdespjson.getString("grossweight"));
+
+                                                            } else {
+                                                                weight = "";
+                                                            }
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                            weight = "";
+                                                        }
+                                                    }
+
+                                                    if (weight.equals("") || weight.equals("null")) {
+                                                        try {
+
+                                                            if (itemdespjson.has("portionsize")) {
+                                                                weight = (itemdespjson.getString("portionsize"));
+
+                                                            } else {
+                                                                weight = "";
+                                                            }
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                            weight = "";
+                                                        }
+                                                    }
+
+
                                                     try {
+                                                        tmcsubctgyname = getSubCtgyNameusingSubCtgykey(tmcSubCtgyKey);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        tmcsubctgyname = "";
+                                                    }
 
-                                                        if (itemdespjson.has("portionsize")) {
-                                                            weight = (itemdespjson.getString("portionsize"));
+
+                                                    try {
+                                                        if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                            Log.i("MENUITEM SubCtgy", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
+
+                                                        }
+
+                                                        if (!tmcSubCtgyName.contains(tmcsubctgyname)) {
+                                                            try {
+
+
+                                                                tmcSubCtgyName.add(tmcsubctgyname);
+                                                                Modal_ManageOrders_Pojo_Class modal = new Modal_ManageOrders_Pojo_Class();
+                                                                modal.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                                modal.tmcSubCtgyName = tmcsubctgyname;
+                                                                modal.totaltmcsubctgyquantity = quantity;
+                                                                SubCtgyName_hashmap.put(tmcsubctgyname, modal);
+
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
 
                                                         } else {
-                                                            weight = "";
+                                                            try {
+
+
+                                                                Modal_ManageOrders_Pojo_Class modal = SubCtgyName_hashmap.get(tmcsubctgyname);
+                                                                int quantityfromhashmap = 0;
+                                                                quantityfromhashmap = Integer.parseInt(modal.getTotaltmcsubctgyquantity());
+                                                                int newquantity = Integer.parseInt(quantity);
+                                                                newquantity = quantityfromhashmap + newquantity;
+                                                                modal.setTotaltmcsubctgyquantity(String.valueOf(newquantity));
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+
                                                         }
                                                     } catch (Exception e) {
                                                         e.printStackTrace();
-                                                        weight = "";
-                                                    }
-                                                }
-
-
-                                                try {
-                                                    tmcsubctgyname = getSubCtgyNameusingSubCtgykey(tmcSubCtgyKey);
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                    tmcsubctgyname = "";
-                                                }
-
-
-
-
-                                                
-
-
-
-                                                try{
-                                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                        Log.i("MENUITEM SubCtgy",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
-
                                                     }
 
-                                                    if (!tmcSubCtgyName.contains(tmcsubctgyname)) {
-                                                        try{
 
+                                                    try {
+                                                        if (itemdespjson.has("cutname")) {
+                                                            cutname = String.valueOf(itemdespjson.get("cutname"));
 
-                                                            tmcSubCtgyName.add(tmcsubctgyname);
-                                                            Modal_ManageOrders_Pojo_Class modal = new Modal_ManageOrders_Pojo_Class();
-                                                            modal.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                            modal.tmcSubCtgyName = tmcsubctgyname;
-                                                            modal.totaltmcsubctgyquantity = quantity;
-                                                            SubCtgyName_hashmap.put(tmcsubctgyname, modal);
-
+                                                        } else {
+                                                            cutname = "";
                                                         }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
-
-                                                    }
-                                                    else {
-                                                        try{
-
-
-                                                            Modal_ManageOrders_Pojo_Class modal = SubCtgyName_hashmap.get(tmcsubctgyname);
-                                                            int quantityfromhashmap = 0;
-                                                            quantityfromhashmap = Integer.parseInt(modal.getTotaltmcsubctgyquantity());
-                                                            int newquantity = Integer.parseInt(quantity);
-                                                            newquantity = quantityfromhashmap + newquantity;
-                                                            modal.setTotaltmcsubctgyquantity(String.valueOf(newquantity));
-                                                        }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
-
-
-                                                    }
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
-
-
-
-
-                                                try {
-                                                    if (itemdespjson.has("cutname")) {
-                                                        cutname = String.valueOf(itemdespjson.get("cutname"));
-
-                                                    } else {
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                         cutname = "";
-                                                    }
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                    cutname = "";
-
-                                                }
-
-                                                try{
-                                                    menuitemkeyCutWeight = itemName+weight+cutname;
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
-
-
-
-
-
-                                                try{
-                                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                        Log.i("MENUITEM CUTWEIGHT ",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
-}
-                                                    if (menuItemKey_CutWeightdetails.contains(menuitemkeyCutWeight)) {
-
-                                                        boolean inismenuItemAvailaleinCutWeighthashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
-                                                        if (!inismenuItemAvailaleinCutWeighthashmap) {
-                                                            try{
-                                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                                                                modal_manageOrders_pojo_class.itemName = itemName;
-                                                                modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                                modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
-                                                                modal_manageOrders_pojo_class.quantity = quantity;
-                                                                modal_manageOrders_pojo_class.tokenno = tokenno+" - "+quantity;
-                                                                modal_manageOrders_pojo_class.ItemFinalWeight = weight;
-                                                                modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
-                                                                modal_manageOrders_pojo_class.cutname = cutname;
-                                                                menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
-                                                            }
-                                                            catch (Exception e){
-                                                                e.printStackTrace();
-                                                            }
-
-                                                        } else {
-                                                            try{
-
-
-                                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
-                                                                int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
-                                                                int newQuantity = Integer.parseInt(quantity);
-                                                                quantityfrommap = quantityfrommap + newQuantity;
-                                                                String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
-                                                                tokennoFromHashmap = tokennoFromHashmap + "," + tokenno+" - "+quantity;
-                                                                modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
-                                                                modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                            }
-                                                            catch (Exception e){
-                                                                e.printStackTrace();
-                                                            }
-                                                        }
-
-
-
-
 
                                                     }
 
+                                                    try {
+                                                        menuitemkeyCutWeight = itemName + weight + cutname;
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
 
 
-                                                    else {
-                                                        try{
-                                                            menuItemKey_CutWeightdetails.add(menuitemkeyCutWeight);
-
+                                                    try {
+                                                        if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                            Log.i("MENUITEM CUTWEIGHT ", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
                                                         }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
+                                                        if (menuItemKey_CutWeightdetails.contains(menuitemkeyCutWeight)) {
 
-                                                        boolean inismenuItemAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
-                                                        try{
-
-
-                                                            if (!inismenuItemAvailaleinhashmap) {
-                                                                try{
-
+                                                            boolean inismenuItemAvailaleinCutWeighthashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                            if (!inismenuItemAvailaleinCutWeighthashmap) {
+                                                                try {
                                                                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
                                                                     modal_manageOrders_pojo_class.itemName = itemName;
                                                                     modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
@@ -1450,13 +2837,13 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                                     modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
                                                                     modal_manageOrders_pojo_class.cutname = cutname;
                                                                     menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
-
-                                                                }
-                                                                catch (Exception e){
+                                                                } catch (Exception e) {
                                                                     e.printStackTrace();
                                                                 }
+
                                                             } else {
-                                                                try{
+                                                                try {
+
 
                                                                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
                                                                     int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
@@ -1466,82 +2853,116 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                                     tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
                                                                     modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
                                                                     modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                                }
-                                                                catch (Exception e){
+                                                                } catch (Exception e) {
                                                                     e.printStackTrace();
                                                                 }
                                                             }
-                                                        }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
+
+
+                                                        } else {
+                                                            try {
+                                                                menuItemKey_CutWeightdetails.add(menuitemkeyCutWeight);
+
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            boolean inismenuItemAvailaleinhashmap = checkifmenuitemkeyCutWeightinhashmapisAlreadyAvailabelinArray(menuitemkeyCutWeight);
+                                                            try {
+
+
+                                                                if (!inismenuItemAvailaleinhashmap) {
+                                                                    try {
+
+                                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                                        modal_manageOrders_pojo_class.itemName = itemName;
+                                                                        modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                                        modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                                        modal_manageOrders_pojo_class.quantity = quantity;
+                                                                        modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                                        modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                                        modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                                        modal_manageOrders_pojo_class.cutname = cutname;
+                                                                        menuItemKey_CutWeightdetailsHashmap.put(menuitemkeyCutWeight, modal_manageOrders_pojo_class);
+
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                } else {
+                                                                    try {
+
+                                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemKey_CutWeightdetailsHashmap.get(menuitemkeyCutWeight);
+                                                                        int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                                        int newQuantity = Integer.parseInt(quantity);
+                                                                        quantityfrommap = quantityfrommap + newQuantity;
+                                                                        String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                                        tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                                        modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                                        modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
                                                         }
 
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                     }
 
 
+                                                    try {
+                                                        if (menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")) {
+                                                            Log.i("MENUITEM", itemName + "  ,  " + weight + "  ,  " + cutname + "  ,  " + quantity + "  ,  " + tokenno);
 
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
-
-
-                                                try{
-                                                    if(menuitemkey.equals("83912358-d817-486a-92da-dd60a6d40ef9")){
-                                                        Log.i("MENUITEM",itemName + "  ,  "+weight+"  ,  "+cutname+"  ,  "+quantity+"  ,  "+tokenno);
-
-                                                    }
-                                                    if (menuItemname_array.contains(menuitemkey)) {
-
-                                                        boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
-                                                        try{
-
-
-
-                                                            if (!inismenuItemAvailaleinhashmap) {
-                                                                try{
-
-                                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                                                                    modal_manageOrders_pojo_class.itemName = itemName;
-                                                                    modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                                    modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
-                                                                    modal_manageOrders_pojo_class.quantity = quantity;
-                                                                    modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
-                                                                    modal_manageOrders_pojo_class.ItemFinalWeight = weight;
-                                                                    modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
-                                                                    modal_manageOrders_pojo_class.cutname = cutname;
-                                                                    menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
-
-                                                                }
-                                                                catch (Exception e){
-                                                                    e.printStackTrace();
-                                                                }
-                                                            }
-
-
-                                                            else {
-                                                                try{
-
-
-
-                                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
-                                                                    int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
-                                                                    int newQuantity = Integer.parseInt(quantity);
-                                                                    quantityfrommap = quantityfrommap + newQuantity;
-                                                                    String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
-                                                                    tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
-                                                                    modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
-                                                                    modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
-                                                                }
-                                                                catch (Exception e){
-
-                                                                    e.printStackTrace();
-                                                                }
-                                                            }
                                                         }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
+                                                        if (menuItemname_array.contains(menuitemkey)) {
+
+                                                            boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+                                                            try {
+
+
+                                                                if (!inismenuItemAvailaleinhashmap) {
+                                                                    try {
+
+                                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                                        modal_manageOrders_pojo_class.itemName = itemName;
+                                                                        modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                                        modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                                        modal_manageOrders_pojo_class.quantity = quantity;
+                                                                        modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                                        modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                                        modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                                        modal_manageOrders_pojo_class.cutname = cutname;
+                                                                        menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                } else {
+                                                                    try {
+
+
+                                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                                        int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                                        int newQuantity = Integer.parseInt(quantity);
+                                                                        quantityfrommap = quantityfrommap + newQuantity;
+                                                                        String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                                        tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                                        modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                                        modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                                    } catch (Exception e) {
+
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
 /*
                                             boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
 
@@ -1577,65 +2998,58 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                             }
 */
 
-                                                    }
-                                                    else {
-                                                        try{
+                                                        } else {
+                                                            try {
 
 
-                                                            menuItemname_array.add(menuitemkey);
-                                                        }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
-
-
-                                                        boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
-
-                                                        try{
-
-
-                                                            if (!inismenuItemAvailaleinhashmap) {
-                                                                try{
-
-
-
-                                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
-                                                                    modal_manageOrders_pojo_class.itemName = itemName;
-                                                                    modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
-                                                                    modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
-                                                                    modal_manageOrders_pojo_class.quantity = quantity;
-                                                                    modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
-                                                                    modal_manageOrders_pojo_class.ItemFinalWeight = weight;
-                                                                    modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
-                                                                    modal_manageOrders_pojo_class.cutname = cutname;
-                                                                    menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
-                                                                }
-                                                                catch (Exception e){
-                                                                    e.printStackTrace();
-                                                                }
+                                                                menuItemname_array.add(menuitemkey);
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
                                                             }
-                                                            else {
-                                                                try{
 
 
-                                                                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
-                                                                    int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
-                                                                    int newQuantity = Integer.parseInt(quantity);
-                                                                    quantityfrommap = quantityfrommap + newQuantity;
-                                                                    String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
-                                                                    tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
-                                                                    modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
-                                                                    modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                            boolean inismenuItemAvailaleinhashmap = checkifitmnameinhashmapisAlreadyAvailabelinArray(menuitemkey);
+
+                                                            try {
+
+
+                                                                if (!inismenuItemAvailaleinhashmap) {
+                                                                    try {
+
+
+                                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                                                        modal_manageOrders_pojo_class.itemName = itemName;
+                                                                        modal_manageOrders_pojo_class.tmcSubCtgyKey = tmcSubCtgyKey;
+                                                                        modal_manageOrders_pojo_class.tmcSubCtgyName = tmcsubctgyname;
+                                                                        modal_manageOrders_pojo_class.quantity = quantity;
+                                                                        modal_manageOrders_pojo_class.tokenno = tokenno + " - " + quantity;
+                                                                        modal_manageOrders_pojo_class.ItemFinalWeight = weight;
+                                                                        modal_manageOrders_pojo_class.menuItemKey = menuitemkey;
+                                                                        modal_manageOrders_pojo_class.cutname = cutname;
+                                                                        menuItemname_hashmap.put(menuitemkey, modal_manageOrders_pojo_class);
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                } else {
+                                                                    try {
+
+
+                                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = menuItemname_hashmap.get(menuitemkey);
+                                                                        int quantityfrommap = Integer.parseInt(modal_manageOrders_pojo_class.getQuantity());
+                                                                        int newQuantity = Integer.parseInt(quantity);
+                                                                        quantityfrommap = quantityfrommap + newQuantity;
+                                                                        String tokennoFromHashmap = modal_manageOrders_pojo_class.getTokenno();
+                                                                        tokennoFromHashmap = tokennoFromHashmap + "," + tokenno + " - " + quantity;
+                                                                        modal_manageOrders_pojo_class.setTokenno(tokennoFromHashmap);
+                                                                        modal_manageOrders_pojo_class.setQuantity(String.valueOf(quantityfrommap));
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+
                                                                 }
-                                                                catch (Exception e){
-                                                                    e.printStackTrace();
-                                                                }
-
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
                                                             }
-                                                        }
-                                                        catch (Exception e){
-                                                            e.printStackTrace();
-                                                        }
 
 /*
                                             boolean isItemNamesTokenNoisAvailable = checkifTokenNoisAlreadyAvailabelinArray(itemName);
@@ -1670,80 +3084,79 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                                                 slottimeRange_hashmap.put(itemName, slottimeArray);
                                             }
 */
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                     }
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-                                                }
 
+                                                }
+                                            } else {
+                                                Log.i(Constants.TAG, "Can't Get itemDesp");
                                             }
-                                        } else {
-                                            Log.i(Constants.TAG, "Can't Get itemDesp");
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
                                         }
 
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
                                     }
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
 
                                 }
 
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
 
                             }
 
-
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-
-                    }
-                    catch (Exception e){
+                    } catch (JSONException e) {
                         e.printStackTrace();
+
+                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
+                        Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
+
+
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
-                    Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
-                    //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.toString());
 
 
-
+                    if (arrayLength - i1 == 1) {
+                        try {
+                            if (menuItemname_hashmap.size() > 0 && menuItemname_array.size() > 0) {
+                                //  prepareData(selectedslot,tokenNo_hashmap,quantity_hashmap,slottimeRange_hashmap,menuItemname_array,orderid_hashmap,menuItemname_hashmap, tmcSubCtgyName);
+                                try {
+                                    prepareData(selectedslot, menuItemname_array, orderid_hashmap, menuItemname_hashmap, tmcSubCtgyName);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                listviewInstruction_textview.setVisibility(View.VISIBLE);
+                                posSalesReport_Listview.setVisibility(View.GONE);
+                                Adjusting_Widgets_Visibility(false);
+                                listviewInstruction_textview.setText("This Slot have No Orders");
+                                appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
+                                spinner_check = 0;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
 
 
                 }
-
-
-
-                if(arrayLength-i1==1){
-                    try {
-                        if (menuItemname_hashmap.size() > 0 && menuItemname_array.size() > 0) {
-                            //  prepareData(selectedslot,tokenNo_hashmap,quantity_hashmap,slottimeRange_hashmap,menuItemname_array,orderid_hashmap,menuItemname_hashmap, tmcSubCtgyName);
-                            try {
-                                prepareData(selectedslot, menuItemname_array, orderid_hashmap, menuItemname_hashmap, tmcSubCtgyName);
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                        else {
-                            listviewInstruction_textview.setVisibility(View.VISIBLE);
-                            posSalesReport_Listview.setVisibility(View.GONE);
-                            Adjusting_Widgets_Visibility(false);
-                            listviewInstruction_textview.setText("This Slot have No Orders");
-                            appOrdersCount_textwidget.setText("0");
-                            appOrdersPacksCount_textwidget.setText("0");
-                            spinner_check=0;
-                        }
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-
             }
+            else{
+                listviewInstruction_textview.setVisibility(View.VISIBLE);
+                posSalesReport_Listview.setVisibility(View.GONE);
+                  listviewInstruction_textview.setText("There is no orders on this Date");
+                              appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
 
+                Adjusting_Widgets_Visibility(false);
+            }
             //Log.d(Constants.TAG, "convertingJsonStringintoArray orderlist: " + ordersList);
 
             //saveorderDetailsInLocal(ordersList);
@@ -2175,7 +3588,32 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
                             //getOrderForSelectedDate(DateString, vendorKey);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
 
-                            getOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+
+                            try{
+                                menuItemname_array.clear();
+                                orderid_hashmap.clear();
+                                menuItemname_hashmap.clear();
+                                SubCtgyName_hashmap.clear();
+                                tmcSubCtgyName.clear();
+                                orderList.clear();
+                                dataList.clear();
+                                menuItemKey_CutWeightdetailsHashmap.clear();
+                                menuItemKey_CutWeightdetails.clear();
+                                listviewInstruction_textview.setVisibility(View.VISIBLE);
+                                posSalesReport_Listview.setVisibility(View.GONE);
+                                Adjusting_Widgets_Visibility(false);
+                                  listviewInstruction_textview.setText("There is no orders on this Date");
+                              appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
+
+
+                                appOrdersCount_textwidget.setText("0");
+                                appOrdersPacksCount_textwidget.setText("0");
+                            }
+                            catch(Exception e){
+                                e.printStackTrace();
+                            }
+
 
                         }
                         catch (Exception e ){
@@ -2383,6 +3821,24 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
     }
 
 
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
 
 
 
@@ -2466,19 +3922,34 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
 
 
     private String getDate() {
+
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        String CurrentDay = day.format(c);
+        if(orderdetailsnewschema) {
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
 
-        CurrentDate = CurrentDay + ", " + CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+            return CurrentDate;
+
+        }
+        else{
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            String CurrentDay = day.format(c);
 
 
-        return CurrentDate;
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay+", "+CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
     }
 
 }

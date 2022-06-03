@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -47,6 +48,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
@@ -85,7 +88,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     int new_totalAmount_withGst,new_totalAmount_withoutGst=0,newGst=0;
     String finaltoPayAmount="",discountAmount="0",oldOrderOrderid = "0";
     String FormattedTime,CurrentDate,formattedDate,CurrentDay;
-    String vendorKey="",usermobileNo ="",orderPlacedDate ="";
+    String vendorKey="",usermobileNo ="",orderPlacedDate ="",vendorName ="";;
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
@@ -101,7 +104,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     Adapter_Place_New_ReplacementOrder_Mobile adapterPlaceNewReplacementOrder;
     Modal_ReplacementOrderDetails modal_replacementOrderDetails = new Modal_ReplacementOrderDetails();
 
-    String replacementAmount_String,refundAmount_String,totalAmountUserCanAvl_String;
+    String replacementAmount_String,refundAmount_String,totalAmountUserCanAvl_String,ordermarkeddate ="";
     double replacementAmount_Double =0 ,refundAmount_Double = 0,totalAmountUserCanAvl_Double = 0, balanceAmount = 0;
     List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp ;
     ListView orderidItemListview;
@@ -111,7 +114,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     public static HashMap<String,Modal_NewOrderItems> cartItem_hashmap = new HashMap();
     public static List<String> cart_Item_List =new ArrayList<>();
     public static BottomSheetDialog bottomSheetDialog;
-    static LinearLayout loadingPanel;
+    static LinearLayout loadingPanel,replacementParentLayout,refundParentLayout;
     static LinearLayout loadingpanelmask;
     boolean isUpdateCouponTransactionMethodCalled=false;
     private  boolean isOrderDetailsMethodCalled =false;
@@ -119,7 +122,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     private  boolean isPaymentDetailsMethodCalled =false;
 
     private  boolean isUpdateReplacementDetailsMethodCalled =false;
-
+    JSONArray markedItemDetailsJSON  = new JSONArray();
     boolean isMobileAppDataFetchedinDashboard=false;
     boolean isanyProducthaveZeroAsweight=false;
     boolean isUpdateRedeemPointsWithoutKeyMethodCalled =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false,isPhoneOrderSelected=false;
@@ -157,7 +160,15 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
     private  boolean isStockOutGoingAlreadyCalledForthisItem =false;
     public static List<String> StockBalanceChangedForThisItemList = new ArrayList<>();
+    JSONArray emptyJsonArray = new JSONArray();
 
+
+
+    boolean orderdetailsnewschema = false;
+
+    Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
+    boolean  isCustomerOrdersTableServiceCalled = false;
+    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,7 +193,9 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         mobile_checkout_button = findViewById(R.id.mobile_checkout_button);
         addRefund_buttonWidget = findViewById(R.id.addRefund_buttonWidget);
         refundAmt_editwidget  = findViewById(R.id.refundAmt_editwidget);
-
+        replacementParentLayout  = findViewById(R.id.replacementParentLayout);
+        refundParentLayout  = findViewById(R.id.refundParentLayout);
+        selectedPaymentMode  ="CASH ON DELIVERY";
         OrderdItems_desp = new ArrayList<>();
         completemenuItem = new ArrayList<>();
 
@@ -197,13 +210,16 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         modal_replacementOrderDetails = bundle.getParcelable("data");
         SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorKey = shared.getString("VendorKey","");
+        vendorName = shared.getString("VendorName", "");
 
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
         StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
         StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
         StoreAddressLine3 = (shared.getString("VendorPincode", ""));
         StoreLanLine = (shared.getString("VendorMobileNumber", ""));
-
+        orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+        mContext = AddReplacement_Refund_OrdersScreen.this;
+       // orderdetailsnewschema = true;
         try{
             turnoffProgressBarAndResetArray();
 
@@ -228,7 +244,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 if(balanceAmount>=refundAmtdouble){
                     Currenttime_transactiontable  = getDate_and_time_TransactionTable() ;
 
-                    UpdateReplacementOrderDetailsTable(false, Currenttime_transactiontable, sTime,enteredrefundAmount,modal_replacementOrderDetails);
+                    UpdateReplacementOrderDetailsTable(false, Currenttime_transactiontable, sTime,enteredrefundAmount,modal_replacementOrderDetails, emptyJsonArray);
 
                 }
                 else{
@@ -268,6 +284,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 }
             }
         });
+
         try{
             if(orderPlacedDate.equals("") || orderPlacedDate.equals("null") || orderPlacedDate.equals(null)){
                 orderPlacedDate =  String.valueOf(modal_replacementOrderDetails.getOrderplaceddate());
@@ -285,6 +302,8 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
             e.printStackTrace();
         }
 
+
+
         try{
             orderid_textview_widget.setText(String.valueOf(modal_replacementOrderDetails.getOrderid()));
         }
@@ -294,6 +313,14 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
         try{
             orderplaceddate_textview_widget.setText(String.valueOf(modal_replacementOrderDetails.getOrderplaceddate()));
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            ordermarkeddate = (String.valueOf(modal_replacementOrderDetails.getMarkeddate()));
 
         }
         catch (Exception e){
@@ -381,6 +408,13 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+
+        if(balanceAmount<=0){
+            refundParentLayout.setVisibility(View.GONE);
+            replacementParentLayout.setVisibility(View.GONE);
+
+        }
+
         try{
             balanceorder_textview_widget.setText(String.valueOf(Math.round(balanceAmount)));
 
@@ -392,15 +426,15 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
         try {
 
-            JSONArray jsonArray  = new JSONArray(modal_replacementOrderDetails.getItemsmarked_String());
+             markedItemDetailsJSON  = new JSONArray(modal_replacementOrderDetails.getItemsmarked_String());
             //Log.i("tag","array.length()"+ array.length());
-            String arraystring= jsonArray.toString();
+            String arraystring= markedItemDetailsJSON.toString();
             String itemDesp="";
 
 
 
-                for(int i=0; i < jsonArray.length(); i++) {
-                    JSONObject json = jsonArray.getJSONObject(i);
+                for(int i=0; i < markedItemDetailsJSON.length(); i++) {
+                    JSONObject json = markedItemDetailsJSON.getJSONObject(i);
                     String subCtgyKey ="";
                     Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
                     manageOrders_pojo_class.itemdesp_string = String.valueOf(json);
@@ -559,8 +593,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
          adapterPlaceNewReplacementOrder = new Adapter_Place_New_ReplacementOrder_Mobile(AddReplacement_Refund_OrdersScreen.this,cartItem_hashmap, MenuItems, AddReplacement_Refund_OrdersScreen.this,"AddReplacement");
         adapterPlaceNewReplacementOrder.setHandler(newHandler());
         newOrders_recyclerView.setLayoutManager(new LinearLayoutManager(AddReplacement_Refund_OrdersScreen.this));
-        int last_index=cartItem_hashmap.size()-1;
-
+        int sizeofCart =  cartItem_hashmap.size();
+        int last_index=sizeofCart-1;
+        int sizeofRecyclerView = sizeofCart*520;
+        newOrders_recyclerView.setMinimumHeight(sizeofRecyclerView);
         newOrders_recyclerView.setAdapter(adapterPlaceNewReplacementOrder);
         newOrders_recyclerView.scrollToPosition(last_index);
 
@@ -930,7 +966,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
     }
 
-    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray ItemsDespArray, boolean isReplacementType, String transactionType, double Amountinmethod, String message) {
+    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray ItemsDespArray, boolean isReplacementType, String transactionType, double Amountinmethod, String message, JSONArray replacementitemdesp) {
 
         showProgressBar(true);
         double CouponDiscountAmount_double = 0;
@@ -972,9 +1008,11 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         try {
 
             if(isReplacementType) {
-                jsonObject.put("replacmentorderid", orderid);
+                jsonObject.put("replacementorderid", orderid);
                 jsonObject.put("replacementorderamount", Amountinmethod);
-                jsonObject.put("replacementitemdesp", ItemsDespArray);
+                if(replacementitemdesp.length()>0) {
+                    jsonObject.put("replacementitemdesp", replacementitemdesp);
+                }
                 if (CouponDiscountAmount_double > 0) {
                     jsonObject.put("discountamount", CouponDiscountAmount_double);
 
@@ -984,6 +1022,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 jsonObject.put("refundamount", Amountinmethod);
 
             }
+            jsonObject.put("markeditemdesp", markedItemDetailsJSON);
+            jsonObject.put("ordermarkeddate", ordermarkeddate);
+            jsonObject.put("markeditemamount", totalAmountUserCanAvl_Double);
+
             jsonObject.put("transactiontime", currenttime);
             jsonObject.put("orderid", oldOrderOrderid);
             jsonObject.put("vendorkey", vendorKey);
@@ -1332,7 +1374,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                     cartItem_hashmap.clear();
                                     ispaymentMode_Clicked = false;
                                     isOrderDetailsMethodCalled = false;
-
+                                    isCustomerOrdersTableServiceCalled  = false;
                                     isPaymentDetailsMethodCalled = false;
                                     isOrderTrackingDetailsMethodCalled = false;
 
@@ -1422,7 +1464,29 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                             @Override
                             public void onNo() {
+                                if(!isCustomerOrdersTableServiceCalled){
+                                    try{
+                                        if(orderdetailsnewschema){
+                                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                            if(isPhoneOrderSelected){
+                                                ordertype = Constants.PhoneOrder;
+                                            }
+                                            else{
+                                                ordertype = Constants.POSORDER;
 
+                                            }
+                                            isCustomerOrdersTableServiceCalled =true;
+                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, cart_Item_List, cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                            asyncTask.execute();
+
+                                        }
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+
+                                    }
+                                }
                                 if (!isOrderDetailsMethodCalled) {
 
                                     PlaceOrder_in_OrderDetails(AddReplacement_Refund_OrdersScreen.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
@@ -1431,11 +1495,13 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                                     PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
                                 }
-                                if (!isUpdateReplacementDetailsMethodCalled) {
+                             /*   if (!isUpdateReplacementDetailsMethodCalled) {
 
-                                    UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                                    UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails, emptyJsonArray);
                                 }
 
+
+                              */
 
 
 
@@ -1480,7 +1546,29 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                                 @Override
                                 public void onNo() {
+                                    if(!isCustomerOrdersTableServiceCalled){
+                                        try{
+                                            if(orderdetailsnewschema){
+                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                if(isPhoneOrderSelected){
+                                                    ordertype = Constants.PhoneOrder;
+                                                }
+                                                else{
+                                                    ordertype = Constants.POSORDER;
 
+                                                }
+                                                isCustomerOrdersTableServiceCalled =true;
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, cart_Item_List, cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                asyncTask.execute();
+
+                                            }
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+
+                                        }
+                                    }
                                     if (!isOrderDetailsMethodCalled) {
 
                                         PlaceOrder_in_OrderDetails(AddReplacement_Refund_OrdersScreen.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,false);
@@ -1490,10 +1578,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                         PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
                                     }
 
-                                    if (!isUpdateReplacementDetailsMethodCalled) {
 
-                                        UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
-                                    }
 
 
 
@@ -1519,7 +1604,29 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                 }
                 else{
+                    if(!isCustomerOrdersTableServiceCalled){
+                        try{
+                            if(orderdetailsnewschema){
+                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                if(isPhoneOrderSelected){
+                                    ordertype = Constants.PhoneOrder;
+                                }
+                                else{
+                                    ordertype = Constants.POSORDER;
 
+                                }
+                                isCustomerOrdersTableServiceCalled =true;
+                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, cart_Item_List, cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                asyncTask.execute();
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+                        }
+                    }
                     if (!isOrderDetailsMethodCalled) {
 
                         PlaceOrder_in_OrderDetails(AddReplacement_Refund_OrdersScreen.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod,true);
@@ -1528,10 +1635,12 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                         PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
                     }
-                    if (!isUpdateReplacementDetailsMethodCalled) {
+                    /*if (!isUpdateReplacementDetailsMethodCalled) {
 
-                        UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                        UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails, itemDespArray);
                     }
+
+                     */
 
 
 
@@ -1564,7 +1673,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
     }
 
-    private void UpdateReplacementOrderDetailsTable(boolean isReplacementCalled, String currenttime_transactionFormat, long sTime, String finaltoPayAmountinmethod, Modal_ReplacementOrderDetails modal_replacementOrderDetails_inMethod) {
+    private void UpdateReplacementOrderDetailsTable(boolean isReplacementCalled, String currenttime_transactionFormat, long sTime, String finaltoPayAmountinmethod, Modal_ReplacementOrderDetails modal_replacementOrderDetails_inMethod, JSONArray itemDespArray) {
 
         if(isUpdateReplacementDetailsMethodCalled){
             return;
@@ -1577,6 +1686,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
         JSONObject replacementdetailsObject = new JSONObject();
         JSONArray replacementdetailsArray = new JSONArray();
+        JSONArray replacementdetailsArray_transactionEntry = new JSONArray();
 
 
         String totalReplacementvalueString = "0" , totalRefundValueString = "0",totalAmountUserGotString = "0";
@@ -1683,6 +1793,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 replacementdetailsObject.put("replacementorderid",String.valueOf(sTime));
                 replacementdetailsObject.put("replacementordervalue",finalAmountDouble);
                 replacementdetailsArray.put(replacementdetailsObject);
+                replacementdetailsArray_transactionEntry.put(replacementdetailsObject);
                   }
             catch (Exception e){
                 e.printStackTrace();
@@ -1799,11 +1910,11 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 }
 
                 if (isReplacementCalled){
-                    addDataInReplacementTransactiondetails(currenttime_transactionFormat, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, true, "REPLACEMENT", finalAmountDouble1,message);
+                    addDataInReplacementTransactiondetails(currenttime_transactionFormat, usermobileNo, String.valueOf(sTime), replacementdetailsArray_transactionEntry, true, "REPLACEMENT", finalAmountDouble1,message,itemDespArray);
                 }
                 else
                 {
-                    addDataInReplacementTransactiondetails(currenttime_transactionFormat, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, false, "REFUND", finalAmountDouble1,message);
+                    addDataInReplacementTransactiondetails(currenttime_transactionFormat, usermobileNo, String.valueOf(sTime), replacementdetailsArray_transactionEntry, false, "REFUND", finalAmountDouble1,message, itemDespArray);
 
                 }
                 updateDatainLocalArray(modal_replacementOrderDetails_inMethod, finalBalanceAmountUsergot);
@@ -1818,11 +1929,11 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
 
                 if (isReplacementCalled){
-                    addDataInReplacementTransactiondetails(Currenttime, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, true, "REPLACEMENT", finalAmountDouble1,"Error");
+                    addDataInReplacementTransactiondetails(Currenttime, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, true, "REPLACEMENT", finalAmountDouble1,"Error", itemDespArray);
                 }
                 else
                 {
-                    addDataInReplacementTransactiondetails(Currenttime, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, false, "REFUND", finalAmountDouble1,"Error");
+                    addDataInReplacementTransactiondetails(Currenttime, usermobileNo, String.valueOf(sTime), finalReplacementdetailsArray, false, "REFUND", finalAmountDouble1,"Error", itemDespArray);
 
                 }
                 showProgressBar(false);
@@ -1857,6 +1968,9 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         try{
             if(finalBalanceAmountUsergot<=0){
                 status_text_widget.setText("COMPLETED");
+                refundParentLayout.setVisibility(View.GONE);
+                replacementParentLayout.setVisibility(View.GONE);
+
             }
         }
         catch(Exception e){
@@ -1896,6 +2010,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+        refundAmt_editwidget.setText("");
 
 
         modal_replacementOrderDetails = modal_replacementOrderDetails_inMethod;
@@ -1916,6 +2031,25 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
     }
 
+    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext) {
+        mResultCallback_Add_CustomerOrder_TrackingTableInterface = new Add_CustomerOrder_TrackingTableInterface() {
+
+
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                isCustomerOrdersTableServiceCalled = false;
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                isCustomerOrdersTableServiceCalled = false;
+
+                // Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
+            }
+        };
+
+
+    }
 
     private void PlaceOrder_in_OrderDetails(List<String> cart_Item_List, String Payment_mode, long sTime, String finaltoPayAmountinmethod, boolean shouldGetPrintNow) {
         if(isOrderDetailsMethodCalled){
@@ -1948,9 +2082,16 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
             slotdate  = CurrentDate;
         }
 
-        String slotname = "EXPRESSDELIVERY";
+        String slotname = "";
+        if(orderdetailsnewschema){
+            slotname = "";
 
-        String orderPlacedDate = CurrentDate;
+        }
+        else{
+            slotname = "EXPRESSDELIVERY";
+
+        }
+        String orderPlacedDate = getDate();
 
         String slottimerange = "";
         String UserMobile = "+91" + customermobileno;
@@ -1988,7 +2129,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                     ispaymentMode_Clicked = false;
                                     isOrderDetailsMethodCalled = false;
                                     isPhoneOrderSelected = false;
-
+                                    isCustomerOrdersTableServiceCalled  = false;
                                     isPaymentDetailsMethodCalled = false;
                                     isOrderTrackingDetailsMethodCalled = false;
                                     new_to_pay_Amount = 0;
@@ -2955,15 +3096,22 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
             jsonObject.put("deliverytype", deliverytype);
             jsonObject.put("slotname", slotname);
-            jsonObject.put("slotdate", "");
             jsonObject.put("slottimerange", "");
 
             jsonObject.put("orderid", orderid);
             jsonObject.put("orderplacedtime", orderplacedTime);
             jsonObject.put("tokenno", (tokenno));
             jsonObject.put("userid", userid);
+            if(orderdetailsnewschema) {
+                jsonObject.put("usermobileno", UserMobile);
+                jsonObject.put("slotdate", orderPlacedDate);
 
-            jsonObject.put("usermobile", UserMobile);
+            }
+            else{
+                jsonObject.put("usermobile", UserMobile);
+                jsonObject.put("slotdate", "");
+
+            }
             jsonObject.put("vendorkey", vendorkey);
             jsonObject.put("vendorname", vendorName);
             jsonObject.put("payableamount", Double.parseDouble(finaltoPayAmountinmethod));
@@ -2983,7 +3131,20 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
+
+
+        String Api_To_PlaceOrderInOrderDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInOrderDetails = Constants.api_AddVendorOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInOrderDetails = Constants.api_addOrderDetailsInOrderDetailsTable;
+
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInOrderDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -2994,7 +3155,10 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                     if (message.equals("success")) {
                         // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                         // startTwice.main();
+                        if (!isUpdateReplacementDetailsMethodCalled) {
 
+                            UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails,itemDespArray);
+                        }
                         if(shouldGetPrintNow) {
 
                             printRecipt(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype);
@@ -4805,7 +4969,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 cartItem_hashmap.clear();
                 ispaymentMode_Clicked = false;
                 isOrderDetailsMethodCalled = false;
-
+                isCustomerOrdersTableServiceCalled  = false;
                 isPaymentDetailsMethodCalled = false;
                 isOrderTrackingDetailsMethodCalled = false;
                 new_to_pay_Amount = 0;
@@ -4826,7 +4990,6 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                 totalAmounttopay=0;
                 isUpdateRedeemPointsWithoutKeyMethodCalled=false;
                 finalamounttoPay=0;
-                selectedPaymentMode="";
                 sTime=0;
                 finaltoPayAmountinmethod="";
                 isStockOutGoingAlreadyCalledForthisItem = false;
@@ -5044,7 +5207,11 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         try {
             orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
+            if(orderdetailsnewschema){
 
+                orderTrackingTablejsonObject.put("slotdate",getDate());
+
+            }
             orderTrackingTablejsonObject.put("usermobileno","+91" + customermobileno);
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
@@ -5059,13 +5226,16 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         }
 
 
-        //Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
+        String Api_To_PlaceOrderInTrackingDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_AddVendorTrackingOrderDetails;
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderTrackingDetailsTable,
+        }
+        else{
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_addOrderDetailsInOrderTrackingDetailsTable;
+
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInTrackingDetails,
                 orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -5253,7 +5423,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -5277,6 +5447,31 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                             // setTitle(R.string.title_connected_to);
                             //setTitle(mConnectedDeviceName);
                             SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
+
+                            if(!isCustomerOrdersTableServiceCalled){
+                                try{
+                                    if(orderdetailsnewschema){
+                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                        if(isPhoneOrderSelected){
+                                            ordertype = Constants.PhoneOrder;
+                                        }
+                                        else{
+                                            ordertype = Constants.POSORDER;
+
+                                        }
+                                        isCustomerOrdersTableServiceCalled =true;
+                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, cart_Item_List, cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                        asyncTask.execute();
+
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+
+                                }
+                            }
+
                             if (!isOrderDetailsMethodCalled) {
 
                                 PlaceOrder_in_OrderDetails(AddReplacement_Refund_OrdersScreen.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, true);
@@ -5285,10 +5480,12 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                                 PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
                             }
-                            if (!isUpdateReplacementDetailsMethodCalled) {
+                            /*if (!isUpdateReplacementDetailsMethodCalled) {
 
-                                UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                                UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails, itemDespArray);
                             }
+
+                             */
 
 
 
@@ -5381,6 +5578,32 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
 
                                     @Override
                                     public void onNo() {
+
+                                        if(!isCustomerOrdersTableServiceCalled){
+                                            try{
+                                                if(orderdetailsnewschema){
+                                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                    if(isPhoneOrderSelected){
+                                                        ordertype = Constants.PhoneOrder;
+                                                    }
+                                                    else{
+                                                        ordertype = Constants.POSORDER;
+
+                                                    }
+                                                    isCustomerOrdersTableServiceCalled =true;
+                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, cart_Item_List, cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                    asyncTask.execute();
+
+                                                }
+
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+
+                                            }
+                                        }
+
+
                                         if (!isOrderDetailsMethodCalled) {
 
                                             PlaceOrder_in_OrderDetails(AddReplacement_Refund_OrdersScreen.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, false);
@@ -5390,10 +5613,12 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
                                             PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
                                         }
 
-                                        if (!isUpdateReplacementDetailsMethodCalled) {
+                                        /*if (!isUpdateReplacementDetailsMethodCalled) {
 
-                                            UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails);
+                                            UpdateReplacementOrderDetailsTable(true, Currenttime_transactiontable, sTime,finaltoPayAmountinmethod,modal_replacementOrderDetails, itemDespArray);
                                         }
+
+                                         */
 
 
                                         try{
@@ -5469,6 +5694,35 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         }
     }
 
+    private String getDate() {
+        Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
+
+            return CurrentDate;
+
+        }
+        else {
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
+    }
 
 
 

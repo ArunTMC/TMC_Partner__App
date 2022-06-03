@@ -40,7 +40,12 @@ import android.widget.Toast;
 import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -54,6 +59,8 @@ import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,6 +84,7 @@ import okhttp3.WebSocket;
 
 import static android.content.Context.MODE_PRIVATE;
 import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
+import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -150,7 +158,10 @@ public class Mobile_ManageOrders1 extends Fragment {
     String orderPlacedTime= "";
     int newCount=0,confirmedCount=0,readyForPickupCount=0,transitCount=0,deliveredCount=0;
 
-
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
 
 
     public Mobile_ManageOrders1() {
@@ -218,7 +229,6 @@ public class Mobile_ManageOrders1 extends Fragment {
         loadingPanel = view.findViewById(R.id.loadingPanel_dailyItemWisereport);
         todaysOrder = view.findViewById(R.id.todaysOrder);
         tomorrowsOrder = view.findViewById(R.id.tomorrowsOrder);
-        Adjusting_Widgets_Visibility(true);
 
         try {
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
@@ -228,9 +238,18 @@ public class Mobile_ManageOrders1 extends Fragment {
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
             SharedPreferences shared2 = requireContext().getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
             DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
-            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+            if(deliveryPartnerList.equals("")){
+                getDeliveryPartnerList();
+
+            }
+            else{
+                ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+            }
         }
         catch (Exception e){
             e.printStackTrace();
@@ -244,8 +263,10 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
 
+
         slotType_Spinner=view.findViewById(R.id.slotType_Spinner);
         applaunchimage = view.findViewById(R.id.applaunchimage);
+
 
         //
         mobile_nameofFacility_Textview = view.findViewById(R.id.nameofFacility_Textview);
@@ -268,11 +289,24 @@ public class Mobile_ManageOrders1 extends Fragment {
         tomorrowsOrder.setBackground(getDrawable(requireContext(),R.drawable.orange_non_selected_button_background));
         tomorrowsOrder.setTextColor(Color.BLACK);
 
-        Adjusting_Widgets_Visibility(true);
         String Todaysdate = getDatewithNameoftheDay();
         isSearchButtonClicked =false;
-        String PreviousDaydate = getDatewithNameofthePreviousDay();
-        getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+        String PreviousDaydate =  getDatewithNameofthePreviousDay();
+        Adjusting_Widgets_Visibility(false);
+
+        if(orderdetailsnewschema){
+            Adjusting_Widgets_Visibility(true);
+
+                 callVendorOrderDetailsSeviceAndInitCallBack(Todaysdate,Todaysdate,vendorKey);
+
+
+        }
+        else{
+            Adjusting_Widgets_Visibility(true);
+
+            getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+
+        }
 
 //
     //    setDataForSpinner();
@@ -413,27 +447,51 @@ public class Mobile_ManageOrders1 extends Fragment {
             public void onClick(View view) {
                 //    pos_dashboard_screen.getCompleteMenuItem();
 
-                 if(slottypefromSpinner ==0) {
-                     Adjusting_Widgets_Visibility(true);
-                     isSearchButtonClicked =false;
-                     //Log.d(Constants.TAG, "SearchButtonClicked ");
-
-                     String Todaysdate = getDatewithNameoftheDay();
-                     String PreviousDaydate = getDatewithNameofthePreviousDay();
-                    getOrderDetailsUsingOrderSlotDate(PreviousDaydate,Todaysdate, vendorKey, orderStatus);
-
-                }
-                if(slottypefromSpinner == 1 ) {
-                    isSearchButtonClicked =false;
-
-                    Adjusting_Widgets_Visibility(true);
-                    //Log.d(Constants.TAG, "SearchButtonClicked " );
 
 
-                    String Todaysdate = getDatewithNameoftheDay();
-                    String TomorrowsDate = getTomorrowsDate();
-                    getOrderDetailsUsingOrderSlotDate(Todaysdate,TomorrowsDate, vendorKey, orderStatus);
-                }
+                    if (slottypefromSpinner == 0) {
+                        Adjusting_Widgets_Visibility(true);
+                        isSearchButtonClicked = false;
+                        //Log.d(Constants.TAG, "SearchButtonClicked ");
+
+                        String Todaysdate = getDatewithNameoftheDay();
+                        String PreviousDaydate = getDatewithNameofthePreviousDay();
+
+                        if (orderdetailsnewschema) {
+
+                            callVendorOrderDetailsSeviceAndInitCallBack(Todaysdate,Todaysdate,vendorKey);
+
+                        } else {
+                            getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+
+                        }
+
+
+
+                    }
+                    if (slottypefromSpinner == 1) {
+                        isSearchButtonClicked = false;
+
+                        Adjusting_Widgets_Visibility(true);
+                        //Log.d(Constants.TAG, "SearchButtonClicked " );
+
+
+                        String Todaysdate = getDatewithNameoftheDay();
+                        String TomorrowsDate = getTomorrowsDate();
+
+                        if (orderdetailsnewschema) {
+
+
+                            callVendorOrderDetailsSeviceAndInitCallBack(TomorrowsDate,TomorrowsDate,vendorKey);
+                        } else {
+                           getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
+
+                        }
+
+
+
+                    }
+
             }
         });
         todaysOrder.setOnClickListener(new View.OnClickListener() {
@@ -450,7 +508,15 @@ public class Mobile_ManageOrders1 extends Fragment {
                 String Todaysdate = getDatewithNameoftheDay();
                 isSearchButtonClicked =false;
                 String PreviousDaydate = getDatewithNameofthePreviousDay();
-                getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+                if (orderdetailsnewschema) {
+
+                    callVendorOrderDetailsSeviceAndInitCallBack(Todaysdate,Todaysdate,vendorKey);
+
+                }
+                else{
+                    getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+
+                }
 
             }
         });
@@ -468,7 +534,15 @@ public class Mobile_ManageOrders1 extends Fragment {
                 String TomorrowsDate = getTomorrowsDate();
                 isSearchButtonClicked =false;
                 String Todaysdate = getDatewithNameoftheDay();
-                getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
+                if (orderdetailsnewschema) {
+
+                    callVendorOrderDetailsSeviceAndInitCallBack(TomorrowsDate,TomorrowsDate,vendorKey);
+
+                }
+                else{
+                    getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
+
+                }
 
             }
         });
@@ -483,14 +557,33 @@ public class Mobile_ManageOrders1 extends Fragment {
                     String Todaysdate = getDatewithNameoftheDay();
                     isSearchButtonClicked =false;
                     String PreviousDaydate = getDatewithNameofthePreviousDay();
-                    getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+                    if (orderdetailsnewschema) {
+
+
+                        callVendorOrderDetailsSeviceAndInitCallBack(Todaysdate,Todaysdate,vendorKey);
+
+                    }
+                    else{
+                        getOrderDetailsUsingOrderSlotDate(PreviousDaydate, Todaysdate, vendorKey, orderStatus);
+
+                    }
                 }
                 if(slottypefromSpinner == 1 ) {
                     Adjusting_Widgets_Visibility(true);
                     String TomorrowsDate = getTomorrowsDate();
                     isSearchButtonClicked =false;
                     String Todaysdate = getDatewithNameoftheDay();
-                    getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
+                    if (orderdetailsnewschema) {
+
+                        callVendorOrderDetailsSeviceAndInitCallBack(TomorrowsDate,TomorrowsDate,vendorKey);
+
+                    }
+                    else{
+                        getOrderDetailsUsingOrderSlotDate(Todaysdate, TomorrowsDate, vendorKey, orderStatus);
+
+                    }
+
+
                 }
             }
 
@@ -627,8 +720,54 @@ public class Mobile_ManageOrders1 extends Fragment {
         });
 
     }
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        if(isVendorOrdersTableServiceCalled){
+            Adjusting_Widgets_Visibility(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d(TAG, "Volley requester " + requestType);
+                Log.d(TAG, "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
 
+                mobile_jsonString = String.valueOf(jsonObject);
+                ordersList = orderslist_fromResponse;
+                displayorderDetailsinListview(orderStatus,orderslist_fromResponse, slottypefromSpinner);
 
+                //convertingJsonStringintoArray(orderStatus,mobile_jsonString);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d(TAG, "Volley requester " + requestType);
+                Log.d(TAG, "Volley JSON post" + "That didn't work!");
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+        ordersList.clear();
+        sorted_OrdersList.clear();
+        mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+        if(isnewOrdersSyncButtonClicked){
+            return;
+        }
+
+        isnewOrdersSyncButtonClicked=true;
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
 
 
 
@@ -646,6 +785,96 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
 
+    private void getDeliveryPartnerList() {
+        SharedPreferences preferences =mContext.getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorKey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+                            //converting jsonSTRING into array
+                            String DeliveryPersonListString = response.toString();
+                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+                            SharedPreferences sharedPreferences
+                                    = mContext.getSharedPreferences("DeliveryPersonList",
+                                    MODE_PRIVATE);
+
+                            SharedPreferences.Editor myEdit
+                                    = sharedPreferences.edit();
+
+
+                            myEdit.putString(
+                                    "DeliveryPersonListString",
+                                    DeliveryPersonListString);
+                            myEdit.apply();
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                SharedPreferences preferences =mContext.getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                String errorCode = "";
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(mContext,"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
+
+
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorKey);
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+    }
 
 
 
@@ -736,7 +965,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                     public void onResponse(@NonNull JSONObject response) {
                         //Log.d(Constants.TAG, "getOrderDetailsUsingApi Response: " + response);
                         mobile_jsonString =response.toString();
-                        convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
+                       convertingJsonStringintoArray(selectedStatus, mobile_jsonString);
 
                        // adapter = new Adapter_AutoCompleteManageOrdersItem(mContext, mobile_jsonString);
 
@@ -1083,7 +1312,10 @@ public class Mobile_ManageOrders1 extends Fragment {
             int i1=0;
             int arrayLength = JArray.length();
             //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+            if(arrayLength<=0){
+                Adjusting_Widgets_Visibility(false);
 
+            }
 
             for(;i1<(arrayLength);i1++) {
 
@@ -1497,6 +1729,8 @@ public class Mobile_ManageOrders1 extends Fragment {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            Adjusting_Widgets_Visibility(false);
+            Toast.makeText(mContext, String.valueOf(e), Toast.LENGTH_SHORT).show();
             isnewOrdersSyncButtonClicked=false;
 
         }
@@ -1505,15 +1739,22 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
     private String getTomorrowsDate() {
-
         Date todaysDate = Calendar.getInstance().getTime();
         System.out.println("nextDate " + todaysDate);
 
         String next_day = "";
+        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        if (orderdetailsnewschema) {
+
+            dateFormatForDisplaying = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+
+        } else {
+             dateFormatForDisplaying = new SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault());
+
+        }
         //calander_view.setCurrentDayBackgroundColor(context.getResources().getColor(R.color.gray_color));
-        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("d MMM yyyy", Locale.getDefault());
         String date_format = dateFormatForDisplaying.format(todaysDate);
-        SimpleDateFormat simpleDateformat = new SimpleDateFormat("E"); // the day of the week abbreviated
         final Calendar calendar = Calendar.getInstance();
         try {
             Date date = dateFormatForDisplaying.parse(date_format);
@@ -1521,8 +1762,15 @@ public class Mobile_ManageOrders1 extends Fragment {
             calendar.add(Calendar.DATE, 1);
             String nex = dateFormatForDisplaying.format(calendar.getTime());
             Date d1 = dateFormatForDisplaying.parse(nex);
-            String day_1 = simpleDateformat.format(d1);
-            next_day = day_1+", "+nex;
+
+            if (orderdetailsnewschema) {
+
+                next_day = nex;
+
+            } else {
+                next_day = d1+", "+nex;
+
+            }
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -1544,43 +1792,84 @@ public class Mobile_ManageOrders1 extends Fragment {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            String PreviousdayDate = df.format(c1);
+            return PreviousdayDate;
 
-        System.out.println("todays Date  " + CurrentDate);
-        System.out.println("PreviousdayDay Date  " + PreviousdayDay);
-        System.out.println("PreviousdayDate Date  " + PreviousdayDate);
+        }
+        else {
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
 
 
-        return PreviousdayDate;
+            return PreviousdayDate;
+        }
+    }
+
+    private String convertnewFormatDateintoOldFormat(String todaysdate) {
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(date);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(date);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
     }
 
 
 
-
     private String getDatewithNameoftheDay() {
+
+
         Calendar calendar = Calendar.getInstance();
         Date c = calendar.getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        CurrentDay = day.format(c);
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
-
-
-
-        System.out.println("todays Date  " + CurrentDate);
+        }
+        else {
 
 
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
 
-        return CurrentDate;
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+        }
     }
 
 
@@ -1590,14 +1879,21 @@ public class Mobile_ManageOrders1 extends Fragment {
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
+        }
+        else {
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
 
-        System.out.println("Current  " + CurrentDate);
+            System.out.println("Current  " + CurrentDate);
 
 
-        return CurrentDate;
+            return CurrentDate;
+        }
     }
 
 
@@ -1605,435 +1901,432 @@ public class Mobile_ManageOrders1 extends Fragment {
     public  void displayorderDetailsinListview(String orderStatus, List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner) {
         //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.size());
          newCount=0;confirmedCount=0;readyForPickupCount=0;transitCount=0;deliveredCount=0;
-        Adjusting_Widgets_Visibility(true);
+        if(ordersList.size()>0) {
+            Adjusting_Widgets_Visibility(true);
+            sorted_OrdersList.clear();
+            String TodaysDate = getDatewithNameoftheDay();
+            String TomorrowsDate = getTomorrowsDate();
+            //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
 
-        sorted_OrdersList.clear();
-        String TodaysDate = getDatewithNameoftheDay();
-        String TomorrowsDate = getTomorrowsDate();
-        //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
+            //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
+            if(orderdetailsnewschema){
+                TodaysDate = convertnewFormatDateintoOldFormat(TodaysDate);
+                TomorrowsDate = convertnewFormatDateintoOldFormat(TomorrowsDate);
 
-        //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
+            }
+            if (slottypefromSpinner == 0) {
+                for (int i = 0; i < ordersList.size(); i++) {
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
 
-        if (slottypefromSpinner==0){
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+                    String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
+                    String slotDate = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotdate());
+                    String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+
+
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
+
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
+
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+
+                    if ((orderStatus.equals(orderstatusfromOrderList)) && (slotDate.equals(TodaysDate))) {
+                        modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                        modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                        modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                        modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                        modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                        modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                        modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                        modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                        modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                        modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                        modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                        modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                        modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                        modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                        modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                        modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                        modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                        modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                        modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+
+
+                        modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                        modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                        modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                        modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                        modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                        modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                        modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+
+
+                        modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                        modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                        modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                        modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+
+                        modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.isOrderPlacedlessThan3MinsBefore = modal_manageOrders_forOrderDetailList.isOrderPlacedlessThan3MinsBefore();
+
+
+                        if ((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210")) && (!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                        }
+
+
+                    }
+
+                }
+            } else if (slottypefromSpinner == 1) {
+                for (int i = 0; i < ordersList.size(); i++) {
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+                    String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
+                    String slotDate = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotdate());
+                    String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+
+
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
+
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
+
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+
+                    if ((orderStatus.equals(orderstatusfromOrderList)) && (slotDate.equals(TomorrowsDate))) {
+                        modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                        modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                        modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                        modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                        modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                        modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                        modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                        modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                        modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                        modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                        modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                        modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                        modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                        modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                        modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                        modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                        modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                        modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                        modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                        modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                        modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                        modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                        modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                        modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                        modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+
+
+                        modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                        modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                        modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                        modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+
+                        modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
+
+                        modal_manageOrders_forOrderDetailList1.isOrderPlacedlessThan3MinsBefore = modal_manageOrders_forOrderDetailList.isOrderPlacedlessThan3MinsBefore();
+
+                        if ((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210")) && (!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                        }
+                    }
+
+                }
+            } else {
+                for (int i = 0; i < ordersList.size(); i++) {
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+                    String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
+                    //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+                    String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+
+                    if (orderStatus.equals(orderstatusfromOrderList)) {
+                        modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
+                        modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
+                        modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
+                        modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
+                        modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
+                        modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
+                        modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
+                        modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
+                        modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
+                        modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
+                        modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
+                        modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
+                        modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
+                        modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
+                        modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
+                        modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
+                        modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
+                        modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
+                        modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
+                        modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
+                        modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
+                        modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                        modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
+                        modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                        modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+
+                        modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+
+                        modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
+                        modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
+                        modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
+                        modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+
+
+                        modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
+                        modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
+                        modal_manageOrders_forOrderDetailList1.isOrderPlacedlessThan3MinsBefore = modal_manageOrders_forOrderDetailList.isOrderPlacedlessThan3MinsBefore();
+
+
+                        if ((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210")) && (!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+
+                            sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+                        }
+                    }
+
+                }
+            }
+
             for (int i = 0; i < ordersList.size(); i++) {
                 //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
 
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
                 String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
-                String slotDate = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotdate());
-                String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
+                if (orderstatusfromOrderList.equals(Constants.NEW_ORDER_STATUS)) {
+                    newCount++;
+
+                  //  Log.i("Tag", "Count New : " + newCount);
+
+                } else if (orderstatusfromOrderList.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                    confirmedCount++;
 
 
-                //Log.d(Constants.TAG, "displayorderDetailsinListview TomorrowsDate: " + TomorrowsDate);
+                  //  Log.i("Tag", "Count confirmed : " + confirmedCount);
 
-                //Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
+                } else if (orderstatusfromOrderList.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                    readyForPickupCount++;
 
-                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
+                   // Log.i("Tag", "Count ready : " + readyForPickupCount);
 
-                if ((orderStatus.equals(orderstatusfromOrderList))&&(slotDate.equals(TodaysDate))) {
-                    modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
-                    modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
-                    modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
-                    modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
-                    modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
-                    modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
-                    modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
-                    modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
-                    modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
-                    modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
-                    modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
-                    modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
-                    modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
-                    modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
-                    modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
-                    modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
-                    modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
-                    modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
-                    modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                } else if (orderstatusfromOrderList.equals(Constants.PICKEDUP_ORDER_STATUS)) {
+                    transitCount++;
 
 
+                  //  Log.i("Tag", "Count transit : " + transitCount);
 
-                    modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
-                    modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
-                    modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
-                    modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
-                    modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
-                    modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
-                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+                } else if (orderstatusfromOrderList.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                    deliveredCount++;
 
+                    //Log.i("Tag", "Count delivered : " + deliveredCount);
 
-                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
-                    modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
-                    modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
-                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+                } else {
+                    Log.i("Tag", "Count Status not matched ");
 
-
-                    modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.isOrderPlacedlessThan3MinsBefore = modal_manageOrders_forOrderDetailList.isOrderPlacedlessThan3MinsBefore();
+                }
+            }
+            //1
+            if (newCount > 0) {
+                mobile_new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, newCount));
+            } else {
+                mobile_new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
 
 
-                    if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
+            }
+            //2
+            if (confirmedCount > 0) {
+                mobile_confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, confirmedCount));
+            } else {
+                mobile_confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
 
-                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
+            }
+            //3
+            if (readyForPickupCount > 0) {
+                mobile_ready_Order_widget.setText(String.format("%s ( %d )", Constants.READY_FOR_PICKUP_ORDER_STATUS, readyForPickupCount));
+            } else {
+                mobile_ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
+
+            }
+
+            //4
+            if (transitCount > 0) {
+                mobile_transist_Order_widget.setText(String.format("%s ( %d )", Constants.PICKEDUP_ORDER_STATUS, transitCount));
+            } else {
+                mobile_transist_Order_widget.setText(String.format("%s", Constants.PICKEDUP_ORDER_STATUS));
+
+            }
+
+            //5
+
+            if (deliveredCount > 0) {
+                mobile_delivered_Order_widget.setText(String.format("%s ( %d )", Constants.DELIVERED_ORDER_STATUS, deliveredCount));
+            } else {
+                mobile_delivered_Order_widget.setText(String.format("%s", Constants.DELIVERED_ORDER_STATUS));
+
+            }
+
+
+            try {
+                if (sorted_OrdersList.size() > 0) {
+                    if (orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
+                        Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                                return object2.getOrderplacedtime_in_long().compareTo(object1.getOrderplacedtime_in_long());
+                            }
+                        });
+                    }
+                    if (orderStatus.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                        Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                                return object2.getOrderconfirmedtime_in_long().compareTo(object1.getOrderconfirmedtime_in_long());
+                            }
+                        });
+                    }
+
+                    if (orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                        Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                                return object2.getOrderreadytime_in_long().compareTo(object1.getOrderreadytime_in_long());
+                            }
+                        });
+                    }
+
+                    if (orderStatus.equals(Constants.PICKEDUP_ORDER_STATUS)) {
+                        Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                                return object2.getOrderpickeduptime_in_long().compareTo(object1.getOrderpickeduptime_in_long());
+                            }
+                        });
                     }
 
 
-                }
+                    if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                        Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
+                            public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
+                                String tokenNo_1 = object1.getTokenno();
+                                String tokenNo_2 = object2.getTokenno();
 
-            }
-        }
+                                if ((tokenNo_1.equals("")) || (tokenNo_1.equals("null")) || (tokenNo_1.equals(null))) {
+                                    tokenNo_1 = String.valueOf(0);
+                                }
+                                if ((tokenNo_2.equals("")) || (tokenNo_2.equals("null")) || (tokenNo_2.equals(null))) {
+                                    tokenNo_2 = String.valueOf(0);
+                                }
 
-        else if(slottypefromSpinner==1){
-            for (int i = 0; i < ordersList.size(); i++) {
-                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+                                Long i2 = Long.valueOf(tokenNo_2);
+                                Long i1 = Long.valueOf(tokenNo_1);
 
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-                String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
-                String slotDate = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotdate());
-                String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
-
-
-                //Log.d(Constants.TAG, "displayorderDetailsinListview TodaysDate: " + TodaysDate);
-
-                //Log.d(Constants.TAG, "displayorderDetailsinListview slotDate: " + slotDate);
-
-                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
-
-                if ((orderStatus.equals(orderstatusfromOrderList))&&(slotDate.equals(TomorrowsDate))) {
-                    modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
-                    modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
-                    modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
-                    modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
-                    modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
-                    modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
-                    modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
-                    modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
-                    modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
-                    modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
-                    modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
-                    modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
-                    modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
-                    modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
-                    modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
-                    modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
-                    modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
-                    modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
-                    modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
-                    modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
-                    modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
-                    modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
-                    modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
-                    modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
-                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
-
-
-                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
-                    modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
-                    modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
-                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
-
-
-
-
-                    modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
-
-                    modal_manageOrders_forOrderDetailList1.isOrderPlacedlessThan3MinsBefore = modal_manageOrders_forOrderDetailList.isOrderPlacedlessThan3MinsBefore();
-
-                    if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
-
-                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
-                    }
-                }
-
-            }
-        }
-        else{
-            for (int i = 0; i < ordersList.size(); i++) {
-                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
-
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = new Modal_ManageOrders_Pojo_Class();
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-                String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
-                //Log.d(Constants.TAG, "displayorderDetailsinListview orderStatus: " + orderStatus);
-                //Log.d(Constants.TAG, "displayorderDetailsinListview orderidfromOrderList: " + orderstatusfromOrderList);
-                String slotname = String.valueOf(modal_manageOrders_forOrderDetailList.getSlotname()).toUpperCase();
-
-                if (orderStatus.equals(orderstatusfromOrderList)) {
-                    modal_manageOrders_forOrderDetailList1.orderid = modal_manageOrders_forOrderDetailList.getOrderid();
-                    modal_manageOrders_forOrderDetailList1.orderplacedtime = modal_manageOrders_forOrderDetailList.getOrderplacedtime();
-                    modal_manageOrders_forOrderDetailList1.payableamount = modal_manageOrders_forOrderDetailList.getPayableamount();
-                    modal_manageOrders_forOrderDetailList1.paymentmode = modal_manageOrders_forOrderDetailList.getPaymentmode();
-                    modal_manageOrders_forOrderDetailList1.tokenno = modal_manageOrders_forOrderDetailList.getTokenno();
-                    modal_manageOrders_forOrderDetailList1.taxamount = modal_manageOrders_forOrderDetailList.getTaxamount();
-                    modal_manageOrders_forOrderDetailList1.usermobile = modal_manageOrders_forOrderDetailList.getUsermobile();
-                    modal_manageOrders_forOrderDetailList1.vendorkey = modal_manageOrders_forOrderDetailList.getVendorkey();
-                    modal_manageOrders_forOrderDetailList1.coupondiscamount = modal_manageOrders_forOrderDetailList.getCoupondiscamount();
-                    modal_manageOrders_forOrderDetailList1.itemdesp = modal_manageOrders_forOrderDetailList.getItemdesp();
-                    modal_manageOrders_forOrderDetailList1.keyfromtrackingDetails = modal_manageOrders_forOrderDetailList.getKeyfromtrackingDetails();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerKey = modal_manageOrders_forOrderDetailList.getDeliveryPartnerKey();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerMobileNo = modal_manageOrders_forOrderDetailList.getDeliveryPartnerMobileNo();
-                    modal_manageOrders_forOrderDetailList1.deliveryPartnerName = modal_manageOrders_forOrderDetailList.getDeliveryPartnerName();
-                    modal_manageOrders_forOrderDetailList1.orderType = modal_manageOrders_forOrderDetailList.getOrderType();
-                    modal_manageOrders_forOrderDetailList1.orderstatus = modal_manageOrders_forOrderDetailList.getOrderstatus();
-                    modal_manageOrders_forOrderDetailList1.deliverytype = modal_manageOrders_forOrderDetailList.getDeliverytype();
-                    modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
-                    modal_manageOrders_forOrderDetailList1.slotname = modal_manageOrders_forOrderDetailList.getSlotname();
-                    modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
-                    modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
-                    modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
-                    modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
-                    modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
-                    modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
-                    modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
-                    modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
-
-                    modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
-
-                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
-                    modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
-                    modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
-                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
-
-
-                    modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderreadytime_in_long = modal_manageOrders_forOrderDetailList.getOrderreadytime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderpickeduptime_in_long = modal_manageOrders_forOrderDetailList.getOrderpickeduptime_in_long();
-                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
-                    modal_manageOrders_forOrderDetailList1.isOrderPlacedlessThan3MinsBefore = modal_manageOrders_forOrderDetailList.isOrderPlacedlessThan3MinsBefore();
-
-
-
-                    if((!modal_manageOrders_forOrderDetailList.getUsermobile().equals("9876543210"))&&(!modal_manageOrders_forOrderDetailList.getUsermobile().equals("+919876543210"))) {
-
-                        sorted_OrdersList.add(modal_manageOrders_forOrderDetailList1);
-                    }
-                }
-
-            }
-        }
-
-        for (int i = 0; i < ordersList.size(); i++) {
-            //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
-
-            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-            String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
-            if(orderstatusfromOrderList.equals(Constants.NEW_ORDER_STATUS)){
-                newCount++;
-
-                Log.i("Tag","Count New : "+newCount);
-
-            }
-
-            else if(orderstatusfromOrderList.equals(Constants.CONFIRMED_ORDER_STATUS)){
-                confirmedCount++;
-
-
-                Log.i("Tag","Count confirmed : "+confirmedCount);
-
-            }
-            else if(orderstatusfromOrderList.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-                readyForPickupCount++;
-
-                Log.i("Tag","Count ready : "+readyForPickupCount);
-
-            }
-            else if(orderstatusfromOrderList.equals(Constants.PICKEDUP_ORDER_STATUS)){
-                transitCount++;
-
-
-                Log.i("Tag","Count transit : "+transitCount);
-
-            }
-            else if(orderstatusfromOrderList.equals(Constants.DELIVERED_ORDER_STATUS)){
-                deliveredCount++;
-
-               Log.i("Tag","Count delivered : "+deliveredCount);
-
-            }
-            else{
-                Log.i("Tag","Count Status not matched ");
-
-            }
-        }
-        //1
-        if(newCount>0) {
-            mobile_new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, newCount));
-        }
-        else{
-            mobile_new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
-
-
-        }
-        //2
-        if(confirmedCount>0) {
-            mobile_confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, confirmedCount));
-        }
-        else{
-            mobile_confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
-
-        }
-        //3
-        if(readyForPickupCount>0) {
-            mobile_ready_Order_widget.setText(String.format("%s ( %d )", Constants.READY_FOR_PICKUP_ORDER_STATUS, readyForPickupCount));
-        }
-        else{
-            mobile_ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
-
-        }
-
-        //4
-        if(transitCount>0) {
-            mobile_transist_Order_widget.setText(String.format("%s ( %d )", Constants.PICKEDUP_ORDER_STATUS, transitCount));
-        }
-        else{
-            mobile_transist_Order_widget.setText(String.format("%s", Constants.PICKEDUP_ORDER_STATUS));
-
-        }
-
-        //5
-
-        if(deliveredCount>0) {
-            mobile_delivered_Order_widget.setText(String.format("%s ( %d )", Constants.DELIVERED_ORDER_STATUS, deliveredCount));
-        }
-        else{
-            mobile_delivered_Order_widget.setText(String.format("%s", Constants.DELIVERED_ORDER_STATUS));
-
-        }
-
-
-        try {
-    if (sorted_OrdersList.size() > 0) {
-        if (orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
-            Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                    return object2.getOrderplacedtime_in_long().compareTo(object1.getOrderplacedtime_in_long());
-                }
-            });
-        }
-        if (orderStatus.equals(Constants.CONFIRMED_ORDER_STATUS)) {
-            Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                    return object2.getOrderconfirmedtime_in_long().compareTo(object1.getOrderconfirmedtime_in_long());
-                }
-            });
-        }
-
-        if (orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-            Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                    return object2.getOrderreadytime_in_long().compareTo(object1.getOrderreadytime_in_long());
-                }
-            });
-        }
-
-        if (orderStatus.equals(Constants.PICKEDUP_ORDER_STATUS)) {
-            Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                    return object2.getOrderpickeduptime_in_long().compareTo(object1.getOrderpickeduptime_in_long());
-                }
-            });
-        }
-
-
-        if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
-            Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
-                public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                    String tokenNo_1 = object1.getTokenno();
-                    String tokenNo_2 = object2.getTokenno();
-
-                    if((tokenNo_1.equals(""))||(tokenNo_1.equals("null"))||(tokenNo_1.equals(null))){
-                        tokenNo_1=String.valueOf(0);
-                    }
-                    if((tokenNo_2.equals(""))||(tokenNo_2.equals("null"))||(tokenNo_2.equals(null))){
-                        tokenNo_2=String.valueOf(0);
+                                return i2.compareTo(i1);
+                            }
+                        });
                     }
 
-                    Long i2 = Long.valueOf(tokenNo_2);
-                    Long i1 = Long.valueOf(tokenNo_1);
+                    isnewOrdersSyncButtonClicked = false;
 
-                    return i2.compareTo(i1);
+                    adapterMobileManageOrdersListView = new Adapter_Mobile_ManageOrders_ListView1(mContext, sorted_OrdersList, Mobile_ManageOrders1.this, orderStatus);
+                    manageOrders_ListView.setAdapter(adapterMobileManageOrdersListView);
+
+
+                    mobile_orderinstruction.setVisibility(View.GONE);
+                    Adjusting_Widgets_Visibility(false);
+
+                } else {
+
+
+                    isnewOrdersSyncButtonClicked = false;
+
+                    if (orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
+                        mobile_orderinstruction.setText("No New Orders");
+
+                        mobile_orderinstruction.setVisibility(View.VISIBLE);
+
+
+                    }
+                    if (orderStatus.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                        mobile_orderinstruction.setVisibility(View.VISIBLE);
+                        mobile_orderinstruction.setText("No Confirmed Orders ");
+
+
+                    }
+                    if (orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                        mobile_orderinstruction.setVisibility(View.VISIBLE);
+                        mobile_orderinstruction.setText("No  Order is Ready for Pickup");
+
+
+                    }
+                    if (orderStatus.equals(Constants.PICKEDUP_ORDER_STATUS)) {
+                        mobile_orderinstruction.setVisibility(View.VISIBLE);
+                        mobile_orderinstruction.setText("No Transit Orders");
+
+
+                    }
+                    if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                        mobile_orderinstruction.setVisibility(View.VISIBLE);
+                        mobile_orderinstruction.setText("No Delivered Orders ");
+
+
+                    }
+                    Adjusting_Widgets_Visibility(false);
+
                 }
-            });
+            } catch (Exception e) {
+                isnewOrdersSyncButtonClicked = false;
+                Adjusting_Widgets_Visibility(false);
+
+                e.printStackTrace();
+            }
         }
+        else{
 
-        isnewOrdersSyncButtonClicked=false;
-
-        adapterMobileManageOrdersListView = new Adapter_Mobile_ManageOrders_ListView1(mContext, sorted_OrdersList, Mobile_ManageOrders1.this, orderStatus);
-        manageOrders_ListView.setAdapter(adapterMobileManageOrdersListView);
-
-
-        mobile_orderinstruction.setVisibility(View.GONE);
-        Adjusting_Widgets_Visibility(false);
-
-    } else {
+              mobile_new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
+              mobile_confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
+             mobile_ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
+             mobile_transist_Order_widget.setText(String.format("%s", Constants.PICKEDUP_ORDER_STATUS));
+             mobile_delivered_Order_widget.setText(String.format("%s", Constants.DELIVERED_ORDER_STATUS));
 
 
-        isnewOrdersSyncButtonClicked=false;
 
-        if (orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
-            mobile_orderinstruction.setText("No New Orders");
-
-            mobile_orderinstruction.setVisibility(View.VISIBLE);
-
-
+            isnewOrdersSyncButtonClicked = false;
+            Adjusting_Widgets_Visibility(false);
+            Toast.makeText(mContext,"There is no Orders Yet ",Toast.LENGTH_LONG).show();
 
         }
-        if (orderStatus.equals(Constants.CONFIRMED_ORDER_STATUS)) {
-            mobile_orderinstruction.setVisibility(View.VISIBLE);
-            mobile_orderinstruction.setText("No Confirmed Orders ");
-
-
-        }
-        if (orderStatus.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-            mobile_orderinstruction.setVisibility(View.VISIBLE);
-            mobile_orderinstruction.setText("No  Order is Ready for Pickup");
-
-
-        }
-        if (orderStatus.equals(Constants.PICKEDUP_ORDER_STATUS)) {
-            mobile_orderinstruction.setVisibility(View.VISIBLE);
-            mobile_orderinstruction.setText("No Transit Orders");
-
-
-
-        }
-        if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
-            mobile_orderinstruction.setVisibility(View.VISIBLE);
-            mobile_orderinstruction.setText("No Delivered Orders ");
-
-
-
-        }
-        Adjusting_Widgets_Visibility(false);
-
-    }
-}
-catch (Exception e){
-    isnewOrdersSyncButtonClicked=false;
-    Adjusting_Widgets_Visibility(false);
-
-    e.printStackTrace();
-}
-
 
 //callAdapter();
 

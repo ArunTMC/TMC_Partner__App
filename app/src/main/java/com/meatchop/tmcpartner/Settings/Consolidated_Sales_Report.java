@@ -144,11 +144,28 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
         CurrentDate = getDate_and_time();
         dateSelector_text.setText(CurrentDate);
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(Consolidated_Sales_Report.this);
+           // Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+              //  Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
@@ -173,7 +190,7 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
 
 
 
-            getOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
+          //  getOrderForSelectedDate(PreviousDateString,DateString, vendorKey);
 
         }
         catch (Exception e){

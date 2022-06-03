@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.Settings;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
@@ -27,6 +29,7 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScree
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen;
 import com.meatchop.tmcpartner.R;
 import com.squareup.picasso.Picasso;
 
@@ -37,6 +40,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Objects;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 
 public class Adapter_Mobile_GetDeliveryPartnersAssignedOrders extends ArrayAdapter<Modal_ManageOrders_Pojo_Class>{
@@ -47,6 +51,7 @@ List<Modal_ManageOrders_Pojo_Class> ordersList;
 String changestatusto,orderStatus,OrderKey,ordertype;
 String Currenttime,MenuItems,FormattedTime,CurrentDate,formattedDate,CurrentDay;
 public GetDeliverypartnersAssignedOrders mobile_manageOrders1;
+    boolean orderdetailsnewschema = false;
 
     public static BottomSheetDialog bottomSheetDialog;
     Uri ImageUri;
@@ -83,13 +88,36 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
             bottomSheetDialog = new BottomSheetDialog(mContext);
 
             final CardView cardLayout =listViewItem.findViewById(R.id.cardLayout);
+            SharedPreferences sh
+                    = mContext.getSharedPreferences("VendorLoginData",
+                    MODE_PRIVATE);
+
+
+            orderdetailsnewschema = (sh.getBoolean("orderdetailsnewschema_settings", false));
 
             //   final Button changeDeliveryPartner =listViewItem.findViewById(R.id.changeDeliveryPartner);
-            DisplayMetrics dm = new DisplayMetrics();
-            mobile_manageOrders1.getWindowManager().getDefaultDisplay().getMetrics(dm);
-            double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-            double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-            screenInches = Math.sqrt(x+y);
+            try {
+                ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+                screenInches = screenSizeOfTheDevice.getDisplaySize(mobile_manageOrders1);
+                // Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                try {
+                    DisplayMetrics dm = new DisplayMetrics();
+                    mobile_manageOrders1.getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                    double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                    screenInches = Math.sqrt(x + y);
+                    // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e1){
+                    e1.printStackTrace();
+                }
+
+
+            }
             //
             final TextView moblieNo_text_widget = listViewItem.findViewById(R.id.moblieNo_text_widget);
             final TextView tokenNo_text_widget = listViewItem.findViewById(R.id.tokenNo_text_widget);
@@ -163,11 +191,17 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
                 @Override
                 public void onClick(View v) {
                     String LocationUrl,orderid,paymentmode,payableAmount;
-                    LocationUrl = modal_manageOrders_pojo_class.getPaymenttranscationimageurl();
-                    orderid =modal_manageOrders_pojo_class.getOrderid();
-                    paymentmode = modal_manageOrders_pojo_class.getPaymentmode();
-                    payableAmount = modal_manageOrders_pojo_class.getPayableamount();
-                    setImageUsingUrl(LocationUrl,orderid,paymentmode,payableAmount);
+                    LocationUrl = String.valueOf(modal_manageOrders_pojo_class.getPaymenttranscationimageurl());
+                    if(!LocationUrl.equals("") && !LocationUrl.equals("null") && !LocationUrl.equals(null)){
+                        orderid =String.valueOf(modal_manageOrders_pojo_class.getOrderid());
+                        paymentmode = String.valueOf(modal_manageOrders_pojo_class.getPaymentmode());
+                        payableAmount = String.valueOf(modal_manageOrders_pojo_class.getPayableamount());
+                        setImageUsingUrl(LocationUrl,orderid,paymentmode,payableAmount);
+                    }
+                    else{
+                        Toast.makeText(mContext, "No Image !! First Have to Upload the Transaction Image Via Delivery Partner App", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             });
 
@@ -272,6 +306,9 @@ public Adapter_Mobile_GetDeliveryPartnersAssignedOrders(Context mContext, List<M
 
                 JSONArray array  = modal_manageOrders_pojo_class.getItemdesp();
                 //Log.i("tag","array.length()"+ array.length());
+                if(orderdetailsnewschema){
+                    array = new JSONArray(modal_manageOrders_pojo_class.getItemdesp_string());
+                }
                 String b= array.toString();
                 modal_manageOrders_pojo_class.setItemdesp_string(b);
                 String itemDesp="",subCtgyKey="";;

@@ -418,14 +418,14 @@ public class Adapter_Delivered_Orders_TimewiseReport  extends ArrayAdapter<Modal
         return  listViewItem ;
 
     }
-    private void showBottomSheetDialog(String orderkey, String deliverypartnerName) {
+    private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
 
         bottomSheetDialog = new BottomSheetDialog(mContext);
         bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
 
         ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, mobile_manageOrders1.deliveryPartnerList,orderkey,"AppOrdersList", deliverypartnerName);
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, mobile_manageOrders1.deliveryPartnerList,orderkey,"AppOrdersList", deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
         ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 

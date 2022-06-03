@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible"
+
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/selectfromAddressList_ParentLayout_bottomSheet"
+            android:visibility="gone"
+
+            android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:gravity="end"
+                android:layout_weight="1.5"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select an Address"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/TMC_Black"
+                    android:textSize="18sp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/open_sans_bold"
+
+                    />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:layout_marginEnd="20dp"
+                android:id="@+id/close_bottom_sheet"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/close_btn"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentTop="true"
+                    android:visibility="visible"
+
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:foregroundGravity="bottom"
+                    app:srcCompat="@mipmap/close_icon" />
+
+
+            </LinearLayout>
+
+
+
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="right"
+            android:layout_marginTop="20dp"
+             android:layout_marginStart="10dp"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:hint="Click to Add New Address -> -> "
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:gravity="center"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="3"
+                android:id="@+id/addNewAddress_layout"
+                android:background="@drawable/orange_selected_button_background"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@mipmap/whiteplus" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/open_sans_bold"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/TMC_White"
+                    android:text="Add" />
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                >
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:id="@+id/scrollView"
+            android:layout_height="match_parent"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    />
+
+
+                <ListView
+                    android:layout_width="match_parent"
+                    android:id="@+id/address_listView"
+                    android:layout_height="wrap_content" />
+
+
+                  <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    />
+
+
+            </LinearLayout>
+
+
+        </ScrollView>
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Address has added for this user"
+                android:layout_centerInParent="true"
+                android:visibility="gone"
+                android:id="@+id/id_addressInstruction"
+                />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="120dp"
+                android:alpha="0.9"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="50dp"
+                android:layout_marginEnd="10dp"
+                android:layout_alignParentEnd="true"
+                android:orientation="vertical"
+                tools:ignore="NotSibling">
+
+
+                <ImageView
+                    android:id="@+id/swipe_up_arrow"
+                    android:layout_width="55dp"
+                    android:background="@color/TMC_Grey"
+                    android:layout_height="40dp"
+                    android:padding="10dp"
+
+                    android:layout_marginBottom="10dp"
+                    app:srcCompat="@drawable/uparrow" />
+
+                <ImageView
+                    android:id="@+id/swipe_down_arrow"
+                    android:layout_width="55dp"
+                    android:background="@color/TMC_Grey"
+                    android:layout_height="40dp"
+                    android:padding="10dp"
+                    android:layout_marginBottom="10dp"
+                    app:srcCompat="@drawable/downarrow" />
+            </LinearLayout>
+
+
+
+        </RelativeLayout>
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/addNewAddress_ParentLayout_bottomSheet"
+            android:visibility="visible"
+            android:layout_marginBottom="10dp"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="end"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:gravity="end"
+                    android:layout_weight="1.5"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Add new Address"
+                        android:gravity="center_vertical"
+                        android:textColor="@color/TMC_Black"
+                        android:textSize="18sp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_bold"
+
+                        />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="20dp"
+                    android:id="@+id/addAddress_close_bottom_sheet"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/addAddress_close_btn"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="true"
+                        android:visibility="visible"
+
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:foregroundGravity="bottom"
+                        app:srcCompat="@mipmap/close_icon" />
+
+
+                </LinearLayout>
+
+
+
+
+            </LinearLayout>
+
+
+
+
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:visibility="visible"
+
+            android:layout_height="wrap_content">
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:visibility="visible"
+                    android:layout_height="wrap_content">
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:textColor="@color/TMC_Black"
+                        android:textSize="12sp"
+
+                        android:text="Contact Person Name"/>
+
+                    <EditText
+                        android:id="@+id/contact_personName_editText"
+                        android:layout_width="match_parent"
+                        android:layout_height="35sp"
+                        android:text=""
+                        android:layout_marginTop="5dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:paddingStart="5dp"
+                        android:paddingEnd="5dp"
+                        android:hint="Ram Kumar"
+                        android:background="@drawable/grey_color_textview_backgrounf"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textColorHint="@color/TMC_Hint_Color"
+                        android:textSize="14sp"
+
+                        />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+
+                    android:visibility="visible"
+                    android:layout_height="wrap_content">
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:textColor="@color/TMC_Black"
+                        android:textSize="12sp"
+
+                        android:text="Contact Person Mobile No"/>
+
+                    <EditText
+                        android:id="@+id/contact_personMobileNo_editText"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="35sp"
+                        android:digits="0123456789"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:gravity="center_vertical"
+                        android:hint="9593217537"
+                        android:inputType="phone"
+                        android:maxLength="10"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:paddingStart="5dp"
+                        android:paddingEnd="5dp"
+                        android:text=""
+                        android:background="@drawable/grey_color_textview_backgrounf"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textColorHint="@color/TMC_Hint_Color"
+                        android:textSize="14sp"
+
+                        />
+
+
+                </LinearLayout>
+
+
+
+            </LinearLayout>
+
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="12sp"
+
+                    android:text="Address Line 1"/>
+
+                <EditText
+                    android:id="@+id/addressLine1_editText"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="35sp"
+                    android:text=""
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:hint="14 , 3rd Block , Jayaseelan Apartments, VOC 2nd Street "
+                    android:background="@drawable/pale_orange_background"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textColorHint="@color/TMC_Hint_Color"
+                    android:textSize="14sp"
+
+                    />
+
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="12sp"
+
+                    android:text="Address Line 2"/>
+
+                <EditText
+                    android:id="@+id/addressLine2_editText"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="35sp"
+                    android:text=""
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:hint="Rajaji Nagar , Tambaram"
+                    android:background="@drawable/pale_orange_background"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textColorHint="@color/TMC_Hint_Color"
+                    android:textSize="14sp"
+
+                    />
+
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="12sp"
+
+                    android:text="LandMark"/>
+
+                <EditText
+                    android:id="@+id/landmark_editText"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="35sp"
+                    android:text=""
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:hint="Near Tambaram Bus Stand"
+                    android:background="@drawable/pale_orange_background"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textColorHint="@color/TMC_Hint_Color"
+                    android:textSize="14sp"
+
+                    />
+
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:visibility="visible"
+                    android:layout_height="wrap_content">
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="12sp"
+
+                    android:text="Pincode"/>
+
+                <EditText
+                    android:id="@+id/pincode_editText"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="35sp"
+                    android:text=""
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:hint="628002"
+                    android:background="@drawable/pale_orange_background"
+                    android:textColor="@color/TMC_Primary_Text_Color"
+                    android:textColorHint="@color/TMC_Hint_Color"
+                    android:textSize="14sp"
+
+                    />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+
+                    android:visibility="visible"
+                    android:layout_height="wrap_content">
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:textColor="@color/TMC_Black"
+                        android:textSize="12sp"
+
+                        android:text="Type"/>
+
+                    <EditText
+                        android:id="@+id/type_address_editText"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="35sp"
+                        android:text=""
+                        android:layout_marginTop="5dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:paddingStart="5dp"
+                        android:paddingEnd="5dp"
+                        android:hint="Home"
+                        android:background="@drawable/grey_color_textview_backgrounf"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textColorHint="@color/TMC_Hint_Color"
+                        android:textSize="14sp"
+
+                        />
+
+
+                </LinearLayout>
+
+
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+        <Button
+            android:id="@+id/saveAddress_Button"
+            android:layout_width="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="10dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_background"
+            android:textColor="@color/TMC_White"
+            android:text="Save Address" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+
+
+
+
+
+
+    <LinearLayout
+        android:id="@+id/loadingpanelmask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/TMC_proressbar_mask_Color"
+        android:alpha="0.85"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:visibility="gone" >
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:visibility="gone">
+
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/loadinganim_layout"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="visible"
+            android:layout_gravity="center"
+            app:indicatorColor="@color/TMC_Orange"
+            app:indicatorName="BallPulseIndicator" />
+
+    </LinearLayout>
+
+</RelativeLayout>

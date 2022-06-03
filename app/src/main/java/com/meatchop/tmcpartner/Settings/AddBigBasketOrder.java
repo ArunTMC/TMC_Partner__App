@@ -44,6 +44,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
@@ -82,7 +84,7 @@ public class AddBigBasketOrder extends AppCompatActivity {
     static Adapter_AddBigBasketOrdersRecyclerview adapter_addBigBasketOrdersRecyclerview;
     List<Modal_MenuItem_Settings>MenuItem = new ArrayList<>();
     LinearLayout loadingPanel,loadingpanelmask;
-    String vendorKey;
+    String vendorKey="";
     public TextView total_item_Rs_text_widget,taxes_and_Charges_rs_text_widget,total_Rs_to_Pay_text_widget;
     Button procced_to_pay_widget;
     EditText bigbasketOrdersCustomermobileno,customermobileno_edittextwidget;
@@ -118,7 +120,11 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
     Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
 
-
+    String vendorName ="";
+    boolean orderdetailsnewschema = false;
+    Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
+    boolean  isCustomerOrdersTableServiceCalled = false;
+    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,17 +144,21 @@ public class AddBigBasketOrder extends AppCompatActivity {
         total_Rs_to_Pay_text_widget = findViewById(R.id.total_Rs_to_Pay_text_widget);
         taxes_and_Charges_rs_text_widget = findViewById(R.id.taxes_and_Charges_rs_text_widget);
         recyclerView = findViewById(R.id.recyclerView);
-
+        mContext = AddBigBasketOrder.this;
 
         try{
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
+            vendorName = shared.getString("VendorName", "");
+
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
             usermobileNo = (shared.getString("UserPhoneNumber", "+"));
             StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+           // orderdetailsnewschema = true;
 
         }
         catch(Exception e){
@@ -560,6 +570,31 @@ public class AddBigBasketOrder extends AppCompatActivity {
             return;
         }
         else {
+
+
+            if(!isCustomerOrdersTableServiceCalled){
+                try{
+                    if(orderdetailsnewschema){
+                        String customerMobileNo = bigbasketOrdersCustomermobileno.getText().toString();
+                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+
+                        String  CouponDiscountAmount ="0";
+                        String payableAmount =  total_Rs_to_Pay_text_widget.getText().toString();
+                        isCustomerOrdersTableServiceCalled =true;
+                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, AddBigBasketOrder.cart_Item_List, AddBigBasketOrder.cartItem_hashmap, Constants.BIGBASKETORDER_PAYMENTMODE,CouponDiscountAmount,Currenttime,customerMobileNo,Constants.BigBasket,vendorKey,vendorName, sTime,payableAmount);
+                        asyncTask.execute();
+
+                    }
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+
+                }
+            }
+
+
+
             ispaymentMode_Clicked = true;
             if (!isOrderDetailsMethodCalled) {
 
@@ -578,7 +613,25 @@ public class AddBigBasketOrder extends AppCompatActivity {
     }
 
 
+    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext) {
+        mResultCallback_Add_CustomerOrder_TrackingTableInterface = new Add_CustomerOrder_TrackingTableInterface() {
 
+
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                isCustomerOrdersTableServiceCalled = false;
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                isCustomerOrdersTableServiceCalled = false;
+
+                // Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
+            }
+        };
+
+
+    }
     private void PlaceOrder_in_OrderDetails(List<String> cart_Item_List1, String Payment_mode, long sTime) {
         if(isOrderDetailsMethodCalled){
             return;
@@ -608,9 +661,17 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
         double totalgrossweightingrams_doubleFromLoop = 0, totalgrossFromInsideAndOutsideLoop = 0;
 
-        String slotname = "EXPRESSDELIVERY";
+        String slotname = "";
+        if(orderdetailsnewschema){
+            slotname = "";
 
-        String orderPlacedDate = CurrentDate;
+        }
+        else{
+            slotname = "EXPRESSDELIVERY";
+
+        }
+
+        String orderPlacedDate = getDate();
 
         String slottimerange = "";
         String UserMobile = "+91" + customermobileno_edittextwidget.getText().toString();
@@ -1618,7 +1679,8 @@ public class AddBigBasketOrder extends AppCompatActivity {
                 }
 
 
-            } catch (JSONException e) {
+            }
+            catch (JSONException e) {
                 e.printStackTrace();
             }
             itemDespArray.put(itemdespObject);
@@ -1645,7 +1707,9 @@ public class AddBigBasketOrder extends AppCompatActivity {
 
             jsonObject.put("deliverytype", deliverytype);
             jsonObject.put("slotname", slotname);
-            jsonObject.put("slotdate", "");
+
+
+
             jsonObject.put("slottimerange", "");
 
             jsonObject.put("orderid", orderid);
@@ -1653,7 +1717,17 @@ public class AddBigBasketOrder extends AppCompatActivity {
             jsonObject.put("tokenno", (tokenno));
             jsonObject.put("userid", userid);
 
-            jsonObject.put("usermobile", UserMobile);
+            if(orderdetailsnewschema) {
+                jsonObject.put("usermobileno", UserMobile);
+                jsonObject.put("slotdate", orderPlacedDate);
+
+            }
+            else{
+                jsonObject.put("slotdate", "");
+
+                jsonObject.put("usermobile", UserMobile);
+
+            }
             jsonObject.put("vendorkey", vendorkey);
             jsonObject.put("vendorname", vendorName);
             jsonObject.put("payableamount", Double.parseDouble(payableAmount));
@@ -1673,7 +1747,20 @@ public class AddBigBasketOrder extends AppCompatActivity {
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
+
+
+        String Api_To_PlaceOrderInOrderDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInOrderDetails = Constants.api_AddVendorOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInOrderDetails = Constants.api_addOrderDetailsInOrderDetailsTable;
+
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_To_PlaceOrderInOrderDetails,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -3760,7 +3847,11 @@ public class AddBigBasketOrder extends AppCompatActivity {
         try {
             orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
+            if(orderdetailsnewschema){
 
+                orderTrackingTablejsonObject.put("slotdate",getDate());
+
+            }
             orderTrackingTablejsonObject.put("usermobileno","+91" + customermobileno_edittextwidget.getText().toString());
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
@@ -3775,16 +3866,40 @@ public class AddBigBasketOrder extends AppCompatActivity {
         }
 
 
-        //Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderTrackingDetailsTable,
+
+        String Api_To_PlaceOrderInTrackingDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_AddVendorTrackingOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_addOrderDetailsInOrderTrackingDetailsTable;
+
+        }
+
+
+
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInTrackingDetails,
                 orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
+
+
+
+
+                String Api_To_PlaceOrderInTrackingDetails = "";
+                if(orderdetailsnewschema){
+                    Api_To_PlaceOrderInTrackingDetails = Constants.api_AddVendorTrackingOrderDetails;
+
+                }
+                else{
+                    Api_To_PlaceOrderInTrackingDetails = Constants.api_addOrderDetailsInOrderTrackingDetailsTable;
+
+                }
 
                 //Log.d(Constants.TAG, "Response for PlaceOrder_in_OrderItemDetails: " + response);
                 try {
@@ -3970,6 +4085,39 @@ public class AddBigBasketOrder extends AppCompatActivity {
         }
 
     }
+
+    private String getDate() {
+        Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
+
+            return CurrentDate;
+
+        }
+        else {
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
+    }
+
+
+
     public String getDate_and_time()
     {
 

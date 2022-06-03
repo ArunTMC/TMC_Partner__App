@@ -42,18 +42,19 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPCellEvent;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,10 +83,11 @@ import java.util.Objects;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
 
+
 public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
-    LinearLayout generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
+    LinearLayout fetchData_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-        TextView wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget, noofOrders, noofPacks, vendorName, deliveryChargeAmount_textwidget, totalSales_headingText, appsales, possales, swiggySales, dunzoSales, bigbasketSales, phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView instruction_textview,wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget, noofOrders, noofPacks, vendorName, deliveryChargeAmount_textwidget, totalSales_headingText, appsales, possales, swiggySales, dunzoSales, bigbasketSales, phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey, vendorname, ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -150,7 +152,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     int no_of_ItemCount = 0;
     ScrollView scrollView;
     double itemDespTotalAmount = 0;
-    String replacementOrderDetailsString, startDateString_forReplacementransaction = "", endDateString_forReplacementransaction = "", CurrentDate, CouponDiscout, pos_CouponDiscount,WholeSales_CouponDiscount, Swiggy_CouponDiscount, Dunzo_CouponDiscount, BigBasket_CouponDiscount, PhoneOrder_CouponDiscount, PreviousDateString, deliveryamount = "0";
+    String replacementOrderDetailsString, startDateString_forReplacementransaction = "", endDateString_forReplacementransaction = "", CurrentDate, CouponDiscount, pos_CouponDiscount,WholeSales_CouponDiscount, Swiggy_CouponDiscount, Dunzo_CouponDiscount, BigBasket_CouponDiscount, PhoneOrder_CouponDiscount, PreviousDateString, deliveryamount = "0";
     ListView consolidatedSalesReport_Listview;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -159,6 +161,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
+
+
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,7 +189,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         totalCouponDiscount_Amt = findViewById(R.id.totalCouponDiscount_Amt);
         refundAmount_textwidget = findViewById(R.id.refundAmount_textwidget);
         replacementAmount_textwidget = findViewById(R.id.replacementAmount_textwidget);
-        wholesalesOrderSales= findViewById(R.id.wholesalesOrderSales);
+        wholesalesOrderSales = findViewById(R.id.wholesalesOrderSales);
+        instruction_textview = findViewById(R.id.instruction_textview);
+        fetchData_Layout = findViewById(R.id.fetchData_Layout);
+
         totalAmt_with_CouponDiscount = findViewById(R.id.totalAmt_with_CouponDiscount);
         totalGST_Amt = findViewById(R.id.totalGST_Amt);
         final_sales = findViewById(R.id.final_sales);
@@ -238,13 +253,29 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         no_of_orders = 0;
 
 
-        CurrentDate = getDate_and_time();
-        dateSelector_text.setText(CurrentDate);
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-        screenInches = Math.sqrt(x + y);
+
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(ConsolidatedReportSubCtgywise.this);
+         //   Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+             //   Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
@@ -257,14 +288,29 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         StoreAddressLine2 = (sharedPreferences.getString("VendorAddressline2", ""));
         StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
         StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
+        orderdetailsnewschema = (sharedPreferences.getBoolean("orderdetailsnewschema_settings", false));
+        //orderdetailsnewschema = true;
 
         vendorName.setText(vendorname);
 
+
+/*
+        CurrentDate = getDate_and_time();
+        dateSelector_text.setText(CurrentDate);
         DateString = getDate_and_time();
         PreviousDateString = getDatewithNameofthePreviousDay();
         startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
         endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
-        dateSelector_text.setText(DateString);
+
+ */
+        CurrentDate ="";
+        DateString ="";
+        dateSelector_text.setText(Constants.Empty_Date_Format);
+
+        scrollView.setVisibility(View.GONE);
+        instruction_textview.setVisibility(View.VISIBLE);
+
+
         try {
             Order_Item_List.clear();
             OrderItem_hashmap.clear();
@@ -297,8 +343,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             deliveryChargeOrderidArray.clear();
             no_of_ItemCount = 0;
             no_of_orders = 0;
-            getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
-            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+          //  getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
+           // getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -325,6 +371,75 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             }
         });
 
+        fetchData_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(DateString.equals("")){
+                    Toast.makeText(ConsolidatedReportSubCtgywise.this, "First Select Date !! Before Fetch the Data", Toast.LENGTH_SHORT).show();
+                }
+                else {
+
+
+                Adjusting_Widgets_Visibility(true);
+
+                scrollView.setVisibility(View.VISIBLE);
+                instruction_textview.setVisibility(View.GONE);
+
+                Order_Item_List.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                couponDiscountOrderidArray.clear();
+                ordertypeArray.clear();
+                ordertypeHashmap.clear();
+                couponDiscount_hashmap.clear();
+                dunzoOrders_couponDiscount_hashmap.clear();
+                dunzoOrders_couponDiscountOrderidArray.clear();
+                oldpayableamount = 0;
+                itemDespTotalAmount = 0;
+                Pos_couponDiscount_hashmap.clear();
+                Pos_couponDiscountOrderidArray.clear();
+                phoneOrders_couponDiscount_hashmap.clear();
+                phoneOrders_couponDiscountOrderidArray.clear();
+                swiggyOrders_couponDiscount_hashmap.clear();
+                swiggyOrders_couponDiscountOrderidArray.clear();
+                deliveryCharge_hashmap.clear();
+                deliveryChargeOrderidArray.clear();
+                bigBasketOrders_couponDiscountOrderidArray.clear();
+                bigBasketOrders_couponDiscount_hashmap.clear();
+                wholesaleOrders_couponDiscountOrderidArray.clear();
+                wholesaleOrders_couponDiscount_hashmap.clear();
+                replacementTransactiontypeHashmap.clear();
+                replacementTransactiontypeArray.clear();
+                addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+
+
+                dataList.clear();
+                no_of_ItemCount = 0;
+                no_of_orders = 0;
+
+                isgetPreOrderForSelectedDateCalled = false;
+                isgetOrderForSelectedDateCalled = false;
+                isgetReplacementOrderForSelectedDateCalled = false;
+                //getOrderForSelectedDate(DateString, vendorKey);
+                    if (orderdetailsnewschema) {
+                        String dateAsnewFormat = convertOldFormatDateintoNewFormat(DateString);
+                        callVendorOrderDetailsSeviceAndInitCallBack(dateAsnewFormat, dateAsnewFormat, vendorKey);
+                        getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+
+                    } else {
+
+                        getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
+                        getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+
+                    }
+
+
+
+
+                   }
+            }
+        });
 
         generateReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -334,7 +449,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
                     if (Environment.isExternalStorageManager()) {
                         try {
-                            exportReport();
+                            if(Order_Item_List.size()>0){
+                                Adjusting_Widgets_Visibility(true);
+
+                                exportReport();
+                            }
+                            else{
+                                Adjusting_Widgets_Visibility(false);
+                                Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Data to Export", Toast.LENGTH_SHORT).show();
+                            }
+
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -364,9 +488,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         ActivityCompat.requestPermissions(ConsolidatedReportSubCtgywise.this, new String[]{WRITE_EXTERNAL_STORAGE},
                                 REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
                     } else {
-                        Adjusting_Widgets_Visibility(true);
                         try {
-                            exportReport();
+                            if(Order_Item_List.size()>0){
+                                Adjusting_Widgets_Visibility(true);
+
+                                exportReport();
+                            }
+                            else{
+                                Adjusting_Widgets_Visibility(false);
+                                Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Data to Export", Toast.LENGTH_SHORT).show();
+                            }
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -724,7 +855,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 if (Environment.isExternalStorageManager()) {
                     // perform action when allow permission success
                     try {
-                        exportReport();
+                        if(Order_Item_List.size()>0){
+                            Adjusting_Widgets_Visibility(true);
+
+                            exportReport();
+                        }
+                        else{
+                            Adjusting_Widgets_Visibility(false);
+                            Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Data to Export", Toast.LENGTH_SHORT).show();
+                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -743,7 +882,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
                     // exportInvoice();
                     try {
-                        exportReport();
+                        if(Order_Item_List.size()>0){
+                            Adjusting_Widgets_Visibility(true);
+
+                            exportReport();
+                        }
+                        else{
+                            Adjusting_Widgets_Visibility(false);
+                            Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Data to Export", Toast.LENGTH_SHORT).show();
+                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -758,37 +905,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     }
 
     private void openDatePicker() {
-        Order_Item_List.clear();
-        OrderItem_hashmap.clear();
-        finalBillDetails.clear();
-        FinalBill_hashmap.clear();
-        couponDiscountOrderidArray.clear();
-        ordertypeArray.clear();
-        ordertypeHashmap.clear();
-        couponDiscount_hashmap.clear();
-        dunzoOrders_couponDiscount_hashmap.clear();
-        dunzoOrders_couponDiscountOrderidArray.clear();
-        oldpayableamount = 0;
-        itemDespTotalAmount = 0;
-        Pos_couponDiscount_hashmap.clear();
-        Pos_couponDiscountOrderidArray.clear();
-        phoneOrders_couponDiscount_hashmap.clear();
-        phoneOrders_couponDiscountOrderidArray.clear();
-        swiggyOrders_couponDiscount_hashmap.clear();
-        swiggyOrders_couponDiscountOrderidArray.clear();
-        deliveryCharge_hashmap.clear();
-        deliveryChargeOrderidArray.clear();
-        bigBasketOrders_couponDiscountOrderidArray.clear();
-        bigBasketOrders_couponDiscount_hashmap.clear();
-        wholesaleOrders_couponDiscountOrderidArray.clear();
-        wholesaleOrders_couponDiscount_hashmap.clear();
-        replacementTransactiontypeHashmap.clear();
-        replacementTransactiontypeArray.clear();
-
-
-        dataList.clear();
-        no_of_ItemCount = 0;
-        no_of_orders = 0;
 
 
         final Calendar cldr = Calendar.getInstance();
@@ -802,6 +918,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         try {
 
+
+                            Adjusting_Widgets_Visibility(false);
+                            isVendorOrdersTableServiceCalled =false;
+                            scrollView.setVisibility(View.GONE);
+                            instruction_textview.setVisibility(View.VISIBLE);
+                            instruction_textview.setText("After Selecting the Date !! Click Fetch Data");
                             Order_Item_List.clear();
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
@@ -810,6 +932,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             ordertypeArray.clear();
                             ordertypeHashmap.clear();
                             couponDiscount_hashmap.clear();
+                            replacementTransactiontypeHashmap.clear();
+                            replacementTransactiontypeArray.clear();
                             oldpayableamount = 0;
                             itemDespTotalAmount = 0;
                             Pos_couponDiscount_hashmap.clear();
@@ -818,26 +942,33 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             phoneOrders_couponDiscountOrderidArray.clear();
                             swiggyOrders_couponDiscount_hashmap.clear();
                             swiggyOrders_couponDiscountOrderidArray.clear();
+                            dunzoOrders_couponDiscount_hashmap.clear();
+                            dunzoOrders_couponDiscountOrderidArray.clear();
                             SubCtgywiseTotalArray.clear();
                             SubCtgywiseTotalHashmap.clear();
                             dataList.clear();
                             tmcSubCtgykey.clear();
-                            dunzoOrders_couponDiscount_hashmap.clear();
-                            dunzoOrders_couponDiscountOrderidArray.clear();
                             deliveryCharge_hashmap.clear();
                             deliveryChargeOrderidArray.clear();
-                            bigBasketOrders_couponDiscountOrderidArray.clear();
-                            bigBasketOrders_couponDiscount_hashmap.clear();
                             wholesaleOrders_couponDiscountOrderidArray.clear();
                             wholesaleOrders_couponDiscount_hashmap.clear();
-                            replacementTransactiontypeHashmap.clear();
-                            replacementTransactiontypeArray.clear();
+                            bigBasketOrders_couponDiscountOrderidArray.clear();
+                            bigBasketOrders_couponDiscount_hashmap.clear();
+                            no_of_ItemCount = 0;
+                            no_of_orders = 0;
+                            ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
+                            addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                            //runthread();
+                            Adjusting_Widgets_Visibility(false);
 
                             no_of_ItemCount = 0;
                             no_of_orders = 0;
                             noofOrders.setText(String.valueOf(no_of_orders));
                             noofPacks.setText(String.valueOf(no_of_ItemCount));
+
+
+
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear + 1);
                             String datestring = String.valueOf(dayOfMonth);
@@ -863,12 +994,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
                             dateSelector_text.setText(CurrentDay + ", " + dayOfMonth + " " + month_in_String + " " + year);
                             DateString = (CurrentDay + ", " + dayOfMonth + " " + month_in_String + " " + year);
-                            isgetPreOrderForSelectedDateCalled = false;
-                            isgetOrderForSelectedDateCalled = false;
-                            isgetReplacementOrderForSelectedDateCalled = false;
-                            //getOrderForSelectedDate(DateString, vendorKey);
-                            getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
-                            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -877,6 +1002,538 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     }
                 }, year, month, day);
         datepicker.show();
+    }
+
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        Adjusting_Widgets_Visibility(true);
+
+        if(isVendorOrdersTableServiceCalled){
+            Adjusting_Widgets_Visibility(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+
+                if(orderslist_fromResponse.size()>0) {
+
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("content", orderslist_fromResponse);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    isVendorOrdersTableServiceCalled = false;
+                    //mobile_jsonString = String.valueOf(jsonObject);
+                    // ordersList = orderslist_fromResponse;
+                    processArrayAndgetData(orderslist_fromResponse);
+                }
+                else{
+
+                    Adjusting_Widgets_Visibility(false);
+                    isVendorOrdersTableServiceCalled =false;
+                    scrollView.setVisibility(View.GONE);
+                    instruction_textview.setVisibility(View.VISIBLE);
+                    instruction_textview.setText("There is no Order On this Date");
+                    Order_Item_List.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    couponDiscountOrderidArray.clear();
+                    ordertypeArray.clear();
+                    ordertypeHashmap.clear();
+                    couponDiscount_hashmap.clear();
+                    oldpayableamount = 0;
+                    itemDespTotalAmount = 0;
+                    Pos_couponDiscount_hashmap.clear();
+                    Pos_couponDiscountOrderidArray.clear();
+                    phoneOrders_couponDiscount_hashmap.clear();
+                    phoneOrders_couponDiscountOrderidArray.clear();
+                    swiggyOrders_couponDiscount_hashmap.clear();
+                    swiggyOrders_couponDiscountOrderidArray.clear();
+                    dunzoOrders_couponDiscount_hashmap.clear();
+                    dunzoOrders_couponDiscountOrderidArray.clear();
+                    SubCtgywiseTotalArray.clear();
+                    SubCtgywiseTotalHashmap.clear();
+                    dataList.clear();
+                    tmcSubCtgykey.clear();
+                    deliveryCharge_hashmap.clear();
+                    deliveryChargeOrderidArray.clear();
+                    wholesaleOrders_couponDiscountOrderidArray.clear();
+                    wholesaleOrders_couponDiscount_hashmap.clear();
+                    bigBasketOrders_couponDiscountOrderidArray.clear();
+                    bigBasketOrders_couponDiscount_hashmap.clear();
+                    no_of_ItemCount = 0;
+                    no_of_orders = 0;
+                    ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
+
+                    addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                    //runthread();
+                    Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                    Adjusting_Widgets_Visibility(false);
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled =false;
+                scrollView.setVisibility(View.GONE);
+                instruction_textview.setVisibility(View.VISIBLE);
+                instruction_textview.setText("There is some error"+String.valueOf(error));
+                Order_Item_List.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                couponDiscountOrderidArray.clear();
+                ordertypeArray.clear();
+                ordertypeHashmap.clear();
+                couponDiscount_hashmap.clear();
+                oldpayableamount = 0;
+                itemDespTotalAmount = 0;
+                Pos_couponDiscount_hashmap.clear();
+                Pos_couponDiscountOrderidArray.clear();
+                phoneOrders_couponDiscount_hashmap.clear();
+                phoneOrders_couponDiscountOrderidArray.clear();
+                swiggyOrders_couponDiscount_hashmap.clear();
+                swiggyOrders_couponDiscountOrderidArray.clear();
+                dunzoOrders_couponDiscount_hashmap.clear();
+                dunzoOrders_couponDiscountOrderidArray.clear();
+                SubCtgywiseTotalArray.clear();
+                SubCtgywiseTotalHashmap.clear();
+                dataList.clear();
+                tmcSubCtgykey.clear();
+                deliveryCharge_hashmap.clear();
+                deliveryChargeOrderidArray.clear();
+                wholesaleOrders_couponDiscountOrderidArray.clear();
+                wholesaleOrders_couponDiscount_hashmap.clear();
+                bigBasketOrders_couponDiscountOrderidArray.clear();
+                bigBasketOrders_couponDiscount_hashmap.clear();
+                no_of_ItemCount = 0;
+                no_of_orders = 0;
+                ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
+
+                addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                //runthread();
+                Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is Some Error ", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+
+        mVolleyService = new VendorOrdersTableService(mResultCallback,ConsolidatedReportSubCtgywise.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+
+    private void processArrayAndgetData(List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+        isVendorOrdersTableServiceCalled = false;
+            for (int i = 0; i < orderslist_fromResponse.size(); i++) {
+                String paymentMode = "", ordertype = "", orderid = "", slotname = "", deliveryAmount = "", deliveryType = "", couponDiscount_local = "", payableAmount;
+                JSONArray itemdesp_JSONArray = new JSONArray();
+
+                Modal_ManageOrders_Pojo_Class orders_pojo_class_fromResponse = orderslist_fromResponse.get(i);
+                Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                try {
+                    paymentMode = String.valueOf(orders_pojo_class_fromResponse.getPaymentmode().toUpperCase());
+                    modal_orderDetails.paymentmode = paymentMode;
+                } catch (Exception e) {
+                    paymentMode = "";
+                    modal_orderDetails.paymentmode = "";
+
+                    e.printStackTrace();
+                }
+
+                try {
+
+                    ordertype = String.valueOf(orders_pojo_class_fromResponse.getOrdertype().toUpperCase());
+                    modal_orderDetails.ordertype = ordertype;
+
+                } catch (Exception e) {
+                    ordertype = "";
+                    modal_orderDetails.ordertype = "";
+
+                    e.printStackTrace();
+                }
+                if (ordertype.equals("") || ordertype.equals(null) || ordertype.equals("NULL")) {
+                    try {
+
+                        ordertype = String.valueOf(orders_pojo_class_fromResponse.getOrderType().toUpperCase());
+                        modal_orderDetails.ordertype = ordertype;
+
+                    } catch (Exception e) {
+                        ordertype = "";
+                        modal_orderDetails.ordertype = "";
+
+                        e.printStackTrace();
+                    }
+                }
+
+
+                try {
+
+                    orderid = String.valueOf(orders_pojo_class_fromResponse.getOrderid());
+                    modal_orderDetails.orderid = orderid;
+                    no_of_orders++;
+                } catch (Exception e) {
+                    orderid = "";
+                    modal_orderDetails.orderid = "";
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    itemdesp_JSONArray = orders_pojo_class_fromResponse.getItemdesp();
+                    modal_orderDetails.itemdesp = itemdesp_JSONArray;
+
+                } catch (Exception e) {
+                    try {
+                        itemdesp_JSONArray = new JSONArray(orders_pojo_class_fromResponse.getItemdesp_string());
+                    } catch (JSONException jsonException) {
+                        jsonException.printStackTrace();
+                    }
+                    modal_orderDetails.itemdesp = itemdesp_JSONArray;
+
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    slotname = String.valueOf(orders_pojo_class_fromResponse.getSlotname().toUpperCase());
+                    modal_orderDetails.slotname = slotname;
+
+                } catch (Exception e) {
+                    slotname = "";
+                    modal_orderDetails.slotname = slotname;
+
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    double newpayableamount = Double.parseDouble(String.valueOf(orders_pojo_class_fromResponse.getPayableamount()));
+
+
+                    oldpayableamount = newpayableamount + oldpayableamount;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    CouponDiscount = String.valueOf(orders_pojo_class_fromResponse.getCoupondiscamount());
+                    modal_orderDetails.coupondiscount = CouponDiscount;
+
+                } catch (Exception e) {
+                    CouponDiscount = "";
+                    modal_orderDetails.coupondiscount = CouponDiscount;
+
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    deliveryamount = String.valueOf(orders_pojo_class_fromResponse.getDeliveryamount());
+                    modal_orderDetails.deliveryamount = deliveryamount;
+
+                } catch (Exception e) {
+                    deliveryamount = "";
+                    modal_orderDetails.deliveryamount = deliveryamount;
+
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    deliveryType = String.valueOf(orders_pojo_class_fromResponse.getDeliverytype());
+                    modal_orderDetails.deliverytype = deliveryType;
+
+                } catch (Exception e) {
+                    deliveryType = "";
+                    modal_orderDetails.deliverytype = deliveryType;
+
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    if (ordertype.equals(Constants.APPORDER)) {
+
+
+                        try {
+                            if (deliveryamount.equals("")) {
+                                deliveryamount = "0.00";
+                            }
+                            if (!orderid.equals("")) {
+                                if (!deliveryChargeOrderidArray.contains(orderid)) {
+                                    deliveryChargeOrderidArray.add(orderid);
+                                    deliveryCharge_hashmap.put(orderid, deliveryamount);
+                                } else {
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                    if ((ordertype.equals(Constants.APPORDER))) {
+                        try {
+                            if (CouponDiscount.equals("")) {
+                                CouponDiscount = "0";
+                            }
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            if (!orderid.equals("")) {
+                                if (!couponDiscountOrderidArray.contains(orderid)) {
+                                    couponDiscountOrderidArray.add(orderid);
+                                    couponDiscount_hashmap.put(orderid, CouponDiscount);
+                                } else {
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else if ((ordertype.equals(Constants.PhoneOrder))) {
+
+                        try {
+                            PhoneOrder_CouponDiscount = CouponDiscount;
+                            if (PhoneOrder_CouponDiscount.equals("")) {
+                                PhoneOrder_CouponDiscount = "0";
+                            }
+                            if (!orderid.equals("")) {
+                                if (!phoneOrders_couponDiscountOrderidArray.contains(orderid)) {
+                                    phoneOrders_couponDiscountOrderidArray.add(orderid);
+                                    phoneOrders_couponDiscount_hashmap.put(orderid, PhoneOrder_CouponDiscount);
+                                } else {
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } else if ((ordertype.equals(Constants.WholeSaleOrder))) {
+
+
+                        try {
+                            WholeSales_CouponDiscount = String.valueOf(CouponDiscount);
+                            if (WholeSales_CouponDiscount.equals("")) {
+                                WholeSales_CouponDiscount = "0";
+                            }
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            if (!orderid.equals("")) {
+                                if (!wholesaleOrders_couponDiscountOrderidArray.contains(orderid)) {
+                                    wholesaleOrders_couponDiscountOrderidArray.add(orderid);
+                                    wholesaleOrders_couponDiscount_hashmap.put(orderid, WholeSales_CouponDiscount);
+                                } else {
+                                    //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } else if ((ordertype.equals(Constants.SwiggyOrder))) {
+
+                        try {
+                            Swiggy_CouponDiscount = String.valueOf(CouponDiscount);
+                            if (Swiggy_CouponDiscount.equals("")) {
+                                Swiggy_CouponDiscount = "0";
+                            }
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            if (!orderid.equals("")) {
+                                if (!swiggyOrders_couponDiscountOrderidArray.contains(orderid)) {
+                                    swiggyOrders_couponDiscountOrderidArray.add(orderid);
+                                    swiggyOrders_couponDiscount_hashmap.put(orderid, Swiggy_CouponDiscount);
+                                } else {
+                                    //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } else if ((ordertype.equals(Constants.DunzoOrder))) {
+
+
+                        try {
+                            Dunzo_CouponDiscount = String.valueOf(CouponDiscount);
+                            if (Dunzo_CouponDiscount.equals("")) {
+                                Dunzo_CouponDiscount = "0";
+                            }
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            if (!orderid.equals("")) {
+                                if (!dunzoOrders_couponDiscountOrderidArray.contains(orderid)) {
+                                    dunzoOrders_couponDiscountOrderidArray.add(orderid);
+                                    dunzoOrders_couponDiscount_hashmap.put(orderid, Dunzo_CouponDiscount);
+                                } else {
+                                    //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } else if ((ordertype.equals(Constants.BigBasket))) {
+
+
+                        try {
+                            BigBasket_CouponDiscount = String.valueOf(CouponDiscount);
+                            if (BigBasket_CouponDiscount.equals("")) {
+                                BigBasket_CouponDiscount = "0";
+                            }
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                            if (!orderid.equals("")) {
+                                if (!bigBasketOrders_couponDiscountOrderidArray.contains(orderid)) {
+                                    bigBasketOrders_couponDiscountOrderidArray.add(orderid);
+                                    bigBasketOrders_couponDiscount_hashmap.put(orderid, BigBasket_CouponDiscount);
+                                } else {
+                                    //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    } else if ((ordertype.equals(Constants.POSORDER))) {
+                        if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME) || slotname.equals("")) {
+
+                            try {
+                                pos_CouponDiscount = String.valueOf(CouponDiscount);
+                                if (pos_CouponDiscount.equals("")) {
+                                    pos_CouponDiscount = "0";
+                                }
+                                //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                if (!orderid.equals("")) {
+                                    if (!Pos_couponDiscountOrderidArray.contains(orderid)) {
+                                        Pos_couponDiscountOrderidArray.add(orderid);
+                                        Pos_couponDiscount_hashmap.put(orderid, pos_CouponDiscount);
+                                    } else {
+                                        //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    }
+
+                    getItemDetailsFromItemDespArray(modal_orderDetails, ordertype, orderid);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(ConsolidatedReportSubCtgywise.this, "can't Process this ItemDesp ", Toast.LENGTH_LONG).show();
+                }
+
+
+                if (orderslist_fromResponse.size() - i == 1) {
+                    if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+                        try {
+
+
+                            try {
+                                try {
+                                    Collections.sort(Order_Item_List, new Comparator<String>() {
+                                        public int compare(final String object1, final String object2) {
+                                            return object1.compareTo(object2);
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                            isOrderDetailsResponseReceivedForSelectedDate = true;
+                            runthread();
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Order_Item_List.clear();
+                        OrderItem_hashmap.clear();
+                        finalBillDetails.clear();
+                        FinalBill_hashmap.clear();
+                        couponDiscountOrderidArray.clear();
+                        ordertypeArray.clear();
+                        ordertypeHashmap.clear();
+                        couponDiscount_hashmap.clear();
+                        oldpayableamount = 0;
+                        itemDespTotalAmount = 0;
+                        Pos_couponDiscount_hashmap.clear();
+                        Pos_couponDiscountOrderidArray.clear();
+                        phoneOrders_couponDiscount_hashmap.clear();
+                        phoneOrders_couponDiscountOrderidArray.clear();
+                        swiggyOrders_couponDiscount_hashmap.clear();
+                        swiggyOrders_couponDiscountOrderidArray.clear();
+                        dunzoOrders_couponDiscount_hashmap.clear();
+                        dunzoOrders_couponDiscountOrderidArray.clear();
+                        SubCtgywiseTotalArray.clear();
+                        SubCtgywiseTotalHashmap.clear();
+                        dataList.clear();
+                        tmcSubCtgykey.clear();
+                        deliveryCharge_hashmap.clear();
+                        deliveryChargeOrderidArray.clear();
+                        wholesaleOrders_couponDiscountOrderidArray.clear();
+                        wholesaleOrders_couponDiscount_hashmap.clear();
+                        bigBasketOrders_couponDiscountOrderidArray.clear();
+                        bigBasketOrders_couponDiscount_hashmap.clear();
+                        no_of_ItemCount = 0;
+                        no_of_orders = 0;
+                        ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
+
+                        addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                        //runthread();
+                        Toast.makeText(ConsolidatedReportSubCtgywise.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                        Adjusting_Widgets_Visibility(false);
+
+                    }
+                }
+
+            }
+
+
+
     }
 
 
@@ -1086,15 +1743,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                                 if (json.has("coupondiscount")) {
                                                     try {
                                                         modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
-                                                        CouponDiscout = String.valueOf(json.get("coupondiscount"));
-                                                        if (CouponDiscout.equals("")) {
-                                                            CouponDiscout = "0";
+                                                        CouponDiscount = String.valueOf(json.get("coupondiscount"));
+                                                        if (CouponDiscount.equals("")) {
+                                                            CouponDiscount = "0";
                                                         }
                                                         //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                         if (!orderid.equals("")) {
                                                             if (!couponDiscountOrderidArray.contains(orderid)) {
                                                                 couponDiscountOrderidArray.add(orderid);
-                                                                couponDiscount_hashmap.put(orderid, CouponDiscout);
+                                                                couponDiscount_hashmap.put(orderid, CouponDiscount);
                                                             } else {
                                                                 //Log.d(Constants.TAG, "This orderid already have an discount");
 
@@ -1120,15 +1777,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                                                 if (json.has("coupondiscount")) {
                                                     try {
                                                         modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
-                                                        CouponDiscout = String.valueOf(json.get("coupondiscount"));
-                                                        if (CouponDiscout.equals("")) {
-                                                            CouponDiscout = "0";
+                                                        CouponDiscount = String.valueOf(json.get("coupondiscount"));
+                                                        if (CouponDiscount.equals("")) {
+                                                            CouponDiscount = "0";
                                                         }
                                                         //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
                                                         if (!orderid.equals("")) {
                                                             if (!couponDiscountOrderidArray.contains(orderid)) {
                                                                 couponDiscountOrderidArray.add(orderid);
-                                                                couponDiscount_hashmap.put(orderid, CouponDiscout);
+                                                                couponDiscount_hashmap.put(orderid, CouponDiscount);
                                                             } else {
                                                                 //Log.d(Constants.TAG, "This orderid already have an discount");
 
@@ -1579,6 +2236,10 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         Volley.newRequestQueue(ConsolidatedReportSubCtgywise.this).add(jsonObjectRequest);
 
     }
+
+
+
+
 
 
     private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String ordertype, String orderid) {
@@ -2507,6 +3168,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
     private void addOrderedItemAmountDetails(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
+        FinalBill_hashmap.clear();
+        finalBillDetails.clear();
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
         double deliveryChargee = 0;
         double totalAmountWithhGst = 0;
@@ -3156,28 +3819,49 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     }
 
 
+
+
     private String getDatewithNameofthePreviousDay() {
         Calendar calendar = Calendar.getInstance();
+        if(orderdetailsnewschema) {
 
 
-        calendar.add(Calendar.DATE, -1);
+            calendar.add(Calendar.DATE, -1);
 
 
-        Date c1 = calendar.getTime();
-
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
+            Date c1 = calendar.getTime();
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String PreviousdayDate = df1.format(c1);
-
-        System.out.println("todays Date  " + CurrentDate);
-        System.out.println("PreviousdayDate Date  " + PreviousdayDate);
-        String yesterdayAsString = PreviousdayDay + ", " + PreviousdayDate;
 
 
-        return yesterdayAsString;
+            String PreviousdayDate = day.format(c1);
+
+
+            return PreviousdayDate;
+
+        }
+        else {
+
+
+            calendar.add(Calendar.DATE, -1);
+
+
+            Date c1 = calendar.getTime();
+
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
+            //System.out.println("todays Date  " + CurrentDate);
+            // System.out.println("PreviousdayDate Date  " + PreviousdayDate);
+
+
+            return PreviousdayDate;
+        }
     }
 
 
@@ -3232,9 +3916,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
         SimpleDateFormat df = new SimpleDateFormat();
         if (Time.equals("STARTTIME")) {
-            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+            df = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         } else {
-            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+            df = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
 
         }
 
@@ -3245,21 +3929,59 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
     public String getDate_and_time() {
 
-        Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat dayname = new SimpleDateFormat("EEE");
-        String Currentday = dayname.format(c);
+            Date c = Calendar.getInstance().getTime();
+
+            if(orderdetailsnewschema) {
+
+                SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+                CurrentDate = day.format(c);
+
+                return CurrentDate;
+
+            }
+            else{
+                SimpleDateFormat day = new SimpleDateFormat("EEE");
+               String CurrentDay = day.format(c);
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        String CurrentDate = df.format(c);
-        String date = Currentday + ", " + CurrentDate;
+
+                SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+                CurrentDate = df.format(c);
+
+                CurrentDate = CurrentDay+", "+CurrentDate;
+
+                //CurrentDate = CurrentDay+", "+CurrentDate;
+                System.out.println("todays Date  " + CurrentDate);
 
 
-        return date;
+                return CurrentDate;
+            }
+
+
+
+
+
+
     }
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
 
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
 
     public String getstartDate_and_time_TransactionTable() {
 
@@ -3267,7 +3989,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -3279,7 +4001,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -3296,6 +4018,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (isReplacementTransacDetailsResponseReceivedForSelectedDate && isgetReplacementOrderForSelectedDateCalled) {
+
                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
                             prepareContent();
                             setAdapter();
@@ -3327,6 +4050,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
     public void exportReport() {
         if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) {
+            Adjusting_Widgets_Visibility(false);
             return;
         }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();

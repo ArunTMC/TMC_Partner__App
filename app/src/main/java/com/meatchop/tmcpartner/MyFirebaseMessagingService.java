@@ -74,7 +74,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 
                     PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 , intent,
-                    PendingIntent.FLAG_ONE_SHOT);
+                    PendingIntent.FLAG_IMMUTABLE);
             String channelId  = "Notification";
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

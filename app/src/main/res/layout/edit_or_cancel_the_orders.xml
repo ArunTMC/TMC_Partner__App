@@ -41,7 +41,7 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight=".5"
+                android:layout_weight=".8"
 
                 >
 
@@ -143,17 +143,7 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
                     android:visibility="gone" />
 
 
-                <ImageView
-                    android:id="@+id/search_button"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginEnd="3dp"
 
-                    android:foregroundGravity="center_vertical"
-                    app:srcCompat="@mipmap/search_icon" />
 
                 <ImageView
                     android:id="@+id/search_close_btn"
@@ -170,27 +160,50 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
 
 
             </RelativeLayout>
-
-
             <LinearLayout
                 android:id="@+id/newOrdersSync_Layout"
-                android:layout_width="38dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="6dp"
-                android:layout_marginEnd="5dp"
-
-                android:layout_weight=".1"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1"
                 android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="23dp"
+                    android:id="@+id/fetchData"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical|end"
+                    android:text="Fetch Data"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:id="@+id/search_button"
+                    android:layout_width="25dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:foregroundGravity="center"
+                    app:srcCompat="@mipmap/search_icon" />
+
 
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_gravity="center_vertical"
                     android:foregroundGravity="bottom"
-                    android:visibility="visible"
+                    android:visibility="gone"
+
                     app:srcCompat="@mipmap/neworder_sync_icon" />
 
             </LinearLayout>
+
 
         </LinearLayout>
         <View
@@ -239,7 +252,7 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
                 android:layout_marginTop="1dp"
                 android:gravity="center"
                 android:id="@+id/creditOrderscheckLayout"
-
+                android:visibility="visible"
                 android:orientation="horizontal">
 
 
@@ -437,26 +450,26 @@ tools:context=".Settings.Edit_Or_CancelTheOrders">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="110dp"
 
             android:layout_weight="1">
-
 
             <TextView
                 android:id="@+id/orderinstruction"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/No_Orders_Instruction_text"
-                android:visibility="gone"
-
-                />
+                android:visibility="visible"
+                android:text="Select Date and Click Fetch Data"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="20sp" />
 
             <ListView
                 android:id="@+id/manageOrders_ListView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="100dp"
+                android:visibility="gone"
+
                 android:divider="#DDDDDD"
                 android:dividerHeight="10dp" />
 

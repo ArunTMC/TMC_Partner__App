@@ -109,7 +109,8 @@ public class Adapter_AutoCompleteWholeSaleCustomers_Mobile extends ArrayAdapter<
                 mobileno = mobileno.replace("+91","");
                EditText editText =  newOrderScreenFragment_mobile.bottomSheetDialog.findViewById(R.id.customermobileno_editwidget);
                 editText.setText(String.valueOf(mobileno));
-                AutoCompleteTextView autoCompleteTextView = newOrderScreenFragment_mobile.bottomSheetDialog.findViewById(R.id.autoCompleteCustomerName_widget);
+                AutoCompleteTextView autoCompleteTextView = newOrderScreenFragment_mobile.
+                        bottomSheetDialog.findViewById(R.id.autoCompleteCustomerName_widget);
                 autoCompleteTextView.setText(String.valueOf(modal_wholeSaleCustomers.getCustomerName()));
                 autoCompleteTextView.dismissDropDown();
 

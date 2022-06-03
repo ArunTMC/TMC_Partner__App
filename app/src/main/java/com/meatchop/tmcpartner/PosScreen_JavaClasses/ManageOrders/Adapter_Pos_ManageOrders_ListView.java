@@ -28,6 +28,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
@@ -72,6 +74,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     String printerStatus_sharedPreference = "";
 
     BluetoothAdapter mBluetoothAdapter =null;
+
+
+
+
+    boolean orderdetailsnewschema = false;
+    Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
 
 
     public Adapter_Pos_ManageOrders_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_ManageOrderFragment pos_manageOrderFragment, String orderStatus) {
@@ -166,6 +174,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
         StoreAddressLine3 = (shared.getString("VendorPincode", ""));
         StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+        orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+        //orderdetailsnewschema = true;
+
+
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
         //Log.i("Tag","Order Pos:   "+ Pos_ManageOrderFragment.sorted_OrdersList.get(pos));
 
@@ -412,6 +424,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             //Log.i("tag","array.length()"+ array.length());
                     String b= array.toString();
             modal_manageOrders_pojo_class.setItemdesp_string(b);
+            notifyDataSetChanged();
             String itemDesp="";
             String subCtgyKey ="";
 
@@ -580,6 +593,29 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             @Override
             public void onClick(View view) {
                 Currenttime = getDate_and_time();
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
+
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
                 changestatusto =Constants.DELIVERED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
@@ -590,14 +626,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
                 //Log.i("Tag",""+changestatusto+OrderKey);
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
-                String orderid = "";
-                try{
-                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
+                ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+
                 getStockOutGoingDetailsUsingOrderid(orderid);
                 Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
@@ -607,10 +637,39 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
+
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
                 pos_manageOrderFragment.loadingPanel.setVisibility(View.VISIBLE);
                 pos_manageOrderFragment.loadingpanelmask.setVisibility(View.VISIBLE);
                 Intent intent = new Intent(mContext,AssigningDeliveryPartner.class);
                 intent.putExtra("TrackingTableKey",modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
+                intent.putExtra("orderid",modal_manageOrders_pojo_class.getOrderid());
+                intent.putExtra("customerMobileNo",modal_manageOrders_pojo_class.getUsermobile());
+                intent.putExtra("vendorkey",modal_manageOrders_pojo_class.getVendorkey());
+                intent.putExtra("From","PosManageOrders");
 
 
                 pos_manageOrderFragment.loadingPanel.setVisibility(View.GONE);
@@ -645,9 +704,31 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 Currenttime = getDate_and_time();
                 changestatusto =Constants.CONFIRMED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                 String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
 
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
 
                 new_Order_Linearlayout.setVisibility(View.GONE);
@@ -677,9 +758,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 selectedOrder.orderplacedtime = modal_manageOrders_pojo_class.getOrderplacedtime();
                 selectedBillDetails.add(selectedOrder);
               //  OrderdItems_desp.clear();
-                generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails);
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails,orderid, customerMobileNo);
+
+                ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
                 Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
@@ -689,7 +771,29 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             @Override
             public void onClick(View v) {
                 Currenttime = getDate_and_time();
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
 
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
                 changestatusto =Constants.CANCELLED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 //Log.i("Tag","0"+OrderKey);
@@ -699,7 +803,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
                 //Log.i("Tag",""+changestatusto+OrderKey);
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
                 Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
@@ -792,14 +896,36 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 //Log.i("Tag","0"+OrderKey);
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
 
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.VISIBLE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.GONE);
                 modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
                 Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
@@ -815,8 +941,40 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
+
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String orderDetailsKey = "";
+
+                try{
+                    orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
                 selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
                 selectedOrder.tokenno=modal_manageOrders_pojo_class.getTokenno();
@@ -909,7 +1067,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                         }
                     } else {
-                        generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+                        generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails,orderid, customerMobileNo);
 
                     }
                 }
@@ -924,8 +1082,38 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             @Override
             public void onClick(View v) {
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
+
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String orderDetailsKey = "";
+
+                try{
+                    orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
@@ -1021,7 +1209,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                         }
                     } else {
-                        generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+                        generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails,orderid, customerMobileNo);
 
                     }
                 }
@@ -1037,9 +1225,37 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 List<Modal_ManageOrders_Pojo_Class>selectedBillDetails =new ArrayList<>();
                 Modal_ManageOrders_Pojo_Class selectedOrder = new Modal_ManageOrders_Pojo_Class();
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-                String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                String orderid = "";
+                try{
+                    orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String customerMobileNo = "";
 
+                try{
+                    customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String vendorkey = "";
+
+                try{
+                    vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                String orderDetailsKey = "";
+
+                try{
+                    orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
                 selectedOrder.orderstatus=modal_manageOrders_pojo_class.getOrderstatus();
                 selectedOrder.usermobile=modal_manageOrders_pojo_class.getUsermobile();
@@ -1136,7 +1352,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                         }
                     } else {
-                        generatingTokenNo(vendorkey, orderDetailsKey, selectedBillDetails);
+                        generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails,orderid, customerMobileNo);
 
                     }
                 }
@@ -1353,7 +1569,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
 
-    private void generatingTokenNo(String vendorkey, String orderDetailsKey, List<Modal_ManageOrders_Pojo_Class> selectedOrderr) {
+    private void generatingTokenNo(String vendorkey, String orderDetailsKey, List<Modal_ManageOrders_Pojo_Class> selectedOrderr, String orderid, String customerMobileNo) {
         pos_manageOrderFragment.showProgressBar(true);
         pos_manageOrderFragment.showOrderInstructionText(false);
 
@@ -1374,8 +1590,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
                             Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = selectedOrderr.get(i);
-                            String Orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
-                            if (orderDetailsKey.equals(Orderdetailskey)) {
+                            String orderid_fromArray = modal_manageOrders_pojo_class.getOrderid();
+                            if (orderid.equals(orderid_fromArray)) {
                                 modal_manageOrders_pojo_class.setTokenno(tokenNo);
                                 pos_manageOrderFragment.showProgressBar(false);
                                 notifyDataSetChanged();
@@ -1454,7 +1670,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         e.printStackTrace();
                     }
                         try{
-                            UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
+                            UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey,orderid,customerMobileNo,vendorkey);
 
                         }
                         catch (Exception e){
@@ -1523,7 +1739,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     }
 
 
-    private void UpdateTokenNoInOrderDetails(String tokenNo, String orderDetailsKey) {
+    private void UpdateTokenNoInOrderDetails(String tokenNo, String orderDetailsKey, String orderid, String customerMobileNo, String vendorkey) {
+
+        /*
         JSONObject  jsonObject = new JSONObject();
         try {
 
@@ -1532,27 +1750,89 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             //Log.i("tag","listenertoken"+ "");
 
 
-
-
-
-
-
-
         } catch (JSONException e) {
             e.printStackTrace();
             //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
         }
+
+         */
+
+
+
+        JSONObject jsonObject = new JSONObject();
+        String Api_toChangeOrderDetailsUsingOrderid = "";
+
+
+        if(orderdetailsnewschema){
+            if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                try {
+                    jsonObject.put("tokenno", tokenNo);
+                    jsonObject.put("vendorkey", vendorkey);
+                    jsonObject.put("orderid", orderid);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+                JSONObject customerDetails_JsonObject = new JSONObject();
+
+                try {
+                    customerDetails_JsonObject.put("tokenno", tokenNo);
+                    customerDetails_JsonObject.put("orderid", orderid);
+                    customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+                initUpdateCustomerOrderDetailsInterface(mContext);
+                Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+                asyncTask_TO_update.execute();
+
+
+            }
+            else{
+                Toast.makeText(mContext, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+            }
+
+        }
+        else {
+            try {
+                jsonObject.put("key", orderDetailsKey);
+                jsonObject.put("tokenno", tokenNo);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+
+            }
+            Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+
+            Api_toChangeOrderDetailsUsingOrderid = Constants.api_Update_OrderDetails;
+
+        }
+
+
+
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 for(int i=0;i<pos_manageOrderFragment.ordersList.size();i++){
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.ordersList.get(i);
-                    String Orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
-                    if(orderDetailsKey.equals(Orderdetailskey)){
+                    String Orderdetailsorderid = modal_manageOrders_pojo_class.getOrderid();
+                    if(orderid.equals(Orderdetailsorderid)){
                         try {
                         //    String usermobile = modal_manageOrders_pojo_class.getUsermobile();
                         //    String ordertype = modal_manageOrders_pojo_class.getOrderType().toUpperCase();
@@ -1572,8 +1852,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 }
                 for(int i=0;i<pos_manageOrderFragment.sorted_OrdersList.size();i++){
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.sorted_OrdersList.get(i);
-                    String Orderdetailskey = modal_manageOrders_pojo_class.getOrderdetailskey();
-                    if(orderDetailsKey.equals(Orderdetailskey)){
+                    String Orderdetailsorderid = modal_manageOrders_pojo_class.getOrderid();
+                    if(orderid.equals(Orderdetailsorderid)){
                         modal_manageOrders_pojo_class.setTokenno(tokenNo);
                         pos_manageOrderFragment.showProgressBar(false);
                         notifyDataSetChanged();
@@ -3230,61 +3510,145 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         return formattedDate;
     }
 
-    private void ChangeStatusOftheOrder(String changestatusto, String OrderKey, String currenttime) {
+    private void ChangeStatusOftheOrder(String changestatusto, String vendorkey, String orderkey, String orderid, String customerMobileNo, String currenttime) {
         pos_manageOrderFragment.showProgressBar(true);
 
-        JSONObject  jsonObject = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
+        String Api_toChangeOrderDetailsUsingOrderid = "";
+
         try {
-            if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", currenttime);
-                jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
+
+
+            if(orderdetailsnewschema){
+                if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                    try {
+
+
+                        if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("orderconfirmedtime", currenttime);
+                            jsonObject.put("orderid", orderid);
+
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("orderid", orderid);
+                            jsonObject.put("orderreadytime", currenttime);
+
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("ordercancelledtime", currenttime);
+                            jsonObject.put("orderid", orderid);
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("orderdeliverytime", currenttime);
+                            jsonObject.put("orderid", orderid);
+                            ////Log.i("tag","listenertoken"+ "");
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorTrackingOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+                    JSONObject customerDetails_JsonObject = new JSONObject();
+
+                    try {
+
+
+                        if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("orderconfirmedtime", currenttime);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            customerDetails_JsonObject.put("orderreadytime", currenttime);
+
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("ordercancelledtime", currenttime);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("orderdeliverytime", currenttime);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            ////Log.i("tag","listenertoken"+ "");
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerTrackingOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+                    initUpdateCustomerOrderDetailsInterface(mContext);
+                    Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+                    asyncTask_TO_update.execute();
+
+
+                }
+                else{
+                    Toast.makeText(mContext, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+                }
+
             }
-            if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", currenttime);
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
-            }
-            if(changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", currenttime);
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
+            else {
+
+                Api_toChangeOrderDetailsUsingOrderid = Constants.api_updateTrackingOrderTable;
+
+
+                if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+                    jsonObject.put("orderconfirmedtime", currenttime);
+
+                    //Log.i("tag","listenertoken"+ "");
+                }
+                if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+
+                    jsonObject.put("orderreadytime", currenttime);
+
+                    //Log.i("tag","listenertoken"+ "");
+                }
+                if (changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+                    jsonObject.put("ordercancelledtime", currenttime);
+
+                    //Log.i("tag","listenertoken"+ "");
+                }
+                if (changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+                    jsonObject.put("orderdeliverytime", currenttime);
+                    ////Log.i("tag","listenertoken"+ "");
+                }
             }
 
 
-            if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", currenttime);
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
-            }
 
 
 
@@ -3296,21 +3660,21 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 for(int i=0;i<pos_manageOrderFragment.ordersList.size();i++){
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.ordersList.get(i);
-                    String Orderkey_trackingDetails = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    if(OrderKey.equals(Orderkey_trackingDetails)){
+                    String Orderid_trackingDetails = modal_manageOrders_pojo_class.getOrderid();
+                    if(orderid.equals(Orderid_trackingDetails)){
                         modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
                         if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)){
-                            modal_manageOrders_pojo_class.setOrderconfirmedtime(currenttime);
+                            modal_manageOrders_pojo_class.setOrderconfirmedtime(OrderKey);
 
                         }
                         if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-                            modal_manageOrders_pojo_class.setOrderreadytime(currenttime);
+                            modal_manageOrders_pojo_class.setOrderreadytime(OrderKey);
                         }
 
                         notifyDataSetChanged();
@@ -3350,6 +3714,32 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         // Make the request
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
+    }
+    private void initUpdateCustomerOrderDetailsInterface(Context mContext) {
+
+        mResultCallback_UpdateCustomerOrderDetailsTableInterface  = new Update_CustomerOrderDetails_TrackingTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try{
+                    Toast.makeText(mContext, "Succesfully Updated  in Customer Details", Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                try{
+                    Toast.makeText(mContext, "Failed to Update in Customer Details", Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        };
     }
 
 

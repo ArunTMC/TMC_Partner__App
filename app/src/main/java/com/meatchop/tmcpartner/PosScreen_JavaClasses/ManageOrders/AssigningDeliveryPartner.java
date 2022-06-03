@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class AssigningDeliveryPartner extends AppCompatActivity {
 ListView deliveryPartners_list_widget;
 List<AssignDeliveryPartner_PojoClass>deliveryPartnerList;
-String vendorKey,orderKey,vendorname;
+String vendorKey,orderKey,vendorname,orderid,customerMobileNo,fromActivityName ="";
 private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItemWisereport;
 
     @Override
@@ -52,6 +53,15 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
         vendorKey = (shared.getString("VendorKey", ""));
         vendorname = (shared.getString("VendorName", ""));
         orderKey = getIntent().getStringExtra("TrackingTableKey");
+        orderid = getIntent().getStringExtra("orderid");
+        customerMobileNo = getIntent().getStringExtra("customerMobileNo");
+        fromActivityName = getIntent().getStringExtra("From");
+     //   Toast.makeText(AssigningDeliveryPartner.this, "3  -" +fromActivityName, Toast.LENGTH_SHORT).show();
+
+        if(vendorKey.equals("")){
+            vendorKey = getIntent().getStringExtra("vendorkey");
+
+        }
         getDeliveryPartnerList();
     }
 
@@ -84,8 +94,9 @@ private LinearLayout loadingPanel_dailyItemWisereport,loadingpanelmask_dailyItem
 
                                    // //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
                                     deliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+                                    //Toast.makeText(AssigningDeliveryPartner.this, "4  -" +fromActivityName, Toast.LENGTH_SHORT).show();
 
-                                    Adapter_AssignDeliveryPartner adapter_assignDeliveryPartner= new Adapter_AssignDeliveryPartner(AssigningDeliveryPartner.this,deliveryPartnerList,orderKey);
+                                    Adapter_AssignDeliveryPartner adapter_assignDeliveryPartner= new Adapter_AssignDeliveryPartner(AssigningDeliveryPartner.this,deliveryPartnerList,orderKey,vendorKey,customerMobileNo,orderid,fromActivityName);
 
                                     deliveryPartners_list_widget.setAdapter(adapter_assignDeliveryPartner);
                                     loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);

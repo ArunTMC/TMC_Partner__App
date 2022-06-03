@@ -10,7 +10,7 @@ import org.json.JSONArray;
 public class  Modal_ManageOrders_Pojo_Class implements Parcelable {
 public String portionsize,vendorname,menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
 public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
-public   String isdataFetchedFromOrderTrackingDetails="FALSE",subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
+public   String merchantorderid,isdataFetchedFromOrderTrackingDetails="FALSE",subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp;
     public int intTokenNo;
 public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplacement=false;
@@ -38,6 +38,18 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
 
     public void setMenuitemkey_weight_cut(String menuitemkey_weight_cut) {
         this.menuitemkey_weight_cut = menuitemkey_weight_cut;
+    }
+
+    public String getMerchantorderid() {
+        return merchantorderid;
+    }
+
+    public void setMerchantorderid(String merchantorderid) {
+        this.merchantorderid = merchantorderid;
+    }
+
+    public boolean isItemMarkedForReplacement() {
+        return isItemMarkedForReplacement;
     }
 
     public String getVendorname() {
@@ -516,6 +528,7 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         isdataFetchedFromOrderTrackingDetails = in.readString();
         menuItemKey = in.readString();
         vendorname  = in.readString();
+        merchantorderid  = in.readString();
     }
 
     public static final Creator<Modal_ManageOrders_Pojo_Class> CREATOR = new Creator<Modal_ManageOrders_Pojo_Class>() {
@@ -804,5 +817,6 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         parcel.writeString(isdataFetchedFromOrderTrackingDetails);
         parcel.writeString(menuItemKey);
         parcel.writeString(vendorname);
+        parcel.writeString(merchantorderid);
     }
 }

@@ -100,7 +100,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="50dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -117,7 +117,7 @@
                         android:layout_marginStart="13dp"
                         android:layout_weight="1"
                         android:fontFamily="@font/open_sans_semibold"
-                        android:text="Date"
+                        android:text="Select Date"
                         android:gravity="center_vertical"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="12sp" />
@@ -140,7 +140,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:id="@+id/generateReport_Layout"
+                    android:id="@+id/fetchData_Layout"
                     android:orientation="vertical">
 
 
@@ -154,7 +154,7 @@
                         android:gravity="center_vertical"
                         android:layout_marginStart="13dp"
                         android:layout_marginEnd="13dp"
-                        android:text="Generate Report" />
+                        android:text="Fetch Data" />
 
                 </LinearLayout>
 
@@ -167,10 +167,16 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="40dp"
                 android:orientation="horizontal">
 
 
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="left"
+                    android:orientation="horizontal">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -178,6 +184,7 @@
                     android:textSize="16sp"
                     android:fontFamily="@font/open_sans_semibold"
                     android:gravity="center_vertical"
+                    android:visibility="gone"
                     android:layout_marginStart="13dp"
                     android:text="Items Report :-  " />
 
@@ -234,11 +241,40 @@
                     android:fontFamily="@font/open_sans_semibold"
                     android:gravity="center_vertical"
                     android:text=" - Packs )." />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight=".6"
+                    android:gravity="right"
+                    android:id="@+id/generateReport_Layout"
+                    android:orientation="vertical">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:textColor="@color/TMC_Orange"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:gravity="center_vertical|end"
+                        android:layout_marginStart="13dp"
+                        android:layout_marginEnd="13dp"
+                        android:text="Export Report" />
+
+                </LinearLayout>
+
+
             </LinearLayout>
             <ScrollView
                 android:layout_width="match_parent"
                 android:scrollIndicators="none"
                 android:scrollbars="none"
+                android:visibility="gone"
                 android:isScrollContainer="true"
                 android:id="@+id/scrollView"
                 android:layout_height="match_parent">
@@ -804,7 +840,7 @@
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
                                 android:gravity="right"
-                                android:text="0.00"
+                                android:text=" 0.00"
 
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
@@ -816,6 +852,16 @@
                 </LinearLayout>
 
             </ScrollView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="20sp"
+                android:id="@+id/instruction_textview"
+
+                android:text="Select Date and Click Fetch Data"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:gravity="center"/>
 
         </LinearLayout>
     </LinearLayout>
@@ -843,13 +889,12 @@
         app:layout_constraintTop_toTopOf="parent"
         android:gravity="center"
         android:layout_centerInParent="true"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <com.wang.avi.AVLoadingIndicatorView
             android:id="@+id/loadinganim_layout"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:visibility="visible"
             android:layout_gravity="center"
             app:indicatorColor="@color/TMC_Orange"
             app:indicatorName="BallPulseIndicator" />

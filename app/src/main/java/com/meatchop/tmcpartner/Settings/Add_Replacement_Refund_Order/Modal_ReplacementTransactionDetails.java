@@ -1,8 +1,32 @@
 package com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order;
 
 public class Modal_ReplacementTransactionDetails {
-    String discountamount= "",markeditemdesp_String="",mobileno ="",orderid ="",refundamount= "",replacementitemdesp_string ="",replacementorderamount="",replacementorderid="",
-            transactionstatus="",transactiontime="",transactiontype="",vendorkey="";
+    public String reasonformarked="", discountamount= "",markeditemdesp_String="",mobileno ="",orderid ="",refundamount= "",replacementitemdesp_string ="",replacementorderamount="",replacementorderid="",
+            transactionstatus="",transactiontime="",transactiontype="",vendorkey="",orderDeliveredDate = "",orderMarkedDate ="",markedOrderAmountString= "";
+
+    public String getOrderDeliveredDate() {
+        return orderDeliveredDate;
+    }
+
+    public String getOrderMarkedDate() {
+        return orderMarkedDate;
+    }
+
+    public void setOrderMarkedDate(String orderMarkedDate) {
+        this.orderMarkedDate = orderMarkedDate;
+    }
+
+    public void setOrderDeliveredDate(String orderDeliveredDate) {
+        this.orderDeliveredDate = orderDeliveredDate;
+    }
+
+    public String getMarkedOrderAmountString() {
+        return markedOrderAmountString;
+    }
+
+    public void setMarkedOrderAmountString(String markedOrderAmountString) {
+        this.markedOrderAmountString = markedOrderAmountString;
+    }
 
     public String getDiscountamount() {
         return discountamount;
@@ -14,6 +38,14 @@ public class Modal_ReplacementTransactionDetails {
 
     public String getMarkeditemdesp_String() {
         return markeditemdesp_String;
+    }
+
+    public String getReasonformarked() {
+        return reasonformarked;
+    }
+
+    public void setReasonformarked(String reasonformarked) {
+        this.reasonformarked = reasonformarked;
     }
 
     public void setMarkeditemdesp_String(String markeditemdesp_String) {

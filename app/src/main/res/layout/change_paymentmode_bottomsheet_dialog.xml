@@ -47,6 +47,7 @@
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
             android:theme="@style/RadioButtonStyle"
+            android:visibility="gone"
 
             android:layout_height="wrap_content"
             android:text="Credit" />
@@ -103,7 +104,7 @@
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
             android:theme="@style/RadioButtonStyle"
-
+            android:visibility="gone"
             android:layout_height="wrap_content"
             android:text="Credit" />
 

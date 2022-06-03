@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:id="@+id/placeOrder_bottomSheet"
+        android:layout_height="match_parent"
+        >
 
 
     <LinearLayout
@@ -16,6 +26,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.4"
             android:orientation="vertical"
+            android:id="@+id/usermobileno_parentLayout"
+            android:visibility="visible"
             android:padding="10dp">
 
             <TextView
@@ -24,24 +36,25 @@
                 android:fontFamily="@font/open_sans"
                 android:gravity="center_vertical"
                 android:paddingEnd="20dp"
-                android:text="Enter Customer Mobile Number :"
+                android:text="Customer Mobile Number :"
                 android:textColor="@color/TMC_Orange"
                 android:textSize="13sp" />
 
             <EditText
                 android:id="@+id/customermobileno_editwidget"
                 android:layout_width="match_parent"
-                android:layout_height="45sp"
-                android:background="@drawable/pale_orange_background"
+                android:layout_height="40sp"
+                android:layout_marginTop="10dp"
                 android:digits="0123456789"
                 android:fontFamily="@font/open_sans_semibold"
                 android:gravity="center_vertical"
                 android:hint="9593217537"
                 android:inputType="phone"
-                android:maxEms="10"
+                android:maxLength="10"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:text=""
+                android:background="@drawable/pale_orange_background"
                 android:textColor="@color/TMC_Primary_Text_Color"
                 android:textColorHint="@color/TMC_Hint_Color"
                 android:textSize="16sp" />
@@ -69,7 +82,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="2"
             android:orientation="vertical"
 
@@ -82,15 +95,17 @@
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
                 android:paddingEnd="20dp"
-                android:text="Enter Discount : "
+                android:text="Discount : "
                 android:textColor="@color/TMC_Orange"
                 android:textSize="13sp" />
 
             <EditText
                 android:id="@+id/discount_editWidget"
                 android:layout_width="match_parent"
-                android:layout_height="45sp"
-                android:layout_marginTop="20dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="20dp"
                 android:background="@drawable/pale_orange_background"
                 android:digits="0123456789"
                 android:fontFamily="@font/open_sans_semibold"
@@ -111,7 +126,7 @@
                 android:id="@+id/apply_discount_buttonWidget"
                 android:layout_width="125dp"
                 android:layout_height="40dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="3dp"
                 android:background="@drawable/button_background"
                 android:text="Apply Discount"
                 android:textColor="@color/TMC_White"
@@ -130,6 +145,7 @@
         android:layout_height="100dp"
         android:orientation="vertical"
         android:id="@+id/customerName_layout"
+        android:visibility="gone"
         android:padding="10dp">
         <View
             android:layout_width="match_parent"
@@ -171,6 +187,9 @@
 
     </LinearLayout>
 
+
+
+
     <View
         android:layout_width="match_parent"
         android:layout_height="3dp"
@@ -179,7 +198,80 @@
         />
 
 
-    <LinearLayout
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/displaySelectedAddress_parentLayout"
+            android:visibility="gone"
+            >
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:visibility="visible"
+                android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/open_sans"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:text="Selected Address "
+                android:textColor="@color/TMC_Orange"
+                android:textSize="13sp" />
+
+            <TextView
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="14sp"
+                android:layout_marginTop="7dp"
+                android:paddingEnd="20dp"
+                android:layout_weight="1"
+                android:hint="Please select an Address"
+                android:id="@+id/fulladdress_textview"
+                android:gravity="center_vertical"
+
+                android:fontFamily="@font/open_sans_bold"
+                />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/selectAddress_buttonWidget"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="2.5"
+                android:background="@drawable/button_background"
+                android:text="Select an Address "
+                android:textColor="@color/TMC_White"
+                android:textSize="12sp" />
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+
+                android:background="@drawable/border_line"
+                />
+
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="10dp"
@@ -574,6 +666,9 @@
 
             />
 
+    </LinearLayout>
 
     </LinearLayout>
-</LinearLayout>
+
+
+    </LinearLayout>

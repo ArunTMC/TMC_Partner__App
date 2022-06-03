@@ -1,6 +1,5 @@
 package com.meatchop.tmcpartner.Settings;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -21,8 +20,6 @@ import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -32,26 +29,22 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
 
 import java.util.Set;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.BLUETOOTH_SCAN;
 
 public class DeviceListActivity extends AppCompatActivity {
     private static final String TAG = "DeviceListActivity";
     private static final boolean D = true;
 
     // Return Intent extra
-    final int CODE = 5; 
-    String[] permissionsToRequest =
-            {
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            };
+    final int CODE = 5;
+
+    String[] permissionsToRequest =new String[]{};
+
 
     boolean allPermissionsGranted = true;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
@@ -70,26 +63,45 @@ public class DeviceListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_list);
         Button pairedDevices_button = (Button) findViewById(R.id.pairedDevices_button);
-         Button allavailable_Devices_button = (Button) findViewById(R.id.allavailable_Devices_button);
+        Button allavailable_Devices_button = (Button) findViewById(R.id.allavailable_Devices_button);
         LinearLayout scanAvailableDevices_Layout = (LinearLayout) findViewById(R.id.scanAvailableDevices_Layout);
         LinearLayout paired_devices_layout = (LinearLayout) findViewById(R.id.paired_devices_layout);
         LinearLayout allAvailabledevices_layout = (LinearLayout) findViewById(R.id.allAvailabledevices_layout);
-         loadingPanel = (LinearLayout) findViewById(R.id.loadingPanel_dailyItemWisereport);
-         loadingpanelmask = (LinearLayout) findViewById(R.id.loadingpanelmask_dailyItemWisereport);
-        pairedListView  = (ListView) findViewById(R.id.paired_devices);
+        loadingPanel = (LinearLayout) findViewById(R.id.loadingPanel_dailyItemWisereport);
+        loadingpanelmask = (LinearLayout) findViewById(R.id.loadingpanelmask_dailyItemWisereport);
+        pairedListView = (ListView) findViewById(R.id.paired_devices);
         newDevicesListView = (ListView) findViewById(R.id.new_devices);
 
 
+        if (Build.VERSION.SDK_INT >= 31) {
+            permissionsToRequest = new String[]{
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    BLUETOOTH_SCAN,
+                    ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            };
+        } else {
+            permissionsToRequest = new String[]{
+                    Manifest.permission.BLUETOOTH,
+
+                    ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            };
+        }
+        checkLocationPermissionforOurApp();
         // Initialize the button to perform device discovery
-       // Button scanButton = (Button) findViewById(R.id.button_scan);
+        // Button scanButton = (Button) findViewById(R.id.button_scan);
         scanAvailableDevices_Layout.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
 
-               checkLocationPermissionforOurApp();
+                checkLocationPermissionforOurApp();
                 doDiscovery();
 
-               // mBtAdapter.startLeScan(mLeScanCallback);
+                // mBtAdapter.startLeScan(mLeScanCallback);
 
                 // v.setVisibility(View.GONE);
             }
@@ -103,10 +115,10 @@ public class DeviceListActivity extends AppCompatActivity {
                 allAvailabledevices_layout.setVisibility(View.GONE);
 
 
-                pairedDevices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.orange_selected_button_background));
+                pairedDevices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.orange_selected_button_background));
                 pairedDevices_button.setTextColor(Color.WHITE);
 
-                allavailable_Devices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.orange_non_selected_button_background));
+                allavailable_Devices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.orange_non_selected_button_background));
                 allavailable_Devices_button.setTextColor(Color.BLACK);
 
             }
@@ -122,21 +134,25 @@ public class DeviceListActivity extends AppCompatActivity {
                 allAvailabledevices_layout.setVisibility(View.VISIBLE);
 
 
-                allavailable_Devices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.orange_selected_button_background));
+                allavailable_Devices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.orange_selected_button_background));
                 allavailable_Devices_button.setTextColor(Color.WHITE);
 
-                pairedDevices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.orange_non_selected_button_background));
+                pairedDevices_button.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.orange_non_selected_button_background));
                 pairedDevices_button.setTextColor(Color.BLACK);
             }
         });
 
+
+    }
+
+    private void IntializeArrayAdapter() {
 
 
         // Initialize array adapters. One for already paired devices and
         // one for newly discovered devices
         mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
         mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
-     //   doDiscovery();
+        //   doDiscovery();
         // Find and set up the ListView for paired devices
         pairedListView.setAdapter(mPairedDevicesArrayAdapter);
         pairedListView.setOnItemClickListener(mDeviceClickListener);
@@ -146,32 +162,40 @@ public class DeviceListActivity extends AppCompatActivity {
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
 
         // Get the local Bluetooth adapter
-       // getApplicationContext().registerReceiver(mReceiver,new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        // getApplicationContext().registerReceiver(mReceiver,new IntentFilter(BluetoothDevice.ACTION_FOUND));
         // Register for broadcasts when a device is discovered
 
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-      //  checkLocationPermissionforOurApp();
-       // doDiscovery();
+        //  checkLocationPermissionforOurApp();
+        // doDiscovery();
         // Get a set of currently paired devices
-        Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
+        try {
+            Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
 
-        // If there are paired devices, add each one to the ArrayAdapter
-        if (pairedDevices.size() > 0) {
-            findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
-            for (BluetoothDevice device : pairedDevices) {
-                //Toast.makeText(DeviceListActivity.this, "device  " + device, Toast.LENGTH_SHORT).show();
-               // Toast.makeText(DeviceListActivity.this, "device.getName()   d" + device.getName(), Toast.LENGTH_SHORT).show();
+            // If there are paired devices, add each one to the ArrayAdapter
+            if (pairedDevices.size() > 0) {
+                findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
+                for (BluetoothDevice device : pairedDevices) {
+                    //Toast.makeText(DeviceListActivity.this, "device  " + device, Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(DeviceListActivity.this, "device.getName()   d" + device.getName(), Toast.LENGTH_SHORT).show();
                     String deviceidentity = device.getName() + "\n" + device.getAddress();
-                    if(mPairedDevicesArrayAdapter.getPosition(deviceidentity)<0){
+                    if (mPairedDevicesArrayAdapter.getPosition(deviceidentity) < 0) {
                         mPairedDevicesArrayAdapter.add(deviceidentity);
 
                     }
+                }
+            } else {
+                String noDevices = getResources().getText(R.string.none_paired).toString();
+                mPairedDevicesArrayAdapter.add(noDevices);
             }
-        } else {
-            String noDevices = getResources().getText(R.string.none_paired).toString();
-            mPairedDevicesArrayAdapter.add(noDevices);
         }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
     }
+
     /*BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -261,7 +285,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
 
     }
-    public void statusCheck() {
+    public void OnPermissionGranted() {
        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -269,6 +293,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
         }
 
+        IntializeArrayAdapter();
 
 
 
@@ -298,12 +323,12 @@ public class DeviceListActivity extends AppCompatActivity {
      */
     public boolean checkLocationPermissionforOurApp() {
 
-        if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
 
             // Asking user if explanation is needed
             if ((ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    ACCESS_FINE_LOCATION))&&(ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION))) {
+                    BLUETOOTH_SCAN))&&(ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.BLUETOOTH_ADMIN))) {
 
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
@@ -311,20 +336,20 @@ public class DeviceListActivity extends AppCompatActivity {
 
                 //Prompt the user once explanation has been shown
                 ActivityCompat.requestPermissions(this,
-                        new String[]{ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        permissionsToRequest,
                         MY_PERMISSIONS_REQUEST_LOCATION);
 
 
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
-                        new String[]{ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        permissionsToRequest,
                         MY_PERMISSIONS_REQUEST_LOCATION);
             }
             return false;
 
         } else {
-            statusCheck();
+            OnPermissionGranted();
 
             //Toast.makeText(this, "permission Granted", Toast.LENGTH_LONG).show();
 
@@ -349,7 +374,7 @@ public class DeviceListActivity extends AppCompatActivity {
                   //  Toast.makeText(this, "permission Granted", Toast.LENGTH_SHORT).show();
 
                     //   SwitchOnGps(Dashboard.this);
-                    statusCheck();
+                    OnPermissionGranted();
 
                     // permission was granted. Do the
                     // contacts-related task you need to do.

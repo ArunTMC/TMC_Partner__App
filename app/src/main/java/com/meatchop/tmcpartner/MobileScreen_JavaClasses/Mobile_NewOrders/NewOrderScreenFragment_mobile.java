@@ -28,7 +28,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,15 +56,17 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Adapter_AutoCompleteWholeSaleCustomers;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
+import com.meatchop.tmcpartner.Settings.Modal_Address;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
+import com.meatchop.tmcpartner.Settings.ReportListviewSizeHelper;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.json.JSONArray;
@@ -80,6 +85,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
@@ -116,7 +122,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     static Adapter_NewOrderScreenFragment_Mobile adapterNewOrderScreenFragmentMobile ;
     String FormattedTime,CurrentDate,formattedDate,CurrentDay;
-    String vendorKey="",usermobileNo ="",vendorType="";
+    String vendorKey="",usermobileNo ="",vendorType="",vendorName ="";
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
     String StoreAddressLine2 = "Hasthinapuram Chromepet";
     String StoreAddressLine3 = "Chennai - 600044";
@@ -125,9 +131,11 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     String selectedOrderType  ="POS Order";
 
     public  BottomSheetDialog bottomSheetDialog;
+
     BottomNavigationView bottomNavigationView;
     boolean isUpdateCouponTransactionMethodCalled=false;
     private  boolean isOrderDetailsMethodCalled =false;
+    boolean isOrderPlacedinOrderdetails=false;
     private  boolean isOrderTrackingDetailsMethodCalled =false;
     private  boolean isPaymentDetailsMethodCalled =false;
     boolean isMobileAppDataFetchedinDashboard=false;
@@ -178,6 +186,33 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     double totalamountUserHaveAsCredit =0;
     public  boolean isAddOrUpdateCreditOrderDetailsIsCalled = false;
     List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList=new ArrayList<>();
+    Adapter_AutoCompleteWholeSaleCustomers_Mobile adapter_autoCompleteWholeSaleCustomers;
+    HashMap<String,String>wholeSaleCustomersMobileNoStringHashmap = new HashMap<>();
+
+    boolean orderdetailsnewschema = false;
+
+    Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
+    boolean  isCustomerOrdersTableServiceCalled = false;
+
+    public  BottomSheetDialog addressBottomSheet;
+    List<Modal_Address> userAddressArrayList=new ArrayList<>();
+    List<String> userAddressKeyArrayList =new ArrayList<>();
+    boolean isAddressForPhoneOrderSelected = false;
+    boolean isNewUser = false;
+    boolean isAddress_Added_ForUser = false;
+    boolean isUsertype_AlreadyPhone = false;
+
+    String user_key_toAdd_Address = "";
+    ListView address_listView;
+    TextView id_addressInstruction;
+    LinearLayout loadingpanelmask_addressbottomSheet ;
+    LinearLayout loadingPanel_addressbottomSheet ;
+    LinearLayout selectfromAddressList_ParentLayout_bottomSheet;
+    LinearLayout addNewAddress_widget;
+    LinearLayout addNewAddress_ParentLayout_bottomSheet;
+    Adapter_AddressList adapter_addressList ;
+    TextView fulladdress_textview;
+    ScrollView scrollView;
 
     public NewOrderScreenFragment_mobile() {
         // Required empty public constructor
@@ -203,12 +238,18 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         cart_Item_List.clear();
         cartItem_hashmap.clear();
 
+        isNewUser =false;
+        isUsertype_AlreadyPhone =false;
+        customermobileno = "";
+        userAddressKeyArrayList.clear();
+
 
 
         try{
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
             vendorType = shared.getString("VendorType","");
+             vendorName = shared.getString("VendorName", "");
 
             usermobileNo = (shared.getString("UserPhoneNumber", "+91"));
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
@@ -216,6 +257,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+            //orderdetailsnewschema = true;
 
         }
         catch(Exception e){
@@ -255,6 +298,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
             getMenuItemArrayFromSharedPreferences();
+
+            getwholesaleCustomerlistFromSharedPref();
 
         }
 
@@ -402,7 +447,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                         showProgressBar(false);
                                         Toast.makeText(mContext,"Can't get RedeemPoints Details", Toast.LENGTH_LONG).show();
 
-                                        e.printStackTrace();
+                                         e.printStackTrace();
                                     }
 
                                 } catch (Exception e) {
@@ -505,6 +550,42 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         return rootView;
     }
 
+    private void getwholesaleCustomerlistFromSharedPref() {
+
+        if(vendorType.equals(Constants.WholeSales_VendorType)){
+            wholeSaleCustomersArrayList.clear();
+            final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
+
+            Gson gson = new Gson();
+            String json = sharedPreferencesMenuitem.getString("WholeSaleCustomerDetails", "");
+            if (json.isEmpty()) {
+                Toast.makeText( mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
+            } else {
+                Type type = new TypeToken<List<Modal_WholeSaleCustomers>>() {
+                }.getType();
+                wholeSaleCustomersArrayList  = gson.fromJson(json, type);
+            }
+
+            for(int i =0 ;i< wholeSaleCustomersArrayList.size(); i ++) {
+                Modal_WholeSaleCustomers modal_wholeSaleCustomers = wholeSaleCustomersArrayList.get(i);
+                String mobileno = "",customerName = "";
+                mobileno = String.valueOf(modal_wholeSaleCustomers.getMobileno());
+                customerName = String.valueOf(modal_wholeSaleCustomers.getCustomerName());
+                if (!wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileno)) {
+                    wholeSaleCustomersMobileNoStringHashmap.put(mobileno,customerName);
+
+                }
+            }
+
+
+
+
+
+
+        }
+
+
+    }
 
 
     private void getMenuItemArrayFromSharedPreferences() {
@@ -539,15 +620,48 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         EditText discount_editWidget = bottomSheetDialog.findViewById(R.id.discount_editWidget);
         CheckBox userstoreNumberCheckboxWidget = bottomSheetDialog.findViewById(R.id.userstoreNumberCheckboxWidget);
         Button apply_discount_buttonWidget = bottomSheetDialog.findViewById(R.id.apply_discount_buttonWidget);
-        Button checkout_button_Widget = bottomSheetDialog.findViewById(R.id.checkout_button_Widget);
+        Button  checkout_button_Widget = bottomSheetDialog.findViewById(R.id.checkout_button_Widget);
         TextView itemtotal_textWidget = bottomSheetDialog.findViewById(R.id.itemtotal_textWidget);
         TextView discountTextWidget = bottomSheetDialog.findViewById(R.id.discountTextWidget);
         TextView toPay_textWidget = bottomSheetDialog.findViewById(R.id.toPay_textWidget);
         Spinner paymentModeSpinner_Widget = bottomSheetDialog.findViewById(R.id.paymentModeSpinner_Widget);
         AutoCompleteTextView autoCompleteCustomerName_widget = bottomSheetDialog.findViewById(R.id.autoCompleteCustomerName_widget);
         Spinner orderTypeSpinner_Widget = bottomSheetDialog.findViewById(R.id.orderTypeSpinner_Widget);
+        Button selectAddress_buttonWidget = bottomSheetDialog.findViewById(R.id.selectAddress_buttonWidget);
+
+
+
+        LinearLayout close_bottom_sheet = bottomSheetDialog.findViewById(R.id.close_bottom_sheet);
 
          LinearLayout customerName_layout = bottomSheetDialog.findViewById(R.id.customerName_layout);
+        LinearLayout displaySelectedAddress_parentLayout = bottomSheetDialog.findViewById(R.id.displaySelectedAddress_parentLayout);
+        LinearLayout  addAddress_close_bottom_sheet = addressBottomSheet.findViewById(R.id.addAddress_close_bottom_sheet);
+        LinearLayout close_addressbottom_sheet = addressBottomSheet.findViewById(R.id.close_bottom_sheet);
+         //loadingpanelmask_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingpanelmask);
+         //loadingPanel_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingPanel);
+       // address_listView = addressBottomSheet.findViewById(R.id.address_listView);
+        ImageView swipe_up_arrow = addressBottomSheet.findViewById(R.id.swipe_up_arrow);
+        ImageView swipe_down_arrow = addressBottomSheet.findViewById(R.id.swipe_down_arrow);
+
+        Button saveAddress_Button = addressBottomSheet.findViewById(R.id.saveAddress_Button);
+        EditText contact_personName_editText = addressBottomSheet.findViewById(R.id.contact_personName_editText);
+        EditText contact_personMobileNo_editText = addressBottomSheet.findViewById(R.id.contact_personMobileNo_editText);
+        EditText addressLine1_editText = addressBottomSheet.findViewById(R.id.addressLine1_editText);
+        EditText addressLine2_editText = addressBottomSheet.findViewById(R.id.addressLine2_editText);
+        EditText landmark_editText = addressBottomSheet.findViewById(R.id.landmark_editText);
+        EditText pincode_editText = addressBottomSheet.findViewById(R.id.pincode_editText);
+        EditText address_type_editText = addressBottomSheet.findViewById(R.id.type_address_editText);
+
+        ScrollView scrollView = addressBottomSheet.findViewById(R.id.scrollView);
+        scrollView.setSmoothScrollingEnabled(true);
+
+
+        displaySelectedAddress_parentLayout.setVisibility(View.GONE);
+        addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
+        selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+
+
+
         Objects.requireNonNull(itemtotal_textWidget).setText(finaltoPayAmount);
         Objects.requireNonNull(toPay_textWidget).setText(finaltoPayAmount);
         Objects.requireNonNull(discountTextWidget).setText("0");
@@ -565,26 +679,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         discountAmount ="0";
         discount_editWidget.setText("0");
-
+        customermobileno="";
+        customermobileno_editwidget.setText("");
+        userAddressArrayList.clear();
+        userAddressKeyArrayList.clear();
 
         if(vendorType.equals(Constants.WholeSales_VendorType)){
             customerName_layout.setVisibility(View.VISIBLE);
-             wholeSaleCustomersArrayList.clear();
-            userstoreNumberCheckboxWidget.setVisibility(View.GONE);
-            final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
 
-            Gson gson = new Gson();
-            String json = sharedPreferencesMenuitem.getString("WholeSaleCustomerDetails", "");
-            if (json.isEmpty()) {
-                Toast.makeText( mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
-            } else {
-                Type type = new TypeToken<List<Modal_WholeSaleCustomers>>() {
-                }.getType();
-                wholeSaleCustomersArrayList  = gson.fromJson(json, type);
-            }
+            userstoreNumberCheckboxWidget.setVisibility(View.GONE);
+
+
 
             if(wholeSaleCustomersArrayList.size()>0){
-                Adapter_AutoCompleteWholeSaleCustomers_Mobile adapter_autoCompleteWholeSaleCustomers = new Adapter_AutoCompleteWholeSaleCustomers_Mobile(mContext,wholeSaleCustomersArrayList, NewOrderScreenFragment_mobile.this);
+                 adapter_autoCompleteWholeSaleCustomers = new Adapter_AutoCompleteWholeSaleCustomers_Mobile(mContext,wholeSaleCustomersArrayList, NewOrderScreenFragment_mobile.this);
                 //adapter_autoCompleteWholeSaleCustomers.setHandler(newHandler());
 
 
@@ -598,6 +706,60 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             customerName_layout.setVisibility(View.GONE);
         }
+
+
+        selectAddress_buttonWidget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String mobileno = String.valueOf(customermobileno_editwidget.getText().toString());
+                if(mobileno.length()==10) {
+                addressBottomSheet.show();
+
+
+                loadingPanel_addressbottomSheet.setVisibility(View.VISIBLE);
+                loadingpanelmask_addressbottomSheet.setVisibility(View.VISIBLE);
+
+                    if (customermobileno.equals(mobileno)) {
+                        if (userAddressArrayList.size() > 0) {
+                            setAddressListAdapter();
+                            Toast.makeText(mContext, "adapter", Toast.LENGTH_SHORT).show();
+                        } else {
+                            customermobileno = mobileno;
+                            fulladdress_textview.setText("Please select an Address");
+
+                            userAddressArrayList.clear();
+                              userAddressKeyArrayList.clear();
+                            //showProgressBar(true);
+                            getUserDetailsUsingMobileNo(mobileno);
+
+                        }
+
+                    } else {
+                        customermobileno = mobileno;
+                        fulladdress_textview.setText("Please select an Address");
+
+                        userAddressArrayList.clear();
+                        userAddressKeyArrayList.clear();
+                        //showProgressBar(true);
+                        getUserDetailsUsingMobileNo(mobileno);
+
+                    }
+
+
+                }
+                else
+                {
+                    AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_mobile_no_text);
+
+                }
+
+
+
+
+            }
+        });
+
+
 
 
 
@@ -645,8 +807,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 selectedOrderType = parent.getItemAtPosition(position).toString().toUpperCase();
                 if(selectedOrderType.equals("PHONEORDER")){
                     isPhoneOrderSelected = true;
+
+                    displaySelectedAddress_parentLayout.setVisibility(View.VISIBLE);
                 }
                 else{
+                    displaySelectedAddress_parentLayout.setVisibility(View.GONE);
+
                     isPhoneOrderSelected = false;
 
                 }
@@ -726,44 +892,85 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             public void onClick(View v) {
                 if (Objects.requireNonNull(customermobileno_editwidget).getText().toString().length() == 10) {
                     showProgressBar(true);
+                    String customerName = "";
+                    try{
+                        customermobileno = "+91"+customermobileno_editwidget.getText().toString();
 
-                    if (!selectedPaymentMode.equals("NONE SELECTED")) {
-                        if (cart_Item_List.size() > 0 && cartItem_hashmap.size() > 0) {
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
 
-                            if ((!Objects.requireNonNull(itemtotal_textWidget).getText().toString().equals("0")) && (!Objects.requireNonNull(toPay_textWidget).getText().toString().equals("0")) && (!itemtotal_textWidget.getText().toString().equals("0.0")) && (!toPay_textWidget.getText().toString().equals("0.0")) && (!itemtotal_textWidget.getText().toString().equals("0.00")) && (!toPay_textWidget.getText().toString().equals("0.00")) && (!itemtotal_textWidget.getText().toString().equals("")) && (!toPay_textWidget.getText().toString().equals(""))) {
-                                if (checkforBarcodeInCart("empty")) {
-                                    NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
+                    }
 
-                                    NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
-                                }
+                    try{
+                        customerName = String.valueOf(autoCompleteCustomerName_widget.getText().toString());
 
-                                 sTime = System.currentTimeMillis();
-                                Currenttime = getDate_and_time();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
 
-                                //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
-                                if(selectedPaymentMode.equals("CASH")){
-                                    selectedPaymentMode=Constants.CASH_ON_DELIVERY;
-
-
-                                }
-                                customermobileno = Objects.requireNonNull(customermobileno_editwidget).getText().toString();
-                                 finaltoPayAmountinmethod = toPay_textWidget.getText().toString();
-                                PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode,finaltoPayAmountinmethod,sTime,Currenttime,cart_Item_List);
-
-                                   bottomSheetDialog.cancel();
-                                Toast.makeText(getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
-
+                    }
+                    if(vendorType.equals(Constants.WholeSales_VendorType)) {
+                        if (wholeSaleCustomersMobileNoStringHashmap.containsKey(String.valueOf(customermobileno))) {
+                            String customernameFromHashmap = wholeSaleCustomersMobileNoStringHashmap.get(customermobileno);
+                            customernameFromHashmap = String.valueOf(customernameFromHashmap).toUpperCase().trim();
+                            if (!customernameFromHashmap.equals(String.valueOf(customerName).toUpperCase().trim())) {
+                                addWholeSaleCustomers(customerName, customermobileno);
 
                             } else {
-                                showProgressBar(false);
-
-                                AlertDialogClass.showDialog(getActivity(), R.string.Cant_place_order);
+                                Toast.makeText(mContext, " " + customerName + " is Already Added", Toast.LENGTH_SHORT).show();
 
                             }
+                        } else {
+                            addWholeSaleCustomers(customerName, customermobileno);
+                        }
+                    }
+
+
+
+                    if (!selectedPaymentMode.equals("NONE SELECTED")) {
+
+                        if (cart_Item_List.size() > 0 && cartItem_hashmap.size() > 0) {
+                            if(isAddressForPhoneOrderSelected) {
+                                if ((!Objects.requireNonNull(itemtotal_textWidget).getText().toString().equals("0")) && (!Objects.requireNonNull(toPay_textWidget).getText().toString().equals("0")) && (!itemtotal_textWidget.getText().toString().equals("0.0")) && (!toPay_textWidget.getText().toString().equals("0.0")) && (!itemtotal_textWidget.getText().toString().equals("0.00")) && (!toPay_textWidget.getText().toString().equals("0.00")) && (!itemtotal_textWidget.getText().toString().equals("")) && (!toPay_textWidget.getText().toString().equals(""))) {
+                                    if (checkforBarcodeInCart("empty")) {
+                                        NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
+
+                                        NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
+                                    }
+
+                                    sTime = System.currentTimeMillis();
+                                    Currenttime = getDate_and_time();
+
+                                    //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
+                                    if (selectedPaymentMode.equals("CASH")) {
+                                        selectedPaymentMode = Constants.CASH_ON_DELIVERY;
+
+
+                                    }
+                                    customermobileno = Objects.requireNonNull(customermobileno_editwidget).getText().toString();
+                                    finaltoPayAmountinmethod = toPay_textWidget.getText().toString();
+                                    PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
+
+                                    bottomSheetDialog.cancel();
+                                    Toast.makeText(getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+
+
+                                } else {
+                                    showProgressBar(false);
+
+                                    AlertDialogClass.showDialog(getActivity(), R.string.Cant_place_order);
+
+                                }
 
 
                         } else {
                             AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
+
+                        }
+                        }
+                        else{
+                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
 
                         }
                     }
@@ -782,20 +989,148 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             }
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         bottomSheetDialog.show();
+
+
+
+
+        addAddress_close_bottom_sheet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
+                selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+
+            }
+        });
+
+        close_addressbottom_sheet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addressBottomSheet.cancel();
+
+            }
+        });
+
+
+
+
+        swipe_up_arrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollView.fullScroll(scrollView.FOCUS_UP);
+            }
+        });
+
+
+
+
+        swipe_down_arrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollView.fullScroll(scrollView.FOCUS_DOWN);
+
+            }
+        });
+
+
+
+        addNewAddress_widget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+              
+
+                if(isNewUser){
+                    String userKey = "";
+                    try{
+                        userKey =  String.valueOf(UUID.randomUUID())+"-"+String.valueOf(System.currentTimeMillis());
+                    }
+                    catch (Exception e){
+                        userKey = "";
+                        e.printStackTrace();
+                    }
+
+                    if((!String.valueOf(userKey).equals("")) || (!String.valueOf(userKey).toUpperCase().equals("NULL"))){
+                        user_key_toAdd_Address =  String.valueOf(userKey);
+
+                    }
+                    else{
+                        Toast.makeText(mContext, "User Key is Empty", Toast.LENGTH_SHORT).show();
+                    }
+                    
+
+                }
+
+                selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.GONE);
+                addNewAddress_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+
+
+
+
+            }
+        });
+
+
+
+
+
+        saveAddress_Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String addressKey = "";
+                try{
+                    addressKey =  String.valueOf(UUID.randomUUID())+"-"+String.valueOf(System.currentTimeMillis());
+                }
+                catch (Exception e){
+                    addressKey = "";
+                    e.printStackTrace();
+                }
+
+                if((!String.valueOf(addressKey).equals("")) || (!String.valueOf(addressKey).toUpperCase().equals("NULL"))){
+                String contactPersonName = String.valueOf(contact_personName_editText.getText());
+                String contactPersonMobileNo = String.valueOf(contact_personMobileNo_editText.getText());
+                String addressLine1 = String.valueOf(addressLine1_editText.getText());
+                String addressLine2 = String.valueOf(addressLine2_editText.getText());
+                String landmark = String.valueOf(landmark_editText.getText());
+                String pincode = String.valueOf(pincode_editText.getText());
+                String type = String.valueOf(address_type_editText.getText());
+            
+              //  Toast.makeText(mContext, "UUID : "+ addressKey, Toast.LENGTH_SHORT).show();
+            
+                Modal_Address modal_address = new Modal_Address();
+                modal_address.setContactpersonname(contactPersonName);
+                modal_address.setContactpersonmobileno(contactPersonMobileNo);
+                modal_address.setAddressline1(addressLine1);
+                modal_address.setAddressline2(addressLine2);
+                modal_address.setLandmark(landmark);
+                modal_address.setPincode(pincode);
+                modal_address.setAddresstype(type);
+                modal_address.setVendorname(vendorName);
+                modal_address.setVendorkey(vendorKey);
+                modal_address.setUserkey(user_key_toAdd_Address);
+                modal_address.setLocationlong("0");
+                modal_address.setLocationlat("0");
+                modal_address.setDeliverydistance("0");
+                modal_address.setKey(addressKey);
+                modal_address.setIsNewAddress(true);
+                if(!userAddressKeyArrayList.contains(addressKey)){
+                    userAddressKeyArrayList.add(addressKey);
+                    userAddressArrayList.add(modal_address);
+
+                }
+
+
+                selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+                addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
+
+                }
+                else{
+                    Toast.makeText(mContext, "Address key is Empty", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+
 
 
 
@@ -804,6 +1139,395 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     }
 
 
+    private void getUserDetailsUsingMobileNo(String mobileno) {
+
+        String encodedMobileNo = "";
+        mobileno = "+91"+mobileno;
+        try {
+            encodedMobileNo = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getUserDetailsWithMobileNo+"?usermobileno="+encodedMobileNo, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+
+                            try {
+
+                                JSONArray JArray = response.getJSONArray("content");
+                                int i1 = 0;
+                                int arrayLength = JArray.length();
+                                if (arrayLength < 1) {
+                                    Toast.makeText(mContext, "This mobileno is a new User" +
+                                            "", Toast.LENGTH_LONG).show();
+
+                                    isNewUser = true;
+                                    isAddress_Added_ForUser = false;
+                                    setAddressListAdapter();
+
+
+                                }
+
+                                for (; i1 < (arrayLength); i1++) {
+
+                                    try {
+                                        JSONObject json = JArray.getJSONObject(i1);
+                                        String key = json.getString("key");
+                                        String usertype = "";
+                                        try{
+                                            usertype = json.getString("usertype");
+                                        }
+                                        catch (Exception e){
+                                            usertype ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        Toast.makeText(mContext, "getting address" +
+                                                "", Toast.LENGTH_LONG).show();
+                                        if(usertype.toUpperCase().contains("PHONE")){
+                                            isUsertype_AlreadyPhone = true;
+
+                                        }
+                                        else{
+                                            isUsertype_AlreadyPhone = false;
+
+                                        }
+                                        getAddressUsingUserKey(key);
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                setAddressListAdapter();
+                                e.printStackTrace();
+
+                            }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(mContext, " Error in getting user", Toast.LENGTH_LONG).show();
+                    error.printStackTrace();
+                    showProgressBar(false);
+                    setAddressListAdapter();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+    }
+
+    private void getAddressUsingUserKey(String key) {
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetAddressUsingUserKey + key,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+                        try {
+                            user_key_toAdd_Address = key;
+
+                            JSONArray JArray = response.getJSONArray("content");
+                            int i1 = 0;
+                            int arrayLength = JArray.length();
+                            if (arrayLength < 1) {
+                                Toast.makeText(mContext, "There is no address for this user" +
+                                        "", Toast.LENGTH_LONG).show();
+                                isAddress_Added_ForUser = false;
+
+                                setAddressListAdapter();
+
+                            }
+
+                            for (; i1 < (arrayLength); i1++) {
+                                Modal_Address modal_address = new Modal_Address();
+                                try {
+                                    JSONObject json = JArray.getJSONObject(i1);
+                                    String addressKey = "";
+                                    try{
+                                        modal_address.setKey(String.valueOf(json.getString("key")));
+                                        addressKey = (String.valueOf(json.getString("key")));
+                                    }
+                                    catch (Exception e){
+                                        addressKey ="";
+                                        modal_address.setKey(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        modal_address.setAddressline1(String.valueOf(json.getString("addressline1")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setAddressline1(String.valueOf(""));
+                                                e.printStackTrace();
+                                    }
+
+                                    try{
+                                        modal_address.setAddressline2(String.valueOf(json.getString("addressline2")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setAddressline2(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+                                        modal_address.setAddresstype(String.valueOf(json.getString("addresstype")));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        modal_address.setAddresstype(String.valueOf(""));
+                                    }
+
+
+                                    try{
+                                        if(json.has("contactpersonmobileno")) {
+                                            if (String.valueOf(json.getString("contactpersonmobileno")).equals("")) {
+                                                modal_address.setContactpersonmobileno(String.valueOf(customermobileno));
+                                            } else {
+                                                modal_address.setContactpersonmobileno(String.valueOf(json.getString("contactpersonmobileno")));
+                                            }
+                                        }
+                                        else{
+                                            modal_address.setContactpersonmobileno(String.valueOf(customermobileno));
+
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setContactpersonmobileno(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+                                        modal_address.setContactpersonname(String.valueOf(json.getString("contactpersonname")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setContactpersonname(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+                                        modal_address.setDeliverydistance(String.valueOf(json.getString("deliverydistance")));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        modal_address.setDeliverydistance(String.valueOf(""));
+                                    }
+
+
+                                    try{
+                                        modal_address.setLandmark(String.valueOf(json.getString("landmark")));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        modal_address.setLandmark(String.valueOf(""));
+                                    }
+
+
+                                    try{
+                                        modal_address.setLocationlat(String.valueOf(json.getString("locationlat")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setLocationlat(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+                                        modal_address.setLocationlong(String.valueOf(json.getString("locationlong")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setLocationlong(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+                                        modal_address.setPincode(String.valueOf(json.getString("pincode")));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        modal_address.setPincode(String.valueOf(""));
+                                    }
+
+
+                                    try{
+                                        modal_address.setUpdatedtime(String.valueOf(json.getString("updatedtime")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setUpdatedtime(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+
+                                        modal_address.setUserkey(String.valueOf(json.getString("userkey")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setUserkey(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                    try{
+                                        modal_address.setVendorkey(String.valueOf(json.getString("vendorkey")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_address.setVendorkey(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+
+                                        modal_address.setVendorname(String.valueOf(json.getString("vendorname")));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        modal_address.setVendorname(String.valueOf(""));
+                                    }
+
+                                    if(!userAddressKeyArrayList.contains(addressKey)){
+                                        userAddressKeyArrayList.add(addressKey);
+                                        userAddressArrayList.add(modal_address);
+                                        isAddress_Added_ForUser = true;
+                                    }
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                               // Toast.makeText(mContext, "in address" , Toast.LENGTH_LONG).show();
+
+                                try {
+                                    if(arrayLength - i1 == 1){
+
+
+                                        setAddressListAdapter();
+                                      }
+                                }
+
+                                catch (Exception e){
+                                    setAddressListAdapter();
+                                    e.printStackTrace();
+
+                                }
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            setAddressListAdapter();
+                            e.printStackTrace();
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(mContext, "Location cnanot be found", Toast.LENGTH_LONG).show();
+
+                    setAddressListAdapter();
+
+
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
 
 
@@ -811,19 +1535,351 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
 
+    }
 
+    public void setAddressListAdapter() {
+       if(userAddressArrayList.size()>0) {
+           id_addressInstruction.setVisibility(View.GONE);
+           scrollView.setVisibility(View.VISIBLE);
+
+
+           adapter_addressList = new Adapter_AddressList(mContext, userAddressArrayList, NewOrderScreenFragment_mobile.this);
+
+            address_listView.setAdapter(adapter_addressList);
+            ReportListviewSizeHelper.getListViewSize(address_listView, screenInches);
+        }
+        else{
+            id_addressInstruction.setVisibility(View.VISIBLE);
+            scrollView.setVisibility(View.GONE);
+        }
+        loadingPanel_addressbottomSheet.setVisibility(View.GONE);
+        loadingpanelmask_addressbottomSheet.setVisibility(View.GONE);
+
+    }
+
+    private void addWholeSaleCustomers(String customerName, String mobileNo) {
+        if(vendorType.equals(Constants.WholeSales_VendorType)) {
+
+
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("name", customerName);
+                jsonObject.put("mobileno", mobileNo);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+
+            }
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addWholeSalesCustomersTable,
+                    jsonObject, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(@NonNull JSONObject response) {
+
+                    try {
+                        String message = response.getString("message");
+                        if (message.equals("success")) {
+                            if (wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileNo)) {
+                                for (int i = 0; i < wholeSaleCustomersArrayList.size(); i++) {
+                                    Modal_WholeSaleCustomers modal_wholeSaleCustomers = wholeSaleCustomersArrayList.get(i);
+                                    String mobilenoFromArray = String.valueOf(modal_wholeSaleCustomers.getMobileno());
+                                    if (mobilenoFromArray.equals(mobileNo)) {
+                                        modal_wholeSaleCustomers.setCustomerName(customerName);
+
+                                    }
+                                }
+
+
+                            } else {
+                                Modal_WholeSaleCustomers modal_wholeSaleCustomers = new Modal_WholeSaleCustomers();
+                                modal_wholeSaleCustomers.setMobileno(mobileNo);
+                                modal_wholeSaleCustomers.setCustomerName(customerName);
+                                wholeSaleCustomersArrayList.add(modal_wholeSaleCustomers);
+
+                            }
+                            wholeSaleCustomersMobileNoStringHashmap.put(mobileNo, customerName);
+
+                            adapter_autoCompleteWholeSaleCustomers.notifyDataSetChanged();
+                            updateDatainSharedPreference(wholeSaleCustomersArrayList);
+                            Toast.makeText(mContext, " " + customerName + " is Added Now", Toast.LENGTH_SHORT).show();
+
+                        } else {
+                            Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
+
+                        }
+                    } catch (JSONException e) {
+                        Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
+
+                        e.printStackTrace();
+
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
+
+                    error.printStackTrace();
+                }
+            }) {
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("Content-Type", "application/json");
+
+                    return params;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+            // Make the request
+            Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+        }
+
+
+
+
+    }
+
+    private void updateDatainSharedPreference(List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList) {
+
+
+        try {
+            final SharedPreferences sharedPreferences = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
+
+            Gson gson = new Gson();
+            String json = gson.toJson(wholeSaleCustomersArrayList);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("WholeSaleCustomerDetails", json);
+            editor.apply();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+    }
 
 
     private void PlaceOrdersinDatabaseaAndPrintRecipt(String paymentMode, String finaltoPayAmountinmethod, long sTime, String currenttime, List<String> cart_Item_list) {
         showProgressBar(true);
 
         if (ispaymentMode_Clicked) {
+            showProgressBar(false);
+            Toast.makeText(mContext, "Try Place order again", Toast.LENGTH_SHORT).show();
+
             return;
         }
         else {
 
             ispaymentMode_Clicked = true;
             String payableAmount =finaltoPayAmount;
+
+
+            if(isPhoneOrderSelected){
+                if(userAddressKeyArrayList.size()>0 && userAddressArrayList.size()>0){
+                    if(isAddressForPhoneOrderSelected) {
+                        for (int iterator = 0; iterator < userAddressArrayList.size(); iterator++) {
+                            boolean isAddressNewlyAdded = false;
+                            boolean isAddressEdited = false;
+                            String key = "", addressline1 = "", addressline2 = "", addresstype = "", contactpersonmobileno = "", contactpersonname = "", landmark = "",
+                                    pincode = "", updatedtime = "", userkey = "", vendorkey = "", vendorname = "";
+                            double locationlong = 0, deliverydistance = 0, locationlat = 0;
+                            Modal_Address modal_address = userAddressArrayList.get(iterator);
+                            try {
+                                isAddressNewlyAdded = modal_address.getisNewAddress();
+                            } catch (Exception e) {
+                                isAddressNewlyAdded = false;
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                isAddressEdited = modal_address.getisAddressEdited();
+                            } catch (Exception e) {
+                                isAddressEdited = false;
+                                e.printStackTrace();
+                            }
+
+
+                            try {
+                                key = String.valueOf(modal_address.getKey());
+                            } catch (Exception e) {
+                                key = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                addressline1 = String.valueOf(modal_address.getAddressline1());
+                            } catch (Exception e) {
+                                addressline1 = "";
+                                e.printStackTrace();
+                            }
+                            try {
+                                addressline2 = String.valueOf(modal_address.getAddressline2());
+                            } catch (Exception e) {
+                                addressline2 = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                addresstype = String.valueOf(modal_address.getAddresstype());
+                            } catch (Exception e) {
+                                addresstype = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                contactpersonmobileno = String.valueOf(modal_address.getContactpersonmobileno());
+                            } catch (Exception e) {
+                                contactpersonmobileno = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                contactpersonname = String.valueOf(modal_address.getContactpersonname());
+                            } catch (Exception e) {
+                                contactpersonname = "";
+                                e.printStackTrace();
+                            }
+                            try {
+                                landmark = String.valueOf(modal_address.getLandmark());
+                            } catch (Exception e) {
+                                landmark = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                pincode = String.valueOf(modal_address.getPincode());
+                            } catch (Exception e) {
+                                pincode = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                updatedtime = String.valueOf(getDate_and_time());
+                            } catch (Exception e) {
+                                updatedtime = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                userkey = String.valueOf(modal_address.getUserkey());
+                            } catch (Exception e) {
+                                userkey = "";
+                                e.printStackTrace();
+                            }
+                            try {
+                                updatedtime = String.valueOf(getDate_and_time());
+                            } catch (Exception e) {
+                                updatedtime = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                vendorkey = String.valueOf(modal_address.getVendorkey());
+                            } catch (Exception e) {
+                                vendorkey = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                vendorname = String.valueOf(modal_address.getVendorname());
+                            } catch (Exception e) {
+                                vendorname = "";
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                locationlat = Double.parseDouble(String.valueOf(modal_address.getLocationlat()));
+                            } catch (Exception e) {
+                                locationlat = 0;
+                                e.printStackTrace();
+                            }
+                            try {
+                                locationlong = Double.parseDouble(String.valueOf(modal_address.getLocationlong()));
+                            } catch (Exception e) {
+                                locationlong = 0;
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                deliverydistance = Double.parseDouble(String.valueOf(modal_address.getDeliverydistance()));
+                            } catch (Exception e) {
+                                deliverydistance = 0;
+                                e.printStackTrace();
+                            }
+
+
+                            try {
+                                if (isAddressNewlyAdded) {
+                                    try {
+                                        JSONObject jsonObject = new JSONObject();
+                                        try {
+
+
+                                            jsonObject.put("key", key);
+                                            jsonObject.put("addressline1", addressline1);
+                                            jsonObject.put("addressline2", addressline2);
+                                            jsonObject.put("addresstype", addresstype);
+                                            jsonObject.put("contactpersonmobileno", "+91" + contactpersonmobileno);
+                                            jsonObject.put("contactpersonname", contactpersonname);
+                                            jsonObject.put("deliverydistance", deliverydistance);
+                                            jsonObject.put("landmark", landmark);
+                                            jsonObject.put("locationlat", locationlat);
+                                            jsonObject.put("locationlong", locationlong);
+                                            jsonObject.put("pincode", pincode);
+                                            jsonObject.put("updatedtime", updatedtime);
+                                            jsonObject.put("userkey", userkey);
+                                            jsonObject.put("vendorkey", vendorkey);
+                                            jsonObject.put("vendorname", vendorname);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        Add_Address_For_this_User(jsonObject);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    else{
+                        showProgressBar(false);
+
+                        Toast.makeText(mContext, "Please Select Address to Place Phone Order", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    }
+                else{
+                    showProgressBar(false);
+
+                    Toast.makeText(mContext, "Please Add Address to Place Phone Order", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+
+               if(! isUsertype_AlreadyPhone ){
+                   Add_OR_Update_Entry_inTMCUserTable("PHONE");
+
+               }
+
+            }
+            else
+            {
+                Add_OR_Update_Entry_inTMCUserTable("WALKIN");
+
+
+            }
+
+
 
             if(payableAmount.equals("")||payableAmount.equals("0")||payableAmount.equals("0.00")||payableAmount.equals("0.0")){
 
@@ -846,15 +1902,21 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 public void onClick(View view) {
                                     dialog.cancel();
 
+                                    isNewUser =false;
+                                    isUsertype_AlreadyPhone =false;
+                                    customermobileno = "";
+                                    userAddressArrayList.clear();
+                                    userAddressKeyArrayList.clear();
+
 
                                     cart_Item_List.clear();
                                     cartItem_hashmap.clear();
-                                   ispaymentMode_Clicked = false;
+                                    ispaymentMode_Clicked = false;
                                     isOrderDetailsMethodCalled = false;
 
                                     isPaymentDetailsMethodCalled = false;
                                     isOrderTrackingDetailsMethodCalled = false;
-
+                                    isCustomerOrdersTableServiceCalled  = false;
                                     newGst =0;
 
                                     new_to_pay_Amount = 0;
@@ -945,6 +2007,31 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
                                 }
                                 else{
+
+                                    if(!isCustomerOrdersTableServiceCalled){
+                                        try{
+                                            if(orderdetailsnewschema){
+                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                if(isPhoneOrderSelected){
+                                                    ordertype = Constants.PhoneOrder;
+                                                }
+                                                else{
+                                                    ordertype = Constants.POSORDER;
+
+                                                }
+                                                isCustomerOrdersTableServiceCalled =true;
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                asyncTask.execute();
+
+                                            }
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+
+                                        }
+                                    }
+
                                     if (!isOrderDetailsMethodCalled) {
                                         shouldGetPrintNow_Global = false;
                                         PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
@@ -1005,6 +2092,33 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                         GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
                                     }
                                     else{
+                                        if(!isCustomerOrdersTableServiceCalled){
+                                            try{
+                                                if(orderdetailsnewschema){
+                                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                    if(isPhoneOrderSelected){
+                                                        ordertype = Constants.PhoneOrder;
+                                                    }
+                                                    else{
+                                                        ordertype = Constants.POSORDER;
+
+                                                    }
+                                                    isCustomerOrdersTableServiceCalled =true;
+                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                    asyncTask.execute();
+
+                                                }
+
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+
+                                            }
+                                        }
+
+
+
+
                                         if (!isOrderDetailsMethodCalled) {
                                             shouldGetPrintNow_Global = false;
                                             PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
@@ -1045,6 +2159,34 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                         GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
                     }
                     else{
+
+                        if(!isCustomerOrdersTableServiceCalled){
+                            try{
+                                if(orderdetailsnewschema){
+                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                    if(isPhoneOrderSelected){
+                                        ordertype = Constants.PhoneOrder;
+                                    }
+                                    else{
+                                        ordertype = Constants.POSORDER;
+
+                                    }
+                                    isCustomerOrdersTableServiceCalled =true;
+                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                    asyncTask.execute();
+
+                                }
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+
+                            }
+                        }
+
+
+
+
                         if (!isOrderDetailsMethodCalled) {
                             shouldGetPrintNow_Global = true;
                             PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
@@ -1083,6 +2225,148 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
         }
+
+
+    }
+
+    private void Add_OR_Update_Entry_inTMCUserTable(String usertype) {
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("mobileno",customermobileno);
+            jsonObject.put("email","");
+            jsonObject.put("name","");
+            jsonObject.put("uniquekey",user_key_toAdd_Address);
+            jsonObject.put("authorizationcode","");
+            jsonObject.put("appversion","");
+            jsonObject.put("fcmtoken","");
+            jsonObject.put("createddate",getDate());
+            jsonObject.put("createdtime",getDate_and_time());
+            jsonObject.put("updatedtime",getDate_and_time());
+            jsonObject.put("usertype",usertype);
+            jsonObject.put("deviceos","");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_add_update_TMCUserTable ,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                //Log.d(Constants.TAG, "Response: " + response);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+
+
+                    }
+
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+    }
+
+    private void Add_Address_For_this_User(JSONObject jsonObject) {
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_addAddress ,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                //Log.d(Constants.TAG, "Response: " + response);
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+
+
+                    }
+
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext) {
+        mResultCallback_Add_CustomerOrder_TrackingTableInterface = new Add_CustomerOrder_TrackingTableInterface() {
+
+
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                isCustomerOrdersTableServiceCalled = false;
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                isCustomerOrdersTableServiceCalled = false;
+
+               // Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
+            }
+        };
 
 
     }
@@ -1130,7 +2414,21 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         bottomSheetDialog = new BottomSheetDialog(mContext);
         bottomSheetDialog.setContentView(R.layout.billingscreen_mobile_neworderfragment);
         bottomSheetDialog.setCanceledOnTouchOutside(false);
+        fulladdress_textview = bottomSheetDialog.findViewById(R.id.fulladdress_textview);
 
+
+        addressBottomSheet = new BottomSheetDialog(mContext);
+        addressBottomSheet.setContentView(R.layout.select_address_bottomsheet);
+        addressBottomSheet.setCanceledOnTouchOutside(false);
+        address_listView = addressBottomSheet.findViewById(R.id.address_listView);
+        loadingpanelmask_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingpanelmask);
+        loadingPanel_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingPanel);
+        selectfromAddressList_ParentLayout_bottomSheet = addressBottomSheet.findViewById(R.id.selectfromAddressList_ParentLayout_bottomSheet);
+        addNewAddress_ParentLayout_bottomSheet = addressBottomSheet.findViewById(R.id.addNewAddress_ParentLayout_bottomSheet);
+
+        id_addressInstruction  = addressBottomSheet.findViewById(R.id.id_addressInstruction);
+        scrollView = addressBottomSheet.findViewById(R.id.scrollView);
+        addNewAddress_widget = addressBottomSheet.findViewById(R.id.addNewAddress_layout);
     }
 
     public void createEmptyRowInListView(String empty) {
@@ -1168,6 +2466,36 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         }
 
+    }
+
+    private String getDate() {
+        Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
+
+            return CurrentDate;
+
+        }
+        else {
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
     }
 
     private Handler newHandler() {
@@ -1617,7 +2945,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         if(isOrderDetailsMethodCalled){
             return;
         }
-
+        isOrderPlacedinOrderdetails=false;
             showProgressBar(true);
         isOrderDetailsMethodCalled = true;
         String newOrderId = String.valueOf(sTime);
@@ -1644,10 +2972,17 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
             slotdate  = CurrentDate;
         }
+        String slotname = "";
+        if(orderdetailsnewschema){
+            slotname = "";
 
-        String slotname = "EXPRESSDELIVERY";
+        }
+        else{
+             slotname = "EXPRESSDELIVERY";
 
-        String orderPlacedDate = CurrentDate;
+        }
+
+        String orderPlacedDate = getDate();
 
         String slottimerange = "";
         String UserMobile = "+91" + customermobileno;
@@ -1679,6 +3014,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 public void onClick(View view) {
                                     dialog.cancel();
 
+                                    isNewUser =false;
+                                    isUsertype_AlreadyPhone =false;
+                                    customermobileno = "";
+                                    userAddressArrayList.clear();
+                                    userAddressKeyArrayList.clear();
+
 
                                     cart_Item_List.clear();
                                     cartItem_hashmap.clear();
@@ -1687,7 +3028,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     isPhoneOrderSelected = false;
 
                                     isPaymentDetailsMethodCalled = false;
+                                    isCustomerOrdersTableServiceCalled  = false;
                                     isOrderTrackingDetailsMethodCalled = false;
+                                    isCustomerOrdersTableServiceCalled  = false;
                                     new_to_pay_Amount = 0;
                                     old_taxes_and_charges_Amount = 0;
                                     newGst =0;
@@ -2043,6 +3386,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     }
 
                     if (inventoryDetails.equals("nil")) {
+
                         getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, grossWeightWithQuantity_double, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
                     } else {
                         try {
@@ -2695,15 +4039,22 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             jsonObject.put("deliverytype", deliverytype);
             jsonObject.put("slotname", slotname);
-            jsonObject.put("slotdate", "");
             jsonObject.put("slottimerange", "");
 
             jsonObject.put("orderid", orderid);
             jsonObject.put("orderplacedtime", orderplacedTime);
             jsonObject.put("tokenno", (tokenno));
             jsonObject.put("userid", userid);
+            if(orderdetailsnewschema) {
+                jsonObject.put("usermobileno", UserMobile);
+                jsonObject.put("slotdate", orderPlacedDate);
 
-            jsonObject.put("usermobile", UserMobile);
+            }
+            else{
+                jsonObject.put("usermobile", UserMobile);
+                jsonObject.put("slotdate", "");
+
+            }
             jsonObject.put("vendorkey", vendorkey);
             jsonObject.put("vendorname", vendorName);
             jsonObject.put("payableamount", Double.parseDouble(finaltoPayAmountinmethod));
@@ -2724,7 +4075,19 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
         boolean finalShouldGetPrintNow = shouldGetPrintNow;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
+
+
+        String Api_To_PlaceOrderInOrderDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInOrderDetails = Constants.api_AddVendorOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInOrderDetails = Constants.api_addOrderDetailsInOrderDetailsTable;
+
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_To_PlaceOrderInOrderDetails ,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -2739,11 +4102,14 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                         if(finalShouldGetPrintNow) {
 
                             printRecipt(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype);
-
+                            isOrderPlacedinOrderdetails = true;
                             //  showProgressBar(false);
                         }
                         else{
+                            isOrderPlacedinOrderdetails = true;
+
                             if(!isinventorycheck){
+
                             turnoffProgressBarAndResetArray();
                             }
 
@@ -3260,7 +4626,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         }
         else{
-            turnoffProgressBarAndResetArray();
+            if(isOrderPlacedinOrderdetails){
+                turnoffProgressBarAndResetArray();
+            }
+
             Toast.makeText(mContext, "No  Menu Item Stock  details for " + itemName, Toast.LENGTH_LONG).show();
 
         }
@@ -4677,7 +6046,11 @@ showProgressBar(true);
             public void run() {
 
 
-
+                isNewUser =false;
+                                    isUsertype_AlreadyPhone =false;
+                customermobileno = "";
+                userAddressArrayList.clear();
+                userAddressKeyArrayList.clear();
 
                 cart_Item_List.clear();
                 cartItem_hashmap.clear();
@@ -4686,6 +6059,7 @@ showProgressBar(true);
                 shouldGetPrintNow_Global = false;
                 isPaymentDetailsMethodCalled = false;
                 isOrderTrackingDetailsMethodCalled = false;
+                isCustomerOrdersTableServiceCalled  = false;
                 new_to_pay_Amount = 0;
                 old_taxes_and_charges_Amount = 0;
                 newGst =0;
@@ -4918,7 +6292,11 @@ showProgressBar(true);
         try {
             orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
+            if(orderdetailsnewschema){
 
+                orderTrackingTablejsonObject.put("slotdate",getDate());
+
+            }
             orderTrackingTablejsonObject.put("usermobileno","+91" + customermobileno);
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
@@ -4933,13 +6311,16 @@ showProgressBar(true);
         }
 
 
-        //Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
+        String Api_To_PlaceOrderInTrackingDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_AddVendorTrackingOrderDetails;
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderTrackingDetailsTable,
+        }
+        else{
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_addOrderDetailsInOrderTrackingDetailsTable;
+
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInTrackingDetails,
                 orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -5273,6 +6654,32 @@ showProgressBar(true);
                                 GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
                             }
                             else{
+
+                                if(!isCustomerOrdersTableServiceCalled){
+                                    try{
+                                        if(orderdetailsnewschema){
+                                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                            if(isPhoneOrderSelected){
+                                                ordertype = Constants.PhoneOrder;
+                                            }
+                                            else{
+                                                ordertype = Constants.POSORDER;
+
+                                            }
+                                            isCustomerOrdersTableServiceCalled =true;
+                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                            asyncTask.execute();
+
+                                        }
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+
+                                    }
+                                }
+
+
                                 if (!isOrderDetailsMethodCalled) {
                                     shouldGetPrintNow_Global = true;
                                     PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
@@ -5378,6 +6785,34 @@ showProgressBar(true);
                                             GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
                                         }
                                         else{
+
+
+                                            if(!isCustomerOrdersTableServiceCalled){
+                                                try{
+                                                    if(orderdetailsnewschema){
+                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                        if(isPhoneOrderSelected){
+                                                            ordertype = Constants.PhoneOrder;
+                                                        }
+                                                        else{
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+                                                        isCustomerOrdersTableServiceCalled =true;
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                        asyncTask.execute();
+
+                                                    }
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+
+                                                }
+                                            }
+
+
+
                                             if (!isOrderDetailsMethodCalled) {
                                                 shouldGetPrintNow_Global = false;
                                                 PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
@@ -5511,7 +6946,35 @@ showProgressBar(true);
                                             totalamountUserHaveAsCredit = 0;
                                         }
 
+
+
+                                        if(!isCustomerOrdersTableServiceCalled){
+                                            try{
+                                                if(orderdetailsnewschema){
+                                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                    if(isPhoneOrderSelected){
+                                                        ordertype = Constants.PhoneOrder;
+                                                    }
+                                                    else{
+                                                        ordertype = Constants.POSORDER;
+
+                                                    }
+                                                    isCustomerOrdersTableServiceCalled =true;
+                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                    asyncTask.execute();
+
+                                                }
+
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+
+                                            }
+                                        }
+
+
                                         if (!isOrderDetailsMethodCalled) {
+
                                             shouldGetPrintNow_Global = false;
                                             PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                         }
@@ -5530,6 +6993,29 @@ showProgressBar(true);
                             else{
                                     totalamountUserHaveAsCredit = 0;
 
+                                    if(!isCustomerOrdersTableServiceCalled){
+                                        try{
+                                            if(orderdetailsnewschema){
+                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                if(isPhoneOrderSelected){
+                                                    ordertype = Constants.PhoneOrder;
+                                                }
+                                                else{
+                                                    ordertype = Constants.POSORDER;
+
+                                                }
+                                                isCustomerOrdersTableServiceCalled =true;
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                asyncTask.execute();
+
+                                            }
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+
+                                        }
+                                    }
                                     if (!isOrderDetailsMethodCalled) {
                                         shouldGetPrintNow_Global = false;
                                         PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);

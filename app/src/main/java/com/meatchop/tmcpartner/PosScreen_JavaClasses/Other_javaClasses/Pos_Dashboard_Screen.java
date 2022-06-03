@@ -7,17 +7,21 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 
+
 import android.util.Log;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,11 +42,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
+import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 import com.meatchop.tmcpartner.Settings.SettingsFragment;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -56,6 +63,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
@@ -88,7 +96,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     boolean isMenuListSavedLocally = false;
 
     boolean isinventorycheck = false;
-
+    boolean orderdetailsnewschema  = false;
 
     @SuppressLint("NonConstantResourceId")
     @Override
@@ -112,7 +120,8 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         dialog.setCanceledOnTouchOutside(false);
         dialog.setCancelable(false);
 
-         restartAgain = (Button) dialog.findViewById(R.id.printAgain);
+
+        restartAgain = (Button) dialog.findViewById(R.id.printAgain);
          title = (TextView) dialog.findViewById(R.id.title);
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
@@ -366,7 +375,10 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                         e.printStackTrace();
                                     }
 
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos);
+
+
+
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos, orderdetailsnewschema);
 
 
                                 } catch (JSONException e) {
@@ -375,7 +387,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                     //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
                                     //Log.d(Constants.TAG, "e: " + e.getMessage());
                                     //Log.d(Constants.TAG, "e: " + e.toString());
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema);
 
                                 }
 
@@ -383,7 +395,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
+                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema);
 
                         }
 
@@ -395,7 +407,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                 //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
                 //Log.d(Constants.TAG, "Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "Error: " + error.toString());
-                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos);
+                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema);
 
                 error.printStackTrace();
             }
@@ -427,7 +439,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
     }
 
-    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos) {
+    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos, boolean orderdetailsnewschema) {
 
 
 
@@ -461,6 +473,17 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         myEdit.putString(
                 "MinimumScreenSizeForPos",
                 minimumscreensizeforpos
+        );
+
+
+        myEdit.putBoolean(
+                "orderdetailsnewschema",
+                orderdetailsnewschema
+        );
+
+        myEdit.putBoolean(
+                "orderdetailsnewschema_settings",
+                orderdetailsnewschema
         );
 
         myEdit.apply();
@@ -849,6 +872,19 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
                                     try {
                                         JSONObject json = JArray.getJSONObject(i1);
+                                        try{
+                                            orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
+                                         ///  orderdetailsnewschema= true;
+                                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+
+
+
+
+                                        }
+                                        catch (Exception e){
+                                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                            e.printStackTrace();
+                                        }
 
                                         JSONArray array  = json.getJSONArray("redeemdata ");
 

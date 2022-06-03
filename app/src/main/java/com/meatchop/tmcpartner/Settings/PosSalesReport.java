@@ -55,6 +55,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListData;
@@ -62,6 +63,8 @@ import com.meatchop.tmcpartner.Settings.report_Activity_model.ListItem;
 import com.meatchop.tmcpartner.Settings.report_Activity_model.ListSection;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 import com.pos.printer.AsyncEscPosPrint;
 import com.pos.printer.AsyncEscPosPrinter;
 import com.pos.printer.AsyncUsbEscPosPrint;
@@ -97,9 +100,9 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
 
 public class PosSalesReport extends AppCompatActivity {
-    LinearLayout PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
+    LinearLayout fetchData_Layout,PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView refundAmount_textwidget,replacementAmount_textwidget,vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView appOrdersCount_textwidget,instruction_textview,refundAmount_textwidget,replacementAmount_textwidget,vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String replacementOrderDetailsString,startDateString_forReplacementransaction ="",endDateString_forReplacementransaction ="",vendorKey,vendorname;
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
@@ -156,6 +159,7 @@ public class PosSalesReport extends AppCompatActivity {
 
 
     List<ListData> dataList = new ArrayList<>();
+    public static List<String> array_of_orderId;
 
     public static List<String> tmcSubCtgykey;
     String portName = "USB";
@@ -163,8 +167,8 @@ public class PosSalesReport extends AppCompatActivity {
 
     public static HashMap<String,  List<Modal_OrderDetails>> tmcSubCtgywise_sorted_hashmap = new HashMap();
     double screenInches;
-    String CurrentDate;
-    String DateString;
+    String CurrentDate="";
+    String DateString ="";
     boolean isgetOrderForSelectedDateCalled=false;
     double CouponDiscount=0;
     double PhoneOrderCouponDiscount=0;
@@ -194,6 +198,13 @@ public class PosSalesReport extends AppCompatActivity {
     String printerType_sharedPreference="";
 
 
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -202,7 +213,9 @@ public class PosSalesReport extends AppCompatActivity {
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
         vendorName = findViewById(R.id.vendorName);
-
+        fetchData_Layout = findViewById(R.id.fetchData_Layout);
+        instruction_textview = findViewById(R.id.instruction_textview);
+        appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         posSalesReport_Listview = findViewById(R.id.posSalesReport_Listview);
@@ -248,10 +261,13 @@ public class PosSalesReport extends AppCompatActivity {
         phoneOrderpaymentMode_DiscountOrderid = new ArrayList<>();
         swiggyOrderpaymentMode_DiscountOrderid = new ArrayList<>();
         dunzoOrderpaymentMode_DiscountOrderid = new ArrayList<>();
+        array_of_orderId = new ArrayList<>();
+
 
         Order_Item_List.clear();
+        array_of_orderId.clear();
         OrderItem_hashmap.clear();
-        finalBillDetails.clear();
+
         paymentModeArray .clear();
         swiggyOrderpaymentModeArray.clear();
         swiggyOrderpaymentModeHashmap.clear();
@@ -277,13 +293,29 @@ public class PosSalesReport extends AppCompatActivity {
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
         FinalBill_hashmap.clear();
-        CurrentDate = getDate();
-        dateSelector_text.setText(CurrentDate);
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-         screenInches = Math.sqrt(x+y);
+        finalBillDetails.clear();
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(PosSalesReport .this);
+        //    Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                //Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
@@ -296,6 +328,8 @@ public class PosSalesReport extends AppCompatActivity {
         StoreAddressLine2 = (sharedPreferences.getString("VendorAddressline2", ""));
         StoreAddressLine3 = (sharedPreferences.getString("VendorPincode", ""));
         StoreLanLine = (sharedPreferences.getString("VendorMobileNumber", ""));
+        orderdetailsnewschema = (sharedPreferences.getBoolean("orderdetailsnewschema_settings", false));
+        //orderdetailsnewschema = true;
 
         SharedPreferences shared_PF_PrinterData = getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
         printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
@@ -305,16 +339,26 @@ public class PosSalesReport extends AppCompatActivity {
 
 
 
-        CurrentDate = getDate();
+       /* CurrentDate = getDate();
         DateString= getDate();
 
         dateSelector_text.setText(CurrentDate);
-        vendorName.setText(vendorname);
         startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
         endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
-        getdataFromReplacementTransaction(startDateString_forReplacementransaction,endDateString_forReplacementransaction, vendorKey);
+      //  getdataFromReplacementTransaction(startDateString_forReplacementransaction,endDateString_forReplacementransaction, vendorKey);
 
-        getOrderForSelectedDate(CurrentDate, vendorKey);
+     //   getOrderForSelectedDate(CurrentDate, vendorKey);
+
+        */
+        vendorName.setText(vendorname);
+
+        DateString ="";
+        dateSelector_text.setText(Constants.Empty_Date_Format);
+
+        scrollView.setVisibility(View.GONE);
+        instruction_textview.setVisibility(View.VISIBLE);
+
+
         getTmcSubCtgyList(vendorKey);
         scrollView.fullScroll(View.FOCUS_UP);
 
@@ -335,6 +379,74 @@ public class PosSalesReport extends AppCompatActivity {
                 Toast.makeText(PosSalesReport.this,"Loading.... Please Wait",Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        fetchData_Layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(DateString.equals("")){
+                    Toast.makeText(PosSalesReport.this, "First Select Date !! Before Fetch the Data", Toast.LENGTH_SHORT).show();
+                }
+                else {
+
+
+                    Adjusting_Widgets_Visibility(false);
+
+                    scrollView.setVisibility(View.VISIBLE);
+                    instruction_textview.setVisibility(View.GONE);
+
+                    replacementTransactiontypeHashmap.clear();
+                    replacementTransactiontypeArray.clear();
+                   Order_Item_List.clear();
+                    array_of_orderId.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    paymentModeArray.clear();
+                    paymentModeHashmap.clear();
+                    tmcSubCtgywise_sorted_hashmap.clear();
+                    phoneOrderpaymentModeArray.clear();
+                    phoneOrderpaymentModeHashmap.clear();
+                    paymentMode_DiscountHashmap.clear();
+                    paymentMode_DiscountOrderid.clear();
+                    phoneOrderpaymentMode_DiscountOrderid.clear();
+                    phoneOrderpaymentMode_DiscountHashmap.clear();
+                    swiggyOrderpaymentModeArray.clear();
+                    swiggyOrderpaymentModeHashmap.clear();
+                    swiggyOrderpaymentMode_DiscountOrderid.clear();
+                    swiggyOrderpaymentMode_DiscountHashmap.clear();
+                    dunzoOrderpaymentModeArray.clear();
+                    dunzoOrderpaymentModeHashmap.clear();
+                    dunzoOrderpaymentMode_DiscountOrderid.clear();
+                    dunzoOrderpaymentMode_DiscountHashmap.clear();
+                    SubCtgywiseTotalArray.clear();
+                    tmcSubCtgykey.clear();
+                    dataList.clear();
+                    bigBasketOrderpaymentModeArray.clear();
+                    bigBasketOrderpaymentMode_DiscountOrderid.clear();
+                    bigBasketOrderpaymentModeHashmap.clear();
+                    bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                    SubCtgywiseTotalHashmap.clear();
+                    addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+
+                    if (orderdetailsnewschema) {
+                        String dateAsnewFormat = convertOldFormatDateintoNewFormat(DateString);
+                        callVendorOrderDetailsSeviceAndInitCallBack(dateAsnewFormat, dateAsnewFormat, vendorKey);
+                        getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+
+                    } else {
+
+                        getOrderForSelectedDate(DateString, vendorKey);
+                        getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+                    }
+
+                }
+
+
+            }
+        });
+
+
         PrintReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -382,6 +494,7 @@ public class PosSalesReport extends AppCompatActivity {
 
                     if(Environment.isExternalStorageManager()){
                         if(Order_Item_List.size()>0) {
+                            Adjusting_Widgets_Visibility(true);
 
                             try {
                                 exportReport();
@@ -393,7 +506,7 @@ public class PosSalesReport extends AppCompatActivity {
                             }
                         }
                         else{
-                            Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(PosSalesReport.this, "There is no data to Export", Toast.LENGTH_SHORT).show();
 
                         }
                     }
@@ -424,6 +537,7 @@ public class PosSalesReport extends AppCompatActivity {
                         Adjusting_Widgets_Visibility(true);
                         try {
                             if(Order_Item_List.size()>0) {
+                                Adjusting_Widgets_Visibility(true);
 
                                 try {
                                     exportReport();
@@ -435,7 +549,7 @@ public class PosSalesReport extends AppCompatActivity {
                                 }
                             }
                             else{
-                                Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(PosSalesReport.this, "There is no data to Export", Toast.LENGTH_SHORT).show();
 
                             }
 
@@ -1949,11 +2063,7 @@ public class PosSalesReport extends AppCompatActivity {
 
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-    }
 
     @Override
     protected void onStart() {
@@ -2058,6 +2168,25 @@ public class PosSalesReport extends AppCompatActivity {
 
     }
 
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -2081,6 +2210,7 @@ public class PosSalesReport extends AppCompatActivity {
                 if (Environment.isExternalStorageManager()) {
                     // perform action when allow permission success
                     if(Order_Item_List.size()>0) {
+                        Adjusting_Widgets_Visibility(true);
 
                         try {
                             exportReport();
@@ -2092,7 +2222,7 @@ public class PosSalesReport extends AppCompatActivity {
                         }
                     }
                     else{
-                        Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PosSalesReport.this, "There is no data to Export", Toast.LENGTH_SHORT).show();
 
                     }
                 } else {
@@ -2106,6 +2236,7 @@ public class PosSalesReport extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "You grant write external storage permission. Please click original button again to continue.", Toast.LENGTH_LONG).show();
                     // exportInvoice();
                     if(Order_Item_List.size()>0) {
+                        Adjusting_Widgets_Visibility(true);
 
                         try {
                             exportReport();
@@ -2117,7 +2248,7 @@ public class PosSalesReport extends AppCompatActivity {
                         }
                     }
                     else{
-                        Toast.makeText(PosSalesReport.this, "There is no data to Print", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(PosSalesReport.this, "There is no data to Export", Toast.LENGTH_SHORT).show();
 
                     }
                 } else {
@@ -2132,7 +2263,7 @@ public class PosSalesReport extends AppCompatActivity {
 
         replacementTransactiontypeHashmap.clear();
         replacementTransactiontypeArray.clear();
-
+        isgetReplacementOrderForSelectedDateCalled =false;
         final Calendar cldr = Calendar.getInstance();
         int day = cldr.get(Calendar.DAY_OF_MONTH);
         int month = cldr.get(Calendar.MONTH);
@@ -2143,6 +2274,50 @@ public class PosSalesReport extends AppCompatActivity {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         try {
+
+
+                            Adjusting_Widgets_Visibility(false);
+                            isVendorOrdersTableServiceCalled =false;
+                            scrollView.setVisibility(View.GONE);
+                            instruction_textview.setVisibility(View.VISIBLE);
+                            instruction_textview.setText("After Selecting the Date !! Click Fetch Data");
+
+                            replacementTransactiontypeHashmap.clear();
+                            replacementTransactiontypeArray.clear();
+                            Order_Item_List.clear();
+                            array_of_orderId.clear();
+                            OrderItem_hashmap.clear();
+                            finalBillDetails.clear();
+                            FinalBill_hashmap.clear();
+                            paymentModeArray.clear();
+                            paymentModeHashmap.clear();
+                            tmcSubCtgywise_sorted_hashmap.clear();
+                            phoneOrderpaymentModeArray.clear();
+                            phoneOrderpaymentModeHashmap.clear();
+                            paymentMode_DiscountHashmap.clear();
+                            paymentMode_DiscountOrderid.clear();
+                            phoneOrderpaymentMode_DiscountOrderid.clear();
+                            phoneOrderpaymentMode_DiscountHashmap.clear();
+                            swiggyOrderpaymentModeArray.clear();
+                            swiggyOrderpaymentModeHashmap.clear();
+                            swiggyOrderpaymentMode_DiscountOrderid.clear();
+                            swiggyOrderpaymentMode_DiscountHashmap.clear();
+                            dunzoOrderpaymentModeArray.clear();
+                            dunzoOrderpaymentModeHashmap.clear();
+                            dunzoOrderpaymentMode_DiscountOrderid.clear();
+                            dunzoOrderpaymentMode_DiscountHashmap.clear();
+                            SubCtgywiseTotalArray.clear();
+                            tmcSubCtgykey.clear();
+                            dataList.clear();
+                            bigBasketOrderpaymentModeArray.clear();
+                            bigBasketOrderpaymentMode_DiscountOrderid.clear();
+                            bigBasketOrderpaymentModeHashmap.clear();
+                            bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                            SubCtgywiseTotalHashmap.clear();
+                            addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+
+
+
                             String month_in_String = getMonthString(monthOfYear);
                             Calendar myCalendar = new GregorianCalendar(year, monthOfYear, dayOfMonth);
 
@@ -2155,8 +2330,6 @@ public class PosSalesReport extends AppCompatActivity {
                             endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(DateString, "ENDTIME");
 
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
-                            getOrderForSelectedDate(DateString, vendorKey);
-                            getdataFromReplacementTransaction(startDateString_forReplacementransaction,endDateString_forReplacementransaction, vendorKey);
 
                         }
                         catch (Exception e ){
@@ -2172,7 +2345,8 @@ public class PosSalesReport extends AppCompatActivity {
             return;
         }
         isgetOrderForSelectedDateCalled = true;
-        Order_Item_List.clear();
+       Order_Item_List.clear();
+        array_of_orderId.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
         FinalBill_hashmap.clear();
@@ -2229,40 +2403,34 @@ public class PosSalesReport extends AppCompatActivity {
                                     JSONArray itemdesp;
 
 
-                                    if(json.has("itemdesp")) {
-                                        try{
+                                    if (json.has("itemdesp")) {
+                                        try {
 
                                             itemdesp = json.getJSONArray("itemdesp");
                                             modal_orderDetails.itemdesp = itemdesp;
 
                                             //Log.d(Constants.TAG, "itemdesp has been succesfully  retrived" );
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
 
-                                    }
-                                    else
-                                    {
-                                      //Log.d(Constants.TAG, "There is no itemdesp: " );
+                                    } else {
+                                        //Log.d(Constants.TAG, "There is no itemdesp: " );
                                     }
 
-                                    if(json.has("orderid")) {
-                                        try{
+                                    if (json.has("orderid")) {
+                                        try {
                                             modal_orderDetails.orderid = String.valueOf(json.get("orderid"));
                                             orderid = String.valueOf(json.get("orderid"));
                                             //Log.d(Constants.TAG, "orderid"  + String.valueOf(json.get("orderid")));
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
 
 
-                                    }
-                                    else
-                                    {
+                                    } else {
 
                                         modal_orderDetails.orderid = "There is no orderid";
 
@@ -2270,45 +2438,35 @@ public class PosSalesReport extends AppCompatActivity {
                                     }
 
 
-
-
-
-                                    if(json.has("ordertype")) {
-                                        try{
+                                    if (json.has("ordertype")) {
+                                        try {
                                             modal_orderDetails.ordertype = String.valueOf(json.get("ordertype"));
-                                            ordertype  = String.valueOf(json.get("ordertype")).toUpperCase();
+                                            ordertype = String.valueOf(json.get("ordertype")).toUpperCase();
                                             //Log.d(Constants.TAG, "OrderType: " + String.valueOf(json.get("ordertype")));
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
 
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         modal_orderDetails.ordertype = "There is no OrderType";
                                         //Log.d(Constants.TAG, "There is no OrderType: " + String.valueOf(json.get("ordertype")));
 
 
                                     }
-                                    if(json.has("paymentmode"))
-                                    {
-                                        try{
+                                    if (json.has("paymentmode")) {
+                                        try {
                                             paymentMode = (String.valueOf(json.get("paymentmode")).toUpperCase());
 
                                             modal_orderDetails.paymentmode = (String.valueOf(json.get("paymentmode")).toUpperCase());
                                             //Log.d(Constants.TAG, "PaymentMode: " + String.valueOf(json.get("paymentmode")));
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
 
                                         }
 
-                                    }
-                                    else
-                                    {
+                                    } else {
 
                                         modal_orderDetails.paymentmode = "There is no payment mode";
                                         //Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
@@ -2317,9 +2475,8 @@ public class PosSalesReport extends AppCompatActivity {
                                     }
 
 
-                                    if((ordertype.equals(Constants.POSORDER)))
-                                    {
-                                        try{
+                                    if ((ordertype.equals(Constants.POSORDER))) {
+                                        try {
                                             if (json.has("coupondiscount")) {
 
                                                 modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
@@ -2332,36 +2489,32 @@ public class PosSalesReport extends AppCompatActivity {
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
                                                             CouponDiscount = CouponDiscount + CouponDiscount_double;
 
-                                                            if(!paymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!paymentMode_DiscountOrderid.contains(orderid)) {
                                                                 paymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = false;
-                                                                try{
+                                                                try {
                                                                     isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
 
-                                                                }catch(Exception e ){
-                                                                    e.printStackTrace();;
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    ;
                                                                 }
-                                                                if(isAlreadyAvailable){
+                                                                if (isAlreadyAvailable) {
                                                                     Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    paymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
 
 
-
-
-
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2371,31 +2524,28 @@ public class PosSalesReport extends AppCompatActivity {
                                                             CouponDiscount = CouponDiscount + CouponDiscount_double;
 
 
-                                                            if(!paymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!paymentMode_DiscountOrderid.contains(orderid)) {
                                                                 paymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                if(isAlreadyAvailable){
+                                                                if (isAlreadyAvailable) {
                                                                     Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    paymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
-
 
 
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
 
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2427,15 +2577,13 @@ public class PosSalesReport extends AppCompatActivity {
                                             //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
-                                             getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode,ordertype);
+                                            getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, ordertype,orderid);
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    }
-                                    else if(ordertype.equals(Constants.PhoneOrder)){
-                                        try{
+                                    } else if (ordertype.equals(Constants.PhoneOrder)) {
+                                        try {
                                             if (json.has("coupondiscount")) {
 
                                                 modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
@@ -2448,36 +2596,32 @@ public class PosSalesReport extends AppCompatActivity {
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
                                                             PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
 
-                                                            if(!phoneOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!phoneOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 phoneOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = false;
-                                                                try{
+                                                                try {
                                                                     isAlreadyAvailable = checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
 
-                                                                }catch(Exception e ){
-                                                                    e.printStackTrace();;
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    ;
                                                                 }
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =  phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
 
 
-
-
-
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2487,31 +2631,28 @@ public class PosSalesReport extends AppCompatActivity {
                                                             PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
 
 
-                                                            if(! phoneOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!phoneOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 phoneOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =  phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
-
 
 
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
 
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2543,18 +2684,13 @@ public class PosSalesReport extends AppCompatActivity {
                                             //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
-                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+                                            getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, ordertype, orderid);
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    }
-
-
-
-                                    else if(ordertype.equals(Constants.SwiggyOrder)){
-                                        try{
+                                    } else if (ordertype.equals(Constants.SwiggyOrder)) {
+                                        try {
                                             if (json.has("coupondiscount")) {
 
                                                 modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
@@ -2567,36 +2703,32 @@ public class PosSalesReport extends AppCompatActivity {
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
                                                             swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
 
-                                                            if(!swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 swiggyOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = false;
-                                                                try{
+                                                                try {
                                                                     isAlreadyAvailable = checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
 
-                                                                }catch(Exception e ){
-                                                                    e.printStackTrace();;
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    ;
                                                                 }
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =  swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
 
 
-
-
-
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2606,31 +2738,28 @@ public class PosSalesReport extends AppCompatActivity {
                                                             swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
 
 
-                                                            if(! swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 swiggyOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =  swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
-
 
 
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
 
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2662,15 +2791,13 @@ public class PosSalesReport extends AppCompatActivity {
                                             //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
-                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+                                            getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, ordertype, orderid);
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    }
-                                    else if(ordertype.equals(Constants.DunzoOrder)){
-                                        try{
+                                    } else if (ordertype.equals(Constants.DunzoOrder)) {
+                                        try {
                                             if (json.has("coupondiscount")) {
 
                                                 modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
@@ -2683,70 +2810,63 @@ public class PosSalesReport extends AppCompatActivity {
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
                                                             dunzoOrderCouponDiscount = dunzoOrderCouponDiscount + CouponDiscount_double;
 
-                                                            if(!dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 dunzoOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = false;
-                                                                try{
+                                                                try {
                                                                     isAlreadyAvailable = checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
 
-                                                                }catch(Exception e ){
-                                                                    e.printStackTrace();;
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    ;
                                                                 }
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =   dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
 
 
-
-
-
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
                                                         } else {
 
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-                                                            dunzoOrderCouponDiscount =  dunzoOrderCouponDiscount + CouponDiscount_double;
+                                                            dunzoOrderCouponDiscount = dunzoOrderCouponDiscount + CouponDiscount_double;
 
 
-                                                            if(!  dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 dunzoOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =  dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
-
 
 
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
 
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2778,15 +2898,13 @@ public class PosSalesReport extends AppCompatActivity {
                                             //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
-                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+                                            getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, ordertype, orderid);
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    }
-                                    else if(ordertype.equals(Constants.BigBasket)){
-                                        try{
+                                    } else if (ordertype.equals(Constants.BigBasket)) {
+                                        try {
                                             if (json.has("coupondiscount")) {
 
                                                 modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
@@ -2799,70 +2917,63 @@ public class PosSalesReport extends AppCompatActivity {
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
                                                             bigbasketOrderCouponDiscount = bigbasketOrderCouponDiscount + CouponDiscount_double;
 
-                                                            if(!bigBasketOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!bigBasketOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 bigBasketOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = false;
-                                                                try{
+                                                                try {
                                                                     isAlreadyAvailable = checkIfBigBasketOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
 
-                                                                }catch(Exception e ){
-                                                                    e.printStackTrace();;
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    ;
                                                                 }
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =   bigBasketOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = bigBasketOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    bigBasketOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    bigBasketOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
 
 
-
-
-
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
                                                         } else {
 
                                                             double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
-                                                            bigbasketOrderCouponDiscount =  bigbasketOrderCouponDiscount + CouponDiscount_double;
+                                                            bigbasketOrderCouponDiscount = bigbasketOrderCouponDiscount + CouponDiscount_double;
 
 
-                                                            if(!bigBasketOrderpaymentMode_DiscountOrderid.contains(orderid)){
+                                                            if (!bigBasketOrderpaymentMode_DiscountOrderid.contains(orderid)) {
                                                                 bigBasketOrderpaymentMode_DiscountOrderid.add(orderid);
                                                                 boolean isAlreadyAvailable = checkIfBigBasketOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
-                                                                if(isAlreadyAvailable){
-                                                                    Modal_OrderDetails modal_orderDetails1 =  bigBasketOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                                if (isAlreadyAvailable) {
+                                                                    Modal_OrderDetails modal_orderDetails1 = bigBasketOrderpaymentMode_DiscountHashmap.get(paymentMode);
                                                                     String discountAmount = modal_orderDetails1.getCoupondiscount();
                                                                     double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
                                                                     double discountAmount_double = Double.parseDouble(couponDiscount_string);
 
-                                                                    discountAmount_double = discountAmount_double+discountAmount_doublefromArray;
+                                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
-                                                                }
-                                                                else{
+                                                                } else {
                                                                     Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
                                                                     modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount_string));
-                                                                    bigBasketOrderpaymentMode_DiscountHashmap.put(paymentMode,modal_orderDetails1);
+                                                                    bigBasketOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
                                                                 }
-
 
 
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
 
-                                                            }
-                                                            else{
+                                                            } else {
                                                                 //Log.d(Constants.TAG, "mode already availabe" );
 
                                                             }
@@ -2894,10 +3005,9 @@ public class PosSalesReport extends AppCompatActivity {
                                             //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
 
 
-                                            getItemDetailsFromItemDespArray(modal_orderDetails,paymentMode, ordertype);
+                                            getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, ordertype, orderid);
 
-                                        }
-                                        catch (Exception e ){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
                                         }
                                     }
@@ -2940,7 +3050,8 @@ public class PosSalesReport extends AppCompatActivity {
                             }
 
                             else{
-                                Order_Item_List.clear();
+                               Order_Item_List.clear();
+                                array_of_orderId.clear();
                                 OrderItem_hashmap.clear();
                                 finalBillDetails.clear();
                                 FinalBill_hashmap.clear();
@@ -3022,7 +3133,8 @@ public class PosSalesReport extends AppCompatActivity {
                 else {
                     Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                     Adjusting_Widgets_Visibility(false);
-                    Order_Item_List.clear();
+                   Order_Item_List.clear();
+                    array_of_orderId.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
                     FinalBill_hashmap.clear();
@@ -3444,14 +3556,786 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
 
-    private void sort_the_array_CtgyWise() {
-        for(int i =0 ; i<tmcSubCtgykey.size();i++){
-            String key =tmcSubCtgykey.get(i);
-            //Log.d(Constants.TAG, "before for " +key);
-            getDatafromHashmap(key);
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        Adjusting_Widgets_Visibility(true);
+
+        if(isVendorOrdersTableServiceCalled){
+            Adjusting_Widgets_Visibility(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                if(orderslist_fromResponse.size()>0) {
+
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("content", orderslist_fromResponse);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    isVendorOrdersTableServiceCalled = false;
+                    processArrayAndgetData(orderslist_fromResponse);
+                }
+                else{
+
+                    Adjusting_Widgets_Visibility(false);
+                    isVendorOrdersTableServiceCalled = false;
+
+                    scrollView.setVisibility(View.GONE);
+                    instruction_textview.setVisibility(View.VISIBLE);
+                    instruction_textview.setText("There is no Order On this Date");
+                    replacementTransactiontypeHashmap.clear();
+                    replacementTransactiontypeArray.clear();
+                    Order_Item_List.clear();
+                    array_of_orderId.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    paymentModeArray.clear();
+                    paymentModeHashmap.clear();
+                    tmcSubCtgywise_sorted_hashmap.clear();
+                    phoneOrderpaymentModeArray.clear();
+                    phoneOrderpaymentModeHashmap.clear();
+                    paymentMode_DiscountHashmap.clear();
+                    paymentMode_DiscountOrderid.clear();
+                    phoneOrderpaymentMode_DiscountOrderid.clear();
+                    phoneOrderpaymentMode_DiscountHashmap.clear();
+                    swiggyOrderpaymentModeArray.clear();
+                    swiggyOrderpaymentModeHashmap.clear();
+                    swiggyOrderpaymentMode_DiscountOrderid.clear();
+                    swiggyOrderpaymentMode_DiscountHashmap.clear();
+                    dunzoOrderpaymentModeArray.clear();
+                    dunzoOrderpaymentModeHashmap.clear();
+                    dunzoOrderpaymentMode_DiscountOrderid.clear();
+                    dunzoOrderpaymentMode_DiscountHashmap.clear();
+                    SubCtgywiseTotalArray.clear();
+                    tmcSubCtgykey.clear();
+                    dataList.clear();
+                    bigBasketOrderpaymentModeArray.clear();
+                    bigBasketOrderpaymentMode_DiscountOrderid.clear();
+                    bigBasketOrderpaymentModeHashmap.clear();
+                    bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                    SubCtgywiseTotalHashmap.clear();
+                    ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
+
+                    addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                    Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                    Adjusting_Widgets_Visibility(false);
+
+
+                }
             }
 
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled = false;
+
+                scrollView.setVisibility(View.GONE);
+                instruction_textview.setVisibility(View.VISIBLE);
+                instruction_textview.setText("There is some error"+String.valueOf(error));
+                replacementTransactiontypeHashmap.clear();
+                replacementTransactiontypeArray.clear();
+                Order_Item_List.clear();
+                array_of_orderId.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                paymentModeArray.clear();
+                paymentModeHashmap.clear();
+                tmcSubCtgywise_sorted_hashmap.clear();
+                phoneOrderpaymentModeArray.clear();
+                phoneOrderpaymentModeHashmap.clear();
+                paymentMode_DiscountHashmap.clear();
+                paymentMode_DiscountOrderid.clear();
+                phoneOrderpaymentMode_DiscountOrderid.clear();
+                phoneOrderpaymentMode_DiscountHashmap.clear();
+                swiggyOrderpaymentModeArray.clear();
+                swiggyOrderpaymentModeHashmap.clear();
+                swiggyOrderpaymentMode_DiscountOrderid.clear();
+                swiggyOrderpaymentMode_DiscountHashmap.clear();
+                dunzoOrderpaymentModeArray.clear();
+                dunzoOrderpaymentModeHashmap.clear();
+                dunzoOrderpaymentMode_DiscountOrderid.clear();
+                dunzoOrderpaymentMode_DiscountHashmap.clear();
+                SubCtgywiseTotalArray.clear();
+                tmcSubCtgykey.clear();
+                dataList.clear();
+                bigBasketOrderpaymentModeArray.clear();
+                bigBasketOrderpaymentMode_DiscountOrderid.clear();
+                bigBasketOrderpaymentModeHashmap.clear();
+                bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                SubCtgywiseTotalHashmap.clear();
+                ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
+
+                addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                Toast.makeText(PosSalesReport.this, "There is Some error on this data", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+
+        CouponDiscount=0;
+        mVolleyService = new VendorOrdersTableService(mResultCallback,PosSalesReport.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=POSORDER";
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+
+
+    private void processArrayAndgetData(List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+
+        for(int i =0 ; i< orderslist_fromResponse.size(); i++){
+            String paymentMode = "", ordertype = "", orderid = "", slotname = "",deliveryAmount ="" , couponDiscount = "";
+            JSONArray itemdesp_JSONArray = new JSONArray();
+
+            Modal_ManageOrders_Pojo_Class orders_pojo_class_fromResponse =  orderslist_fromResponse.get(i);
+            Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+            try{
+
+                try{
+                    paymentMode = String.valueOf(orders_pojo_class_fromResponse.getPaymentmode().toUpperCase());
+                    modal_orderDetails.paymentmode = paymentMode;
+                }
+                catch (Exception e){
+                    paymentMode ="";
+                    modal_orderDetails.paymentmode = "";
+
+                    e.printStackTrace();
+                }
+
+                try{
+
+                    ordertype = String.valueOf(orders_pojo_class_fromResponse.getOrdertype().toUpperCase());
+                    modal_orderDetails.ordertype = ordertype;
+
+                }
+                catch (Exception e){
+                    ordertype = "";
+                    modal_orderDetails.ordertype = "";
+
+                    e.printStackTrace();
+                }
+                if(ordertype.equals("") || ordertype.equals(null) || ordertype.equals("NULL")){
+                    try{
+
+                        ordertype = String.valueOf(orders_pojo_class_fromResponse.getOrderType().toUpperCase());
+                        modal_orderDetails.ordertype = ordertype;
+
+                    }
+                    catch (Exception e){
+                        ordertype = "";
+                        modal_orderDetails.ordertype = "";
+
+                        e.printStackTrace();
+                    }
+                }
+
+
+                try{
+
+                    orderid = String.valueOf(orders_pojo_class_fromResponse.getOrderid());
+                    modal_orderDetails.orderid = orderid;
+
+                }
+                catch (Exception e){
+                    orderid = "";
+                    modal_orderDetails.orderid = "";
+                    e.printStackTrace();
+                }
+
+              
+
+
+                try{
+                    itemdesp_JSONArray  = orders_pojo_class_fromResponse.getItemdesp();
+                    modal_orderDetails.itemdesp = itemdesp_JSONArray;
+
+                }
+                catch (Exception e){
+                    itemdesp_JSONArray = new JSONArray(orders_pojo_class_fromResponse.getItemdesp_string());
+                    modal_orderDetails.itemdesp = itemdesp_JSONArray;
+
+                    e.printStackTrace();
+                }
+
+
+
+
+                try{
+
+                    couponDiscount = String.valueOf(orders_pojo_class_fromResponse.getCoupondiscamount());
+                    modal_orderDetails.coupondiscount = couponDiscount;
+
+                }
+                catch (Exception e){
+                    couponDiscount ="";
+                    modal_orderDetails.coupondiscount = couponDiscount;
+
+                    e.printStackTrace();
+                }
+
+
+                try{
+
+                    deliveryAmount = String.valueOf(orders_pojo_class_fromResponse.getDeliveryamount());
+                    modal_orderDetails.deliveryamount = deliveryAmount;
+
+                }
+                catch (Exception e){
+                    deliveryAmount ="";
+                    modal_orderDetails.deliveryamount = deliveryAmount;
+
+                    e.printStackTrace();
+                }
+
+
+
+                try{
+
+
+
+                        try {
+                            if ((ordertype.equals(Constants.POSORDER))) {
+                                    try {
+                                        if (couponDiscount.equals("")) {
+                                            couponDiscount = "0";
+
+                                            double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                            CouponDiscount = CouponDiscount + CouponDiscount_double;
+
+                                            if (!paymentMode_DiscountOrderid.contains(orderid)) {
+                                                paymentMode_DiscountOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = false;
+                                                try {
+                                                    isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    ;
+                                                }
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
+                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                    double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                                    paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                            }
+                                        } else {
+
+                                            double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                            CouponDiscount = CouponDiscount + CouponDiscount_double;
+
+
+                                            if (!paymentMode_DiscountOrderid.contains(orderid)) {
+                                                paymentMode_DiscountOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
+                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                    double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                                    paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+
+
+                                    }
+
+
+                            }
+
+
+
+                            //Log.d(Constants.TAG, "This orders payment mode: " +paymentMode);
+
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+
+                        try {
+
+                            if ((ordertype.equals(Constants.PhoneOrder))) {
+
+
+                                    try {
+                                        if (couponDiscount.equals("")) {
+                                            couponDiscount = "0";
+
+                                            double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                            PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
+
+                                            if (!phoneOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                                phoneOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = false;
+                                                try {
+                                                    isAlreadyAvailable = checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    ;
+                                                }
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                    double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                            }
+                                        } else {
+
+                                            double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                            PhoneOrderCouponDiscount = PhoneOrderCouponDiscount + CouponDiscount_double;
+
+
+                                            if (!phoneOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                                phoneOrderpaymentMode_DiscountOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = checkIfPhoneOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = phoneOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                    String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                    double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                                    phoneOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "mode already availabe" );
+
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+
+
+                                    }
+
+
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+
+
+
+
+                    try {
+
+
+                        if ((ordertype.equals(Constants.SwiggyOrder))) {
+
+                            try {
+                                if (couponDiscount.equals("")) {
+                                    couponDiscount = "0";
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                    swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
+
+                                    if (!swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                        swiggyOrderpaymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                            swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe" );
+
+                                    }
+                                } else {
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                    swiggyOrderCouponDiscount = swiggyOrderCouponDiscount + CouponDiscount_double;
+
+
+                                    if (!swiggyOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                        swiggyOrderpaymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfSwiggyOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = swiggyOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                            swiggyOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe" );
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+                        }
+                        }
+                    catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+
+
+
+
+                    try {
+                        if ((ordertype.equals(Constants.DunzoOrder))) {
+
+                        try {
+                            if (couponDiscount.equals("")) {
+                                couponDiscount = "0";
+
+                                double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                dunzoOrderCouponDiscount = dunzoOrderCouponDiscount + CouponDiscount_double;
+
+                                if (!dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                    dunzoOrderpaymentMode_DiscountOrderid.add(orderid);
+                                    boolean isAlreadyAvailable = false;
+                                    try {
+                                        isAlreadyAvailable = checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        ;
+                                    }
+                                    if (isAlreadyAvailable) {
+                                        Modal_OrderDetails modal_orderDetails1 = dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                        String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                        double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                        double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                        discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                        modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                    } else {
+                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                        modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                        dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                    }
+
+
+                                } else {
+                                    //Log.d(Constants.TAG, "mode already availabe" );
+
+                                }
+                            } else {
+
+                                double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                dunzoOrderCouponDiscount = dunzoOrderCouponDiscount + CouponDiscount_double;
+
+
+                                if (!dunzoOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                    dunzoOrderpaymentMode_DiscountOrderid.add(orderid);
+                                    boolean isAlreadyAvailable = checkIfDunzoOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                    if (isAlreadyAvailable) {
+                                        Modal_OrderDetails modal_orderDetails1 = dunzoOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                        String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                        double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                        double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                        discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                        modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                    } else {
+                                        Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                        modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                        dunzoOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                    }
+
+
+                                    //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                } else {
+                                    //Log.d(Constants.TAG, "mode already availabe" );
+
+                                }
+                            }
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+
+
+                        }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+
+
+                    try {
+                        if ((ordertype.equals(Constants.BigBasket))) {
+                            try {
+                                    if (couponDiscount.equals("")) {
+                                        couponDiscount = "0";
+
+                                        double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                        bigbasketOrderCouponDiscount = bigbasketOrderCouponDiscount + CouponDiscount_double;
+
+                                        if (!bigBasketOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                            bigBasketOrderpaymentMode_DiscountOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = false;
+                                            try {
+                                                isAlreadyAvailable = checkIfBigBasketOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                ;
+                                            }
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = bigBasketOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                                discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                                bigBasketOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "mode already availabe" );
+
+                                        }
+                                    } else {
+
+                                        double CouponDiscount_double = Double.parseDouble(couponDiscount);
+                                        bigbasketOrderCouponDiscount = bigbasketOrderCouponDiscount + CouponDiscount_double;
+
+
+                                        if (!bigBasketOrderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                            bigBasketOrderpaymentMode_DiscountOrderid.add(orderid);
+                                            boolean isAlreadyAvailable = checkIfBigBasketOrderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                            if (isAlreadyAvailable) {
+                                                Modal_OrderDetails modal_orderDetails1 = bigBasketOrderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                String discountAmount = modal_orderDetails1.getCoupondiscount();
+                                                double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                double discountAmount_double = Double.parseDouble(couponDiscount);
+
+                                                discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                modal_orderDetails1.setCoupondiscount(String.valueOf(discountAmount_double));
+                                            } else {
+                                                Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                modal_orderDetails1.setCoupondiscount(String.valueOf(couponDiscount));
+                                                bigBasketOrderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                            }
+
+
+                                            //Log.d(Constants.TAG, "mode already availabe" );
+
+
+                                        } else {
+                                            //Log.d(Constants.TAG, "mode already availabe" );
+
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+                                }
+                        }
+
+                  }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+
+
+                        getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, ordertype, orderid);
+
+
+
+
+
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+
+
+
+
+                try{
+                    if(orderslist_fromResponse.size() - i == 1) {
+
+                        if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+
+                            try {
+                                Collections.sort(Order_Item_List, new Comparator<String>() {
+                                    public int compare(final String object1, final String object2) {
+                                        return object1.compareTo(object2);
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            isOrderDetailsResponseReceivedForSelectedDate = true;
+                            runthread();
+
+                        } else {
+                            Order_Item_List.clear();
+                            array_of_orderId.clear();
+                            OrderItem_hashmap.clear();
+                            finalBillDetails.clear();
+                            FinalBill_hashmap.clear();
+                            paymentModeArray.clear();
+                            paymentModeHashmap.clear();
+                            tmcSubCtgywise_sorted_hashmap.clear();
+                            phoneOrderpaymentModeArray.clear();
+                            phoneOrderpaymentModeHashmap.clear();
+                            paymentMode_DiscountHashmap.clear();
+                            paymentMode_DiscountOrderid.clear();
+                            phoneOrderpaymentMode_DiscountOrderid.clear();
+                            phoneOrderpaymentMode_DiscountHashmap.clear();
+                            SubCtgywiseTotalArray.clear();
+                            tmcSubCtgykey.clear();
+                            SubCtgywiseTotalHashmap.clear();
+                            swiggyOrderpaymentModeArray.clear();
+                            swiggyOrderpaymentModeHashmap.clear();
+                            swiggyOrderpaymentMode_DiscountOrderid.clear();
+                            swiggyOrderpaymentMode_DiscountHashmap.clear();
+                            dunzoOrderpaymentModeArray.clear();
+                            dunzoOrderpaymentModeHashmap.clear();
+                            dunzoOrderpaymentMode_DiscountOrderid.clear();
+                            dunzoOrderpaymentMode_DiscountHashmap.clear();
+
+                            bigBasketOrderpaymentModeArray.clear();
+                            bigBasketOrderpaymentMode_DiscountOrderid.clear();
+                            bigBasketOrderpaymentModeHashmap.clear();
+                            bigBasketOrderpaymentMode_DiscountHashmap.clear();
+                            dataList.clear();
+                            ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
+                            adapter.notifyDataSetChanged();
+                            addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
+                            Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                            Adjusting_Widgets_Visibility(false);
+
+                        }
+                    }
+                }
+                catch (Exception e ){
+                    e.printStackTrace();
+                }
+
+
+
         }
+
+
+    }
+
 
     private void prepareContent() {
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
@@ -3675,7 +4559,8 @@ public class PosSalesReport extends AppCompatActivity {
 
 
     private void addOrderedItemAmountDetails(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
-
+        FinalBill_hashmap.clear();
+        finalBillDetails.clear();
 
        try {
 
@@ -3720,8 +4605,7 @@ public class PosSalesReport extends AppCompatActivity {
 
            double totalRefundAmount = 0;
            double totalReplacementAmount = 0;
-
-
+           appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
            try{
                for (String transactionType : replacementTransactiontypeArray) {
@@ -3803,6 +4687,7 @@ public class PosSalesReport extends AppCompatActivity {
 
            String TMCsubCtgyKey = "",subCtgyTotal="";
             for (int i = 0; i < order_item_list.size(); i++) {
+
                 String menuItemId = order_item_list.get(i);
                 Modal_OrderDetails modal_orderDetails_amountDetails = orderItem_hashmap.get(menuItemId);
                 double totalAmountWithOutGst_from_array = Double.parseDouble(modal_orderDetails_amountDetails.getTmcprice());
@@ -3815,6 +4700,7 @@ public class PosSalesReport extends AppCompatActivity {
 
 
             }
+
            for(String paymentmode :paymentModeArray){
                Modal_OrderDetails modal_orderDetails = paymentModeHashmap.get(paymentmode);
                Modal_OrderDetails Payment_Modewise_discount = paymentMode_DiscountHashmap.get(paymentmode);
@@ -3976,6 +4862,8 @@ public class PosSalesReport extends AppCompatActivity {
            catch (Exception e){
                e.printStackTrace();
            }
+           appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+
 
            try{
                replacementAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalReplacementAmount)));
@@ -4099,9 +4987,15 @@ public class PosSalesReport extends AppCompatActivity {
 
     }
 
-    private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode, String ordertype) {
+    private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode, String ordertype, String orderid) {
      //   DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        String newOrderWeightInGrams,tmcprice_string="";
+        String newOrderWeightInGrams = "",tmcprice_string="";
+
+        if (!array_of_orderId.contains(orderid)) {
+            array_of_orderId.add(orderid);
+        }
+
+
         double newweight,gstAmount;
         try {
             JSONArray jsonArray = modal_orderDetailsfromResponse.getItemdesp();
@@ -4118,7 +5012,29 @@ public class PosSalesReport extends AppCompatActivity {
                 if(json.has("menuitemid")) {
                     modal_orderDetails_ItemDesp.menuitemid = String.valueOf(json.get("menuitemid"));
                     String menuitemidd = String.valueOf(json.get("menuitemid"));
-                     newOrderWeightInGrams =  String.valueOf(json.get("weightingrams"));
+                    try {
+                        newOrderWeightInGrams = String.valueOf(json.get("weightingrams"));
+                    }
+                    catch (Exception e){
+                        try {
+                            newOrderWeightInGrams = String.valueOf(json.get("grossweightingrams"));
+                        }
+                        catch (Exception e1){
+
+                            e1.printStackTrace();
+
+                            try {
+                                newOrderWeightInGrams = String.valueOf(json.get("grossweight"));
+                            }
+                            catch (Exception e2){
+
+                                e2.printStackTrace();
+                            }
+
+                        }
+
+                        e.printStackTrace();
+                    }
                      String ItemName = "";
                      if(json.has("itemname")){
                          ItemName = String.valueOf(json.get("itemname"));
@@ -4999,7 +5915,8 @@ public class PosSalesReport extends AppCompatActivity {
 
 
     private List<String> getSortedIdFromHashMap(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
-        order_item_list.clear();
+       Order_Item_List.clear();
+        array_of_orderId.clear();
         order_item_list.addAll(orderItem_hashmap.keySet());
         return order_item_list;
     }
@@ -5151,10 +6068,10 @@ public class PosSalesReport extends AppCompatActivity {
 
         SimpleDateFormat df = new SimpleDateFormat();
         if(Time.equals("STARTTIME")) {
-            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+            df = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         }
         else{
-            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+            df = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
 
         }
 
@@ -5209,7 +6126,7 @@ public class PosSalesReport extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -5222,7 +6139,7 @@ public class PosSalesReport extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -5245,6 +6162,7 @@ public class PosSalesReport extends AppCompatActivity {
 
     public void exportReport() {
         if ((Order_Item_List == null) || (Order_Item_List.size() <= 0)) {
+            Adjusting_Widgets_Visibility(false);
             return;
         }
         String extstoragedir = Environment.getExternalStorageDirectory().toString();

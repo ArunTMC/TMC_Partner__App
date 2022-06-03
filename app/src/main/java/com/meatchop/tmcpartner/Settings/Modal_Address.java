@@ -1,7 +1,48 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_Address {
-    String contactpersonmobileno="",addresstype= "", landmark="",pincode="",locationlong= "", vendorname="",userkey= "",locationlat="",key= "", deliverydistance="",vendorkey= "",addressline1="",addressline2="",contactpersonname="";
+    String tagas,updatedtime,contactpersonmobileno="",addresstype= "", landmark="",pincode="",locationlong= "", vendorname="",userkey= "",locationlat="",key= "", deliverydistance="",vendorkey= "",addressline1="",addressline2="",contactpersonname="";
+    boolean isAddressSelected = false;
+    boolean isNewAddress = false;
+    boolean isAddressEdited = false;
+
+
+
+    public boolean getisAddressEdited() {
+        return isAddressEdited;
+    }
+
+    public void setAddressEdited(boolean addressEdited) {
+        isAddressEdited = addressEdited;
+    }
+
+    public boolean getisNewAddress() {
+        return isNewAddress;
+    }
+
+    public void setIsNewAddress(boolean newAddress) {
+        isNewAddress = newAddress;
+    }
+
+    public boolean getisAddressSelected() {
+        return isAddressSelected;
+    }
+
+    public String getTagas() {
+        return tagas;
+    }
+
+    public void setTagas(String tagas) {
+        this.tagas = tagas;
+    }
+
+    public boolean isAddressSelected() {
+        return isAddressSelected;
+    }
+
+    public void setAddressSelected(boolean addressSelected) {
+        isAddressSelected = addressSelected;
+    }
 
     public String getLandmark() {
         return landmark;
@@ -13,6 +54,14 @@ public class Modal_Address {
 
     public String getContactpersonmobileno() {
         return contactpersonmobileno;
+    }
+
+    public String getUpdatedtime() {
+        return updatedtime;
+    }
+
+    public void setUpdatedtime(String updatedtime) {
+        this.updatedtime = updatedtime;
     }
 
     public void setContactpersonmobileno(String contactpersonmobileno) {

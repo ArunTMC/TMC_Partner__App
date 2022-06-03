@@ -35,13 +35,14 @@ tools:context=".Settings.CancelledOrders">
             android:id="@+id/searchlayout"
             android:layout_width="match_parent"
             android:layout_height="58dp"
+            android:layout_marginEnd="10dp"
             android:gravity="clip_vertical"
             android:orientation="horizontal">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight=".5"
+                android:layout_weight="1"
 
                 >
 
@@ -130,6 +131,7 @@ tools:context=".Settings.CancelledOrders">
                     android:layout_alignParentTop="true"
                     android:layout_alignParentBottom="true"
                     android:layout_marginStart="20dp"
+                    android:layout_marginEnd="10dp"
                     android:layout_marginBottom="1dp"
                     android:gravity="center_vertical"
                     android:maxLength="13"
@@ -144,17 +146,7 @@ tools:context=".Settings.CancelledOrders">
                     android:textSize="14sp" />
 
 
-                <ImageView
-                    android:id="@+id/search_button"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginEnd="3dp"
 
-                    android:foregroundGravity="center_vertical"
-                    app:srcCompat="@mipmap/search_icon" />
 
                 <ImageView
                     android:id="@+id/search_close_btn"
@@ -175,20 +167,46 @@ tools:context=".Settings.CancelledOrders">
 
             <LinearLayout
                 android:id="@+id/newOrdersSync_Layout"
-                android:layout_width="38dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="6dp"
                 android:layout_marginEnd="5dp"
 
-                android:layout_weight=".1"
+                android:layout_weight="1"
                 android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="23dp"
+                    android:id="@+id/fetchData"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical|end"
+                    android:text="Fetch Data"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:id="@+id/search_button"
+                    android:layout_width="25dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:foregroundGravity="center"
+                    app:srcCompat="@mipmap/search_icon" />
+
 
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_gravity="center_vertical"
                     android:foregroundGravity="bottom"
-                    android:visibility="visible"
+                    android:visibility="gone"
+
                     app:srcCompat="@mipmap/neworder_sync_icon" />
 
             </LinearLayout>
@@ -205,8 +223,9 @@ tools:context=".Settings.CancelledOrders">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_marginTop="55dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
 
 
@@ -220,7 +239,7 @@ tools:context=".Settings.CancelledOrders">
                 android:fontFamily="@font/open_sans_semibold"
                 android:gravity="center_vertical"
                 android:layout_marginStart="13dp"
-                android:text="No.of.App orders  :-  " />
+                android:text="No.of.orders  :-  " />
 
             <TextView
                 android:id="@+id/appOrdersCount_textwidget"
@@ -233,6 +252,30 @@ tools:context=".Settings.CancelledOrders">
                 android:textColor="@color/TMC_Orange"
                 android:textSize="16sp" />
 
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="end"
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"
+                android:layout_marginStart="28dp"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="15dp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical|end"
+                    android:text="Search Orders"
+                    android:textColor="@color/TMC_Hint_Color"
+                    android:textSize="16sp" />
+
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -263,104 +306,7 @@ tools:context=".Settings.CancelledOrders">
             </LinearLayout>
 
 
-            <HorizontalScrollView
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:visibility="gone"
-                android:layout_marginTop="10dp"
-                android:scrollbars="none">
 
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!--
-                                        <GridView
-                                            android:layout_width="match_parent"
-                                            android:layout_height="400dp"
-                                            android:id="@+id/gridview"
-                                            android:columnWidth="640dp"
-                                            android:padding="5dp"
-                                            android:horizontalSpacing="10dp"
-                                            android:verticalSpacing="10dp"
-                                            android:scrollbars="horizontal"
-
-                                            android:stretchMode="spacingWidthUniform">
-                                        </GridView>
-                    -->
-
-
-                    <Button
-                        android:id="@+id/new_Order_widget"
-                        android:layout_width="70dp"
-                        android:layout_height="35dp"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textColor="@color/TMC_White"
-                        android:background="@drawable/orange_selected_button_background"
-                        android:text="@string/New_button_text" />
-
-                    <Button
-                        android:id="@+id/confirmed_Order_widget"
-                        android:layout_width="98dp"
-                        android:layout_height="35dp"
-                        android:gravity="center"
-                        android:layout_marginStart="12dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_weight="1"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:background="@drawable/orange_non_selected_button_background"
-                        android:text="@string/Confirmed_button_text" />
-
-                    <Button
-                        android:id="@+id/ready_Order_widget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="35dp"
-                        android:gravity="center"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:layout_marginStart="13dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/orange_non_selected_button_background"
-                        android:text="@string/Ready_For_Pickup_text" />
-
-                    <Button
-                        android:id="@+id/transist_Order_widget"
-                        android:layout_width="85dp"
-                        android:layout_height="35dp"
-                        android:gravity="center"
-                        android:layout_marginStart="14dp"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/orange_non_selected_button_background"
-                        android:text="@string/Transit_button_text" />
-
-                    <Button
-                        android:id="@+id/delivered_Order_widget"
-                        android:layout_width="85dp"
-                        android:layout_height="35dp"
-                        android:gravity="center"
-                        android:layout_marginStart="18dp"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/orange_non_selected_button_background"
-                        android:text="@string/Deliverd_button_text" />
-
-                </LinearLayout>
-            </HorizontalScrollView>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -417,10 +363,10 @@ tools:context=".Settings.CancelledOrders">
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/No_Orders_Instruction_text"
-                android:visibility="gone"
-
-                />
+                android:layout_marginTop="100dp"
+                android:text="Select Date and Click Fetch Data"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="20sp" />
 
             <ListView
                 android:id="@+id/manageOrders_ListView"
@@ -428,7 +374,8 @@ tools:context=".Settings.CancelledOrders">
                 android:layout_height="match_parent"
                 android:layout_marginTop="100dp"
                 android:divider="#DDDDDD"
-                android:dividerHeight="10dp" />
+                android:dividerHeight="10dp"
+                android:visibility="gone" />
 
 
         </RelativeLayout>

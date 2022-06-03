@@ -2,10 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.meatchop.tmcpartner">
 
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+
+    <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
@@ -32,7 +41,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.WholeSaleOrdersList"></activity>
+        <activity android:name=".Settings.Replacement_Refund_Transaction_Report"></activity>
+        <activity android:name=".Settings.WholeSaleOrdersList" />
         <activity android:name=".Settings.WholeSaleOrderSalesReport" />
         <activity android:name=".Settings.CreditOrders_MobileNumberwiseTransactionScreen" />
         <activity android:name=".Settings.CreditOrders_MobileNumberwise_Report" />
@@ -144,10 +154,12 @@
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".Printer_Demo_activity" />
         <activity android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen" />
-        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen" />
+        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen"
+            android:exported="true"/>
         <activity
             android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -155,67 +167,80 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen">
+        <receiver android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.BillingScreen" />
                 <action android:name="com.android.example.USB_PERMISSION.ManageOrders" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.AddSwiggyOrders">
+        <receiver android:name=".Settings.AddSwiggyOrders"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddSwiggyOrders" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.AddWholeSalesOrder">
+        <receiver android:name=".Settings.AddWholeSalesOrder"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddWholeSalesOrder" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.AddBigBasketOrder">
+        <receiver android:name=".Settings.AddBigBasketOrder"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddBigBasketOrder" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.AddDunzoOrders">
+        <receiver android:name=".Settings.AddDunzoOrders"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddDunzoOrders" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.PosSalesReport">
+        <receiver android:name=".Settings.PosSalesReport"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.PosSalesReport" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.App_Sales_Report_Subctgywise">
+        <receiver android:name=".Settings.App_Sales_Report_Subctgywise"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AppSalesReportSubCtgyWise" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.ConsolidatedSalesReportWeekwise">
+        <receiver android:name=".Settings.ConsolidatedSalesReportWeekwise"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.ConsolidatedSalesReportWeekwise" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.WholeSaleOrderSalesReport">
+        <receiver android:name=".Settings.WholeSaleOrderSalesReport"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.WholeSaleOrderSalesReport" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.searchOrdersUsingMobileNumber">
+        <receiver android:name=".Settings.searchOrdersUsingMobileNumber"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.APPOrdersList" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.Pos_Orders_List">
+        <receiver android:name=".Settings.Pos_Orders_List"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.POSOrdersList" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".Settings.WholeSaleOrdersList">
+        <receiver android:name=".Settings.WholeSaleOrdersList"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.WholeSaleOrdersList" />
             </intent-filter>
         </receiver>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

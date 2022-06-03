@@ -16,15 +16,19 @@ import androidx.annotation.Nullable;
 import com.itextpdf.text.ExceptionConverter;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementOrderDetails;
+import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen;
+import com.meatchop.tmcpartner.Settings.Replacement_Refund_Transaction_Report;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
+import static com.meatchop.tmcpartner.R.layout.replacement_refund_itemslist;
 
 
 public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_ReplacementOrderDetails> {
@@ -35,7 +39,7 @@ public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_Replacem
     double replacementAmount_Double =0 ,refundAmount_Double = 0,totalAmountUserCanAvl_Double = 0, balanceAmount = 0;
 
     public Adapter_Replacement_Refund_List(Context mContext, List<Modal_ReplacementOrderDetails> markedOrdersList, ReplacementRefundListFragment replacementRefundListFragment) {
-        super(mContext, R.layout.replacement_refund_itemslist, markedOrdersList);
+        super(mContext, replacement_refund_itemslist, markedOrdersList);
         this.mContext=mContext;
         this.markedOrdersList=markedOrdersList;
         this.replacementRefundListFragment = replacementRefundListFragment;
@@ -54,7 +58,7 @@ public class Adapter_Replacement_Refund_List extends ArrayAdapter<Modal_Replacem
     }
 
     public View getView(final int pos, View view, ViewGroup v) {
-        @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.replacement_refund_itemslist, (ViewGroup) view, false);
+        @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(replacement_refund_itemslist, (ViewGroup) view, false);
 
         final TextView orderid_text_widget = listViewItem.findViewById(R.id.orderid_text_widget);
         final TextView orderplaceddate_text_widget = listViewItem.findViewById(R.id.orderplaceddate_text_widget);

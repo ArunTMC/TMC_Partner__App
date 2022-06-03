@@ -1585,13 +1585,13 @@ TextView vendorName_textWidget, usermobileno_text_widget,lastupdatedtime_textwid
                     if(transactionType_array.equals(Constants.CREDIT_AMOUNT_ADDED)){
                         transactionType_array = "Order Placed";
                         itemtypecell = new PdfPCell(new Phrase(transactionType_array));
-                        itemtypecell.setBorder(Rectangle.NO_BORDER);
-                        itemtypecell.setBorderColor(BaseColor.GRAY);
-                        itemtypecell.setBackgroundColor(BaseColor.GREEN);
+                        itemtypecell.setBorderColor(BaseColor.RED);
+                       // itemtypecell.setBackgroundColor(BaseColor.GREEN);
                         itemtypecell.setMinimumHeight(30);
                         itemtypecell.setBorderWidthRight(01);
                         itemtypecell.setBorderWidthBottom(01);
-
+                        itemtypecell.setBorderWidthTop(01);
+                        itemtypecell.setBorderWidthLeft(01);
                         itemtypecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                         itemtypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                         itemtypecell.setPaddingRight(10);
@@ -1729,7 +1729,7 @@ TextView vendorName_textWidget, usermobileno_text_widget,lastupdatedtime_textwid
 
 
 
-            totalBillAmount = new PdfPCell(new Phrase("          Total Amount Yet to be PAY "));
+            totalBillAmount = new PdfPCell(new Phrase("          Total Amount Yet to  PAY "));
             totalBillAmount.setBorderColor(BaseColor.LIGHT_GRAY);
             totalBillAmount.setBorder(Rectangle.NO_BORDER);
             totalBillAmount.setMinimumHeight(25);

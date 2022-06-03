@@ -2,22 +2,28 @@ package com.meatchop.tmcpartner.Settings;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_ManageOrders_ListView1;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,6 +36,8 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
     public static Adapter_Mobile_GetDeliveryPartnersAssignedOrders adapter_mobile_getDeliveryPartnersAssignedOrders;
     ListView assignedOrdersListview;
     TextView deliveryUserMobileno_textWidget;
+    String vendorKey;
+    boolean orderdetailsnewschema = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +50,41 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
         assignedOrdersString = getIntent().getStringExtra("assignedOrdersString");
         deliveryUserMobileno = getIntent().getStringExtra("deliveryPartnerMobileNo");
         deliveryUserMobileno_textWidget.setText(deliveryUserMobileno);
-        convertStringtoJsonandGettingData(assignedOrdersString);
+        SharedPreferences sh
+                = getSharedPreferences("VendorLoginData",
+                MODE_PRIVATE);
+
+
+        vendorKey = sh.getString("VendorKey","");
+        orderdetailsnewschema = (sh.getBoolean("orderdetailsnewschema_settings", false));
+
+            if(orderdetailsnewschema){
+                convertStringtoARRAYandGettingData(assignedOrdersString);
+
+            }
+            else{
+                convertStringtoJsonandGettingData(assignedOrdersString);
+
+            }
+    }
+
+    private void convertStringtoARRAYandGettingData(String assignedOrdersString) {
+        ordersList = new ArrayList<>();
+        try {
+            Gson gson = new Gson();
+            if (assignedOrdersString.isEmpty()) {
+                Toast.makeText(GetDeliverypartnersAssignedOrders.this, "There is something error", Toast.LENGTH_LONG).show();
+            } else {
+                Type type = new TypeToken<List<Modal_ManageOrders_Pojo_Class>>() {
+                }.getType();
+                ordersList = gson.fromJson(assignedOrdersString, type);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        displayorderDetailsinListview(ordersList);
 
 
     }
@@ -366,7 +408,8 @@ public class GetDeliverypartnersAssignedOrders extends AppCompatActivity {
             displayorderDetailsinListview(ordersList);
 
 
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             e.printStackTrace();
             isnewOrdersSyncButtonClicked = false;
 

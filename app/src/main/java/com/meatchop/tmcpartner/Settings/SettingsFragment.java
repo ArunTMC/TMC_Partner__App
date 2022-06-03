@@ -1,6 +1,8 @@
 package com.meatchop.tmcpartner.Settings;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -89,6 +91,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import pub.devrel.easypermissions.EasyPermissions;
+
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
@@ -100,12 +105,12 @@ import static android.widget.AbsListView.*;
  * Use the {@link SettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
     Button on, off;
     Context mContext;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch autoRefreshingSwitch;
-    LinearLayout addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor,
+    LinearLayout replacement_refund_transaction_reportLayout,addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor,
             changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
@@ -151,11 +156,11 @@ public class SettingsFragment extends Fragment {
     String printerNamefromSP = "",whichsheetoGenerate1 = "";
     String printerStatusfromSP = "";
 
-
+    boolean orderdetailsnewschema =false;
     Workbook wb;
     Sheet sheet = null;
     private static String[] columnsHeading_userDetails = {"S.No", "User Key", "MobileNo", " Name", "Email", "Created time", "App Version", "deviceos", "updatedtime", "Fcm Token", "User Address Key","AddressLine 1","AddressLine 2","LandMark","PinCode","Address Type","Delivery Distance","Location Latitude","Location Longitutde","Vendor Name","Contact Person Mobile no", "Contact Person name"};
-    private static String[] columnsHeading_orderItemDetails = {"S.No", "Key", "Applied Discount Percentage", " Cut Name", "Cut Price", "Discount Amount", "Grossweight in Grams", "Gst Amount","Orderid ", "Item Name", "TmcPrice","Net Weight","Portion Size","Quantity","Order Placed Time", "Slot Date","Slot Name","Marinade Item Details","Tmc Subctgykey", "Vendor Key","Vendor Name"};
+    private static String[] columnsHeading_orderItemDetails = {"S.No", "Key", "Applied Discount Percentage", " Cut Name", "Cut Price", "Discount Amount", "Grossweight in Grams", "Gst Amount","Orderid ", "Item Name","Net Weight", "TmcPrice","Quantity","Total Price","Portion Size","Order Placed Time", "Slot Date","Slot Name","Marinade Item Details","Tmc Subctgykey", "Vendor Key","Vendor Name"};
 
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -169,9 +174,10 @@ public class SettingsFragment extends Fragment {
     List<ModalOrderItemDetails> OrderItemDetailsTableArray = new ArrayList<>();
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.Settings";
     RadioGroup printerTypeRadioGroup;
-    LinearLayout printerParentLayout;
+    LinearLayout printerParentLayout,layout_fetch_orders_from_orderDetails;
     RadioButton usbRadiobutton,bluetoothPrinterRadiobutton,posPrinterRadiobutton,nonePrinterRadiobutton;
     String vendorkey_hastinapuram = "vendor_1",vendorkey_velachery = "vendor_3",vendorkey_usertable = "";
+    Switch switch_fetch_orders_from_orderDetails;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -286,6 +292,9 @@ public class SettingsFragment extends Fragment {
         addWholeSaleOrders_placing_layout = view.findViewById(R.id.addWholeSaleOrders_placing_layout);
         WholeSaleSalesReport = view.findViewById(R.id.WholeSaleSalesReport);
         wholesale_orders_list  = view.findViewById(R.id.wholesale_orders_list);
+        replacement_refund_transaction_reportLayout = view.findViewById(R.id.replacement_refund_transaction_reportLayout);
+        switch_fetch_orders_from_orderDetails  = view.findViewById(R.id.switch_fetch_orders_from_orderDetails);
+        layout_fetch_orders_from_orderDetails  = view.findViewById(R.id.layout_fetch_orders_from_orderDetails);
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -297,6 +306,8 @@ public class SettingsFragment extends Fragment {
         vendorName = shared.getString("VendorName", "");
         UserRole = shared.getString("userrole", "");
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+        orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+
         SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
         String printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
         printerType_sharedPreference = String.valueOf(printerType_sharedPreference.toUpperCase());
@@ -323,11 +334,28 @@ public class SettingsFragment extends Fragment {
         }
         userMobileNo.setText(UserPhoneNumber);
         storeName.setText(vendorName);
-        DisplayMetrics dm = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-        screenInches = Math.sqrt(x + y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(getActivity());
+            //Toast.makeText(getActivity(), "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+              //  Toast.makeText(getActivity(), "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
         getTokenNo(vendorkey);
         //  initializeCache();
 
@@ -337,6 +365,48 @@ public class SettingsFragment extends Fragment {
         manageordersLinearLayout.setVisibility(GONE);
         dataAnalyticsLinearLayout.setVisibility(GONE);
 
+        if(orderdetailsnewschema){
+            switch_fetch_orders_from_orderDetails.setChecked(false);
+        }
+        else{
+            switch_fetch_orders_from_orderDetails.setChecked(true);
+
+        }
+
+        layout_fetch_orders_from_orderDetails.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sharedPreferences
+                        = mContext.getSharedPreferences("VendorLoginData",
+                        MODE_PRIVATE);
+
+                SharedPreferences.Editor myEdit
+                        = sharedPreferences.edit();
+                if(switch_fetch_orders_from_orderDetails.isChecked()){
+                    switch_fetch_orders_from_orderDetails .setChecked(false);
+                    myEdit.putBoolean(
+                            "orderdetailsnewschema_settings",
+                            true
+                    );
+                    myEdit.apply();
+
+                  //  Toast.makeText(mContext, "first", Toast.LENGTH_SHORT).show();
+                }
+                else{
+
+                    switch_fetch_orders_from_orderDetails .setChecked(true);
+
+                    myEdit.putBoolean(
+                            "orderdetailsnewschema_settings",
+                            false
+                    );
+                    myEdit.apply();
+                   // Toast.makeText(mContext, "second", Toast.LENGTH_SHORT).show();
+
+                }
+
+            }
+        });
 
 
         nonePrinterRadiobutton.setOnClickListener(new OnClickListener() {
@@ -477,6 +547,8 @@ public class SettingsFragment extends Fragment {
             mobilePrinterConnectLayout.setVisibility(VISIBLE);
             dataAnalyticsLinearLayout.setVisibility(GONE);
             add_refund_replace_order_layout.setVisibility(GONE);
+            replacement_refund_transaction_reportLayout.setVisibility(GONE);
+
             printerParentLayout.setVisibility(GONE);
             if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
                 connect_printer_button_widget.setVisibility(VISIBLE);
@@ -488,13 +560,14 @@ public class SettingsFragment extends Fragment {
             }
         } else {
             //if Mobile
+            replacement_refund_transaction_reportLayout.setVisibility(VISIBLE);
+            addWholeSaleOrders_placing_layout.setVisibility(GONE);
             addBigbasketOrders_placing_layout.setVisibility(GONE);
             addDunzoOrders_Placing_layout.setVisibility(GONE);
             swiggyOrderPlacing_layout.setVisibility(GONE);
             printerParentLayout.setVisibility(GONE);
             connect_printer_button_widget.setVisibility(VISIBLE);
             add_refund_replace_order_layout.setVisibility(VISIBLE);
-
             if((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))){
                 editPaymentModeOftheOrder.setVisibility(VISIBLE);
 
@@ -543,11 +616,17 @@ public class SettingsFragment extends Fragment {
         }
 
 
+        //Ashwanth   918110884808
+        if ((UserPhoneNumber.equals("+918110884808")) || (UserPhoneNumber.equals("+919597580128")) ) {
+
+            viewordersLinearLayout.setVisibility(VISIBLE);
 
 
+        }
         //Navaneedhan
+        //Vimal
 
-        if (UserPhoneNumber.equals("+916383677365")) {
+        if ((UserPhoneNumber.equals("+916383677365")) || (UserPhoneNumber.equals("+917010623119")) ) {
             managemenuLayout.setVisibility(VISIBLE);
             changeDeliverySlotdetails.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(GONE);
@@ -595,7 +674,13 @@ public class SettingsFragment extends Fragment {
             // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
 
-
+        replacement_refund_transaction_reportLayout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, Replacement_Refund_Transaction_Report.class);
+                startActivity(intent);
+            }
+        });
         wholesale_orders_list.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -719,8 +804,9 @@ public class SettingsFragment extends Fragment {
         generateUserDetailsButton.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View view) {
+            AskPermissionToGenerateSheet("UserDetailsSheet");
 
-        GetUserTable();
+            //GetUserTable();
 
         }
         }
@@ -741,7 +827,19 @@ public class SettingsFragment extends Fragment {
         connect_printer_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ConnectPrinter();
+
+              /*  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    //requestBlePermissions(getActivity(),2);
+                    Toast.makeText(mContext, "Please Use android version below 12 ", Toast.LENGTH_SHORT).show();
+                }
+
+
+                else{
+
+               */
+                    ConnectPrinter();
+               // }
+
 
             }
         });
@@ -1018,6 +1116,8 @@ public class SettingsFragment extends Fragment {
 
     }
 
+
+
     @SuppressLint("NonConstantResourceId")
     private void changeSelectedPrinterType(int radiobutton, boolean changeSelectionto) {
 
@@ -1249,7 +1349,7 @@ public class SettingsFragment extends Fragment {
 
         Adjusting_Widgets_Visibility(true);
         progressbarInstruction.setText("Fetching OrderItem Details...");
-        UserTableArray.clear();
+        OrderItemDetailsTableArray.clear();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getAllOrderItemDetailswithPagenation, null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -1262,6 +1362,8 @@ public class SettingsFragment extends Fragment {
 
                             JSONObject jsonObject = new JSONObject(jsonString);
                             JSONArray JArray = jsonObject.getJSONArray("content");
+                            double tmcprice = 0, totalTmcPrice = 0 , quantity =0;
+                            String tmcPrice_String ="", totalTmcPrice_String ="", quantity_String ="";
                             //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
@@ -1477,13 +1579,17 @@ public class SettingsFragment extends Fragment {
                                 try{
                                     if(json.has("quantity")){
                                         modalOrderItemDetails.quantity = json.getString("quantity");
+                                        quantity_String = json.getString("quantity");
                                     }
                                     else{
+                                        quantity_String ="1";
                                         modalOrderItemDetails.quantity ="";
                                     }
                                 }
                                 catch(Exception e ){
                                     e.printStackTrace();
+                                    quantity_String ="1";
+
                                     modalOrderItemDetails.quantity ="-";
 
                                 }
@@ -1524,13 +1630,16 @@ public class SettingsFragment extends Fragment {
                                 try{
                                     if(json.has("tmcprice")){
                                         modalOrderItemDetails.tmcprice = json.getString("tmcprice");
+                                        tmcPrice_String = json.getString("tmcprice");
                                     }
                                     else{
                                         modalOrderItemDetails.tmcprice ="";
+                                        tmcPrice_String ="0";
                                     }
                                 }
                                 catch(Exception e ){
                                     e.printStackTrace();
+                                    tmcPrice_String ="0";
                                     modalOrderItemDetails.tmcprice ="-";
 
                                 }
@@ -1578,7 +1687,47 @@ public class SettingsFragment extends Fragment {
 
                                 }
 
+                                try{
+                                    tmcprice = Double.parseDouble(tmcPrice_String);
+                                }
+                                catch (Exception e){
+                                    tmcprice =0;
+                                    e.printStackTrace();
+                                }
+
+
+                                try{
+                                    quantity = Double.parseDouble(quantity_String);
+                                }
+                                catch (Exception e){
+                                    quantity = 0;
+                                    e.printStackTrace();
+                                }
+
+                                try {
+                                    try {
+                                        totalTmcPrice = tmcprice * quantity;
+                                    } catch (Exception e) {
+                                        totalTmcPrice = tmcprice;
+                                        e.printStackTrace();
+                                    }
+
+                                    try {
+                                        totalTmcPrice_String = String.valueOf(totalTmcPrice);
+                                    } catch (Exception e) {
+                                        totalTmcPrice_String = tmcPrice_String;
+                                        e.printStackTrace();
+                                    }
+                                }
+                                catch (Exception e) {
+                                    totalTmcPrice_String = tmcPrice_String;
+
+                                    e.printStackTrace();
+                                }
+                                modalOrderItemDetails.totalTmcPrice = totalTmcPrice_String;
+
                                 OrderItemDetailsTableArray.add(modalOrderItemDetails);
+
                                 if(i1==(arrayLength-1)) {
                                     if (OrderItemDetailsTableArray.size() >0) {
                                         try{
@@ -2133,10 +2282,11 @@ public class SettingsFragment extends Fragment {
 
 
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+
 
         if (requestCode == 2296) {
             if (SDK_INT >= Build.VERSION_CODES.R) {
@@ -2189,6 +2339,18 @@ public class SettingsFragment extends Fragment {
     }
 
 
+
+
+
+/*
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+ */
 
     private void FilterUserAndAddressArray() {
         AddedUserKey.clear();
@@ -2279,17 +2441,18 @@ public class SettingsFragment extends Fragment {
             row.createCell(8).setCellValue(itemRow.getOrderid());
 
             row.createCell(9).setCellValue(itemRow.getItemname());
-            row.createCell(11).setCellValue(itemRow.getTmcprice());
             row.createCell(10).setCellValue(String.valueOf(itemRow.getNetweight()));
-            row.createCell(12).setCellValue(String.valueOf(itemRow.getPortionsize()));
-            row.createCell(13).setCellValue(String.valueOf(itemRow.getQuantity()));
-            row.createCell(14).setCellValue(String.valueOf(itemRow.getOrderplacedtime()));
-            row.createCell(15).setCellValue(String.valueOf(itemRow.getSlotdate()));
-            row.createCell(16).setCellValue(itemRow.getSlotname());
-            row.createCell(17).setCellValue(itemRow.getMarinadeitemdetails());
-            row.createCell(18).setCellValue(itemRow.getTmcsubctgykey());
-            row.createCell(19).setCellValue(itemRow.getVendorkey());
-            row.createCell(20).setCellValue(itemRow.getVendorname());
+            row.createCell(11).setCellValue(itemRow.getTmcprice());
+            row.createCell(12).setCellValue(String.valueOf(itemRow.getQuantity()));
+            row.createCell(13).setCellValue(String.valueOf(itemRow.getTotalTmcPrice()));
+            row.createCell(14).setCellValue(String.valueOf(itemRow.getPortionsize()));
+            row.createCell(15).setCellValue(String.valueOf(itemRow.getOrderplacedtime()));
+            row.createCell(16).setCellValue(String.valueOf(itemRow.getSlotdate()));
+            row.createCell(17).setCellValue(itemRow.getSlotname());
+            row.createCell(18).setCellValue(itemRow.getMarinadeitemdetails());
+            row.createCell(19).setCellValue(itemRow.getTmcsubctgykey());
+            row.createCell(20).setCellValue(itemRow.getVendorkey());
+            row.createCell(21).setCellValue(itemRow.getVendorname());
 
 
 
@@ -2628,7 +2791,45 @@ public class SettingsFragment extends Fragment {
 
 
     }
+    private static final String[] BLE_PERMISSIONS = new String[]{
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
 
+            ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+
+    };
+
+    private static final String[] ANDROID_12_BLE_PERMISSIONS = new String[]{
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADVERTISE,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_SCAN,
+            ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+
+    public void requestBlePermissions(Activity activity, int requestCode) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!EasyPermissions.hasPermissions(activity, ANDROID_12_BLE_PERMISSIONS)) {
+                EasyPermissions.requestPermissions(activity, "message", requestCode,ANDROID_12_BLE_PERMISSIONS);
+            }
+        }
+
+
+
+
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            getActivity().requestPermissions(activity, ANDROID_12_BLE_PERMISSIONS, requestCode);
+        else
+            getActivity().requestPermissions(activity, BLE_PERMISSIONS, requestCode);
+
+
+         */
+
+    }
 
     private void ConnectPrinter() {
 
@@ -2701,92 +2902,96 @@ public class SettingsFragment extends Fragment {
         @SuppressLint("HandlerLeak")
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MESSAGE_STATE_CHANGE:
-                    //if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
-                    switch (msg.arg1) {
-                        case BluetoothPrintDriver.STATE_CONNECTED:
-                            printerConnectionStatus_Textwidget.setText(R.string.title_connected_to);
-                            printerConnectionStatus_Textwidget.append(mConnectedDeviceName);
-                            isPrinterCnnected =true;
-                            printerStatus = "Connected";
-                            printerName = mConnectedDeviceName;
-                           // setTitle(R.string.title_connected_to);
-                            //setTitle(mConnectedDeviceName);
-                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus,Constants.Bluetooth_PrinterType);
+            try {
+                switch (msg.what) {
+                    case MESSAGE_STATE_CHANGE:
+                        //if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                        switch (msg.arg1) {
+                            case BluetoothPrintDriver.STATE_CONNECTED:
+                                printerConnectionStatus_Textwidget.setText(R.string.title_connected_to);
+                                printerConnectionStatus_Textwidget.append(mConnectedDeviceName);
+                                isPrinterCnnected = true;
+                                printerStatus = "Connected";
+                                printerName = mConnectedDeviceName;
+                                // setTitle(R.string.title_connected_to);
+                                //setTitle(mConnectedDeviceName);
+                                SaveDatainSharedPreferences(isPrinterCnnected, printerName, printerStatus, Constants.Bluetooth_PrinterType);
 
-                            break;
-                        case BluetoothPrintDriver.STATE_CONNECTING:
-                            printerConnectionStatus_Textwidget.setText(R.string.title_connecting);
-                          // setTitle(R.string.title_connecting);
-                            isPrinterCnnected =false;
-                            printerStatus = "Connecting";
-                            printerName = mConnectedDeviceName;
-                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus,Constants.Bluetooth_PrinterType);
-
-
-                            break;
-                        case BluetoothPrintDriver.STATE_LISTEN:
-                            printerConnectionStatus_Textwidget.setText("state listen");
-
-                        case BluetoothPrintDriver.STATE_NONE:
-                            printerConnectionStatus_Textwidget.setText(R.string.title_not_connected);
-                          //  setTitle(R.string.title_not_connected);
-                            isPrinterCnnected =false;
-                            printerStatus = "Not Connected";
-                            printerName = mConnectedDeviceName;
-                            try{
-                                changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                            }
-
-                            SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus,Constants.Bluetooth_PrinterType);
+                                break;
+                            case BluetoothPrintDriver.STATE_CONNECTING:
+                                printerConnectionStatus_Textwidget.setText(R.string.title_connecting);
+                                // setTitle(R.string.title_connecting);
+                                isPrinterCnnected = false;
+                                printerStatus = "Connecting";
+                                printerName = mConnectedDeviceName;
+                                SaveDatainSharedPreferences(isPrinterCnnected, printerName, printerStatus, Constants.Bluetooth_PrinterType);
 
 
-                            break;
-                    }
-                    break;
-                case MESSAGE_WRITE:
-                    break;
-                case MESSAGE_READ:
-                    String ErrorMsg = null;
-                    byte[] readBuf = (byte[]) msg.obj;
-                    float Voltage = 0;
-                    //  if(D) Log.i(TAG, "readBuf[0]:"+readBuf[0]+"  readBuf[1]:"+readBuf[1]+"  readBuf[2]:"+readBuf[2]);
-                    if(readBuf[2]==0)
-                        ErrorMsg = "NO ERROR!         ";
-                    else
-                    {
-                        if((readBuf[2] & 0x02) != 0)
-                            ErrorMsg = "ERROR: No printer connected!";
-                        if((readBuf[2] & 0x04) != 0)
-                            ErrorMsg = "ERROR: No paper!  ";
-                        if((readBuf[2] & 0x08) != 0)
-                            ErrorMsg = "ERROR: Voltage is too low!  ";
-                        if((readBuf[2] & 0x40) != 0)
-                            ErrorMsg = "ERROR: Printer Over Heat!  ";
-                    }
-                    Voltage = (float) ((readBuf[0]*256 + readBuf[1])/10.0);
-                    //if(D) Log.i(TAG, "Voltage: "+Voltage);
-                    //   DisplayToast(ErrorMsg+"                                        "+"Battery voltage£º"+Voltage+" V");
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-                    Toast.makeText(mContext, "Connected to "
-                            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
-                    break;
-                case MESSAGE_TOAST:
-                    Toast.makeText(mContext, msg.getData().getString(TOAST),
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + msg.what);
+                                break;
+                            case BluetoothPrintDriver.STATE_LISTEN:
+                                printerConnectionStatus_Textwidget.setText("state listen");
+
+                            case BluetoothPrintDriver.STATE_NONE:
+                                printerConnectionStatus_Textwidget.setText(R.string.title_not_connected);
+                                //  setTitle(R.string.title_not_connected);
+                                isPrinterCnnected = false;
+                                printerStatus = "Not Connected";
+                                printerName = mConnectedDeviceName;
+                                try {
+                                    changeSelectedPrinterType(nonePrinterRadiobutton.getId(), true);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                SaveDatainSharedPreferences(isPrinterCnnected, printerName, printerStatus, Constants.Bluetooth_PrinterType);
+
+
+                                break;
+                        }
+                        break;
+                    case MESSAGE_WRITE:
+                        break;
+                    case MESSAGE_READ:
+                        String ErrorMsg = null;
+                        byte[] readBuf = (byte[]) msg.obj;
+                        float Voltage = 0;
+                        //  if(D) Log.i(TAG, "readBuf[0]:"+readBuf[0]+"  readBuf[1]:"+readBuf[1]+"  readBuf[2]:"+readBuf[2]);
+                        if (readBuf[2] == 0)
+                            ErrorMsg = "NO ERROR!         ";
+                        else {
+                            if ((readBuf[2] & 0x02) != 0)
+                                ErrorMsg = "ERROR: No printer connected!";
+                            if ((readBuf[2] & 0x04) != 0)
+                                ErrorMsg = "ERROR: No paper!  ";
+                            if ((readBuf[2] & 0x08) != 0)
+                                ErrorMsg = "ERROR: Voltage is too low!  ";
+                            if ((readBuf[2] & 0x40) != 0)
+                                ErrorMsg = "ERROR: Printer Over Heat!  ";
+                        }
+                        Voltage = (float) ((readBuf[0] * 256 + readBuf[1]) / 10.0);
+                        //if(D) Log.i(TAG, "Voltage: "+Voltage);
+                        //   DisplayToast(ErrorMsg+"                                        "+"Battery voltage£º"+Voltage+" V");
+                        break;
+                    case MESSAGE_DEVICE_NAME:
+                        // save the connected device's name
+                        mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
+                        Toast.makeText(mContext, "Connected to "
+                                + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                        break;
+                    case MESSAGE_TOAST:
+                        Toast.makeText(mContext, msg.getData().getString(TOAST),
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + msg.what);
+                }
+                //     printerConnectionStatus_Textwidget.setText(String.valueOf(mBluetoothAdapter.getState()));
             }
-            //     printerConnectionStatus_Textwidget.setText(String.valueOf(mBluetoothAdapter.getState()));
-        }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            }
+
     };
 
 
@@ -3120,10 +3325,13 @@ public class SettingsFragment extends Fragment {
 
 
     private void signOutfromAWSandClearSharedPref() {
-
-        AWSMobileClient.getInstance().signOut();
-        Constants.default_mobileScreenSize=7;
-
+        try {
+            AWSMobileClient.getInstance().signOut();
+            Constants.default_mobileScreenSize = 6.3;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
         SharedPreferences sharedPreferences
                 = requireContext().getSharedPreferences("VendorLoginData",
@@ -3231,6 +3439,17 @@ public class SettingsFragment extends Fragment {
             }
         }
         return longvalue;
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+            ConnectPrinter();
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        Toast.makeText(mContext, "Bluetooth access Denied!", Toast.LENGTH_SHORT).show();
+
     }
 }
 

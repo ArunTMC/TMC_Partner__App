@@ -36,6 +36,8 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -69,11 +71,11 @@ import java.util.Objects;
 import okhttp3.WebSocket;
 
 public class CancelledOrders extends AppCompatActivity {
-    private  String OrderDetailsResultjsonString,CurrentDate,CurrentDay,TodaysDate,DateString,PreviousDateString,vendorKey,vendorname;
+    private  String TAG = "TAG",json_resultString ="",OrderDetailsResultjsonString,CurrentDate,CurrentDay,TodaysDate,DateString,PreviousDateString,vendorKey,vendorname;
     private double screenInches;
     public static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
     static List<Modal_ManageOrders_Pojo_Class> ordersList;
-    TextView appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
+    TextView fetchData,appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
     EditText mobile_search_barEditText;
     ListView manageOrders_ListView;
@@ -87,6 +89,13 @@ public class CancelledOrders extends AppCompatActivity {
     public static List<String> array_of_orderId;
     static boolean isSearchButtonClicked = false;
 
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean isVendorOrdersTableServiceCalled = false;
+
+    Context mContext;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,12 +106,30 @@ public class CancelledOrders extends AppCompatActivity {
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = (shared.getString("VendorKey", ""));
             vendorname = (shared.getString("VendorName", ""));
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-            double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-            screenInches = Math.sqrt(x + y);
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+           // orderdetailsnewschema  =  false;
+            try {
+                ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+                screenInches = screenSizeOfTheDevice.getDisplaySize(CancelledOrders.this);
+              //  Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                try {
+                    DisplayMetrics dm = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                    double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                    screenInches = Math.sqrt(x + y);
+                 //   Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
 
+                }
+                catch (Exception e1){
+                    e1.printStackTrace();
+                }
+
+
+            }
         }
         catch (Exception e){
             e.printStackTrace();
@@ -128,36 +155,70 @@ public class CancelledOrders extends AppCompatActivity {
         mobile_search_barEditText = findViewById(R.id.search_barEdit);
         mobile_search_close_btn = findViewById(R.id.search_close_btn);
         newOrdersSync_Layout = findViewById(R.id.newOrdersSync_Layout);
-
+        fetchData  = findViewById(R.id.fetchData);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
-        showProgressBar(true);
+        //showProgressBar(true);
 
         mobile_nameofFacility_Textview.setText(vendorname);
 
 
         try{
-            TodaysDate = getDate();
-            PreviousDateString = getDatewithNameofthePreviousDay();
+          //  TodaysDate = getDate();
+          //  PreviousDateString = getDatewithNameofthePreviousDay();
             //Now we are creating sheet
 
-            Adjusting_Widgets_Visibility(true);
-            String Todaysdate = getDatewithNameoftheDay();
-            PreviousDateString = getDatewithNameofthePreviousDay();
+           // Adjusting_Widgets_Visibility(true);
+          ////  String Todaysdate = getDatewithNameoftheDay();
+            //PreviousDateString = getDatewithNameofthePreviousDay();
 
             isSearchButtonClicked = false;
             ordersList.clear();
             sorted_OrdersList.clear();
             array_of_orderId.clear();
-            dateSelector_text.setText(Todaysdate);
-            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,Todaysdate, vendorKey);
-
-
+            dateSelector_text.setText(Constants.Empty_Date_Format);
+            DateString = (Constants.Empty_Date_Format);
         }
         catch (Exception e){
             e.printStackTrace();
         }
 
+        fetchData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    ordersList.clear();
+                    sorted_OrdersList.clear();
+                    array_of_orderId.clear();
+
+
+                    if (DateString.equals(Constants.Empty_Date_Format)) {
+                        Toast.makeText(CancelledOrders.this, "Select the Date First !!! ", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (orderdetailsnewschema) {
+                            String dateAsNewFormat = convertOldFormatDateintoNewFormat(DateString);
+                            //dateSelector_text.setText(Todaysdate);
+
+
+                            callVendorOrderDetailsSeviceAndInitCallBack(dateAsNewFormat, dateAsNewFormat, vendorKey);
+
+
+                        } else {
+                            //dateSelector_text.setText(DateString);
+                            PreviousDateString = getDatewithNameofthePreviousDay2(DateString);
+
+                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+
+                        }
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+/*
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -170,14 +231,30 @@ public class CancelledOrders extends AppCompatActivity {
 
                 PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(todatestring);
 
-
-
                 isSearchButtonClicked = false;
 
-                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+                if(orderdetailsnewschema){
+                    String dateAsNewFormat =convertOldFormatDateintoNewFormat(todatestring);
+
+                    callVendorOrderDetailsSeviceAndInitCallBack(dateAsNewFormat,dateAsNewFormat,vendorKey);
+
+
+                }
+                else{
+                    getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+
+                }
+
+
+
+
+
+
 
             }
         });
+
+ */
         mobile_search_close_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -297,7 +374,14 @@ public class CancelledOrders extends AppCompatActivity {
                         }
                     }
                     try {
-                        DisplayOrderListDatainListView(sorted_OrdersList);
+                        if(sorted_OrdersList.size()>0) {
+                            DisplayOrderListDatainListView(sorted_OrdersList);
+                        }
+                        else{
+                            manageOrders_ListView.setVisibility(View.GONE);
+                            mobile_orderinstruction.setVisibility(View.VISIBLE);
+                            mobile_orderinstruction.setText("No orders found for this Mobile number");
+                        }
 
                     } catch (Exception E) {
                         E.printStackTrace();
@@ -308,7 +392,7 @@ public class CancelledOrders extends AppCompatActivity {
                 else{
                     manageOrders_ListView.setVisibility(View.GONE);
                     mobile_orderinstruction.setVisibility(View.VISIBLE);
-                    mobile_orderinstruction.setText("No orders found for this Mobile number");
+                    mobile_orderinstruction.setText("Please Enter Mobile Number");
 
                 }
 
@@ -328,9 +412,45 @@ public class CancelledOrders extends AppCompatActivity {
 
     }
 
+    private String getDatewithNameofthePreviousDay2(String sDate) {
 
 
 
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+            Date date = null;
+            try {
+                date = dateFormat.parse(sDate);
+            } catch (ParseException e2) {
+                e2.printStackTrace();
+            }
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+            calendar.add(Calendar.DATE, -1);
+
+
+
+
+            Date c1 = calendar.getTime();
+
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String  PreviousdayDate = df1.format(c1);
+            String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+            return yesterdayAsString;
+
+
+
+    }
 
 
     private void openDatePicker() {
@@ -375,10 +495,28 @@ public class CancelledOrders extends AppCompatActivity {
                             PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay(CurrentDateString);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
 
-                            dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
+                            dateSelector_text.setText(DateString);
                             //getOrderForSelectedDate(DateString, vendorKey);
 
-                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+                            manageOrders_ListView.setVisibility(View.GONE);
+                            mobile_orderinstruction.setVisibility(View.VISIBLE);
+                            mobile_orderinstruction.setText("After Selecting the Date !! Click Fetch Data");
+
+/*
+                            if(orderdetailsnewschema){
+                                String dateAsNewFormat =convertOldFormatDateintoNewFormat(DateString);
+
+                                callVendorOrderDetailsSeviceAndInitCallBack(dateAsNewFormat,dateAsNewFormat,vendorKey);
+
+
+                            }
+                            else{
+                                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+
+                            }
+
+
+ */
 
                         }
                         catch (Exception e ){
@@ -393,6 +531,62 @@ public class CancelledOrders extends AppCompatActivity {
 
 
 
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        if(isVendorOrdersTableServiceCalled)
+        {
+            Adjusting_Widgets_Visibility(false);
+
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+
+
+
+
+        Adjusting_Widgets_Visibility(true);
+        ordersList.clear();
+        sorted_OrdersList.clear();
+        array_of_orderId.clear();
+
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d(TAG, "Volley requester " + requestType);
+                Log.d(TAG, "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+
+                json_resultString = String.valueOf(jsonObject);
+                ordersList = orderslist_fromResponse;
+                DisplayOrderListDatainListView(ordersList);
+
+                //convertingJsonStringintoArray(orderStatus,mobile_jsonString);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d(TAG, "Volley requester " + requestType);
+                Log.d(TAG, "Volley JSON post" + "That didn't work!");
+                isVendorOrdersTableServiceCalled = false;
+                manageOrders_ListView.setVisibility(View.GONE);
+                mobile_orderinstruction.setVisibility(View.VISIBLE);
+                mobile_orderinstruction.setText("There is some error"+String.valueOf(error));
+
+                Adjusting_Widgets_Visibility(false);
+            }
+        };
+        mContext = CancelledOrders.this;
+        mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey_status +"?slotdate="+FromDate+"&vendorkey="+vendorKey+"&orderstatus=CANCELLED";
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
 
 
     private void getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(String previousDateString, String todaysdate, String vendorKey) {
@@ -952,6 +1146,50 @@ public class CancelledOrders extends AppCompatActivity {
         }
 
     }
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
+
+    private String convertnewFormatDateintoOldFormat(String todaysdate) {
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(date);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(date);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
 
 
     private String getTomorrowsDate() {
@@ -996,18 +1234,24 @@ public class CancelledOrders extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
+
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            String PreviousdayDate = df.format(c1);
+            return PreviousdayDate;
+
+        }
+        else {
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
-        //System.out.println("todays Date  " + CurrentDate);
-        // System.out.println("PreviousdayDate Date  " + PreviousdayDate);
-
-
-        return PreviousdayDate;
+            return PreviousdayDate;
+        }
     }
 
 
@@ -1049,81 +1293,100 @@ public class CancelledOrders extends AppCompatActivity {
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
-        Date date = null;
-        try {
-            date = dateFormat.parse(sDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+            Date date = null;
+            try {
+                date = dateFormat.parse(sDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
 
-        calendar.add(Calendar.DATE, -1);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
 
-
-
-
-        Date c1 = calendar.getTime();
-
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
+            calendar.add(Calendar.DATE, -1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
-        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
 
-        return yesterdayAsString;
+            Date c1 = calendar.getTime();
+
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String  PreviousdayDate = df1.format(c1);
+            String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+            return yesterdayAsString;
+
     }
 
 
 
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        CurrentDay = day.format(c);
-
-
-
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
-
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+        }
+        else {
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
 
 
-        return CurrentDate;
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+            return CurrentDate;
+
+        }
+
     }
 
 
     private String getDatewithNameoftheDay() {
-        Date c = Calendar.getInstance().getTime();
-
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        CurrentDay = day.format(c);
 
 
+        Calendar calendar = Calendar.getInstance();
+        Date c = calendar.getTime();
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
 
-        CurrentDate = CurrentDay+", "+CurrentDate;
+        }
+        else {
 
 
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
 
 
-        return CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+        }
     }
 
 
@@ -1197,6 +1460,7 @@ public class CancelledOrders extends AppCompatActivity {
         mobile_search_button.setVisibility(View.VISIBLE);
         mobile_search_close_btn.setVisibility(View.GONE);
         mobile_search_barEditText.setVisibility(View.GONE);
+        newOrdersSync_Layout.setVisibility(View.VISIBLE);
     }
 
     private void showSearchBarEditText() {
@@ -1204,6 +1468,7 @@ public class CancelledOrders extends AppCompatActivity {
         mobile_search_button.setVisibility(View.GONE);
         mobile_search_close_btn.setVisibility(View.VISIBLE);
         mobile_search_barEditText.setVisibility(View.VISIBLE);
+        newOrdersSync_Layout.setVisibility(View.GONE);
     }
     private void showKeyboard(final EditText editText) {
         final Handler handler = new Handler();

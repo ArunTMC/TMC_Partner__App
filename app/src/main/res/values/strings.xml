@@ -73,6 +73,8 @@
 
     <string name="New_order_text">Place New Order</string>
     <string name="Settings_text">Settings </string>
+    <string name="Select_an_address">Please Select Address to Place Order</string>
+
     <string name="Cart_is_empty">Cart is Empty So Add the Items</string>
     <string name="Orders_weight_Cant_be_leave_unedited">Please Add Weight and click next button to all the Orders</string>
     <string name="netweight_Cant_be_Zero">Please Add NetWeight and click Update Changes button </string>
@@ -221,6 +223,7 @@
     <string name="CancelledOrdersList">Cancelled Orders List </string>
     <string name="ConsolidatedRatingDetails">Consolidated Rating Details Report </string>
     <string name="RaisedTicketsdetails">Raised Tickets For Rating</string>
+    <string name="Replacement_Refund_Transaction_report">Replacement Refund Transaction Report </string>
 
     <string name="AddRefundReplaceOrder">Add Refund / Replace Order  </string>
 
@@ -255,6 +258,7 @@
     <string name="Consolidated_Sales_Report">Consolidated Sales Report </string>
     <string name="Pos_Sales_Report">POS Sales Report </string>
     <string name="App_Sales_Report">APP Sales Report </string>
+    <string name="Replacement_Refund_Transaction_Report">Replacement Refund Transaction Report</string>
 
     <string name="WholeSale_Sales_Report">WholeSale Sales Report </string>
     <string name="Delivery_Partner_settlement_report">Delivery Partner Settlement Report </string>
@@ -288,8 +292,8 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.2.1 </string>
-    <string name="scanning">scanning for devices...</string>
+    <string name="Version_No">Version No : 1.9.5(7) </string>
+    <string name="scanning">scanning for devices....</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>
     <string name="none_paired">No devices have been paired</string>

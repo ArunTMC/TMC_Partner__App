@@ -51,6 +51,8 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -74,7 +76,7 @@ import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlots;
 
 public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements OnMapReadyCallback {
     public static List<Modal_ManageOrders_Pojo_Class> ordersList;
-    TextView appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
+    TextView fetchData,appOrdersCount_textwidget,dateSelector_text,mobile_orderinstruction, mobile_nameofFacility_Textview;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
     EditText mobile_search_barEditText;
     ListView manageOrders_ListView;
@@ -117,6 +119,15 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
     AdapterPlotOrdersLocation adapterPlotOrdersLocation;
     String deliveryTimeForExpr_Delivery;
 
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,12 +144,33 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
             vendorname = (shared.getString("VendorName", ""));
             vendorLatitude  = Double.parseDouble(shared.getString("VendorLatitude", ""));
             vendorLongitude  = Double.parseDouble(shared.getString("VendorLongitute", ""));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+           // orderdetailsnewschema = true;
 
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-            double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-            screenInches = Math.sqrt(x + y);
+
+
+            try {
+                ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+                screenInches = screenSizeOfTheDevice.getDisplaySize(PlotOrdersLocationWithTokenNo .this);
+               //Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                try {
+                    DisplayMetrics dm = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                    double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                    screenInches = Math.sqrt(x + y);
+                    //Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e1){
+                    e1.printStackTrace();
+                }
+
+
+            }
 
         }
         catch (Exception e){
@@ -170,7 +202,7 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
         deliveryPartnerList = new ArrayList<>();
         array_of_orderId = new ArrayList<>();
         appOrdersCount_textwidget = findViewById(R.id.appOrdersCount_textwidget);
-
+        fetchData =  findViewById(R.id.fetchData);
         finalButtons_filter_Layout = findViewById(R.id.finalButtons_filter_Layout);
 
         manageOrders_ListView = findViewById(R.id.manageOrders_ListView);
@@ -191,31 +223,51 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
-        showProgressBar(true);
-        mapView_Layout.setVisibility(View.GONE);
-        manageOrders_ListView.setVisibility(View.GONE);
-        mobile_orderinstruction.setVisibility(View.VISIBLE);
-        mobile_orderinstruction.setText("Select Date to Get Orders List");
-        mobile_nameofFacility_Textview.setText(vendorname);
-
-        setDataForFilterSpinners();
 
         try{
-            TodaysDate = getDatewithNameoftheDay();
-            PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(TodaysDate);
-            //Now we are creating sheet
-            sorted_OrdersList.clear();
 
+
+
+            mapView_Layout.setVisibility(View.GONE);
+            manageOrders_ListView.setVisibility(View.GONE);
+            mobile_orderinstruction.setVisibility(View.VISIBLE);
+            mobile_orderinstruction.setText("Select Date to Get Orders List");
+            mobile_nameofFacility_Textview.setText(vendorname);
+
+            dateSelector_text.setText(Constants.Empty_Date_Format);
+            DateString = (Constants.Empty_Date_Format);
+
+            setDataForFilterSpinners();
+
+            sorted_OrdersList.clear();
             selectedTimeRange_spinner = "All";
             selected_DeliveryDistanceRange_spinner = "All";
             finalButtons_filter_Layout.setVisibility(View.GONE);
             isSearchButtonClicked = false;
             ordersList.clear();
             array_of_orderId.clear();
-            dateSelector_text.setText(TodaysDate);
             selectedOrders.clear();
             sorted_OrdersList.clear();
-            getOrderDetailsUsingOrderSlotDate(PreviousDateString,TodaysDate, vendorKey);
+            /*TodaysDate = getDatewithNameoftheDay();
+            PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(TodaysDate);
+
+            if(orderdetailsnewschema){
+
+                String dateAsOldFormat =convertnewFormatDateintoOldFormat(TodaysDate);
+                dateSelector_text.setText(dateAsOldFormat);
+                callVendorOrderDetailsSeviceAndInitCallBack(TodaysDate,TodaysDate,vendorKey);
+
+
+            }
+            else{
+                dateSelector_text.setText(TodaysDate);
+
+                getOrderDetailsUsingOrderSlotDate(PreviousDateString,TodaysDate, vendorKey);
+
+            }
+
+             */
+
 
         }
         catch (Exception e){
@@ -268,7 +320,7 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
             }
         });
 
-
+/*
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -284,15 +336,26 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
 
                 isSearchButtonClicked = false;
 
+                if(orderdetailsnewschema){
+                    String newformat = convertOldFormatDateintoNewFormat(todatestring);
 
 
-                getOrderDetailsUsingOrderSlotDate(PreviousDateString,todatestring, vendorKey);
+                    callVendorOrderDetailsSeviceAndInitCallBack(newformat,newformat,vendorKey);
+                }
+                else{
+
+                    getOrderDetailsUsingOrderSlotDate(PreviousDateString,todatestring, vendorKey);
+
+                }
+
 
 
 
 
             }
         });
+
+ */
 
         SlotrangeSelector_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -440,6 +503,35 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
                 }
             }
         });
+
+
+        fetchData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                 if (DateString.equals(Constants.Empty_Date_Format)) {
+                    Toast.makeText(PlotOrdersLocationWithTokenNo.this, "Select the Date First !!! ", Toast.LENGTH_SHORT).show();
+                } else {
+                     showProgressBar(true);
+
+                     if (orderdetailsnewschema) {
+                         String NewFormat = convertOldFormatDateintoNewFormat(DateString);
+
+                         callVendorOrderDetailsSeviceAndInitCallBack(NewFormat, NewFormat, vendorKey);
+
+
+                     } else {
+
+
+                         //  Adjusting_Widgets_Visibility(true);
+                         PreviousDateString = getDatewithNameofthePreviousDay2(DateString);
+
+                         getOrderDetailsUsingOrderSlotDate(PreviousDateString, DateString, vendorKey);
+
+                     }
+                 }
+            }
+        });
+
         loadingpanelmask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -936,6 +1028,57 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
         }
     }
 
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        showProgressBar(true);
+
+        if(isVendorOrdersTableServiceCalled){
+            showProgressBar(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+                ordersList =  orderslist_fromResponse;
+
+                mobile_orderinstruction.setVisibility(View.GONE);
+                // addDateinDatesArray(FromDate,ToDate);
+                displayorderDetailsinListview( ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner);
+
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + "That didn't work!");
+                showProgressBar(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+        ordersList.clear();
+        sorted_OrdersList.clear();
+        array_of_orderId.clear();
+
+        showProgressBar(true);
+        mVolleyService = new VendorOrdersTableService(mResultCallback,PlotOrdersLocationWithTokenNo.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+
 
     private void getOrderDetailsUsingOrderSlotDate(String previousDaydate, String SlotDate, String vendorKey) {
         showProgressBar(true);
@@ -1041,6 +1184,8 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
                             array_of_orderId.clear();
                             selectedOrders.clear();
                             sorted_OrdersList.clear();
+                            displayorderDetailsinListview( ordersList, slottypefromSpinner, selectedTimeRange_spinner,selected_DeliveryDistanceRange_spinner);
+
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
                             String datestring =  String.valueOf(dayOfMonth);
@@ -1067,8 +1212,6 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
 
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             //getOrderForSelectedDate(DateString, vendorKey);
-
-                            getOrderDetailsUsingOrderSlotDate(PreviousDateString, DateString, vendorKey);
 
                         }
                         catch (Exception e ){
@@ -1548,34 +1691,44 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
 
     private String getDatewithNameoftheDay() {
         Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        CurrentDay = day.format(c);
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
 
+            return CurrentDate;
 
-
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
-
-
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+        }
+        else {
 
 
-        return CurrentDate;
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
     }
 
+    private String getDatewithNameofthePreviousDay2(String sDate) {
 
 
-    private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
+        } catch (ParseException e2) {
+            e2.printStackTrace();
         }
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
 
@@ -1601,6 +1754,119 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
 
         return yesterdayAsString;
+
+
+
+    }
+
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
+    private String convertnewFormatDateintoOldFormat(String todaysdate) {
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            String CurrentDay = day.format(date);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(date);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
+
+    private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
+
+        if(orderdetailsnewschema) {
+
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = null;
+            try {
+                date = dateFormat.parse(sDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+            calendar.add(Calendar.DATE, -1);
+
+
+            Date c1 = calendar.getTime();
+
+
+
+            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
+            String yesterdayAsString = df1.format(c1);
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+            return yesterdayAsString;
+
+
+        }
+        else {
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+            Date date = null;
+            try {
+                date = dateFormat.parse(sDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+            calendar.add(Calendar.DATE, -1);
+
+
+            Date c1 = calendar.getTime();
+
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            String yesterdayAsString = PreviousdayDay + ", " + PreviousdayDate;
+            //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+            return yesterdayAsString;
+        }
     }
 
 
@@ -1703,7 +1969,7 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
                         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         SlotrangeSelector_spinner.setAdapter(arrayAdapter);
                         selectedTimeRange_spinner = "All";
-                       // showProgressBar(false);
+                        showProgressBar(false);
 
 
                     }
@@ -1783,6 +2049,7 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
         mobile_search_button.setVisibility(View.VISIBLE);
         mobile_search_close_btn.setVisibility(View.GONE);
         mobile_search_barEditText.setVisibility(View.GONE);
+        newOrdersSync_Layout.setVisibility(View.VISIBLE);
     }
 
     private void showSearchBarEditText() {
@@ -1790,6 +2057,7 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
         mobile_search_button.setVisibility(View.GONE);
         mobile_search_close_btn.setVisibility(View.VISIBLE);
         mobile_search_barEditText.setVisibility(View.VISIBLE);
+        newOrdersSync_Layout.setVisibility(View.GONE);
     }
     private void showKeyboard(final EditText editText) {
         final Handler handler = new Handler();

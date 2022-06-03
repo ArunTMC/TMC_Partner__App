@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginBottom="10dp"
-
         android:orientation="horizontal">
 
         <LinearLayout
@@ -31,7 +30,7 @@
                 android:layout_height="match_parent"
                 android:textSize="30sp"
                 android:gravity="center_vertical|center_horizontal"
-
+                android:visibility="gone"
                 android:fontFamily="@font/open_sans_bold"
                 android:text="01" />
 
@@ -58,7 +57,7 @@
                 android:visibility="visible"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="14sp"
                 android:layout_weight="4.4"
                 android:backgroundTint="@color/EditTextBorderColor"
                 android:layout_gravity="center"

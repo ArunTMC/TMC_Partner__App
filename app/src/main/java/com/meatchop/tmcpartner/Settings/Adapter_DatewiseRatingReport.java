@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.Settings;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,6 +34,8 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScree
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,16 +49,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrderDetails> {
     Context mContext;
     Modal_OrderDetails orderTrackingDetailstable_Object;
     Modal_ManageOrders_Pojo_Class totalOrderDetailsObject;
     Modal_OrderDetails orderDetailsNewtable_Object;
     List<Modal_RatingOrderDetails> ratingList;
-    String createdTime,orderId,mobileNumber,itemName,itemQuantity,feedBack,qualityrating,deliveryrating;
+    String vendorKey,createdTime,orderId,mobileNumber,itemName,itemQuantity,feedBack,qualityrating,deliveryrating;
     DatewiseRatingreport_SecondScreen datewiseRatingreport_secondScreen;
     public static BottomSheetDialog bottomSheetDialog;
     List<Modal_OrderDetails>orderDetails = new ArrayList<>();
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
     public Adapter_DatewiseRatingReport(Context context, List<Modal_RatingOrderDetails> ratingList, DatewiseRatingreport_SecondScreen DatewiseRatingreport_secondScreen) {
         super(context, R.layout.datewiseratingreportlistitem);
 
@@ -82,7 +95,16 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
 
         final Button addEnquiryStatusButton = listViewItem.findViewById(R.id.addEnquiryStatusButton);
 
+        try {
+            SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+            vendorKey = (shared.getString("VendorKey", ""));
 
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+          //  orderdetailsnewschema = true;
+                  }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
         orderDetails.clear();
 
@@ -113,7 +135,16 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
                     orderId = ratingList.get(position).getOrderid();
 
                     datewiseRatingreport_secondScreen.showProgressBar(true);
-                     orderDetailsNewtable_Object = getOrderDetailsFromOrderDetailsTable(orderId);
+                    if(orderdetailsnewschema){
+
+                        callVendorOrderDetailsSeviceAndInitCallBack(orderId,vendorKey);
+
+
+                    }
+                    else{
+                        orderDetailsNewtable_Object = getOrderDetailsFromOrderDetailsTable(orderId);
+
+                    }
 
 
                 }
@@ -592,6 +623,69 @@ public class Adapter_DatewiseRatingReport extends ArrayAdapter<Modal_RatingOrder
 
 
         return modal_orderDetails;
+
+
+    }
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String orderId ,String vendorKey) {
+        if(isVendorOrdersTableServiceCalled){
+            datewiseRatingreport_secondScreen.showProgressBar(false);
+
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                 JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+
+
+                processTheArrayandCallTheIntent(orderslist_fromResponse);
+                //convertingJsonStringintoArray(orderStatus,mobile_jsonString);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                datewiseRatingreport_secondScreen.showProgressBar(false);
+
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+        mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingOrderid_vendorkey + "?vendorkey="+vendorKey+"&orderid="+orderId;
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingOrderid_vendorkey + "?vendorkey="+vendorKey+"&orderid="+orderId;
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+    private void processTheArrayandCallTheIntent(List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+
+        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_1 = new Modal_ManageOrders_Pojo_Class();
+        if(orderslist_fromResponse.size()>0) {
+            for (Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class : orderslist_fromResponse) {
+                modal_manageOrders_pojo_class_1 = modal_manageOrders_pojo_class;
+            }
+
+
+            Intent intent = new Intent(mContext, MobileScreen_OrderDetails1.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("From", "DatewiseRatingReport");
+            bundle.putParcelable("data", modal_manageOrders_pojo_class_1);
+            intent.putExtras(bundle);
+
+            mContext.startActivity(intent);
+        }
+        else{
+            Toast.makeText(mContext, "There is no order for this orderid ", Toast.LENGTH_SHORT).show();
+        }
+        datewiseRatingreport_secondScreen.showProgressBar(false);
+
 
 
     }

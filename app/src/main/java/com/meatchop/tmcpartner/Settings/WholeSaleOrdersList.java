@@ -50,6 +50,8 @@ import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDelivery
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 import com.pos.printer.AsyncEscPosPrint;
 import com.pos.printer.AsyncEscPosPrinter;
 import com.pos.printer.AsyncUsbEscPosPrint;
@@ -60,6 +62,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,7 +76,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class WholeSaleOrdersList extends AppCompatActivity {
-    TextView appOrdersCount_textwidget,dateSelector_text, orderinstruction,  nameofFacility_Textview;
+    TextView fetchData,appOrdersCount_textwidget,dateSelector_text, orderinstruction,  nameofFacility_Textview;
     ImageView search_button,  search_close_btn;
     EditText  search_barEditText;
 
@@ -138,6 +141,14 @@ public class WholeSaleOrdersList extends AppCompatActivity {
     String printerStatusfromSP= "";
 
 
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -153,6 +164,9 @@ public class WholeSaleOrdersList extends AppCompatActivity {
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+           // orderdetailsnewschema = true;
+
 
 
         }
@@ -160,17 +174,34 @@ public class WholeSaleOrdersList extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-        double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-        screenInches = Math.sqrt(x + y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(WholeSaleOrdersList .this);
+         //   Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+              //  Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
 
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         ordersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         sorted_OrdersList = new ArrayList<Modal_ManageOrders_Pojo_Class>();
         array_of_orderId = new ArrayList<>();
         appOrdersCount_textwidget = findViewById(R.id.wholeSaleOrdersCount_textwidget);
+        fetchData  = findViewById(R.id.fetchData);
 
 
         manageOrders_ListView = findViewById(R.id.manageOrders_ListView);
@@ -193,27 +224,43 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
 
         try{
-            TodaysDate = getDate();
+          //  TodaysDate = getDate();
             //Now we are creating sheet
 
-            Adjusting_Widgets_Visibility(true);
+           // Adjusting_Widgets_Visibility(true);
 
             isSearchButtonClicked = false;
             ordersList.clear();
             sorted_OrdersList.clear();
             array_of_orderId.clear();
+            dateSelector_text.setText(Constants.Empty_Date_Format);
+            DateString = (Constants.Empty_Date_Format);
 
-            dateSelector_text.setText(TodaysDate);
-            getOrderDetailsUsingOrderOrderPlacedDate(TodaysDate, vendorKey);
+            //   dateSelector_text.setText(TodaysDate);
+
+          /*  if(orderdetailsnewschema){
+
+                String dateAsOldFormat =convertnewFormatDateintoOldFormat(TodaysDate);
+                dateSelector_text.setText(dateAsOldFormat);
+                callVendorOrderDetailsSeviceAndInitCallBack(dateAsOldFormat,dateAsOldFormat,vendorKey);
 
 
+            }
+            else{
+                dateSelector_text.setText(TodaysDate);
+
+                  getOrderDetailsUsingOrderOrderPlacedDate(TodaysDate, vendorKey);
+
+            }
+
+           */
         }
         catch (Exception e){
             e.printStackTrace();
         }
 
 
-
+/*
 
         newOrdersSync_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -226,11 +273,23 @@ public class WholeSaleOrdersList extends AppCompatActivity {
                 String Todaysdate =  dateSelector_text.getText().toString();
 
                 isSearchButtonClicked = false;
-                getOrderDetailsUsingOrderOrderPlacedDate(Todaysdate, vendorKey);
+                if(orderdetailsnewschema){
+                    String newformat = convertOldFormatDateintoNewFormat(Todaysdate);
+
+
+                    callVendorOrderDetailsSeviceAndInitCallBack(newformat,newformat,vendorKey);
+                }
+                else{
+
+                    getOrderDetailsUsingOrderOrderPlacedDate(Todaysdate, vendorKey);
+
+                }
 
             }
         });
 
+
+ */
 
 
         search_close_btn.setOnClickListener(new View.OnClickListener() {
@@ -273,6 +332,33 @@ public class WholeSaleOrdersList extends AppCompatActivity {
             }
         });
 
+
+        fetchData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (DateString.equals(Constants.Empty_Date_Format)) {
+                    Toast.makeText(WholeSaleOrdersList.this, "Select the Date First !!! ", Toast.LENGTH_SHORT).show();
+                } else {
+                    Adjusting_Widgets_Visibility(true);
+
+                    if (orderdetailsnewschema) {
+                        String dateAsNewFormat = convertOldFormatDateintoNewFormat(DateString);
+                        // dateSelector_text.setText(dateAsOldFormat);
+                        callVendorOrderDetailsSeviceAndInitCallBack(dateAsNewFormat, dateAsNewFormat, vendorKey);
+
+
+                    } else {
+                        //  dateSelector_text.setText(Todaysdate);
+                        //PreviousDateString = getDatewithNameofthePreviousDay2(DateString);
+
+                        getOrderDetailsUsingOrderOrderPlacedDate(DateString, vendorKey);
+
+                    }
+
+                }
+            }
+        });
 
 
          search_barEditText.addTextChangedListener(new TextWatcher() {
@@ -405,6 +491,7 @@ public class WholeSaleOrdersList extends AppCompatActivity {
                             ordersList.clear();
                             sorted_OrdersList.clear();
                             array_of_orderId.clear();
+                            displayorderDetailsinListview(ordersList);
 
                             String month_in_String = getMonthString(monthOfYear);
                             String monthstring = String.valueOf(monthOfYear+1);
@@ -430,9 +517,29 @@ public class WholeSaleOrdersList extends AppCompatActivity {
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
 
                             dateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
-                            //getOrderForSelectedDate(DateString, vendorKey);
+                            manageOrders_ListView.setVisibility(View.GONE);
+                            orderinstruction.setVisibility(View.VISIBLE);
+                            orderinstruction.setText("After Selecting the Date !! Click Fetch Data");
 
-                            getOrderDetailsUsingOrderOrderPlacedDate(DateString, vendorKey);
+
+                            //getOrderForSelectedDate(DateString, vendorKey);
+                            /*if(orderdetailsnewschema){
+                                String NewFormat =convertOldFormatDateintoNewFormat(DateString);
+
+                                callVendorOrderDetailsSeviceAndInitCallBack(NewFormat, NewFormat,vendorKey);
+
+
+                            }
+                            else{
+
+
+                                //  Adjusting_Widgets_Visibility(true);
+
+                                getOrderDetailsUsingOrderOrderPlacedDate(DateString, vendorKey);
+
+                            }
+
+                             */
 
                         }
                         catch (Exception e ){
@@ -846,7 +953,6 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
 
             displayorderDetailsinListview(ordersList);
-            appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -855,7 +961,8 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
     private void displayorderDetailsinListview(List<Modal_ManageOrders_Pojo_Class> ordersList) {
         sorted_OrdersList.clear();
-      
+        appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
+
         for (int i = 0; i < ordersList.size(); i++) {
             try {
 
@@ -997,6 +1104,56 @@ public class WholeSaleOrdersList extends AppCompatActivity {
     }
 
 
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        Adjusting_Widgets_Visibility(true);
+
+        if(isVendorOrdersTableServiceCalled){
+            Adjusting_Widgets_Visibility(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+                ordersList =  orderslist_fromResponse;
+
+                orderinstruction.setVisibility(View.GONE);
+                // addDateinDatesArray(FromDate,ToDate);
+                displayorderDetailsinListview(ordersList);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + "That didn't work!");
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+        ordersList.clear();
+        sorted_OrdersList.clear();
+        array_of_orderId.clear();
+
+        Adjusting_Widgets_Visibility(true);
+        mVolleyService = new VendorOrdersTableService(mResultCallback,WholeSaleOrdersList.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=WHOLESALEORDER";
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
+
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+
     private void hideKeyboard(EditText editText) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         Objects.requireNonNull(imm).hideSoftInputFromWindow(editText.getWindowToken(), 0);
@@ -1007,6 +1164,7 @@ public class WholeSaleOrdersList extends AppCompatActivity {
          search_button.setVisibility(View.VISIBLE);
          search_close_btn.setVisibility(View.GONE);
          search_barEditText.setVisibility(View.GONE);
+        newOrdersSync_Layout.setVisibility(View.VISIBLE);
     }
 
     private void showSearchBarEditText() {
@@ -1014,6 +1172,7 @@ public class WholeSaleOrdersList extends AppCompatActivity {
          search_button.setVisibility(View.GONE);
          search_close_btn.setVisibility(View.VISIBLE);
          search_barEditText.setVisibility(View.VISIBLE);
+         newOrdersSync_Layout.setVisibility(View.GONE);
     }
     private void showKeyboard(final EditText editText) {
         final Handler handler = new Handler();
@@ -1028,6 +1187,93 @@ public class WholeSaleOrdersList extends AppCompatActivity {
         },0);
     }
 
+    private String getDatewithNameofthePreviousDay2(String sDate) {
+
+
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        Date date = null;
+        try {
+            date = dateFormat.parse(sDate);
+        } catch (ParseException e2) {
+            e2.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+        calendar.add(Calendar.DATE, -1);
+
+
+
+
+        Date c1 = calendar.getTime();
+
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        String PreviousdayDay = previousday.format(c1);
+
+
+
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        String  PreviousdayDate = df1.format(c1);
+        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
+        //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+
+        return yesterdayAsString;
+
+
+
+    }
+
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
+
+
+
+
+    private String convertnewFormatDateintoOldFormat(String todaysdate) {
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            String CurrentDay = day.format(date);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(date);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
 
 
     private String getMonthString(int value) {
@@ -1104,22 +1350,32 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        CurrentDay = day.format(c);
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
 
+            return CurrentDate;
 
-
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
-
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+        }
+        else {
 
 
-        return CurrentDate;
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
     }
 
     public void printWholeSaleOrderReceiptUsingBluetoothPrinter(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {

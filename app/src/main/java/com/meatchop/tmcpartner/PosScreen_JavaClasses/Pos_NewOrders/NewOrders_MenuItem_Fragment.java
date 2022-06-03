@@ -56,16 +56,17 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.dantsu.escposprinter.connection.DeviceConnection;
 import com.dantsu.escposprinter.connection.usb.UsbConnection;
-import com.dantsu.escposprinter.connection.usb.UsbPrintersConnections;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
-import com.meatchop.tmcpartner.Settings.Modal_MenuItem_Settings;
 import com.pos.printer.Modal_USBPrinter;
 
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
@@ -77,7 +78,6 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.net.ConnectException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -132,9 +132,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     static Adapter_CartItem_Recyclerview adapter_cartItem_recyclerview;
     static Adapter_CartItem_Listview adapter_cartItem_listview;
     TextView discount_Edit_widget,discount_rs_text_widget,customername_labelWidget;
-    String discountAmount ="" ;
+    String discountAmount_StringGlobal ="" ;
+    double discountAmount_DoubleGlobal =0; ;
+
     String finaltoPayAmount="",maxpointsinaday_String="",minordervalueforredeem_String="",pointsfor100rs_String="",totalamounttoPaywithoutredeempoints="";
-    String vendorKey="",vendorType="",usermobileNo="",finaltoPayAmountwithRedeemPoints="",
+    String vendorKey="",vendorType="",vendorName ="",usermobileNo="",finaltoPayAmountwithRedeemPoints="",
             redeemPoints_String="",redeemKey="",mobileno_redeemKey="",discountAmountalreadyusedtoday=""
             ,totalpointsredeemedalreadybyuser="",totalordervalue_tillnow="",totalredeempointsuserhave="";
     double maxpointsinaday_double,minordervalueforredeem_double,pointsfor100rs_double,totalAmounttopay,finalamounttoPay;
@@ -153,6 +155,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     boolean isUpdateRedeemPointsWithoutKeyMethodCalled=false;
     boolean isMobileAppDataFetchedinDashboard=false;
     boolean isDiscountApplied=false;
+    boolean isOrderPlacedinOrderdetails = false;
     List<Modal_MenuItemStockAvlDetails> MenuItemStockAvlDetails=new ArrayList<>();
     private  boolean isStockOutGoingAlreadyCalledForthisItem =false;
     public static List<String> StockBalanceChangedForThisItemList;
@@ -211,6 +214,17 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
     Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
     List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList=new ArrayList<>();
+    HashMap<String,String>wholeSaleCustomersMobileNoStringHashmap = new HashMap<>();
+    Adapter_AutoCompleteWholeSaleCustomers adapter_autoCompleteWholeSaleCustomers;
+
+
+
+    boolean orderdetailsnewschema = false;
+
+    Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
+    boolean  isCustomerOrdersTableServiceCalled = false;
+
+
 
     public NewOrders_MenuItem_Fragment() {
         // Required empty public constructor
@@ -298,12 +312,15 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             vendorKey = shared.getString("VendorKey","");
             usermobileNo = (shared.getString("UserPhoneNumber", "+91"));
             vendorType = shared.getString("VendorType","");
+            vendorName = shared.getString("VendorName", "");
 
             StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+           // orderdetailsnewschema = true;
 
         }
         catch(Exception e){
@@ -697,12 +714,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(isDiscountApplied) {
-                    discountAmount = discount_Edit_widget.getText().toString();
+                    discountAmount_StringGlobal = discount_Edit_widget.getText().toString();
                 }
                 else{
-                    discountAmount ="0";
+                    discountAmount_StringGlobal ="0";
                 }
-                if (discountAmount.equals("") || discountAmount.equals("0")) {
+                if (discountAmount_StringGlobal.equals("") || discountAmount_StringGlobal.equals("0")) {
                    //  totalAmounttopay = Double.parseDouble(total_Rs_to_Pay_text_widget.getText().toString());
                     String deliveryUserMobileNumber ="+91"+mobileNo_Edit_widget.getText().toString();
 
@@ -931,16 +948,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                             if (toPayAmtdouble>0) {
 
-                                discountAmount = discount_Edit_widget.getText().toString();
-                                if (!discountAmount.equals("") &&(!discountAmount.equals("0"))) {
-                                    double discountAmountdouble = Double.parseDouble(discountAmount);
+                                discountAmount_StringGlobal = discount_Edit_widget.getText().toString();
+                                if (!discountAmount_StringGlobal.equals("") &&(!discountAmount_StringGlobal.equals("0"))) {
+                                    discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
                                     double toPayAmt = Double.parseDouble(finaltoPayAmount);
-                                    if (toPayAmt > discountAmountdouble) {
-                                        toPayAmt = toPayAmt - discountAmountdouble;
+                                    if (toPayAmt > discountAmount_DoubleGlobal) {
+                                        toPayAmt = toPayAmt - discountAmount_DoubleGlobal;
                                         int toPayAmountInt = (int) Math.round((toPayAmt));
                                         totalAmounttopay = toPayAmt;
                                         isDiscountApplied=true;
-                                        discount_rs_text_widget.setText(discountAmount);
+                                        discount_rs_text_widget.setText(discountAmount_StringGlobal);
 
                                         total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
                                     }
@@ -950,9 +967,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                     }
                                 }
                                 else{
-                               //     add_amount_ForBillDetails();
-                                    discountAmount ="0";
+                                    discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                    double toPayAmt = Double.parseDouble(finaltoPayAmount);
+                                    toPayAmt = toPayAmt + discountAmount_DoubleGlobal;
+                                    int toPayAmountInt = (int) Math.round((toPayAmt));
+                                    total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
+
+                                    //     add_amount_ForBillDetails();
+                                    discountAmount_StringGlobal ="0";
                                     isDiscountApplied=false;
+                                    discountAmount_DoubleGlobal = 0;
                                     discount_rs_text_widget.setText("0");
                                     checkIfNewUser();
                                 }
@@ -974,8 +998,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 }
 
                 catch(Exception e ){
-                        discountAmount = "0";
-                    discount_rs_text_widget.setText(discountAmount);
+                        discountAmount_StringGlobal = "0";
+                    discount_rs_text_widget.setText(discountAmount_StringGlobal);
 
                         e.printStackTrace();
                     }
@@ -1234,7 +1258,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
     }
 
     private void checkIfNewUser() {
-        discountAmount ="0";
+        discountAmount_StringGlobal ="0";
+        discountAmount_DoubleGlobal =0;
         isDiscountApplied=false;
         final String[] Count = {"0"};
         discount_rs_text_widget.setText("0");
@@ -1278,6 +1303,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 else{
 
                                     OpenDiscountDialogScreen(true, Count[0]);
+                                    Toast.makeText(mContext, "Fetch new user for Discount Failed 1" , Toast.LENGTH_SHORT).show();
 
                                   //  AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsIsNotExistedInstruction , 0);
                                     showProgressBar(false);
@@ -1288,10 +1314,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                             } catch (Exception e) {
                                 showProgressBar(false);
-                                discountAmount ="0";
+                                discountAmount_StringGlobal ="0";
+                                discountAmount_DoubleGlobal = 0;
                                 isDiscountApplied=false;
                                 discount_rs_text_widget.setText("0");
                                 OpenDiscountDialogScreen(true, Count[0]);
+                                Toast.makeText(mContext, "Fetch new user for Discount Failed 2" +String.valueOf(e), Toast.LENGTH_SHORT).show();
 
                                 e.printStackTrace();
                             }
@@ -1304,7 +1332,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 public void onErrorResponse(@NonNull VolleyError error) {
                     Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
                     OpenDiscountDialogScreen(true, Count[0]);
-
+                    discountAmount_StringGlobal ="0";
+                    discountAmount_DoubleGlobal = 0;
+                    isDiscountApplied=false;
+                    discount_rs_text_widget.setText("0");
+                    Toast.makeText(mContext, "Fetch new user for Discount Failed 3" +String.valueOf(error), Toast.LENGTH_SHORT).show();
                     showProgressBar(false);
 
                     Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getLocalizedMessage());
@@ -1350,75 +1382,97 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
         runOnUiThread(new Runnable() {
                           @Override
                           public void run() {
-                              try {
-                                  Dialog dialog = new Dialog(getActivity());
-                                  dialog.setContentView(R.layout.apply_discount_layout);
-                                  showProgressBar(false);
-                                  TextView usermobileno_textwidget = (TextView) dialog.findViewById(R.id.usermobileno_textwidget);
-                                  TextView orderid_count_textwidget = (TextView) dialog.findViewById(R.id.orderid_count_textwidget);
-                                  TextView couponDiscount_detailsTextWidget = (TextView) dialog.findViewById(R.id.couponDiscount_detailsTextWidget);
-                                  TextView storeDiscount_detailsTextWidget = (TextView) dialog.findViewById(R.id.storeDiscount_detailsTextWidget);
-                                  Button applyDiscountButton = (Button) dialog.findViewById(R.id.applyDiscountButton);
-                                  EditText discount_edit_textwidget = (EditText) dialog.findViewById(R.id.discount_edit_textwidget);
-
-                                  orderid_count_textwidget.setText(count);
-                                  if(isnewUser){
-                                      couponDiscount_detailsTextWidget.setVisibility(View.VISIBLE);
-                                      storeDiscount_detailsTextWidget.setVisibility(View.GONE);
-
-                                  }
-                                  else{
-                                      couponDiscount_detailsTextWidget.setVisibility(View.GONE);
-                                      storeDiscount_detailsTextWidget.setVisibility(View.VISIBLE);
-
-                                  }
-
-                                  usermobileno_textwidget.setText(mobileNo_Edit_widget.getText().toString());
 
 
-                                  applyDiscountButton.setOnClickListener(new View.OnClickListener() {
-                                      @Override
-                                      public void onClick(View v) {
-                                          discountAmount = discount_edit_textwidget.getText().toString();
-                                          if(discountAmount.equals("") || discountAmount.equals(" ") || discountAmount.equals("null") || discountAmount.equals("NULL") || discountAmount.equals(null)){
-                                              discountAmount = "0";
-                                          }
-                                          double discountAmountdouble = Double.parseDouble(discountAmount);
-                                          finaltoPayAmount =total_item_Rs_text_widget.getText().toString();
-                                          double toPayAmt = Double.parseDouble(finaltoPayAmount);
-                                          // Toast.makeText(mContext, "total  "+finaltoPayAmount, Toast.LENGTH_LONG).show();
 
-                                          if (toPayAmt > discountAmountdouble) {
-                                              toPayAmt = toPayAmt - discountAmountdouble;
-                                              int toPayAmountInt = (int) Math.round((toPayAmt));
-                                              totalAmounttopay = toPayAmt;
-                                              isDiscountApplied=true;
-                                              discount_rs_text_widget.setText(discountAmount);
+                                  try {
+                                      Dialog dialog = null;
 
-                                              total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
-
-                                              dialog.cancel();
-
-                                          }
-                                          else{
-                                              AlertDialogClass.showDialog(getActivity(), Constants.DiscountAmountInstruction, 0);
-                                              discountAmount ="0";
-                                              isDiscountApplied=false;
-                                              discount_rs_text_widget.setText("0");
-                                          }
+                                      if(getActivity() != null) {
+                                          dialog = new Dialog(getActivity());
                                       }
-                                  });
+                                      else if(getContext() != null){
+                                          dialog = new Dialog(getContext());
+
+                                      }
+                                      else if(mContext!= null){
+                                          dialog = new Dialog(mContext);
+
+                                      }
+                                      else{
+                                          dialog = new Dialog(getActivity());
+
+                                      }
+                                      dialog.setContentView(R.layout.apply_discount_layout);
+                                      showProgressBar(false);
+                                      TextView usermobileno_textwidget = (TextView) dialog.findViewById(R.id.usermobileno_textwidget);
+                                      TextView orderid_count_textwidget = (TextView) dialog.findViewById(R.id.orderid_count_textwidget);
+                                      TextView couponDiscount_detailsTextWidget = (TextView) dialog.findViewById(R.id.couponDiscount_detailsTextWidget);
+                                      TextView storeDiscount_detailsTextWidget = (TextView) dialog.findViewById(R.id.storeDiscount_detailsTextWidget);
+                                      Button applyDiscountButton = (Button) dialog.findViewById(R.id.applyDiscountButton);
+                                      EditText discount_edit_textwidget = (EditText) dialog.findViewById(R.id.discount_edit_textwidget);
+
+                                      orderid_count_textwidget.setText(count);
+                                      if (isnewUser) {
+                                          couponDiscount_detailsTextWidget.setVisibility(View.VISIBLE);
+                                          storeDiscount_detailsTextWidget.setVisibility(View.GONE);
+
+                                      } else {
+                                          couponDiscount_detailsTextWidget.setVisibility(View.GONE);
+                                          storeDiscount_detailsTextWidget.setVisibility(View.VISIBLE);
+
+                                      }
+
+                                      usermobileno_textwidget.setText(mobileNo_Edit_widget.getText().toString());
 
 
+                                      Dialog finalDialog = dialog;
+                                      applyDiscountButton.setOnClickListener(new View.OnClickListener() {
+                                          @Override
+                                          public void onClick(View v) {
+                                              discountAmount_StringGlobal = discount_edit_textwidget.getText().toString();
+                                              if (discountAmount_StringGlobal.equals("") || discountAmount_StringGlobal.equals(" ") || discountAmount_StringGlobal.equals("null") || discountAmount_StringGlobal.equals("NULL") || discountAmount_StringGlobal.equals(null)) {
+                                                  discountAmount_StringGlobal = "0";
+                                              }
+                                              discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                              finaltoPayAmount = total_item_Rs_text_widget.getText().toString();
+                                              double toPayAmt = Double.parseDouble(finaltoPayAmount);
+                                              // Toast.makeText(mContext, "total  "+finaltoPayAmount, Toast.LENGTH_LONG).show();
 
-                                  dialog.show();
-                              } catch (WindowManager.BadTokenException e) {
-                                  showProgressBar(false);
-                                  discountAmount ="0";
-                                  isDiscountApplied=false;
-                                  discount_rs_text_widget.setText("0");
-                                  e.printStackTrace();
-                              }
+                                              if (toPayAmt > discountAmount_DoubleGlobal) {
+                                                  toPayAmt = toPayAmt - discountAmount_DoubleGlobal;
+                                                  int toPayAmountInt = (int) Math.round((toPayAmt));
+                                                  totalAmounttopay = toPayAmt;
+                                                  isDiscountApplied = true;
+                                                  discount_rs_text_widget.setText(discountAmount_StringGlobal);
+
+                                                  total_Rs_to_Pay_text_widget.setText(String.valueOf(toPayAmountInt));
+
+                                                  finalDialog.cancel();
+
+                                              } else {
+                                                  AlertDialogClass.showDialog(getActivity(), Constants.DiscountAmountInstruction, 0);
+                                                  discountAmount_StringGlobal = "0";
+                                                  isDiscountApplied = false;
+
+                                                  discountAmount_DoubleGlobal = 0;
+                                                  discount_rs_text_widget.setText("0");
+                                              }
+                                          }
+                                      });
+
+
+                                      dialog.show();
+                                  } catch (Exception e) {
+                                      showProgressBar(false);
+                                      discountAmount_StringGlobal = "0";
+                                      isDiscountApplied = false;
+                                      discountAmount_DoubleGlobal = 0;
+
+                                      discount_rs_text_widget.setText("0");
+                                      e.printStackTrace();
+                                  }
+
                           }
         });
 
@@ -1603,31 +1657,129 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
     private void getWholeSaleCustomerArrayFromSharedPreferences() {
+
         wholeSaleCustomersArrayList.clear();
+        if(vendorType.equals(Constants.WholeSales_VendorType)) {
 
-        final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
+            final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
 
-        Gson gson = new Gson();
-        String json = sharedPreferencesMenuitem.getString("WholeSaleCustomerDetails", "");
-        if (json.isEmpty()) {
-            Toast.makeText( mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
-        } else {
-            Type type = new TypeToken<List<Modal_WholeSaleCustomers>>() {
-            }.getType();
-            wholeSaleCustomersArrayList  = gson.fromJson(json, type);
-        }
-
-        if(wholeSaleCustomersArrayList.size()>0){
-            Adapter_AutoCompleteWholeSaleCustomers adapter_autoCompleteWholeSaleCustomers = new Adapter_AutoCompleteWholeSaleCustomers(mContext,wholeSaleCustomersArrayList,NewOrders_MenuItem_Fragment.this);
-            //adapter_autoCompleteWholeSaleCustomers.setHandler(newHandler());
+            Gson gson = new Gson();
+            String json = sharedPreferencesMenuitem.getString("WholeSaleCustomerDetails", "");
+            if (json.isEmpty()) {
+                Toast.makeText(mContext.getApplicationContext(), "There is something error", Toast.LENGTH_LONG).show();
+            } else {
+                Type type = new TypeToken<List<Modal_WholeSaleCustomers>>() {
+                }.getType();
+                wholeSaleCustomersArrayList = gson.fromJson(json, type);
+            }
 
 
-            autoComplete_customerNameText_widget.setAdapter(adapter_autoCompleteWholeSaleCustomers);
+            for (int i = 0; i < wholeSaleCustomersArrayList.size(); i++) {
+                Modal_WholeSaleCustomers modal_wholeSaleCustomers = wholeSaleCustomersArrayList.get(i);
+                String mobileno = "", customerName = "";
+                mobileno = String.valueOf(modal_wholeSaleCustomers.getMobileno());
+                customerName = String.valueOf(modal_wholeSaleCustomers.getCustomerName());
+                if (!wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileno)) {
+                    wholeSaleCustomersMobileNoStringHashmap.put(mobileno, customerName);
 
+                }
+            }
+
+
+            if (wholeSaleCustomersArrayList.size() > 0) {
+                adapter_autoCompleteWholeSaleCustomers = new Adapter_AutoCompleteWholeSaleCustomers(mContext, wholeSaleCustomersArrayList, NewOrders_MenuItem_Fragment.this);
+                //adapter_autoCompleteWholeSaleCustomers.setHandler(newHandler());
+
+
+                autoComplete_customerNameText_widget.setAdapter(adapter_autoCompleteWholeSaleCustomers);
+
+            }
         }
 
     }
+    private void addWholeSaleCustomers(String customerName, String mobileNo) {
+        if(vendorType.equals(Constants.WholeSales_VendorType)) {
 
+
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("name", customerName);
+                jsonObject.put("mobileno", mobileNo);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+
+            }
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addWholeSalesCustomersTable,
+                    jsonObject, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(@NonNull JSONObject response) {
+
+                    try {
+                        String message = response.getString("message");
+                        if (message.equals("success")) {
+                            if (wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileNo)) {
+                                for (int i = 0; i < wholeSaleCustomersArrayList.size(); i++) {
+                                    Modal_WholeSaleCustomers modal_wholeSaleCustomers = wholeSaleCustomersArrayList.get(i);
+                                    String mobilenoFromArray = String.valueOf(modal_wholeSaleCustomers.getMobileno());
+                                    if (mobilenoFromArray.equals(mobileNo)) {
+                                        modal_wholeSaleCustomers.setCustomerName(customerName);
+
+                                    }
+                                }
+
+                            } else {
+                                Modal_WholeSaleCustomers modal_wholeSaleCustomers = new Modal_WholeSaleCustomers();
+                                modal_wholeSaleCustomers.setMobileno(mobileNo);
+                                modal_wholeSaleCustomers.setCustomerName(customerName);
+                                wholeSaleCustomersArrayList.add(modal_wholeSaleCustomers);
+
+                            }
+                            wholeSaleCustomersMobileNoStringHashmap.put(mobileNo, customerName);
+
+                            adapter_autoCompleteWholeSaleCustomers.notifyDataSetChanged();
+                            updateDatainSharedPreference(wholeSaleCustomersArrayList);
+                            Toast.makeText(mContext, " " + customerName + " is Added Now", Toast.LENGTH_SHORT).show();
+
+                        } else {
+                            Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
+
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
+
+                    error.printStackTrace();
+                }
+            }) {
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("Content-Type", "application/json");
+
+                    return params;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+            // Make the request
+            Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+        }
+
+
+    }
 
     private void  PlaceOrdersinDatabaseaAndPrintRecipt(String paymentMode, long sTime, String currenttime, List<String> cart_Item_list) {
         showProgressBar(true);
@@ -1636,6 +1788,43 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             return;
         }
         else {
+            isOrderPlacedinOrderdetails = false;
+            String customermobileno = "";
+            String customerName = "";
+            try{
+                customermobileno = "+91"+mobileNo_Edit_widget.getText().toString();
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+
+            }
+
+            try{
+                customerName = String.valueOf(autoComplete_customerNameText_widget.getText().toString());
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+
+            }
+            if(vendorType.equals(Constants.WholeSales_VendorType)) {
+
+                if (wholeSaleCustomersMobileNoStringHashmap.containsKey(String.valueOf(customermobileno))) {
+                    String customernameFromHashmap = wholeSaleCustomersMobileNoStringHashmap.get(customermobileno);
+                    customernameFromHashmap = String.valueOf(customernameFromHashmap).toUpperCase().trim();
+                    if (!customernameFromHashmap.equals(String.valueOf(customerName).toUpperCase().trim())) {
+                        addWholeSaleCustomers(customerName, customermobileno);
+
+                    } else {
+                        Toast.makeText(mContext, " " + customerName + " is Already Added", Toast.LENGTH_SHORT).show();
+
+                    }
+                } else {
+                    addWholeSaleCustomers(customerName, customermobileno);
+                }
+            }
+
             usermobileNo = "+91" + mobileNo_Edit_widget.getText().toString();
 
             ispaymentMode_Clicked = true;
@@ -1671,16 +1860,18 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                                     isPaymentDetailsMethodCalled = false;
                                     isOrderTrackingDetailsMethodCalled = false;
+                                    isCustomerOrdersTableServiceCalled  = false;
                                     new_to_pay_Amount = 0;
                                     old_taxes_and_charges_Amount = 0;
                                     old_total_Amount = 0;
                                     createEmptyRowInListView("empty");
                                     CallAdapter();
-                                    discountAmount = "0";
+                                    discountAmount_StringGlobal = "0";
+                                    discountAmount_DoubleGlobal =0;
                                     isDiscountApplied = false;
                                     discount_Edit_widget.setText("0");
                                     finaltoPayAmount = "0";
-                                    discount_rs_text_widget.setText(discountAmount);
+                                    discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                     OrderTypefromSpinner = "POS Order";
                                     orderTypeSpinner.setSelection(0);
                                     total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -1736,6 +1927,53 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
             }
             else{
+
+
+                if(!isCustomerOrdersTableServiceCalled){
+                    try{
+                        if(orderdetailsnewschema){
+                            String customerMobileNo = mobileNo_Edit_widget.getText().toString();
+                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+
+                            String  payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
+
+                            if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+
+                                ordertype = Constants.PhoneOrder;
+                            }
+                            else{
+                                ordertype = Constants.POSORDER;
+
+                            }
+                            try {
+                                if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                                    discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                                    discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
+                                }
+                                else{
+                                    discountAmount_DoubleGlobal =0;
+                                }
+
+
+                            }
+                            catch (Exception e){
+                                discountAmount_DoubleGlobal =0;
+                                e.printStackTrace();
+                            }
+                            isCustomerOrdersTableServiceCalled =true;
+                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode,discountAmount_StringGlobal,Currenttime,customerMobileNo,ordertype,vendorKey,vendorName, sTime,payableAmountt);
+                            asyncTask.execute();
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+                }
+
+
                 if (!isOrderDetailsMethodCalled) {
 
                     PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
@@ -1932,6 +2170,51 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                                 totalamountUserHaveAsCredit = 0;
                                             }
 
+                                            if(!isCustomerOrdersTableServiceCalled){
+                                                try{
+                                                    if(orderdetailsnewschema){
+                                                        String customerMobileNo = mobileNo_Edit_widget.getText().toString();
+                                                        String  payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
+
+                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+
+                                                        if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+
+                                                            ordertype = Constants.PhoneOrder;
+                                                        }
+                                                        else{
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+                                                        try {
+                                                            if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                                                                discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                                                                discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
+                                                            }
+                                                            else{
+                                                                discountAmount_DoubleGlobal =0;
+                                                            }
+
+
+                                                        }
+                                                        catch (Exception e){
+                                                            discountAmount_DoubleGlobal =0;
+                                                            e.printStackTrace();
+                                                        }
+                                                        isCustomerOrdersTableServiceCalled =true;
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode,discountAmount_StringGlobal,Currenttime,customerMobileNo,ordertype,vendorKey,vendorName, sTime,payableAmountt);
+                                                        asyncTask.execute();
+
+                                                    }
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+
+                                                }
+                                            }
+
+
                                             if (!isOrderDetailsMethodCalled) {
 
                                                 PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
@@ -1950,6 +2233,48 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             }
                                 else{
                                     totalamountUserHaveAsCredit = 0;
+                                    if(!isCustomerOrdersTableServiceCalled){
+                                        try{
+                                            if(orderdetailsnewschema){
+                                                String customerMobileNo = mobileNo_Edit_widget.getText().toString();
+                                                String  payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
+
+                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+
+                                                    ordertype = Constants.PhoneOrder;
+                                                }
+                                                else{
+                                                    ordertype = Constants.POSORDER;
+
+                                                }
+                                                try {
+                                                    if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                                                        discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                                                        discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
+                                                    }
+                                                    else{
+                                                        discountAmount_DoubleGlobal =0;
+                                                    }
+
+
+                                                }
+                                                catch (Exception e){
+                                                    discountAmount_DoubleGlobal =0;
+                                                    e.printStackTrace();
+                                                }
+                                                isCustomerOrdersTableServiceCalled =true;
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode,discountAmount_StringGlobal,Currenttime,customerMobileNo,ordertype,vendorKey,vendorName, sTime,payableAmount);
+                                                asyncTask.execute();
+
+                                            }
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+
+                                        }
+                                    }
 
                                     if (!isOrderDetailsMethodCalled) {
 
@@ -2036,6 +2361,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                         @Override
                         public void onYes() {
                             //ConnectPrinter();
+                            isOrderPlacedinOrderdetails = true;
+
                             turnoffProgressBarAndResetArray();
                             return;
 
@@ -2061,6 +2388,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             @Override
                             public void onYes() {
                                // ConnectPrinter();
+                                isOrderPlacedinOrderdetails = true;
+
                                 turnoffProgressBarAndResetArray();
                                 return;
                             }
@@ -2864,6 +3193,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             turnoffProgressBar(orderplacedTime,userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode,discountAmount,ordertype);
                         }
                         else {
+                            isOrderPlacedinOrderdetails = true;
+
                             turnoffProgressBarAndResetArray();
                         }
 
@@ -2906,6 +3237,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                             @Override
                             public void onNo() {
+                                isOrderPlacedinOrderdetails = true;
 
                                 turnoffProgressBarAndResetArray();
 
@@ -2935,19 +3267,20 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 cartItem_hashmap.clear();
                 ispaymentMode_Clicked = false;
                 isOrderDetailsMethodCalled = false;
-
+                isCustomerOrdersTableServiceCalled  = false;
                 isPaymentDetailsMethodCalled = false;
                 isOrderTrackingDetailsMethodCalled = false;
+                isCustomerOrdersTableServiceCalled  = false;
                 new_to_pay_Amount = 0;
                 old_taxes_and_charges_Amount = 0;
                 old_total_Amount = 0;
                 createEmptyRowInListView("empty");
                 CallAdapter();
-                discountAmount = "0";
+                discountAmount_StringGlobal = "0";
                 isDiscountApplied = false;
                 discount_Edit_widget.setText("0");
                 finaltoPayAmount = "0";
-                discount_rs_text_widget.setText(discountAmount);
+                discount_rs_text_widget.setText(discountAmount_StringGlobal);
                 OrderTypefromSpinner = "POS Order";
                 orderTypeSpinner.setSelection(0);
                 total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -3004,7 +3337,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 try {
                     Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
                     double oldSavedAmount = 0;
-                    String CouponDiscount = "0";
+                   // String CouponDiscount = "0";
                     String Gstt="",subtotall="",quantity="",price="",weight="";
                     double gst_double=0,subtotal_double=0,price_double=0;
                     for (int i = 0; i < cart_item_list.size(); i++) {
@@ -3405,69 +3738,72 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
  */
-                    CouponDiscount = "0";
+                    String CouponDiscount = "";
 
-                    CouponDiscount = Printer_POJO_ClassArraytotal.getTotaldiscount();
+                    //CouponDiscount = Printer_POJO_ClassArraytotal.getTotaldiscount();
 
-                    if (!CouponDiscount.equals("0")) {
-                        CouponDiscount = "Rs. " + CouponDiscount + ".00";
+                    if (!discountAmount_StringGlobal.equals("0")) {
+                        //CouponDiscount = "Rs. " + CouponDiscount + ".00";
 
-                        if ((!CouponDiscount.equals("Rs.0.0")) && (!CouponDiscount.equals("Rs.0")) && (!CouponDiscount.equals("Rs.0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals("")) && (!CouponDiscount.equals("Rs. .00")) && (!CouponDiscount.equals("Rs..00"))) {
+                        if ((!discountAmount_StringGlobal.equals("Rs.0.0")) && (!discountAmount_StringGlobal.equals("Rs.0")) && (!discountAmount_StringGlobal.equals("Rs.0.00")) && (discountAmount_StringGlobal != (null)) && (!discountAmount_StringGlobal.equals("")) && (!discountAmount_StringGlobal.equals("Rs. .00")) && (!discountAmount_StringGlobal.equals("Rs..00"))) {
 
-                            if (CouponDiscount.length() == 4) {
+                            if (discountAmount_StringGlobal.length() == 4) {
                                 //20spaces
                                 //NEW TOTAL =4
-                                CouponDiscount = "Discount Amount                   " + CouponDiscount;
+                                CouponDiscount = "Discount Amount                   " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 5) {
+                            else if (discountAmount_StringGlobal.length() == 5) {
                                 //21spaces
                                 //NEW TOTAL =5
-                                CouponDiscount = "Discount Amount                 " + CouponDiscount;
+                                CouponDiscount = "Discount Amount                 " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 6) {
+                            else if (discountAmount_StringGlobal.length() == 6) {
                                 //20spaces
                                 //NEW TOTAL =6
-                                CouponDiscount = "Discount Amount                " + CouponDiscount;
+                                CouponDiscount = "Discount Amount                " + discountAmount_StringGlobal;
                             }
 
-                            if (CouponDiscount.length() == 7) {
+                            else if (discountAmount_StringGlobal.length() == 7) {
                                 //19spaces
                                 //NEW TOTAL =7
-                                CouponDiscount = "Discount Amount               " + CouponDiscount;
+                                CouponDiscount = "Discount Amount               " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 8) {
+                            else  if (discountAmount_StringGlobal.length() == 8) {
                                 //18spaces
                                 //NEW TOTAL =8
-                                CouponDiscount = " Discount Amount              " + CouponDiscount;
+                                CouponDiscount = " Discount Amount              " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 9) {
+                            else if (discountAmount_StringGlobal.length() == 9) {
                                 //17spaces
                                 //NEW TOTAL =9
-                                CouponDiscount = " Discount Amount             " + CouponDiscount;
+                                CouponDiscount = " Discount Amount             " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 10) {
+                            else if (discountAmount_StringGlobal.length() == 10) {
                                 //16spaces
                                 //NEW TOTAL =9
-                                CouponDiscount = " Discount Amount            " + CouponDiscount;
+                                CouponDiscount = " Discount Amount            " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 11) {
+                            else if (discountAmount_StringGlobal.length() == 11) {
                                 //15spaces
                                 //NEW TOTAL =9
-                                CouponDiscount = "Discount Amount            " + CouponDiscount;
+                                CouponDiscount = "Discount Amount            " + discountAmount_StringGlobal;
                             }
-                            if (CouponDiscount.length() == 12) {
+                            else if (discountAmount_StringGlobal.length() == 12) {
                                 //14spaces
                                 //NEW TOTAL =9
-                                CouponDiscount = "Discount Amount           " + CouponDiscount;
+                                CouponDiscount = "Discount Amount           " + discountAmount_StringGlobal;
                             }
 
-                            if (CouponDiscount.length() == 13) {
+                            else if (discountAmount_StringGlobal.length() == 13) {
                                 //13spaces
                                 //NEW TOTAL =9
-                                CouponDiscount = "Discount Amount           " + CouponDiscount;
+                                CouponDiscount = "Discount Amount           " + discountAmount_StringGlobal;
 
                             }
+                            else{
+                                CouponDiscount = "Discount Amount       " + discountAmount_StringGlobal;
 
+                            }
 
                             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 0, 1, CouponDiscount + "\n");
 
@@ -3777,7 +4113,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                     public void onYes() {
                                         isPrintedSecondTime = true;
 
-                                        printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount, ordertype);
+                                        printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_item_list, cart_Item_hashmap, payment_mode, discountAmount_StringGlobal, ordertype);
 
                                     }
 
@@ -3785,6 +4121,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                     public void onNo() {
                                         StockBalanceChangedForThisItemList.clear();
                                         isStockOutGoingAlreadyCalledForthisItem =false;
+                                        isOrderPlacedinOrderdetails = true;
 
                                         autoComplete_customerNameText_widget.setText("");
                                         autoComplete_customerNameText_widget.dismissDropDown();
@@ -3794,7 +4131,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                         cartItem_hashmap.clear();
                                         ispaymentMode_Clicked = false;
                                         isOrderDetailsMethodCalled = false;
-
+                                        isCustomerOrdersTableServiceCalled  = false;
                                         isPaymentDetailsMethodCalled = false;
                                         isOrderTrackingDetailsMethodCalled = false;
                                         new_to_pay_Amount = 0;
@@ -3802,11 +4139,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                         old_total_Amount = 0;
                                         createEmptyRowInListView("empty");
                                         CallAdapter();
-                                        discountAmount = "0";
+                                        discountAmount_StringGlobal = "0";
+                                        discountAmount_DoubleGlobal =0;
                                         isDiscountApplied = false;
                                         discount_Edit_widget.setText("0");
                                         finaltoPayAmount = "0";
-                                        discount_rs_text_widget.setText(discountAmount);
+                                        discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                         OrderTypefromSpinner = "POS Order";
                                         orderTypeSpinner.setSelection(0);
                                         total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -3849,6 +4187,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
                     } else {
+                        isOrderPlacedinOrderdetails = true;
+
                         autoComplete_customerNameText_widget.setText("");
                         autoComplete_customerNameText_widget.dismissDropDown();
                         cart_Item_List.clear();
@@ -3865,11 +4205,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                         old_total_Amount = 0;
                         createEmptyRowInListView("empty");
                         CallAdapter();
-                        discountAmount = "0";
+                        discountAmount_StringGlobal = "0";
+                        discountAmount_DoubleGlobal =0;
                         isDiscountApplied = false;
                         discount_Edit_widget.setText("0");
                         finaltoPayAmount = "0";
-                        discount_rs_text_widget.setText(discountAmount);
+                        discount_rs_text_widget.setText(discountAmount_StringGlobal);
                         OrderTypefromSpinner = "POS Order";
                         orderTypeSpinner.setSelection(0);
                         total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -3884,7 +4225,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                         isPrintedSecondTime = false;
                         ispaymentMode_Clicked = false;
                         isOrderDetailsMethodCalled = false;
-
+                        isCustomerOrdersTableServiceCalled  = false;
                         isPaymentDetailsMethodCalled = false;
                         isOrderTrackingDetailsMethodCalled = false;
                         ispointsApplied_redeemClicked=false;
@@ -4253,7 +4594,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                 showProgressBar(true);
 
 
-                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount, ordertype);
+                                printRecipt(userMobile, tokenno, itemTotalwithoutGst, totaltaxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, payment_mode, discountAmount_StringGlobal, ordertype);
 
                                 dialog.cancel();
                             }
@@ -4269,6 +4610,25 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
         }
+    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext) {
+        mResultCallback_Add_CustomerOrder_TrackingTableInterface = new Add_CustomerOrder_TrackingTableInterface() {
+
+
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                isCustomerOrdersTableServiceCalled = false;
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                isCustomerOrdersTableServiceCalled = false;
+
+                // Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
+            }
+        };
+
+
+    }
 
 
 
@@ -5079,8 +5439,27 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             total_item_Rs_text_widget.setText(decimalFormat.format(old_total_Amount));
             taxes_and_Charges_rs_text_widget.setText(decimalFormat.format(old_taxes_and_charges_Amount));
+            double discountamountdouble = 0;            double payableamountdouble = 0;
+            if(discountAmount_StringGlobal.equals("")){
+                discountAmount_StringGlobal = "0";
+            }
+            try{
+                discountamountdouble =   Double.parseDouble(discountAmount_StringGlobal) ;
 
-             new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+            }
+            catch(Exception e){
+                discountamountdouble = 0;
+                e.printStackTrace();
+            }
+            try{
+                payableamountdouble =  new_to_pay_Amount - discountamountdouble;
+
+            }
+            catch(Exception e){
+                payableamountdouble = new_to_pay_Amount;
+                e.printStackTrace();
+            }
+            new_totalAmount_withGst = (int) Math.round(payableamountdouble);
             finaltoPayAmount = String.valueOf(new_totalAmount_withGst)+".00";
             total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
             totalAmounttopay=new_totalAmount_withGst;
@@ -5216,17 +5595,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             String merchantorderid = "";
             String couponid = "";
 
-            String CouponDiscountAmount = "";
         if(isDiscountApplied) {
-            CouponDiscountAmount = discount_rs_text_widget.getText().toString();
+            discountAmount_StringGlobal = discount_rs_text_widget.getText().toString();
         }
         else{
-            CouponDiscountAmount ="0";
+            discountAmount_StringGlobal ="0";
         }
             String DeliveryAmount = "";
 
             String orderid = String.valueOf(sTime);
-            String orderplacedTime = Currenttime;
+            String orderplacedTime = getDate_and_time();
             String tokenno = "";
             String userid = "";
              ordertype = Constants.POSORDER;
@@ -5237,10 +5615,18 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
                 slotdate  = CurrentDate;
             }
+        String slotname = "";
+        if(orderdetailsnewschema){
+            slotname = "";
 
-            String slotname = "EXPRESSDELIVERY";
+        }
+        else{
+            slotname = "EXPRESSDELIVERY";
 
-            String orderPlacedDate = CurrentDate;
+        }
+
+        String orderPlacedDate = getDate();
+
         double totalgrossweightingrams_doubleFromLoop = 0, totalgrossFromInsideAndOutsideLoop = 0;
 
             String slottimerange = "";
@@ -5279,7 +5665,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                       cartItem_hashmap.clear();
                                       ispaymentMode_Clicked = false;
                                       isOrderDetailsMethodCalled = false;
-
+                                      isCustomerOrdersTableServiceCalled  = false;
                                       isPaymentDetailsMethodCalled = false;
                                       isOrderTrackingDetailsMethodCalled = false;
                                       new_to_pay_Amount = 0;
@@ -5287,17 +5673,18 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                       old_total_Amount = 0;
                                       createEmptyRowInListView("empty");
                                       CallAdapter();
-                                      discountAmount = "0";
+                                      discountAmount_StringGlobal = "0";
                                       isDiscountApplied = false;
                                       discount_Edit_widget.setText("0");
                                       finaltoPayAmount = "0";
-                                      discount_rs_text_widget.setText(discountAmount);
+                                      discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                       OrderTypefromSpinner = "POS Order";
                                       orderTypeSpinner.setSelection(0);
                                       total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
                                       taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
                                       total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-
+                                      discountAmount_StringGlobal ="0";
+                                      discountAmount_DoubleGlobal =0;
                                       mobileNo_Edit_widget.setText("");
                                       isPrintedSecondTime = false;
                                       showProgressBar(false);
@@ -6257,7 +6644,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
             }
         String StoreCoupon = "";
-        if((CouponDiscountAmount.equals("0"))||(CouponDiscountAmount.equals(""))||(CouponDiscountAmount.equals("0.00"))){
+        if((discountAmount_StringGlobal.equals("0"))||(discountAmount_StringGlobal.equals(""))||(discountAmount_StringGlobal.equals("0.00"))){
             StoreCoupon = "";
             if((redeemPoints_String .equals("0"))||(redeemPoints_String.equals("0.00"))||(redeemPoints_String.equals(""))) {
                 StoreCoupon = "";
@@ -6274,15 +6661,15 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
         }
 
-        if((CouponDiscountAmount .equals("0"))||(CouponDiscountAmount.equals("0.00"))||(CouponDiscountAmount.equals(""))){
+        if((discountAmount_StringGlobal .equals("0"))||(discountAmount_StringGlobal.equals("0.00"))||(discountAmount_StringGlobal.equals(""))){
 
 
             if((redeemPoints_String .equals("0"))||(redeemPoints_String.equals("0.00"))||(redeemPoints_String.equals(""))) {
-                CouponDiscountAmount = "";
+                discountAmount_StringGlobal = "";
 
             }
             else{
-                CouponDiscountAmount = redeemPoints_String;
+                discountAmount_StringGlobal = redeemPoints_String;
             }
 
 
@@ -6292,7 +6679,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             String transactiontime = getDate_and_time();
 
 
-            addDatatoCouponTransactioninDB(CouponDiscountAmount,"STORECOUPON",UserMobile,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
+            addDatatoCouponTransactioninDB(discountAmount_StringGlobal,"STORECOUPON",UserMobile,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
 
 
         }
@@ -6338,29 +6725,28 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 
             }
             JSONObject jsonObject = new JSONObject();
-            double  CouponDiscountAmount_double =0;
             try {
                 try {
-                    if (!CouponDiscountAmount.equals("")&&(!CouponDiscountAmount.equals("0"))) {
-                        CouponDiscountAmount = (CouponDiscountAmount.replaceAll("[^\\d.]", ""));
-                        CouponDiscountAmount_double = Double.parseDouble(CouponDiscountAmount);
+                    if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                        discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                        discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
                     }
                     else{
-                        CouponDiscountAmount_double =0;
+                        discountAmount_DoubleGlobal =0;
                     }
 
 
                 }
                 catch (Exception e){
-                    CouponDiscountAmount_double =0;
+                    discountAmount_DoubleGlobal =0;
                     e.printStackTrace();
                 }
-                if(CouponDiscountAmount_double>0){
-                    jsonObject.put("coupondiscount", CouponDiscountAmount_double);
+                if(discountAmount_DoubleGlobal>0){
+                    jsonObject.put("coupondiscount", discountAmount_DoubleGlobal);
 
                 }
                 else{
-                    jsonObject.put("coupondiscount", CouponDiscountAmount);
+                    jsonObject.put("coupondiscount", discountAmount_StringGlobal);
 
                 }
                 jsonObject.put("deliveryamount", 0);
@@ -6371,7 +6757,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
                 jsonObject.put("deliverytype", deliverytype);
                 jsonObject.put("slotname", slotname);
-                jsonObject.put("slotdate", "");
+
                 jsonObject.put("slottimerange", "");
 
                 jsonObject.put("orderid", orderid);
@@ -6379,7 +6765,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                 jsonObject.put("tokenno", (tokenno));
                 jsonObject.put("userid", userid);
 
-                jsonObject.put("usermobile", UserMobile);
+                if(orderdetailsnewschema) {
+                    jsonObject.put("usermobileno", UserMobile);
+                    jsonObject.put("slotdate",getDate());
+
+                }
+                else{
+                    jsonObject.put("usermobile", UserMobile);
+                    jsonObject.put("slotdate", "");
+
+                }
                 jsonObject.put("vendorkey", vendorkey);
                 jsonObject.put("vendorname", vendorName);
                 jsonObject.put("payableamount", Double.parseDouble(payableAmount));
@@ -6399,8 +6794,18 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
             }
             //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
-        String finalCouponDiscountAmount = CouponDiscountAmount;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderDetailsTable,
+        String Api_To_PlaceOrderInOrderDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInOrderDetails = Constants.api_AddVendorOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInOrderDetails = Constants.api_addOrderDetailsInOrderDetailsTable;
+
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInOrderDetails,
                     jsonObject, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(@NonNull JSONObject response) {
@@ -6415,34 +6820,38 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                             // startTwice.main();
                             try {
                                 if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
-                                    PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount, ordertype);
+                                    PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype);
 
                                 }
                                 else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
-                                      printReciptUsingBluetoothPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount, ordertype);
+                                      printReciptUsingBluetoothPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype);
 
                                 }
                                 else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
                                     int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
                                     if(i != -1){
-                                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, finalCouponDiscountAmount,ordertype);
+                                        printRecipt(UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal,ordertype);
 
                                     }
                                     else{
-                                            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
+                                        isOrderPlacedinOrderdetails = true;
+
+                                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
                                                     R.string.OK_Text,R.string.Empty_Text,
                                                     new TMCAlertDialogClass.AlertListener() {
                                                         @Override
                                                         public void onYes() {
+
                                                             StockBalanceChangedForThisItemList.clear();
                                                             isStockOutGoingAlreadyCalledForthisItem =false;
-
+                                                            autoComplete_customerNameText_widget.setText("");
+                                                            autoComplete_customerNameText_widget.dismissDropDown();
                                                             NewOrders_MenuItem_Fragment.cart_Item_List.clear();
                                                             NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
 
                                                             ispaymentMode_Clicked = false;
                                                             isOrderDetailsMethodCalled = false;
-
+                                                            isCustomerOrdersTableServiceCalled  = false;
                                                             isPaymentDetailsMethodCalled = false;
                                                             isOrderTrackingDetailsMethodCalled = false;
                                                             new_to_pay_Amount = 0;
@@ -6450,11 +6859,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                                             old_total_Amount = 0;
                                                             createEmptyRowInListView("empty");
                                                             CallAdapter();
-                                                            discountAmount = "0";
+                                                            discountAmount_StringGlobal = "0";
+                                                            discountAmount_DoubleGlobal=0;
                                                             isDiscountApplied = false;
                                                             discount_Edit_widget.setText("0");
                                                             finaltoPayAmount = "0";
-                                                            discount_rs_text_widget.setText(discountAmount);
+                                                            discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                                             OrderTypefromSpinner = "POS Order";
                                                             orderTypeSpinner.setSelection(0);
                                                             total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -6508,15 +6918,18 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                             new TMCAlertDialogClass.AlertListener() {
                                                 @Override
                                                 public void onYes() {
+
                                                     StockBalanceChangedForThisItemList.clear();
                                                     isStockOutGoingAlreadyCalledForthisItem =false;
-
+                                                    autoComplete_customerNameText_widget.setText("");
+                                                    autoComplete_customerNameText_widget.dismissDropDown();
                                                     NewOrders_MenuItem_Fragment.cart_Item_List.clear();
                                                     NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
 
                                                     ispaymentMode_Clicked = false;
                                                     isOrderDetailsMethodCalled = false;
-
+                                                    isCustomerOrdersTableServiceCalled  = false;
+                                                    isCustomerOrdersTableServiceCalled  = false;
                                                     isPaymentDetailsMethodCalled = false;
                                                     isOrderTrackingDetailsMethodCalled = false;
                                                     new_to_pay_Amount = 0;
@@ -6524,11 +6937,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                                     old_total_Amount = 0;
                                                     createEmptyRowInListView("empty");
                                                     CallAdapter();
-                                                    discountAmount = "0";
+                                                    discountAmount_StringGlobal = "0";
                                                     isDiscountApplied = false;
                                                     discount_Edit_widget.setText("0");
                                                     finaltoPayAmount = "0";
-                                                    discount_rs_text_widget.setText(discountAmount);
+                                                    discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                                     OrderTypefromSpinner = "POS Order";
                                                     orderTypeSpinner.setSelection(0);
                                                     total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -6573,7 +6986,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
                                                 }
                                             });
                                 }
-
 
                             }
                             catch(Exception e ){
@@ -7200,7 +7612,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment {
 
 
 else{
-            turnoffProgressBarAndResetArray();
+
+    if(isOrderPlacedinOrderdetails){
+        turnoffProgressBarAndResetArray();
+    }
+
             Toast.makeText(mContext, "No  Menu Item Stock  details for " + itemName, Toast.LENGTH_LONG).show();
 
         }
@@ -7502,7 +7918,26 @@ else{
 
 
     }
+    private void updateDatainSharedPreference(List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList) {
 
+
+        try {
+            final SharedPreferences sharedPreferences = mContext.getSharedPreferences("WholeSaleCustomerDetails", MODE_PRIVATE);
+
+            Gson gson = new Gson();
+            String json = gson.toJson(wholeSaleCustomersArrayList);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("WholeSaleCustomerDetails", json);
+            editor.apply();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+    }
     private void savedMenuIteminSharedPrefrences(List<Modal_NewOrderItems> menuItem, int iterator_menuitemStockAvlDetails) {
         final SharedPreferences sharedPreferencesMenuitem = mContext.getSharedPreferences("MenuList", MODE_PRIVATE);
 
@@ -7947,7 +8382,11 @@ else{
         try {
             orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
+            if(orderdetailsnewschema){
 
+                orderTrackingTablejsonObject.put("slotdate",getDate());
+
+            }
             orderTrackingTablejsonObject.put("usermobileno","+91" + mobileNo_Edit_widget.getText().toString());
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
@@ -7962,13 +8401,23 @@ else{
         }
 
 
-        //Log.d(Constants.TAG, "orderplacedDate_time Payload  : " + orderTrackingTablejsonObject);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addOrderDetailsInOrderTrackingDetailsTable,
+
+
+        String Api_To_PlaceOrderInTrackingDetails = "";
+        if(orderdetailsnewschema){
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_AddVendorTrackingOrderDetails;
+
+        }
+        else{
+            Api_To_PlaceOrderInTrackingDetails = Constants.api_addOrderDetailsInOrderTrackingDetailsTable;
+
+        }
+
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_To_PlaceOrderInTrackingDetails,
                 orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -8181,15 +8630,18 @@ else{
 
                         @Override
                         public void onNo() {
+                            isOrderPlacedinOrderdetails = true;
+
                             StockBalanceChangedForThisItemList.clear();
                             isStockOutGoingAlreadyCalledForthisItem =false;
-
+                            autoComplete_customerNameText_widget.setText("");
+                            autoComplete_customerNameText_widget.dismissDropDown();
                             NewOrders_MenuItem_Fragment.cart_Item_List.clear();
                             NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
 
                             ispaymentMode_Clicked = false;
                             isOrderDetailsMethodCalled = false;
-
+                            isCustomerOrdersTableServiceCalled  = false;
                             isPaymentDetailsMethodCalled = false;
                             isOrderTrackingDetailsMethodCalled = false;
                             new_to_pay_Amount = 0;
@@ -8197,11 +8649,11 @@ else{
                             old_total_Amount = 0;
                             createEmptyRowInListView("empty");
                             CallAdapter();
-                            discountAmount = "0";
+                            discountAmount_StringGlobal = "0";
                             isDiscountApplied = false;
                             discount_Edit_widget.setText("0");
                             finaltoPayAmount = "0";
-                            discount_rs_text_widget.setText(discountAmount);
+                            discount_rs_text_widget.setText(discountAmount_StringGlobal);
                             OrderTypefromSpinner = "POS Order";
                             orderTypeSpinner.setSelection(0);
                             total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -8293,13 +8745,14 @@ else{
 
                                             StockBalanceChangedForThisItemList.clear();
                                             isStockOutGoingAlreadyCalledForthisItem =false;
-
+                                            autoComplete_customerNameText_widget.setText("");
+                                            autoComplete_customerNameText_widget.dismissDropDown();
                                             NewOrders_MenuItem_Fragment.cart_Item_List.clear();
                                             NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
 
                                             ispaymentMode_Clicked = false;
                                             isOrderDetailsMethodCalled = false;
-
+                                            isCustomerOrdersTableServiceCalled  = false;
                                             isPaymentDetailsMethodCalled = false;
                                             isOrderTrackingDetailsMethodCalled = false;
                                             new_to_pay_Amount = 0;
@@ -8307,11 +8760,11 @@ else{
                                             old_total_Amount = 0;
                                             createEmptyRowInListView("empty");
                                             CallAdapter();
-                                            discountAmount = "0";
+                                            discountAmount_StringGlobal = "0";
                                             isDiscountApplied = false;
                                             discount_Edit_widget.setText("0");
                                             finaltoPayAmount = "0";
-                                            discount_rs_text_widget.setText(discountAmount);
+                                            discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                             OrderTypefromSpinner = "POS Order";
                                             orderTypeSpinner.setSelection(0);
                                             total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -8424,15 +8877,18 @@ else{
 
                                                             @Override
                                                             public void onNo() {
+                                                                isOrderPlacedinOrderdetails = true;
+
                                                                 StockBalanceChangedForThisItemList.clear();
                                                                 isStockOutGoingAlreadyCalledForthisItem =false;
 
                                                                 NewOrders_MenuItem_Fragment.cart_Item_List.clear();
                                                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
-
+                                                                autoComplete_customerNameText_widget.setText("");
+                                                                autoComplete_customerNameText_widget.dismissDropDown();
                                                                 ispaymentMode_Clicked = false;
                                                                 isOrderDetailsMethodCalled = false;
-
+                                                                isCustomerOrdersTableServiceCalled  = false;
                                                                 isPaymentDetailsMethodCalled = false;
                                                                 isOrderTrackingDetailsMethodCalled = false;
                                                                 new_to_pay_Amount = 0;
@@ -8440,11 +8896,11 @@ else{
                                                                 old_total_Amount = 0;
                                                                 createEmptyRowInListView("empty");
                                                                 CallAdapter();
-                                                                discountAmount = "0";
+                                                                discountAmount_StringGlobal = "0";
                                                                 isDiscountApplied = false;
                                                                 discount_Edit_widget.setText("0");
                                                                 finaltoPayAmount = "0";
-                                                                discount_rs_text_widget.setText(discountAmount);
+                                                                discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                                                 OrderTypefromSpinner = "POS Order";
                                                                 orderTypeSpinner.setSelection(0);
                                                                 total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -8488,6 +8944,9 @@ else{
 
                                             }
                                             else {
+
+                                                isOrderPlacedinOrderdetails = true;
+
                                                 autoComplete_customerNameText_widget.setText("");
                                                 autoComplete_customerNameText_widget.dismissDropDown();
                                                 cart_Item_List.clear();
@@ -8505,11 +8964,11 @@ else{
                                                 old_total_Amount = 0;
                                                 createEmptyRowInListView("empty");
                                                 CallAdapter();
-                                                discountAmount = "0";
+                                                discountAmount_StringGlobal = "0";
                                                 isDiscountApplied = false;
                                                 discount_Edit_widget.setText("0");
                                                 finaltoPayAmount = "0";
-                                                discount_rs_text_widget.setText(discountAmount);
+                                                discount_rs_text_widget.setText(discountAmount_StringGlobal);
                                                 OrderTypefromSpinner = "POS Order";
                                                 orderTypeSpinner.setSelection(0);
                                                 total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
@@ -8524,7 +8983,7 @@ else{
                                                 isPrintedSecondTime = false;
                                                 ispaymentMode_Clicked = false;
                                                 isOrderDetailsMethodCalled = false;
-
+                                                isCustomerOrdersTableServiceCalled  = false;
                                                 isPaymentDetailsMethodCalled = false;
                                                 isOrderTrackingDetailsMethodCalled = false;
                                                 ispointsApplied_redeemClicked=false;
@@ -9204,6 +9663,35 @@ else{
 
     }
 
+    private String getDate() {
+        Date c = Calendar.getInstance().getTime();
+        if(orderdetailsnewschema) {
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(c);
+
+            return CurrentDate;
+
+        }
+        else {
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            CurrentDay = day.format(c);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+            //CurrentDate = CurrentDay+", "+CurrentDate;
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
+    }
 
 
 

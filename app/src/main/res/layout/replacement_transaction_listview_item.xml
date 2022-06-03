@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:id="@+id/order_item_list_parentLayout">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="25dp"
+        android:id="@+id/cardLayout"
+
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:layout_marginTop="4dp"
+            android:id="@+id/cardView_parentLayout"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2.5"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:gravity="center"
+                        android:id="@+id/ordercancellationtimeRefresh_Layout"
+                        android:orientation="horizontal"
+                        >
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Does Order Cancelletion time is Over " />
+
+                        <LinearLayout
+                            android:id="@+id/refreshordercancelationtime_image_layout"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:gravity="center"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+
+                                android:layout_height="20dp"
+                                app:srcCompat="@mipmap/neworders_sync_icon" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/transaction_type_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Transation Type"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/transactiontype_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/customermobileno_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="@string/Customer_PhoneNumber"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/customermobileno_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/orderid_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="5dp"
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Orderid Marked For Replacement :" />
+
+                        <TextView
+                            android:id="@+id/orderid_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="14sp"
+                            android:gravity="right"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:paddingStart="35dp"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="" />
+                    </LinearLayout>
+
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/transactiondateLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/transactiondate_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Transaction Date :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/transactiondate_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/statusLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/status_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:layout_marginStart="5dp"
+
+                            android:text="@string/Status"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/status_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/refundAmount_Layout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/refundAmount_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Refunded Amount"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/refundAmount_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/replacementAmountLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/replacementamount_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Replacement Amount :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/totalreplacementamount_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/replacementdiscountAmountLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/replacementdiscount_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Discount Amount :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/totalreplacementdiscountamount_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/replacementOrderidLayout"
+
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/replacementOrderid_label_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Replacement Orderid :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/replacementorderid_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="right"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/reaasonForMarkedLayout"
+
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/reasonforMarked_label_widget"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Reason For Marked :"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/reasonForMarked_text_widget"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="left"
+                            android:text="3"
+
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="10dp"
+
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:id="@+id/markedItemDesp_text_widget"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+
+                            android:layout_marginTop="10dp"
+                            android:textSize="15sp"
+                            android:textColor="@color/TMC_Orange"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="TextView" />
+                    </LinearLayout>
+
+
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+</LinearLayout>
+

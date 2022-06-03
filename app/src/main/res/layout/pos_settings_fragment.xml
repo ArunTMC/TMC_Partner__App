@@ -890,6 +890,25 @@
 
 
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/replacement_refund_transaction_reportLayout"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Replacement_Refund_Transaction_Report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
 
 
                 <View
@@ -1217,6 +1236,52 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginEnd="10dp"
+
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp"
+                        android:text="Fetch Orders On / Before 19 May 2022"
+
+                        />
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        >
+
+                    <Switch
+                        android:id="@+id/switch_fetch_orders_from_orderDetails"
+                        android:layout_width="wrap_content"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:textColor="@color/TMC_Black"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_centerInParent="true"
+                        android:textSize="15sp"
+                        android:layout_alignParentEnd="true"
+
+                        tools:ignore="UseSwitchCompatOrMaterialXml" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/layout_fetch_orders_from_orderDetails"
+                            android:orientation="horizontal"/>
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:id="@+id/mobilePrinterConnectLayout"
@@ -1225,7 +1290,7 @@
 
                     <TextView
                         android:layout_width="wrap_content"
-                        android:layout_height="22dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight=".1"
                         android:fontFamily="@font/open_sans_semibold"
                         android:text="Printer Status : "
@@ -1257,7 +1322,6 @@
 
                 </LinearLayout>
 
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -1268,7 +1332,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
                         android:fontFamily="@font/open_sans_semibold"
                         android:text="@string/Vendor_Name"
                         android:textColor="@color/TMC_Primary_Text_Color"
@@ -1279,7 +1342,6 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
                         android:text=""
                         android:textSize="16sp"
                         android:id="@+id/storeName"

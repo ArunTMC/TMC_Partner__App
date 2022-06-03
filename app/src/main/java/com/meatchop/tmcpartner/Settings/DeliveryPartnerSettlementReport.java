@@ -28,6 +28,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
@@ -39,7 +40,10 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,6 +55,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -127,6 +132,16 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     boolean isSpinnerClicked = false;
     public String DeliveryPersonList;
     public static JSONArray result_JArray =new JSONArray();
+
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -217,6 +232,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         vendorKey = sh.getString("VendorKey","");
+        orderdetailsnewschema = (sh.getBoolean("orderdetailsnewschema_settings", false));
 
         getVendorwiseDeliveryPartner();
         try {
@@ -228,18 +244,35 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-        CurrentDay_date =getDay_Date_and_time();
-        CurrentDate = getDay_Date_and_time();
-        dateSelector_text.setText(CurrentDate);
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+      //  CurrentDay_date =getDay_Date_and_time();
+       // CurrentDate = getDay_Date_and_time();
+        CurrentDate ="";
+        DateString ="";
+        CurrentDay_date ="";
+        dateSelector_text.setText(Constants.Empty_Date_Format);
 
-        DateString= getDay_Date_and_time();
+       // dateSelector_text.setText(CurrentDate);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(DeliveryPartnerSettlementReport.this);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
 
-        dateSelector_text.setText(CurrentDate);
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
+
 
         orderDetailsLayout .setVisibility( View.GONE);
         ordersInstruction.setVisibility(View.VISIBLE);
@@ -270,7 +303,22 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 deliveryCharges_preorder=0;
                 CouponDiscount = 0;
                 CouponDiscount_preorder = 0;
-                getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
+
+
+
+                if (orderdetailsnewschema) {
+                    String dateAsnewFormat = convertOldFormatDateintoNewFormat(DateString);
+                    callVendorOrderDetailsSeviceAndInitCallBack( dateAsnewFormat, vendorKey,deliveryPartnerMobileNo,deliveryPartnerKey);
+
+                } else {
+
+                    getOrderForSelectedDateandSelectedDeliveryPartner(DateString, vendorKey,deliveryPartnerKey,deliveryPartnerMobileNo);
+
+                }
+
+
+
+
 
                 addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
                 orderDetailsLayout .setVisibility( View.VISIBLE);
@@ -352,7 +400,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         PrintReport_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(screenInches>8){
+                if(screenInches>Constants.default_mobileScreenSize){
                     // printReport();
                 }
                 else{
@@ -365,14 +413,14 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
 
-        if(screenInches>8){
+        if(screenInches>Constants.default_mobileScreenSize){
             viewOrdersList_Layout.setVisibility(View.GONE);
         }
 
         viewOrdersList_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(screenInches>8){
+                if(screenInches>Constants.default_mobileScreenSize){
                     Toast.makeText(DeliveryPartnerSettlementReport.this,"Please use Partner app in your mobile phone to see the Order Details ",Toast.LENGTH_SHORT).show();
 
                 }
@@ -701,6 +749,720 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String slotDate, String vendorKey, String deliveryPartnerMobileNo, String deliveryPartnerKey) {
+        Adjusting_Widgets_Visibility(true);
+        String deliveryUserMobileNumberEncoded  = deliveryPartnerMobileNo;
+        try {
+            deliveryUserMobileNumberEncoded = URLEncoder.encode(deliveryPartnerMobileNo, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        if(isVendorOrdersTableServiceCalled){
+            Adjusting_Widgets_Visibility(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+
+                if(orderslist_fromResponse.size()>0) {
+
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("content", orderslist_fromResponse);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    isVendorOrdersTableServiceCalled = false;
+
+                    Gson gson = new Gson();
+                    String json = gson.toJson(orderslist_fromResponse);
+                    assignedOrdersString = String.valueOf(json);
+                    ProcessDataFromResponse(orderslist_fromResponse);
+
+
+
+                }
+                else{
+
+                    Adjusting_Widgets_Visibility(false);
+                    isVendorOrdersTableServiceCalled =false;
+                    delivered_OrderIdCount.clear();
+                    OrderIdCount.clear();
+                    Order_Item_List.clear();
+                    OrderItem_hashmap.clear();
+                    finalBillDetails.clear();
+                    FinalBill_hashmap.clear();
+                    paymentModeHashmap.clear();
+                    paymentModeArray.clear();
+                    paymentMode_DiscountHashmap.clear();
+                    paymentMode_DiscountOrderid.clear();
+                    preorder_paymentModeHashmap.clear();
+                    preorder_paymentModeArray.clear();
+                    preorderpaymentMode_DiscountOrderid.clear();
+                    preorderpaymentMode_DiscountHashmap.clear();
+                    paymentMode_DeliveryChargeHashmap.clear();
+                    paymentMode_DeliveryChargeOrderid.clear();
+
+                    preorderpaymentMode_DeliveryChargeOrderid.clear();
+                    preorderpaymentMode_DeliveryChargeHashmap.clear();
+                    deliveryCharges=0;
+                    deliveryCharges_preorder=0;
+                    CouponDiscount = 0;
+                    CouponDiscount_preorder = 0;
+                    //runthread();
+                    Toast.makeText(DeliveryPartnerSettlementReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
+                    Adjusting_Widgets_Visibility(false);
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled =false;
+                delivered_OrderIdCount.clear();
+                OrderIdCount.clear();
+                Order_Item_List.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                paymentModeHashmap.clear();
+                paymentModeArray.clear();
+                paymentMode_DiscountHashmap.clear();
+                paymentMode_DiscountOrderid.clear();
+                preorder_paymentModeHashmap.clear();
+                preorder_paymentModeArray.clear();
+                preorderpaymentMode_DiscountOrderid.clear();
+                preorderpaymentMode_DiscountHashmap.clear();
+                paymentMode_DeliveryChargeHashmap.clear();
+                paymentMode_DeliveryChargeOrderid.clear();
+
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                preorderpaymentMode_DeliveryChargeHashmap.clear();
+                deliveryCharges=0;
+                deliveryCharges_preorder=0;
+                CouponDiscount = 0;
+                CouponDiscount_preorder = 0;
+
+                //runthread();
+                Toast.makeText(DeliveryPartnerSettlementReport.this, "There is Some Error ", Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+
+        mVolleyService = new VendorOrdersTableService(mResultCallback,DeliveryPartnerSettlementReport.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingOrderDetails_slotDate_deliveryPartner + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&deliveryusermobileno="+deliveryUserMobileNumberEncoded;
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
+
+    }
+
+    private void ProcessDataFromResponse(List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+        try {
+            for (int i = 0; i < orderslist_fromResponse.size(); i++) {
+                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_classFromResponse = orderslist_fromResponse.get(i);
+                String paymentMode = "", ordertype = "", orderid = "", slotname = "", orderstatus = "",itemDesptring ="";
+                Modal_OrderDetails modal_orderDetails = new Modal_OrderDetails();
+                JSONArray itemdespJsonArray = new JSONArray();
+
+                try {
+                    ordertype = String.valueOf(modal_manageOrders_pojo_classFromResponse.getOrdertype().toUpperCase());
+                    modal_orderDetails.ordertype = ordertype;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ordertype = "";
+                    modal_orderDetails.ordertype = ordertype;
+
+                }
+
+
+                if (ordertype.equals("") || ordertype.equals(null) || ordertype.equals("NULL")) {
+                    try {
+
+                        ordertype = String.valueOf(modal_manageOrders_pojo_classFromResponse.getOrderType().toUpperCase());
+                        modal_orderDetails.ordertype = ordertype;
+                    } catch (Exception e) {
+                        ordertype = "";
+
+                        modal_orderDetails.ordertype = ordertype;
+
+                        e.printStackTrace();
+                    }
+                }
+
+                try {
+                    paymentMode = String.valueOf(modal_manageOrders_pojo_classFromResponse.getPaymentmode());
+                    modal_orderDetails.paymentmode = paymentMode;
+
+                } catch (Exception e) {
+                    paymentMode = "";
+                    e.printStackTrace();
+                    modal_orderDetails.paymentmode = paymentMode;
+
+                }
+
+
+                try {
+                    orderid = String.valueOf(modal_manageOrders_pojo_classFromResponse.getOrderid());
+                    OrderIdCount.add(orderid);
+                    modal_orderDetails.orderid = orderid;
+
+
+                } catch (Exception e) {
+                    orderid = "";
+                    e.printStackTrace();
+                    modal_orderDetails.orderid = orderid;
+
+                }
+                try {
+                    itemdespJsonArray = (modal_manageOrders_pojo_classFromResponse.getItemdesp());
+                    modal_orderDetails.itemdesp = itemdespJsonArray;
+
+
+                } catch (Exception e) {
+                    orderid = "";
+                    e.printStackTrace();
+                    modal_orderDetails.itemdesp = new JSONArray();
+
+                }
+
+
+                try {
+                    itemdespJsonArray = (modal_manageOrders_pojo_classFromResponse.getItemdesp());
+                    modal_orderDetails.itemdesp = itemdespJsonArray;
+
+
+                } catch (Exception e) {
+                    orderid = "";
+                    e.printStackTrace();
+                    modal_orderDetails.itemdesp = new JSONArray();
+
+                }
+
+
+                try {
+                    slotname = String.valueOf(modal_manageOrders_pojo_classFromResponse.getSlotname().toUpperCase());
+                    modal_orderDetails.slotname = slotname;
+
+                } catch (Exception e) {
+                    slotname = "";
+                    e.printStackTrace();
+                    modal_orderDetails.slotname = slotname;
+
+                }
+
+
+                try {
+                    orderstatus = String.valueOf(modal_manageOrders_pojo_classFromResponse.getOrderstatus());
+                    modal_orderDetails.orderstatus = orderstatus;
+
+                } catch (Exception e) {
+                    orderstatus = "";
+                    e.printStackTrace();
+                    modal_orderDetails.orderstatus = orderstatus;
+
+                }
+
+
+                try {
+
+                    itemdespJsonArray = modal_manageOrders_pojo_classFromResponse.getItemdesp();
+                    modal_orderDetails.itemdesp = itemdespJsonArray;
+
+
+                } catch (Exception e) {
+                    modal_orderDetails.itemdesp = new JSONArray();
+
+                    e.printStackTrace();
+                }
+
+
+                if (orderstatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
+
+                    if (slotname.equals(Constants.PREORDER_SLOTNAME)) {
+
+
+                        try {
+                            modal_orderDetails.deliveryamount = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliveryamount());
+
+                            String deliveryCharges_preorder_string = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliveryamount());
+                            try {
+                                if (deliveryCharges_preorder_string.equals("")) {
+                                    deliveryCharges_preorder_string = "0";
+
+                                    double deliveryCharges_preorder_double = Double.parseDouble(deliveryCharges_preorder_string);
+                                    deliveryCharges_preorder = deliveryCharges_preorder + deliveryCharges_preorder_double;
+
+                                    if (!preorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                        preorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                            String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                            double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_preorder_string);
+
+                                            DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_preorder_string));
+                                            preorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+                                    }
+                                } else {
+
+                                    double deliveryCharges_preorder_double = Double.parseDouble(deliveryCharges_preorder_string);
+                                    deliveryCharges_preorder = deliveryCharges_preorder + deliveryCharges_preorder_double;
+
+
+                                    if (!preorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                        preorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                            String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                            double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_preorder_string);
+
+                                            DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_preorder_string));
+                                            preorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+
+
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+                            modal_orderDetails.coupondiscount = String.valueOf(modal_manageOrders_pojo_classFromResponse.getCoupondiscamount());
+
+                            String couponDiscount_string = String.valueOf(modal_manageOrders_pojo_classFromResponse.getCoupondiscamount());
+                            try {
+                                if (couponDiscount_string.equals("")) {
+                                    couponDiscount_string = "0";
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                    CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
+
+                                    if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                        preorderpaymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount" + discountAmount);
+                                            }
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                            }
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                            }
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                            }
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                            preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        Log.d(Constants.TAG, "orderid already availabe");
+
+                                    }
+                                } else {
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                    CouponDiscount_preorder = CouponDiscount_preorder + CouponDiscount_double;
+
+                                    if (paymentMode.equals("PAYTM")) {
+                                        Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
+                                    }
+
+                                    if (paymentMode.equals("PAYTM")) {
+                                        Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
+                                    }
+                                    if (!preorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                        preorderpaymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = preorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                            }
+
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount_string);
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                            }
+
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                            }
+                                            preorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "orderid already availabe");
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+
+
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+
+                    if (((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)))) {
+
+
+                        try {
+
+                            modal_orderDetails.deliveryamount = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliveryamount());
+
+                            String deliveryCharges_string = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliveryamount());
+                            try {
+                                if (deliveryCharges_string.equals("")) {
+                                    deliveryCharges_string = "0";
+
+                                    double deliveryCharges_double = Double.parseDouble(deliveryCharges_string);
+                                    deliveryCharges = deliveryCharges + deliveryCharges_double;
+
+                                    if (!paymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                        paymentMode_DeliveryChargeOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = paymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                            String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                            double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_string);
+
+                                            DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_string));
+                                            paymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+                                    }
+                                } else {
+
+                                    double deliveryCharges_double = Double.parseDouble(deliveryCharges_string);
+                                    deliveryCharges = deliveryCharges + deliveryCharges_double;
+
+
+                                    if (!paymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                        paymentMode_DeliveryChargeOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = paymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                            String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                            double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_string);
+
+                                            DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_string));
+                                            paymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+
+
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+                            modal_orderDetails.coupondiscount = String.valueOf(modal_manageOrders_pojo_classFromResponse.getCoupondiscamount());
+
+                            String couponDiscount_string = String.valueOf(modal_manageOrders_pojo_classFromResponse.getCoupondiscamount());
+                            try {
+                                if (couponDiscount_string.equals("")) {
+                                    couponDiscount_string = "0";
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                    CouponDiscount = CouponDiscount + CouponDiscount_double;
+
+                                    if (!paymentMode_DiscountOrderid.contains(orderid)) {
+                                        paymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount" + discountAmount);
+                                            }
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                            }
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                            }
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                            }
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                            paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "orderid already availabe");
+
+                                    }
+                                } else {
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                    CouponDiscount = CouponDiscount + CouponDiscount_double;
+
+                                    if (paymentMode.equals("PAYTM")) {
+                                        //Log.i("TAG", "discountAmount 3 CouponDiscount_double" + String.valueOf(CouponDiscount_double));
+                                    }
+
+                                    if (paymentMode.equals("PAYTM")) {
+                                        //Log.i("TAG", "discountAmount 3.1 CouponDiscount" + String.valueOf(CouponDiscount));
+                                    }
+                                    if (!paymentMode_DiscountOrderid.contains(orderid)) {
+                                        paymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = paymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                            }
+
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount_string);
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                            }
+
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                //Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                            }
+                                            paymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "orderid already availabe");
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+
+
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+
+                    String deliverydistance = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliverydistance());
+                    if (deliverydistance != null && (!deliverydistance.equals("null"))) {
+                        deliverydistance = String.valueOf("0");
+                        modal_orderDetails.deliverydistance = String.valueOf("0");
+
+                    } else {
+                        modal_orderDetails.deliverydistance = String.valueOf(deliverydistance);
+                    }
+
+
+                    if (!delivered_OrderIdCount.contains(orderid)) {
+                        delivered_OrderIdCount.add(orderid);
+
+                    } else {
+                        Log.d(Constants.TAG, "orderid is already added");
+
+                    }
+                    getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
+                }
+
+                if (orderslist_fromResponse.size() - 1 == i) {
+                    if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
+                        //        getOrderForSelectedDate(DateString, vendorKey);
+                        addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
+                        Adjusting_Widgets_Visibility(false);
+
+                    } else {
+                        Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
+                        Adjusting_Widgets_Visibility(false);
+                        OrderIdCount.clear();
+                        Order_Item_List.clear();
+                        OrderItem_hashmap.clear();
+                        finalBillDetails.clear();
+                        FinalBill_hashmap.clear();
+                        paymentModeHashmap.clear();
+                        paymentModeArray.clear();
+                        paymentMode_DiscountHashmap.clear();
+                        paymentMode_DiscountOrderid.clear();
+                        preorder_paymentModeHashmap.clear();
+                        preorder_paymentModeArray.clear();
+                        preorderpaymentMode_DiscountOrderid.clear();
+                        preorderpaymentMode_DiscountHashmap.clear();
+                        delivered_OrderIdCount.clear();
+                        CouponDiscount = 0;
+                        CouponDiscount_preorder =0;
+                        paymentMode_DeliveryChargeHashmap.clear();
+                        paymentMode_DeliveryChargeOrderid.clear();
+
+
+                        deliveryCharges=0;
+
+                        addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
+
+                        //          getOrderForSelectedDate(DateString, vendorKey);
+
+                    }
+                }
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
 
     @Override
     protected void onResume() {
@@ -1441,7 +2203,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     }
                 }
             }
-        }else{
+        }
+        else{
 
             Toast.makeText(DeliveryPartnerSettlementReport.this, "No Order has delivered On this Date ", Toast.LENGTH_LONG).show();
             Adjusting_Widgets_Visibility(false);
@@ -3134,19 +3897,34 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     public String getDay_Date_and_time()
     {
 
-        Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        String CurrentDay = day.format(c);
+        Calendar calendar = Calendar.getInstance();
+        Date c = calendar.getTime();
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        String CurrentDate = df.format(c);
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
+
+        }
+        else {
 
 
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+          String  CurrentDay = day.format(c);
 
-        String formattedDate = CurrentDay+", "+CurrentDate;
-        return formattedDate;
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+        }
     }
 
 
@@ -3243,6 +4021,24 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             loadingPanel.setVisibility(View.GONE);
             loadingpanelmask.setVisibility(View.GONE);
         }
+
+    }
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
 
     }
 

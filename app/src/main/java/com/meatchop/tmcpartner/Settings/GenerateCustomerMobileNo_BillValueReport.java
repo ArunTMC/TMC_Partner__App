@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
@@ -49,10 +48,11 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order.Modal_ReplacementTransactionDetails;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
+import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.formula.functions.Count;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -129,11 +129,21 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     boolean isSheetForLastDateGenerate = false;
 
     boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
-    String replacementOrderDetailsString="", startDateString_forReplacementransaction = "",
-            endDateString_forReplacementransaction = "";
+    String replacementOrderDetailsString="", startDateString_AsNewFormat = "",
+            endDateString_AsNewFormat = "";
 
     String selectedStartDate = "";
     String selectedEndDate = "";
+
+
+
+    VendorOrdersTableInterface mResultCallback = null;
+    VendorOrdersTableService mVolleyService;
+    boolean orderdetailsnewschema = false;
+    boolean  isVendorOrdersTableServiceCalled = false;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -191,12 +201,31 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = (shared.getString("VendorKey", "vendor_1"));
             vendorname = (shared.getString("VendorName", ""));
-            DisplayMetrics dm = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(dm);
-            double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
-            double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
-            screenInches = Math.sqrt(x + y);
+            orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+           // orderdetailsnewschema = false;
 
+            try {
+                ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+                screenInches = screenSizeOfTheDevice.getDisplaySize(GenerateCustomerMobileNo_BillValueReport .this);
+               // Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                try {
+                    DisplayMetrics dm = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                    double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                    screenInches = Math.sqrt(x + y);
+                 //   Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e1){
+                    e1.printStackTrace();
+                }
+
+
+            }
 
         }
         catch (Exception e){
@@ -219,11 +248,25 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                 sorted_OrdersList.clear();
                 array_of_orderId.clear();
                 array_of_Dates.clear();
-                dateSelector_text.setText(TodaysDate);
-                fromdateSelector_text.setText(TodaysDate);
-                todateSelector_text.setText(TodaysDate);
-                //  getOrderDetailsUsingOrderOrderPlacedDate(TodaysDate, vendorKey, orderStatus);
 
+                if(orderdetailsnewschema){
+                    String oldformat = convertnewFormatDateintoOldFormat(TodaysDate);
+                    dateSelector_text.setText(oldformat);
+                    fromdateSelector_text.setText(oldformat);
+                    todateSelector_text.setText(oldformat);
+                 callVendorOrderDetailsSeviceAndInitCallBack(TodaysDate,TodaysDate,vendorKey);
+
+                }
+                else{
+
+                    dateSelector_text.setText(TodaysDate);
+                    fromdateSelector_text.setText(TodaysDate);
+                    todateSelector_text.setText(TodaysDate);
+                    //  Adjusting_Widgets_Visibility(true);
+                    todatestring  =TodaysDate;
+                    getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(TodaysDate,TodaysDate, vendorKey);
+
+                }
 
             }
             catch (Exception e){
@@ -274,14 +317,24 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     if (SDK_INT >= Build.VERSION_CODES.R) {
 
                         if(Environment.isExternalStorageManager()){
-                            try {
-                                showProgressBar(true);
+                            if(orderdetailsnewschema){
+                                String FromDateoldformat = convertnewFormatDateintoOldFormat(startDateString_AsNewFormat);
+                                String Todateoldformat = convertnewFormatDateintoOldFormat(endDateString_AsNewFormat);
+                                addDateinDatesArray(FromDateoldformat,Todateoldformat);
 
-                                AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+                            }
+                            else {
 
 
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                                try {
+                                    showProgressBar(true);
+
+                                    AddDatatoExcelSheet(ordersList, "orderDetailsfrom" + fromdatestring);
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                         else{
@@ -308,6 +361,16 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             ActivityCompat.requestPermissions(GenerateCustomerMobileNo_BillValueReport.this, new String[]{WRITE_EXTERNAL_STORAGE},
                                     REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
                         } else {
+
+                            if(orderdetailsnewschema){
+                                String FromDateoldformat = convertnewFormatDateintoOldFormat(startDateString_AsNewFormat);
+                                String Todateoldformat = convertnewFormatDateintoOldFormat(endDateString_AsNewFormat);
+
+                                addDateinDatesArray(FromDateoldformat,Todateoldformat);
+                            }
+                            else{
+
+
                             showProgressBar(true);
                             try {
                                 AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
@@ -315,6 +378,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 ;
+                            }
                             }
                         }
                     }
@@ -352,7 +416,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             @Override public boolean onTouch(View view, MotionEvent motionEvent) { isSpinnerTouch=true; return false; }});
 
 
-        daysCountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+   /*     daysCountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 if (isSpinnerTouch) {
@@ -395,6 +459,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
         });
 
 
+    */
+
 
 
 
@@ -415,13 +481,31 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
                 PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay2(todatestring);
 
-                startDateString_forReplacementransaction = getstartDate_and_time_TransactionTable();
-                endDateString_forReplacementransaction = getendDate_and_time_TransactionTable();
+                startDateString_AsNewFormat = convertOldFormatDateintoNewFormat(PreviousDateString);
+                endDateString_AsNewFormat = convertOldFormatDateintoNewFormat(TodaysDate);
 
                 isSearchButtonClicked = false;
-                getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
-                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+                if(orderdetailsnewschema){
+                    String FromdateAsNewFormat =convertOldFormatDateintoNewFormat(PreviousDateString);
+                    String TodateAsNewFormat =convertOldFormatDateintoNewFormat(TodaysDate);
+
+                    callVendorOrderDetailsSeviceAndInitCallBack(FromdateAsNewFormat, TodateAsNewFormat,vendorKey);
+
+
+                }
+                else{
+
+
+                    //  Adjusting_Widgets_Visibility(true);
+
+                    getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString,todatestring, vendorKey);
+
+                }
+
+
+                getdataFromReplacementTransaction(startDateString_AsNewFormat, endDateString_AsNewFormat, vendorKey);
+
 
             }
         });
@@ -599,9 +683,35 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
     }
 
+    private void addDateinDatesArray(String fromDateoldformat, String todateoldformat) {
+
+        if(!todateoldformat.equals(fromDateoldformat)){
+            if(!array_of_Dates.contains(fromDateoldformat)){
+                array_of_Dates.add(fromDateoldformat);
+            }
+            String nextday = getTomorrowsDate(fromDateoldformat);
+            addDateinDatesArray(nextday,todateoldformat);
+        }
+        else{
+
+            if(!array_of_Dates.contains(fromDateoldformat)){
+                array_of_Dates.add(fromDateoldformat);
+            }
+
+
+            showProgressBar(true);
+            try {
+                AddDatatoExcelSheet(ordersList,"orderDetailsfrom"+fromdatestring);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ;
+            }
+        }
 
 
 
+    }
 
 
     @Override
@@ -712,7 +822,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             fromdatestring = fromdateSelector_text.getText().toString();
                             selectedStartDate = fromdatestring;
                             selectedEndDate = getDatewithNameoftheseventhDayFromSelectedStartDate(DateString);
-                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
+                            startDateString_AsNewFormat = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
 
 
                             //      showProgressBar(true);
@@ -793,15 +903,33 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             String CurrentDateString =datestring+monthstring+String.valueOf(year);
                             //   PreviousDateString = getDatewithNameofthePreviousDayfromSelectedDay(CurrentDateString);
                             DateString = (CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
-                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
+                            endDateString_AsNewFormat = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
 
                             todateSelector_text.setText(CurrentDay+", "+dayOfMonth + " " + month_in_String + " " + year);
                             //getOrderForSelectedDate(DateString, vendorKey);
                             showProgressBar(true);
                             todatestring = todateSelector_text.getText().toString();
-                            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
 
-                            calculate_the_dateandgetData(fromdatestring,todatestring);
+                            if(orderdetailsnewschema){
+                                  String FromdateAsNewFormat =convertOldFormatDateintoNewFormat(fromdatestring);
+                                String TodateAsNewFormat =convertOldFormatDateintoNewFormat(DateString);
+
+                                callVendorOrderDetailsSeviceAndInitCallBack(FromdateAsNewFormat, TodateAsNewFormat,vendorKey);
+
+
+                            }
+                            else{
+
+
+                                //  Adjusting_Widgets_Visibility(true);
+
+                                calculate_the_dateandgetData(fromdatestring,todatestring);
+
+                            }
+
+
+                            getdataFromReplacementTransaction(startDateString_AsNewFormat, endDateString_AsNewFormat, vendorKey);
+
 //                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
 
                         }
@@ -932,13 +1060,30 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                             //getOrderForSelectedDate(DateString, vendorKey);
                             showProgressBar(true);
                             todatestring=DateString;
-                            startDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
-                            endDateString_forReplacementransaction = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
+                            startDateString_AsNewFormat = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "STARTTIME");
+                            endDateString_AsNewFormat = convertNormalDateintoReplacementTransactionDetailsDate(CurrentDateString, "ENDTIME");
+
+                            if(orderdetailsnewschema){
+                                  String FromdateAsNewFormat =convertOldFormatDateintoNewFormat(todatestring);
+                                String TodateAsNewFormat =convertOldFormatDateintoNewFormat(todatestring);
+
+                                callVendorOrderDetailsSeviceAndInitCallBack(FromdateAsNewFormat, TodateAsNewFormat,vendorKey);
 
 
-                            getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
+                            }
+                            else{
 
-                            getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+
+                                //  Adjusting_Widgets_Visibility(true);
+
+                                getOrderDetailsUsingOrderSlotDateandOrderPlaceddate(PreviousDateString, DateString, vendorKey);
+
+                            }
+
+
+                            getdataFromReplacementTransaction(startDateString_AsNewFormat, endDateString_AsNewFormat, vendorKey);
+
+
 
                         }
                         catch (Exception e ){
@@ -947,6 +1092,52 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     }
                 }, year, month, day);
         datepicker.show();
+
+    }
+    private void callVendorOrderDetailsSeviceAndInitCallBack(String FromDate, String ToDate, String vendorKey) {
+        if(isVendorOrdersTableServiceCalled){
+            showProgressBar(false);
+            return;
+        }
+        isVendorOrdersTableServiceCalled = true;
+        mResultCallback = new VendorOrdersTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, List<Modal_ManageOrders_Pojo_Class> orderslist_fromResponse) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + orderslist_fromResponse);
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("content",orderslist_fromResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                isVendorOrdersTableServiceCalled = false;
+                ordersList =  orderslist_fromResponse;
+
+                 orderinstruction.setVisibility(View.GONE);
+               // addDateinDatesArray(FromDate,ToDate);
+                DisplayOrderListDatainListView(ordersList);
+            }
+
+            @Override
+            public void notifyError(String requestType,VolleyError error) {
+                Log.d("TAG", "Volley requester " + requestType);
+                Log.d("TAG", "Volley JSON post" + "That didn't work!");
+                showProgressBar(false);
+                isVendorOrdersTableServiceCalled = false;
+
+            }
+        };
+        ordersList.clear();
+        sorted_OrdersList.clear();
+        array_of_orderId.clear();
+
+        showProgressBar(true);
+        mVolleyService = new VendorOrdersTableService(mResultCallback,GenerateCustomerMobileNo_BillValueReport.this);
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingFromToSlotDate_vendorkey + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate;
+        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingFromToSlotDate_vendorkey + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate;
+
+        mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 
     }
 
@@ -1455,6 +1646,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     }
 
     private void DisplayOrderListDatainListView(List<Modal_ManageOrders_Pojo_Class> ordersList) {
+        final String[] orderid_1 = {""} , orderid_2 = {""};
+
         try {
 
             if (ordersList.size() > 0) {
@@ -1462,7 +1655,8 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
                     public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
                         String orderplacedtime_1 = object1.getOrderplacedtime_in_long();
                         String orderplacedtime_2 = object2.getOrderplacedtime_in_long();
-
+                        orderid_1[0] = object1.getOrderid().toString();
+                        orderid_2[0] = object2.getOrderid().toString();
                         if((orderplacedtime_1.equals(""))||(orderplacedtime_1.equals("null"))||(orderplacedtime_1.equals(null))){
                             orderplacedtime_1=String.valueOf(0);
                         }
@@ -1479,7 +1673,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
 
-                appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
+                appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
 
 
@@ -1508,10 +1702,11 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
         catch (Exception e){
             e.printStackTrace();
             if (ordersList.size() > 0) {
-
+                Toast.makeText(this, String.valueOf(orderid_1[0])+"  "+String.valueOf(orderid_2[0]), Toast.LENGTH_SHORT).show();
                 Adapter_Edit_Or_CancelTheOrders adapter_edit_or_cancelTheOrders = new Adapter_Edit_Or_CancelTheOrders(GenerateCustomerMobileNo_BillValueReport.this, ordersList,true);
                 manageOrders_ListView.setAdapter(adapter_edit_or_cancelTheOrders);
 
+                appOrdersCount_textwidget.setText(String.valueOf(ordersList.size()));
 
                 loadingpanelmask.setVisibility(View.GONE);
                 loadingPanel.setVisibility(View.GONE);
@@ -2293,9 +2488,28 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
     }
 
+
+    private String convertOldFormatDateintoNewFormat(String todaysdate) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return CurrentDate;
+
+    }
     private String convertDatetoNormalFormat(String ndate) {
         String convertedDate = "";
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
         try {
             date = dateFormat.parse(ndate);
@@ -2454,18 +2668,24 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
+
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            String PreviousdayDate = df.format(c1);
+            return PreviousdayDate;
+
+        }
+        else {
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
+
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
-        // System.out.println("todays Date  " + CurrentDate);
-        System.out.println("PreviousdayDate Date  " + PreviousdayDate);
-
-
-        return PreviousdayDate;
+            return PreviousdayDate;
+        }
     }
 
 
@@ -2489,9 +2709,9 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
         SimpleDateFormat df = new SimpleDateFormat();
         if (Time.equals("STARTTIME")) {
-            df = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+            df = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         } else {
-            df = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+            df = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
 
         }
 
@@ -2542,7 +2762,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00Z");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -2554,7 +2774,7 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'23:59:59Z");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -2597,78 +2817,146 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
 
 
     private String getOldDatewithNameusingCurrentDate(String sDate,String Count) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyyy");
-        Date date = null;
-        try {
-            date = dateFormat.parse(sDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
+
+        if(orderdetailsnewschema) {
+
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = null;
+            try {
+                date = dateFormat.parse(sDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+
+            calendar.add(Calendar.DATE, Integer.parseInt(Count));
+
+
+            Date c1 = calendar.getTime();
+
+
+            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
+            String PreviousdayDate = df1.format(c1);
+            String yesterdayAsString = PreviousdayDate;
+            return yesterdayAsString;
         }
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
-
-        calendar.add(Calendar.DATE, Integer.parseInt(Count));
+        else{
 
 
+            SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyyy");
+            Date date = null;
+            try {
+                date = dateFormat.parse(sDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Log.d(Constants.TAG, "getOrderDetailsUsingApi sDate: " + sDate);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            Log.d(Constants.TAG, "getOrderDetailsUsingApi date: " + date);
+
+            calendar.add(Calendar.DATE, Integer.parseInt(Count));
 
 
-        Date c1 = calendar.getTime();
+            Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
-        String PreviousdayDay = previousday.format(c1);
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            String PreviousdayDay = previousday.format(c1);
 
 
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            String PreviousdayDate = df1.format(c1);
+            String yesterdayAsString = PreviousdayDay + ", " + PreviousdayDate;
+            Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
+            return yesterdayAsString;
+        }
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
-        String  PreviousdayDate = df1.format(c1);
-        String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
-        Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
-
-        return yesterdayAsString;
     }
 
 
 
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
+
+        }
+        else {
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            System.out.println("Current  " + CurrentDate);
+
+
+            return CurrentDate;
+        }
+    }
+
+
+    private String convertnewFormatDateintoOldFormat(String todaysdate) {
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+           String CurrentDay = day.format(date);
+
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(date);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
 
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        String CurrentDate = df.format(c);
-
-
-
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
-
-
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         return CurrentDate;
+
     }
 
 
     private String getDatewithNameoftheDay() {
-        Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        String CurrentDay = day.format(c);
+        Calendar calendar = Calendar.getInstance();
+        Date c = calendar.getTime();
 
+        if(orderdetailsnewschema){
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = df.format(c);
+            return CurrentDate;
 
-
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        String  CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
-
-
-        //CurrentDate = CurrentDay+", "+CurrentDate;
-        System.out.println("todays Date  " + CurrentDate);
+        }
+        else {
 
 
-        return CurrentDate;
+            SimpleDateFormat day = new SimpleDateFormat("EEE");
+           String CurrentDay = day.format(c);
+
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            CurrentDate = df.format(c);
+
+            CurrentDate = CurrentDay + ", " + CurrentDate;
+
+
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+        }
     }
 
 
@@ -2785,14 +3073,42 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
     }
     private String getLongValuefortheDate2(String orderplacedtime) {
         String longvalue = "";
-        try {
-            String time1 = orderplacedtime;
-               Log.d(Constants.TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
-            Date date = sdf.parse(time1);
-            long time1long = date.getTime() / 1000;
-            longvalue = String.valueOf(time1long);
+
+        if(orderdetailsnewschema) {
+            try {
+                String time1 = orderplacedtime;
+
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Date date = sdf.parse(time1);
+                long time1long = date.getTime() / 1000;
+                longvalue = String.valueOf(time1long);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                try {
+                    String time1 = orderplacedtime;
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date date = sdf.parse(time1);
+                    long time1long = date.getTime() / 1000;
+                    longvalue = String.valueOf(time1long);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return longvalue;
+        }
+        else{
+            try {
+                String time1 = orderplacedtime;
+                Log.d(Constants.TAG, "time1long  " + orderplacedtime);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+                Date date = sdf.parse(time1);
+                long time1long = date.getTime() / 1000;
+                longvalue = String.valueOf(time1long);
           /*  String time2 = "Sat, 24 Apr 2021 07:50:28";
             Date date2 = sdf.parse(time2);
 
@@ -2800,30 +3116,31 @@ public class GenerateCustomerMobileNo_BillValueReport extends AppCompatActivity 
             Log.d(TAG, "time1 "+time1long + " time2 "+time2long);
 
            */
-            //   long differencetime = time2long - time1long;
-            //  Log.d(TAG, "   "+orderplacedtime);
-
-            //   Log.d(TAG, "time1long  "+time1long);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            try {
-                String time1 = orderplacedtime;
-                     Log.d(Constants.TAG, "time1long  "+orderplacedtime);
-
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
-                Date date = sdf.parse(time1);
-                long time1long = date.getTime() / 1000;
-                longvalue = String.valueOf(time1long);
-
                 //   long differencetime = time2long - time1long;
                 //  Log.d(TAG, "   "+orderplacedtime);
 
-                //    Log.d(TAG, "time1long  "+time1long);
-            } catch (Exception e) {
-                e.printStackTrace();
+                //   Log.d(TAG, "time1long  "+time1long);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                try {
+                    String time1 = orderplacedtime;
+                    Log.d(Constants.TAG, "time1long  " + orderplacedtime);
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                    Date date = sdf.parse(time1);
+                    long time1long = date.getTime() / 1000;
+                    longvalue = String.valueOf(time1long);
+
+                    //   long differencetime = time2long - time1long;
+                    //  Log.d(TAG, "   "+orderplacedtime);
+
+                    //    Log.d(TAG, "time1long  "+time1long);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+            return longvalue;
         }
-        return longvalue;
     }
 
 

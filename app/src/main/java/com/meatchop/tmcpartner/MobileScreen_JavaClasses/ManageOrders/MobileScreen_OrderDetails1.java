@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -28,24 +29,21 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.gson.JsonArray;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.FetchAddressIntentService;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.R;
-import com.meatchop.tmcpartner.Settings.DatewiseRatingreport_SecondScreen;
 import com.meatchop.tmcpartner.Settings.DeliveredOrdersTimewiseReport;
 import com.meatchop.tmcpartner.Settings.DeliveryPartnerSettlementReport;
 import com.meatchop.tmcpartner.Settings.GetDeliverypartnersAssignedOrders;
 import com.meatchop.tmcpartner.Settings.Helper;
-import com.meatchop.tmcpartner.Settings.ModalOrderItemDetails;
-import com.meatchop.tmcpartner.Settings.Modal_AssignedOrders;
-import com.meatchop.tmcpartner.Settings.Modal_OrderDetails;
 import com.meatchop.tmcpartner.Settings.Pos_Orders_List;
+import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 import com.meatchop.tmcpartner.Settings.WholeSaleOrdersList;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
@@ -77,7 +75,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
     String orderdetailskey,deliveryCharges,coupondiscountAmount,useraddreskey,vendorLongitude,vendorLatitude,customerlatitude,customerLongitutde,
-            deliverydistance,deliverypartnerKey,DeliveryPersonList,deliverypartnerName="",deliveryPartnerNumber="",ordertype,fromActivityName;
+            deliverydistance,deliverypartnerKey,DeliveryPersonList,deliverypartnerName="",deliveryPartnerNumber="",ordertype,fromActivityName="";
     double screenInches;
     LinearLayout refreshpaymentmode__loadinganim_layout,refreshpaymentmode_image_layout,refresh_paymentmode_layout,showlocation,deliveryPartnerAssignLayout,whole_showlocation,Location_loadinganim_layout;
     public static BottomSheetDialog bottomSheetDialog;
@@ -86,6 +84,12 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     ResultReceiver resultReceiver;
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
+
+
+   boolean orderdetailsnewschema = false;
+    String vendorkey = "",orderid ="",customerMobileNo ="";
+    Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,12 +139,34 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         deliveryPartnerList = new ArrayList<>();
         resultReceiver = new AddressResultReceiver(new Handler());
 
+
+
+        Bundle bundle = getIntent().getExtras();
+        modal_manageOrders_pojo_class = bundle.getParcelable("data");
+        fromActivityName = bundle.getString("From");
+
+
+
+
         try {
             SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
 
+            vendorkey = (shared.getString("VendorKey", ""));
 
             vendorLatitude = (shared.getString("VendorLatitude", ""));
             vendorLongitude = (shared.getString("VendorLongitute", ""));
+
+
+            if (fromActivityName.equals("MobileManageOrders")) {
+                orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+
+            }
+            else{
+                orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+
+            }
+         //   orderdetailsnewschema = true;
+
         }
         catch (Exception e){
             e.printStackTrace();
@@ -157,18 +183,30 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         }
         OrderdItems_desp = new ArrayList<>();
 
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(MobileScreen_OrderDetails1 .this);
+            //    Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
 
-        Bundle bundle = getIntent().getExtras();
-         modal_manageOrders_pojo_class = bundle.getParcelable("data");
-        fromActivityName = bundle.getString("From");
 
-        try{
+        }
+
+       try{
             deliveryPartnerNumber=getIntent().getStringExtra("deliveryusermobileno");
             deliverypartnerName=getIntent().getStringExtra("deliveryusername");
             if(deliverypartnerName.equals(null)){
@@ -211,6 +249,24 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             ordertype = String.valueOf(modal_manageOrders_pojo_class.getOrderType().toUpperCase());
         }
         catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        try{
+            customerMobileNo = String.valueOf(modal_manageOrders_pojo_class.getUsermobile());
+        }
+        catch (Exception e){
+            customerMobileNo ="";
+            e.printStackTrace();
+        }
+
+        try{
+            orderid  = String.valueOf(modal_manageOrders_pojo_class.getOrderid());
+        }
+        catch (Exception e){
+            orderid ="";
             e.printStackTrace();
         }
 
@@ -279,7 +335,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
                 customerLongitutde = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
                 // getUserAddressFromAddress(modal_manageOrders_pojo_class.getUseraddresskey().toString());
-                if(((customerLongitutde.equals("null"))||(customerLongitutde.equals(null))||(customerLongitutde.equals(""))||(customerLongitutde.equals("0")))&&(((customerlatitude.equals("null"))||(customerlatitude.equals(null))||(customerlatitude.equals(""))||(customerlatitude.equals("0")))))
+                if(((customerLongitutde.equals("null"))||(customerLongitutde.equals(null))||(customerLongitutde.equals(""))||(customerLongitutde.equals("0")))||(((customerlatitude.equals("null"))||(customerlatitude.equals(null))||(customerlatitude.equals(""))||(customerlatitude.equals("0"))) || (deliverydistance.equals("0") || deliverydistance.equals("") )))
                 {
                     Location_loadinganim_layout.setVisibility(View.VISIBLE);
                     deliveryPartnerAssignLayout.setVisibility(View.VISIBLE);
@@ -485,8 +541,11 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
                 showProgressBar(true);
 
-                getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode,orderdetailskey);
-           
+
+                    getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode,orderdetailskey,orderid,vendorkey,customerMobileNo);
+
+
+
 
             }
         });
@@ -511,16 +570,21 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
                 startActivityForResult(intent,1234);
 */
+
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                 if(!deliverypartnerName.equals("null")) {
 
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,deliverypartnerName);
+                    showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
                 }
                 else{
 
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,"null");
+                    showBottomSheetDialog(Orderkey,"null",orderid,customerMobileNo,vendorkey);
 
                 }
 
@@ -684,31 +748,49 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
 
 
-    private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode, String orderdetailskey) {
+    private void getPaymentModeFromOrderDetails(String orderidtoFetchPaymentmode, String orderdetailskey, String orderid, String vendorkey, String customerMobileNo) {
+        String Api_toCallOrderDetailsUsingOrderid = "";
+        if(orderdetailsnewschema){
+            if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                Api_toCallOrderDetailsUsingOrderid = Constants.api_GetVendorOrderDetailsUsingOrderid_vendorkey+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+            }
+            else{
+                Toast.makeText(MobileScreen_OrderDetails1.this, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+            }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetOrderDetailsusingOrderid+orderidtoFetchPaymentmode ,null,
-                new com.android.volley.Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(@NonNull JSONObject response) {
-                        try {
-                            Log.d(Constants.TAG, "GETADDRESS Response: " + response);
 
+        }
+        else{
+            Api_toCallOrderDetailsUsingOrderid = Constants.api_GetOrderDetailsusingOrderid+orderidtoFetchPaymentmode;
+
+        }
+
+
+        if(!Api_toCallOrderDetailsUsingOrderid.equals("")) {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Api_toCallOrderDetailsUsingOrderid, null,
+                    new com.android.volley.Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(@NonNull JSONObject response) {
                             try {
+                                Log.d(Constants.TAG, "GETADDRESS Response: " + response);
 
-                                    String ordertype="#";
+
+                                try {
+
+                                    String ordertype = "#";
 
                                     //converting jsonSTRING into array
-                                    JSONArray JArray  = response.getJSONArray("content");
+                                    JSONArray JArray = response.getJSONArray("content");
                                     //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                                    int i1=0;
+                                    int i1 = 0;
                                     int arrayLength = JArray.length();
                                     //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
-                                        if(arrayLength>1){
-                                            Toast.makeText(MobileScreen_OrderDetails1.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
+                                    if (arrayLength > 1) {
+                                        Toast.makeText(MobileScreen_OrderDetails1.this, "This orderid Have more than 1 orders", Toast.LENGTH_LONG).show();
 
-                                        }
+                                    }
 
-                                    for(;i1<(arrayLength);i1++) {
+                                    for (; i1 < (arrayLength); i1++) {
 
                                         try {
                                             JSONObject json = JArray.getJSONObject(i1);
@@ -722,23 +804,23 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
                                             //Toast.makeText(MobileScreen_OrderDetails1.this, " : "+fromActivityName, Toast.LENGTH_LONG).show();
 
-                                            if(fromActivityName.equals("MobileManageOrders")) {
-                                                if(Mobile_ManageOrders1.sorted_OrdersList.size()>0){
-                                                    for(int i =0; i<Mobile_ManageOrders1.sorted_OrdersList.size();i++){
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Mobile_ManageOrders1.sorted_OrdersList.get(i);
+                                            if (fromActivityName.equals("MobileManageOrders")) {
+                                                if (Mobile_ManageOrders1.sorted_OrdersList.size() > 0) {
+                                                    for (int i = 0; i < Mobile_ManageOrders1.sorted_OrdersList.size(); i++) {
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = Mobile_ManageOrders1.sorted_OrdersList.get(i);
                                                         String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
                                                             modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
                                                             Mobile_ManageOrders1.adapterMobileManageOrdersListView.notifyDataSetChanged();
                                                         }
                                                     }
                                                 }
 
-                                                if(Mobile_ManageOrders1.ordersList.size()>0){
-                                                    for(int i =0; i<Mobile_ManageOrders1.ordersList.size();i++){
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =Mobile_ManageOrders1.ordersList.get(i);
+                                                if (Mobile_ManageOrders1.ordersList.size() > 0) {
+                                                    for (int i = 0; i < Mobile_ManageOrders1.ordersList.size(); i++) {
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = Mobile_ManageOrders1.ordersList.get(i);
                                                         String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
                                                             modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
                                                             Mobile_ManageOrders1.adapterMobileManageOrdersListView.notifyDataSetChanged();
                                                         }
@@ -748,38 +830,35 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                             }
 
 
+                                            if (fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder")) {
+                                                try {
+                                                    if (GetDeliverypartnersAssignedOrders.ordersList.size() > 0) {
+                                                        for (int i = 0; i < GetDeliverypartnersAssignedOrders.ordersList.size(); i++) {
+                                                            Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = GetDeliverypartnersAssignedOrders.ordersList.get(i);
 
-                                            if(fromActivityName.equals("MobileGetDeliveryPartnerAssignedOrder")) {
-                                               try {
-                                                   if (GetDeliverypartnersAssignedOrders.ordersList.size() > 0) {
-                                                       for (int i = 0; i < GetDeliverypartnersAssignedOrders.ordersList.size(); i++) {
-                                                           Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = GetDeliverypartnersAssignedOrders.ordersList.get(i);
-
-                                                           String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                           if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
-                                                               modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
-
-
-                                                               try {
-                                                                   GetDeliverypartnersAssignedOrders.adapter_mobile_getDeliveryPartnersAssignedOrders.notifyDataSetChanged();
-
-                                                               } catch (Exception e) {
-                                                                   e.printStackTrace();
-                                                               }
+                                                            String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
+                                                            if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
+                                                                modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
 
 
+                                                                try {
+                                                                    GetDeliverypartnersAssignedOrders.adapter_mobile_getDeliveryPartnersAssignedOrders.notifyDataSetChanged();
 
-                                                           }
-                                                       }
-                                                   }
-                                               }
-                                               catch(Exception e){
-                                                   e.printStackTrace();
-                                               }
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
 
-                                                try{
 
-                                                    if(DeliveryPartnerSettlementReport.result_JArray.length()>0){
+                                                            }
+                                                        }
+                                                    }
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+
+                                                    if (DeliveryPartnerSettlementReport.result_JArray.length() > 0) {
 
                                                         //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                                                         int i11 = 0;
@@ -787,28 +866,26 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                                         //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
                                                         Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
-                                                        if(arrayLength1>0) {
+                                                        if (arrayLength1 > 0) {
 
                                                             for (; i11 < (arrayLength1); i11++) {
 
                                                                 try {
                                                                     JSONObject jsonv = DeliveryPartnerSettlementReport.result_JArray.getJSONObject(i11);
-                                                                    String orderidd= jsonv.getString("orderid");
+                                                                    String orderidd = jsonv.getString("orderid");
 
-                                                                    if(orderidd.equals(orderidtoFetchPaymentmode)) {
+                                                                    if (orderidd.equals(orderidtoFetchPaymentmode)) {
                                                                         jsonv.put("paymentmode", PaymentMode);
 
 
                                                                     }
-                                                                }
-                                                                catch (Exception e){
+                                                                } catch (Exception e) {
                                                                     e.printStackTrace();
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                }
-                                                catch (Exception e){
+                                                } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
 
@@ -816,28 +893,23 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                             }
 
 
+                                            if (fromActivityName.equals("AppOrdersList")) {
 
-                                            if(fromActivityName.equals("AppOrdersList")) {
+                                                if (searchOrdersUsingMobileNumber.sorted_OrdersList.size() > 0) {
+                                                    for (int i = 0; i < searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++) {
 
-                                                if(searchOrdersUsingMobileNumber.sorted_OrdersList.size()>0){
-                                                    for(int i =0; i<searchOrdersUsingMobileNumber.sorted_OrdersList.size();i++){
-
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
                                                         String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
                                                             modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
-
-
 
 
                                                             try {
                                                                 searchOrdersUsingMobileNumber.adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
 
-                                                            }
-                                                            catch (Exception e){
+                                                            } catch (Exception e) {
                                                                 e.printStackTrace();
                                                             }
-
 
 
                                                         }
@@ -845,60 +917,51 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                                 }
 
 
-                                                if(searchOrdersUsingMobileNumber.ordersList.size()>0){
-                                                    for(int i =0; i<searchOrdersUsingMobileNumber.ordersList.size();i++){
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =searchOrdersUsingMobileNumber.ordersList.get(i);
+                                                if (searchOrdersUsingMobileNumber.ordersList.size() > 0) {
+                                                    for (int i = 0; i < searchOrdersUsingMobileNumber.ordersList.size(); i++) {
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = searchOrdersUsingMobileNumber.ordersList.get(i);
 
                                                         String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
                                                             modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
 
 
                                                             try {
                                                                 searchOrdersUsingMobileNumber.adapter_mobileSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
 
-                                                            }
-                                                            catch (Exception e){
+                                                            } catch (Exception e) {
                                                                 e.printStackTrace();
-                                                            }                                                        }
+                                                            }
+                                                        }
                                                     }
                                                 }
 
 
+                                            } else {
+
+
+                                                //   Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+
                                             }
-                                            else{
 
 
-                                             //   Toast.makeText(MobileScreen_OrderDetails1.this, "T   "+fromActivityName, Toast.LENGTH_LONG).show();
+                                            if (fromActivityName.equals("WholeSaleOrdersList")) {
 
-                                            }
+                                                if (WholeSaleOrdersList.sorted_OrdersList.size() > 0) {
+                                                    for (int i = 0; i < WholeSaleOrdersList.sorted_OrdersList.size(); i++) {
 
-
-
-
-
-
-                                            if(fromActivityName.equals("WholeSaleOrdersList")) {
-
-                                                if(WholeSaleOrdersList.sorted_OrdersList.size()>0){
-                                                    for(int i =0; i<WholeSaleOrdersList.sorted_OrdersList.size();i++){
-
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.sorted_OrdersList.get(i);
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = WholeSaleOrdersList.sorted_OrdersList.get(i);
                                                         String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
                                                             modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
-
-
 
 
                                                             try {
                                                                 WholeSaleOrdersList.adapter_mobile_wholeSaleOrderList.notifyDataSetChanged();
 
-                                                            }
-                                                            catch (Exception e){
+                                                            } catch (Exception e) {
                                                                 e.printStackTrace();
                                                             }
-
 
 
                                                         }
@@ -906,30 +969,27 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                                 }
 
 
-                                                if(WholeSaleOrdersList.ordersList.size()>0){
-                                                    for(int i =0; i<WholeSaleOrdersList.ordersList.size();i++){
-                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =WholeSaleOrdersList.ordersList.get(i);
+                                                if (WholeSaleOrdersList.ordersList.size() > 0) {
+                                                    for (int i = 0; i < WholeSaleOrdersList.ordersList.size(); i++) {
+                                                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = WholeSaleOrdersList.ordersList.get(i);
 
                                                         String Orderid_fromArray = modal_manageOrders_pojo_class.getOrderid().toString();
-                                                        if(Orderid_fromArray.equals(orderidtoFetchPaymentmode)){
+                                                        if (Orderid_fromArray.equals(orderidtoFetchPaymentmode)) {
                                                             modal_manageOrders_pojo_class.setPaymentmode(PaymentMode);
 
 
                                                             try {
                                                                 WholeSaleOrdersList.adapter_mobile_wholeSaleOrderList.notifyDataSetChanged();
 
-                                                            }
-                                                            catch (Exception e){
+                                                            } catch (Exception e) {
                                                                 e.printStackTrace();
-                                                            }                                                        }
+                                                            }
+                                                        }
                                                     }
                                                 }
 
 
                                             }
-
-
-
 
 
                                             try {
@@ -939,14 +999,11 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                                     showProgressBar(false);
 
                                                 }
-                                            }
-                                            catch (Exception e){
+                                            } catch (Exception e) {
                                                 e.printStackTrace();
                                                 showProgressBar(false);
 
                                             }
-
-
 
 
                                         } catch (JSONException e) {
@@ -955,74 +1012,69 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                                     }
 
                                 } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    refreshpaymentmode__loadinganim_layout.setVisibility(View.GONE);
+                                    refreshpaymentmode_image_layout.setVisibility(View.VISIBLE);
+
+                                }
+
+
+                            } catch (Exception e) {
                                 e.printStackTrace();
                                 refreshpaymentmode__loadinganim_layout.setVisibility(View.GONE);
                                 refreshpaymentmode_image_layout.setVisibility(View.VISIBLE);
 
+
                             }
 
 
-
-
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                            refreshpaymentmode__loadinganim_layout.setVisibility(View.GONE);
-                            refreshpaymentmode_image_layout.setVisibility(View.VISIBLE);
-
-
                         }
 
+                    }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+                    try {
+                        Toast.makeText(MobileScreen_OrderDetails1.this, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
 
 
+                        Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                        Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                        error.printStackTrace();
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-
-                },new com.android.volley.Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(@NonNull VolleyError error) {
-                try {
-                    Toast.makeText(MobileScreen_OrderDetails1.this, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
-
-
-
-                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
-                    Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
-
-                    error.printStackTrace();
-
-
                 }
-                catch (Exception e){
-                    e.printStackTrace();
+            }) {
+                @Override
+                public Map<String, String> getParams() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("vendorkey", "vendor_1");
+                    params.put("orderplacedtime", "11 Jan 2021");
+
+                    return params;
                 }
-            }
-        })
-        {
-            @Override
-            public Map<String, String> getParams() throws AuthFailureError {
-                final Map<String, String> params = new HashMap<>();
-                params.put("vendorkey", "vendor_1");
-                params.put("orderplacedtime", "11 Jan 2021");
-
-                return params;
-            }
 
 
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> header = new HashMap<>();
+                    header.put("Content-Type", "application/json");
 
-            @NonNull
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                final Map<String, String> header = new HashMap<>();
-                header.put("Content-Type", "application/json");
+                    return header;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                return header;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-        // Make the request
-        Volley.newRequestQueue(MobileScreen_OrderDetails1.this).add(jsonObjectRequest);
-
+            // Make the request
+            Volley.newRequestQueue(MobileScreen_OrderDetails1.this).add(jsonObjectRequest);
+        }
+        else{
+            Toast.makeText(this, "There is no Api for OrderDetails", Toast.LENGTH_SHORT).show();
+        }
 
 
 
@@ -1520,27 +1572,69 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     }
 
     private void changePaymentModeinOrderDetails(String PaymentMode, String orderidtoFetchPaymentmode, String orderdetailskey) {
+        JSONObject jsonObject = new JSONObject();
+        String Api_toChangeOrderDetailsUsingOrderid = "";
 
 
-        JSONObject  jsonObject = new JSONObject();
-        try {
-            jsonObject.put("key", orderdetailskey);
-            jsonObject.put("paymentmode", PaymentMode);
-            Log.i("tag","listenertoken"+ "");
+        if(orderdetailsnewschema){
+            if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                try {
+                    jsonObject.put("paymentmode", PaymentMode);
+                    jsonObject.put("vendorkey", vendorkey);
+                    jsonObject.put("orderid", orderid);
 
 
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+                Context mContext = MobileScreen_OrderDetails1.this;
+                JSONObject customerDetails_JsonObject = new JSONObject();
+
+                try {
+                    customerDetails_JsonObject.put("paymentmode", PaymentMode);
+                    customerDetails_JsonObject.put("orderid", orderid);
+                    customerDetails_JsonObject.put("usermobileno", customerMobileNo);
 
 
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+                initUpdateCustomerOrderDetailsInterface(mContext);
+                Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+                asyncTask_TO_update.execute();
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.d(Constants.TAG, "JSONOBJECT: " + e);
-            showProgressBar(false);
+            }
+            else{
+                Toast.makeText(MobileScreen_OrderDetails1.this, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+            }
 
         }
-        Log.d(Constants.TAG, "Request Payload: " + jsonObject);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
+        else {
+            try {
+                jsonObject.put("key", orderdetailskey);
+                jsonObject.put("paymentmode", PaymentMode);
+                Log.i("tag", "listenertoken" + "");
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+                showProgressBar(false);
+
+            }
+            Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+
+            Api_toChangeOrderDetailsUsingOrderid = Constants.api_Update_OrderDetails;
+
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
@@ -1803,6 +1897,34 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         Volley.newRequestQueue(MobileScreen_OrderDetails1.this).add(jsonObjectRequest);
 
     }
+
+    private void initUpdateCustomerOrderDetailsInterface(Context mContext) {
+
+        mResultCallback_UpdateCustomerOrderDetailsTableInterface  = new Update_CustomerOrderDetails_TrackingTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try{
+                    Toast.makeText(mContext, "Succesfully Updated the Payment Mode in Customer Details", Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                try{
+                    Toast.makeText(mContext, "Failed to Updated the Payment Mode in Customer Details", Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+    };
+    }
+
     private void changePaymentStatusinPaymentTransaction(String status, String key) {
 
         try {
@@ -1898,7 +2020,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
     private void getUserAddressAndLat_LongFromAddressTable(String useraddresskeyy) {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetAddressUsingUserKey + useraddresskeyy,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetAddressUsingAddressKey + useraddresskeyy,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -2033,14 +2155,14 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         startService(intent);
     }
 
-    private void showBottomSheetDialog(String orderkey, String deliverypartnerName) {
+    private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
 
         bottomSheetDialog = new BottomSheetDialog(MobileScreen_OrderDetails1.this);
         bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
 
         ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_OrderDetails1.this, deliveryPartnerList,orderkey,fromActivityName+"orderdetails",deliverypartnerName);
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_OrderDetails1.this, deliveryPartnerList,orderkey,fromActivityName+"orderdetails",deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
         ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 
@@ -2369,7 +2491,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
             orderdetailskey = String.valueOf(modal_manageOrders_pojo_class.getOrderdetailskey());
 
-            getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode, orderdetailskey);
+            getPaymentModeFromOrderDetails(orderidtoFetchPaymentmode, orderdetailskey, orderid, vendorkey, customerMobileNo);
             return true;
 
         }

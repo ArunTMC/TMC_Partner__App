@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
@@ -50,6 +53,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
     Context mContext;
     String portName = "USB";
@@ -65,6 +70,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
     BluetoothAdapter mBluetoothAdapter =null;
     String orderPlacedTime ="";
     boolean isOrderPlacedlessThan3MinsBefore = true;
+
+    boolean orderdetailsnewschema = false;
+    Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
 
     public Adapter_Mobile_SearchOrders_usingMobileNumber_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber, String orderStatus) {
         super(mContext, R.layout.mobile_manage_orders_listview_item1,  ordersList);
@@ -110,6 +118,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
     public View getView(final int pos, View view, ViewGroup v) {
         @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.mobile_manage_orders_listview_item1, (ViewGroup) view, false);
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+       // orderdetailsnewschema = true;
 
 
         final CardView cardLayout =listViewItem.findViewById(R.id.cardLayout);
@@ -753,6 +764,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             public void onClick(View view) {
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+
                 String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
                 changestatusto ="";
 
@@ -764,7 +778,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                 public void onYes() {
                                     searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                                    generatingTokenNo(vendorkey,orderDetailsKey);
+                                    generatingTokenNo(vendorkey,orderDetailsKey,orderid,customerMobileNo);
 
                                 }
 
@@ -789,7 +803,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                     public void onYes() {
                                         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                                        generatingTokenNo(vendorkey,orderDetailsKey);
+                                        generatingTokenNo(vendorkey,orderDetailsKey, orderid, customerMobileNo);
 
                                     }
 
@@ -806,7 +820,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                        generatingTokenNo(vendorkey,orderDetailsKey);
+                        generatingTokenNo(vendorkey,orderDetailsKey, orderid, customerMobileNo);
 
                     }
 
@@ -898,9 +912,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                     changestatusto =Constants.CONFIRMED_ORDER_STATUS;
                                     OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                                     //Log.i("tag","orderkey1"+ OrderKey);
-                                    String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                                     String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
                                     String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                                    String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                                    String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                                    String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
 
                                     //Log.i("Tag","0"+OrderKey);
                                     new_Order_Linearlayout.setVisibility(View.GONE);
@@ -910,12 +926,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                     if((tokenNofromArray.length()<=0)||(tokenNofromArray == null)||(tokenNofromArray.equals(""))) {
                                         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                                        generatingTokenNo(vendorkey, orderDetailsKey);
+                                        generatingTokenNo(vendorkey, orderDetailsKey, orderid, customerMobileNo);
                                     }
                                     else{
                                         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                                        ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                                        ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
                                         if (BluetoothPrintDriver.IsNoConnection()) {
 
                                             Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
@@ -968,6 +984,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                         String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                                         String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
                                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                                        String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                                        String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
 
                                         //Log.i("Tag","0"+OrderKey);
                                         new_Order_Linearlayout.setVisibility(View.GONE);
@@ -977,12 +995,13 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                         if((tokenNofromArray.length()<=0)||(tokenNofromArray == null)||(tokenNofromArray.equals(""))) {
                                             searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
-                                            generatingTokenNo(vendorkey, orderDetailsKey);
+                                            generatingTokenNo(vendorkey, orderDetailsKey, orderid, customerMobileNo);
                                         }
                                         else{
                                             searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
+                                            ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
-                                            ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                                            //ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime, orderid, customerMobileNo, Currenttime);
                                             if (BluetoothPrintDriver.IsNoConnection()) {
 
                                                 Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
@@ -1021,9 +1040,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                         changestatusto =Constants.CONFIRMED_ORDER_STATUS;
                         OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                         //Log.i("tag","orderkey1"+ OrderKey);
-                        String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
                         String orderDetailsKey = (String.format("%s", modal_manageOrders_pojo_class.getOrderdetailskey()));
                         String tokenNofromArray = modal_manageOrders_pojo_class.getTokenno().toString();
+                        String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                        String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                        String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
 
                         //Log.i("Tag","0"+OrderKey);
                         new_Order_Linearlayout.setVisibility(View.GONE);
@@ -1031,10 +1052,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                         confirming_order_Linearlayout.setVisibility(View.VISIBLE);
                         cancelled_Order_Linearlayout.setVisibility(View.GONE);
                         if((tokenNofromArray.length()<=0)||(tokenNofromArray == null)||(tokenNofromArray.equals(""))) {
-                            generatingTokenNo(vendorkey, orderDetailsKey);
+                            generatingTokenNo(vendorkey, orderDetailsKey, orderid, customerMobileNo);
                         }
                         else{
-                            ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                            ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+
+                            // ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime, orderid, customerMobileNo, Currenttime);
                             if (BluetoothPrintDriver.IsNoConnection()) {
 
                                 Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
@@ -1078,8 +1101,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
                 //Log.i("Tag",""+changestatusto+OrderKey);
-
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                ChangeStatusOftheOrder(changestatusto, vendorkey,OrderKey,orderid,customerMobileNo, Currenttime);
 
             }
         });
@@ -1094,14 +1119,18 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 //Log.i("Tag","0"+OrderKey);
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
 
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.VISIBLE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.GONE);
                 modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+                ChangeStatusOftheOrder(changestatusto, vendorkey,OrderKey,orderid,customerMobileNo, Currenttime);
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+                //ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime, orderid, customerMobileNo, Currenttime);
 
             }
         });
@@ -1115,13 +1144,17 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 changestatusto =Constants.DELIVERED_ORDER_STATUS;
                 OrderKey = (String.format("%s", modal_manageOrders_pojo_class.getKeyfromtrackingDetails()));
                 //Log.i("Tag","0"+OrderKey);
+              //  String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                 new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.GONE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
                 //Log.i("Tag",""+changestatusto+OrderKey);
 
-                ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime);
+              //  ChangeStatusOftheOrder(changestatusto,OrderKey,Currenttime, orderid, customerMobileNo, Currenttime);
                 String orderid = "";
                 try{
                     orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
@@ -1129,6 +1162,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 catch (Exception e){
                     e.printStackTrace();
                 }
+                ChangeStatusOftheOrder(changestatusto, vendorkey,OrderKey,orderid,customerMobileNo, Currenttime);
+
                 getStockOutGoingDetailsUsingOrderid(orderid);
                 //  mobile_manageOrders1.sorted_OrdersList.remove(pos);
                 //  notifyDataSetChanged();
@@ -1140,8 +1175,13 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         pending_order_assignDeliveryperson_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                 try {
                     deliverypartnerName = modal_manageOrders_pojo_class.getDeliveryPartnerName();
+
                     if(deliverypartnerName.equals(null)){
                         deliverypartnerName="null";
 
@@ -1153,12 +1193,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 }
                 if(!deliverypartnerName.equals("null")) {
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,deliverypartnerName);
+                    showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
                 }
                 else{
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,"null");
+                    showBottomSheetDialog(Orderkey,"null", orderid, customerMobileNo, vendorkey);
 
                 }
 
@@ -1170,6 +1210,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         other_assignDeliveryperson_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                 try {
                     deliverypartnerName = modal_manageOrders_pojo_class.getDeliveryPartnerName();
                     if(deliverypartnerName.equals(null)){
@@ -1183,12 +1227,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 }
                 if(!deliverypartnerName.equals("null")) {
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,deliverypartnerName);
+                    showBottomSheetDialog(Orderkey,deliverypartnerName, orderid, customerMobileNo, vendorkey);
 
                 }
                 else{
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,"null");
+                    showBottomSheetDialog(Orderkey,"null", orderid, customerMobileNo, vendorkey);
 
                 }
 
@@ -1203,6 +1247,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         cancelled_assignDeliveryperson_button_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
                 try {
                     deliverypartnerName = modal_manageOrders_pojo_class.getDeliveryPartnerName();
                     if(deliverypartnerName.equals(null)){
@@ -1216,12 +1264,12 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 }
                 if(!deliverypartnerName.equals("null")) {
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,deliverypartnerName);
+                    showBottomSheetDialog(Orderkey,deliverypartnerName, orderid, customerMobileNo, vendorkey);
 
                 }
                 else{
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,"null");
+                    showBottomSheetDialog(Orderkey,"null", orderid, customerMobileNo, vendorkey);
 
                 }
 
@@ -1440,21 +1488,21 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
 
-    private void showBottomSheetDialog(String orderkey, String deliverypartnerName) {
+    private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
 
           bottomSheetDialog = new BottomSheetDialog(mContext);
         bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
 
         ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, searchOrdersUsingMobileNumber.deliveryPartnerList,orderkey,"AppOrdersList", deliverypartnerName);
+        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, searchOrdersUsingMobileNumber.deliveryPartnerList,orderkey,"AppOrdersList", deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
         ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 
         bottomSheetDialog.show();
     }
 
-    private void generatingTokenNo(String vendorkey, String orderDetailsKey) {
+    private void generatingTokenNo(String vendorkey, String orderDetailsKey, String orderid, String customerMobileNo) {
         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_generateTokenNo+vendorkey,
@@ -1468,7 +1516,7 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 //Log.d(Constants.TAG, "Responsewwwww: " + response);
                 try {
                     String tokenNo = response.getString("tokenNumber");
-                    UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey);
+                    UpdateTokenNoInOrderDetails(tokenNo,orderDetailsKey,orderid,customerMobileNo,vendorkey);
                 } catch (JSONException e) {
                     searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
 
@@ -1530,9 +1578,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
     }
 
-    private void UpdateTokenNoInOrderDetails(String tokenNo, String orderDetailsKey) {
+    private void UpdateTokenNoInOrderDetails(String tokenNo, String orderDetailsKey, String orderid, String customerMobileNo, String vendorkey) {
         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
-
+/*
         JSONObject  jsonObject = new JSONObject();
         try {
 
@@ -1541,34 +1589,94 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 //Log.i("tag","listenertoken"+ "");
 
 
-
-
-
-
-
-
         } catch (JSONException e) {
             e.printStackTrace();
             //Log.d(Constants.TAG, "JSONOBJECT: " + e);
             searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
 
         }
+
+ */
+        JSONObject jsonObject = new JSONObject();
+        String Api_toChangeOrderDetailsUsingOrderid = "";
+
+
+        if(orderdetailsnewschema){
+            if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                try {
+                    jsonObject.put("tokenno", tokenNo);
+                    jsonObject.put("vendorkey", vendorkey);
+                    jsonObject.put("orderid", orderid);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+                JSONObject customerDetails_JsonObject = new JSONObject();
+
+                try {
+                    customerDetails_JsonObject.put("tokenno", tokenNo);
+                    customerDetails_JsonObject.put("orderid", orderid);
+                    customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+                initUpdateCustomerOrderDetailsInterface(mContext);
+                Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+                asyncTask_TO_update.execute();
+
+
+            }
+            else{
+                Toast.makeText(mContext, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+            }
+
+        }
+        else {
+            try {
+                jsonObject.put("key", orderDetailsKey);
+                jsonObject.put("tokenno", tokenNo);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+
+            }
+            Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+
+
+            Api_toChangeOrderDetailsUsingOrderid = Constants.api_Update_OrderDetails;
+
+        }
+
+
+
+
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_UpdateTokenNO_OrderDetails,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 for(int i = 0; i< searchOrdersUsingMobileNumber.ordersList.size(); i++){
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= searchOrdersUsingMobileNumber.ordersList.get(i);
-                    String key = modal_manageOrders_pojo_class.getOrderdetailskey();
-                    if(orderDetailsKey.equals(key)){
+                    String orderid_local = modal_manageOrders_pojo_class.getOrderid();
+                    if(orderid.equals(orderid_local)){
                         modal_manageOrders_pojo_class.setTokenno(tokenNo);
                         try {
                             for (int sortedarrayIterator = 0; sortedarrayIterator < com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.sorted_OrdersList.size(); sortedarrayIterator++) {
                                 Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList = com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.sorted_OrdersList.get(sortedarrayIterator);
-                                String sortedArraykey = modal_manageOrders_pojo_class_sortedOrdersList.getOrderdetailskey();
-                                if (orderDetailsKey.equals(sortedArraykey)) {
+                                String sortedorderid_local = modal_manageOrders_pojo_class_sortedOrdersList.getOrderid();
+                                if (orderid.equals(sortedorderid_local)) {
                                     modal_manageOrders_pojo_class_sortedOrdersList.setTokenno(tokenNo);
 
                                 }
@@ -1583,7 +1691,11 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                         }
                         notifyDataSetChanged();
                         if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
-                            ChangeStatusOftheOrder(changestatusto, OrderKey, Currenttime);
+                            String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                            String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                            String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+
+                            ChangeStatusOftheOrder(changestatusto, vendorkey,OrderKey,orderid,customerMobileNo, Currenttime);
                         }
                         else{
                             searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(false);
@@ -1679,54 +1791,170 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;
     }
+    private void initUpdateCustomerOrderDetailsInterface(Context mContext) {
 
-    private void ChangeStatusOftheOrder(String changestatusto, String OrderKey, String currenttime) {
+        mResultCallback_UpdateCustomerOrderDetailsTableInterface  = new Update_CustomerOrderDetails_TrackingTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try{
+                    Toast.makeText(mContext, "Succesfully Updated the token no in Customer Details", Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                try{
+                    Toast.makeText(mContext, "Failed to Updated the token No in Customer Details", Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        };
+    }
+
+    private void ChangeStatusOftheOrder(String changestatusto, String vendorkey, String orderkey, String orderid, String customerMobileNo, String currenttime) {
         searchOrdersUsingMobileNumber.Adjusting_Widgets_Visibility(true);
-        JSONObject  jsonObject = new JSONObject();
-        try {
-            if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", currenttime);
-                jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
-            }
-            if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", "");
-                jsonObject.put("orderreadytime", Currenttime);
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
-            }
-            if(changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderconfirmedtime", "");
-                jsonObject.put("ordercancelledtime", Currenttime);
-                jsonObject.put("orderreadytime", "");
-                jsonObject.put("orderpickeduptime", "");
-                jsonObject.put("orderdeliverytime", "");
-                jsonObject.put("deliveryuserlat", "");
-                jsonObject.put("deliveryuserlong", "");
-                //Log.i("tag","listenertoken"+ "");
-            }
-            if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
-                jsonObject.put("key", OrderKey);
-                jsonObject.put("orderstatus", changestatusto);
-                jsonObject.put("orderdeliverytime", currenttime);
-                ////Log.i("tag","listenertoken"+ "");
-            }
 
+        JSONObject jsonObject = new JSONObject();
+        String Api_toChangeOrderDetailsUsingOrderid = "";
+
+        try {
+
+
+            if(orderdetailsnewschema){
+                if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                    try {
+
+
+                        if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("orderconfirmedtime", currenttime);
+                            jsonObject.put("orderid", orderid);
+
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("orderid", orderid);
+                            jsonObject.put("orderreadytime", currenttime);
+
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("ordercancelledtime", currenttime);
+                            jsonObject.put("orderid", orderid);
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                            jsonObject.put("vendorkey", vendorkey);
+                            jsonObject.put("orderstatus", changestatusto);
+                            jsonObject.put("orderdeliverytime", currenttime);
+                            jsonObject.put("orderid", orderid);
+                            ////Log.i("tag","listenertoken"+ "");
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorTrackingOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+                    JSONObject customerDetails_JsonObject = new JSONObject();
+
+                    try {
+
+
+                        if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("orderconfirmedtime", currenttime);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            customerDetails_JsonObject.put("orderreadytime", currenttime);
+
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("ordercancelledtime", currenttime);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            //Log.i("tag","listenertoken"+ "");
+                        }
+                        if (changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                            customerDetails_JsonObject.put("orderstatus", changestatusto);
+                            customerDetails_JsonObject.put("orderdeliverytime", currenttime);
+                            customerDetails_JsonObject.put("orderid", orderid);
+                            ////Log.i("tag","listenertoken"+ "");
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerTrackingOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+                    initUpdateCustomerOrderDetailsInterface(mContext);
+                    Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+                    asyncTask_TO_update.execute();
+
+
+                }
+                else{
+                    Toast.makeText(mContext, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+            else {
+
+                Api_toChangeOrderDetailsUsingOrderid = Constants.api_updateTrackingOrderTable;
+
+
+                if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+                    jsonObject.put("orderconfirmedtime", currenttime);
+
+                    //Log.i("tag","listenertoken"+ "");
+                }
+                if (changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+
+                    jsonObject.put("orderreadytime", currenttime);
+
+                    //Log.i("tag","listenertoken"+ "");
+                }
+                if (changestatusto.equals(Constants.CANCELLED_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+                    jsonObject.put("ordercancelledtime", currenttime);
+
+                    //Log.i("tag","listenertoken"+ "");
+                }
+                if (changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                    jsonObject.put("key", orderkey);
+                    jsonObject.put("orderstatus", changestatusto);
+                    jsonObject.put("orderdeliverytime", currenttime);
+                    ////Log.i("tag","listenertoken"+ "");
+                }
+            }
 
 
 
@@ -1740,14 +1968,14 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 //"?key="+OrderKey+"&orderstatus="+changestatusto+"&currentTime="+Currenttime
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 for(int i = 0; i< searchOrdersUsingMobileNumber.ordersList.size(); i++){
                     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= searchOrdersUsingMobileNumber.ordersList.get(i);
-                    String keyfromtrackingDetails = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    if(OrderKey.equals(keyfromtrackingDetails)){
+                    String orderid_local = modal_manageOrders_pojo_class.getOrderid();
+                    if(orderid.equals(orderid_local)){
                         modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
 
                         if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
@@ -1760,8 +1988,8 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                         try {
                             for (int sortedarrayIterator = 0; sortedarrayIterator < com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.sorted_OrdersList.size(); sortedarrayIterator++) {
                                 Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_sortedOrdersList = com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber.sorted_OrdersList.get(sortedarrayIterator);
-                                String sortedArraykey = modal_manageOrders_pojo_class_sortedOrdersList.getKeyfromtrackingDetails();
-                                if (OrderKey.equals(sortedArraykey)) {
+                                orderid_local = modal_manageOrders_pojo_class_sortedOrdersList.getOrderid();
+                                if (orderid.equals(orderid_local)) {
                                     modal_manageOrders_pojo_class_sortedOrdersList.setOrderstatus(changestatusto);
                                     if (changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)) {
                                         modal_manageOrders_pojo_class_sortedOrdersList.setOrderconfirmedtime(Currenttime);

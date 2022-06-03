@@ -24,8 +24,10 @@ import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Helper;
+import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +35,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,7 +46,7 @@ import java.util.Map;
 
 public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =new Modal_ManageOrders_Pojo_Class();
-    String ordertype="",orderid="",slotname ="", orderPlacedDate ="",deliverytype="",payableMode="",payableAmount="",vendorKey="",usermobileNo="",discountAmount="";
+    String ordertype="",orderid="",slotname ="",orderDeliveredDate, orderPlacedDate ="",deliverytype="",payableMode="",payableAmount="",vendorKey="",usermobileNo="",discountAmount="";
     TextView orderid_textview_widget,ordertype_text_widget,slotname_textview_widget,slotdate_textview_widget,reason_replacementtextview_Widget,
             delivertype_textview_widget,payablemode_textview_widget,payableAmount_textview_widget,discount_textview_widget,replacementDetails_textview;
     ListView orderidItemListview;
@@ -82,11 +85,28 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         itemsSelectedForReplacementStringArray = new ArrayList<>();
 
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        double x = Math.pow(dm.widthPixels/dm.xdpi,2);
-        double y = Math.pow(dm.heightPixels/dm.ydpi,2);
-        screenInches = Math.sqrt(x+y);
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(Replacement_Refund_OrderDetailsScreen.this);
+           // Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                //Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
 
         SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorKey = shared.getString("VendorKey","");
@@ -151,7 +171,17 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        try{
+            orderDeliveredDate = String.valueOf(modal_manageOrders_pojo_class.getOrderdeliveredtime());
+            if(orderDeliveredDate.toUpperCase().equals("NULL")){
+                orderDeliveredDate = "";
 
+            }
+        }
+        catch (Exception e){
+            orderDeliveredDate = "";
+            e.printStackTrace();
+        }
 
 
         try{
@@ -204,7 +234,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         orderid_textview_widget.setText(orderid);
         ordertype_text_widget.setText(ordertype);
         slotname_textview_widget.setText(slotname);
-        slotdate_textview_widget.setText(orderPlacedDate);
+        slotdate_textview_widget.setText(orderDeliveredDate);
         delivertype_textview_widget.setText(deliverytype);
         payablemode_textview_widget.setText(payableMode);
         payableAmount_textview_widget.setText(payableAmount);
@@ -884,6 +914,8 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             jsonObject.put("vendorkey", vendorKey);
             jsonObject.put("amountusercanavl", total_amount_avl_for_user);
             jsonObject.put("orderplaceddate", orderPlacedDate);
+
+            jsonObject.put("orderdelivereddate", orderDeliveredDate);
             jsonObject.put("markeddate", Currenttime);
             jsonObject.put("markeditemdesp", markedItemsArray);
             jsonObject.put("status", "INITIATED");
@@ -896,6 +928,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         }
         //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
+        double finalTotal_amount_avl_for_user = total_amount_avl_for_user;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addReplacementOrderDetailsTable,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
@@ -909,7 +942,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                addDataInReplacementTransactiondetails(Currenttime_transactiontable,usermobileNo,orderid,markedItemsArray,message);
+                addDataInReplacementTransactiondetails(Currenttime_transactiontable,usermobileNo,orderid,markedItemsArray,message,reason_replacementtextview_Widget.getText().toString(), finalTotal_amount_avl_for_user);
                 make_replacement_button.setVisibility(View.GONE);
                 replacementDetails_textview.setVisibility(View.VISIBLE);
 
@@ -950,22 +983,24 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
 
     }
 
-    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray markedItemsArray, String message) {
+    private void addDataInReplacementTransactiondetails(String currenttime, String usermobileNo, String orderid, JSONArray markedItemsArray, String message, String reasonForMarked, double finalTotal_amount_avl_for_user) {
 
         showProgressBar(true);
-
+        String markedateOldFormat = getTimeinOLDFormat(currenttime);
         JSONObject jsonObject = new JSONObject();
         try {
+            jsonObject.put("ordermarkeddate", markedateOldFormat);
             jsonObject.put("transactiontime", currenttime);
             jsonObject.put("orderid", orderid);
             jsonObject.put("vendorkey", vendorKey);
             jsonObject.put("transactiontype", "MARKED");
-            jsonObject.put("orderplaceddate", orderPlacedDate);
+            jsonObject.put("orderdelivereddate", orderDeliveredDate);
             jsonObject.put("mobileno", usermobileNo);
             jsonObject.put("markeditemdesp", markedItemsArray);
             jsonObject.put("transactionstatus", message);
+            jsonObject.put("markeditemamount", finalTotal_amount_avl_for_user);
 
-
+            jsonObject.put("reasonformarked", reasonForMarked);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1042,9 +1077,69 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
     }
+
+
+    private String getTimeinOLDFormat(String transactiontime) {
+        String CurrentDate1 = "";
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date date = sdf.parse(transactiontime);
+
+                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                CurrentDate1 = day.format(date);
+
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+
+        } catch (Exception e) {
+
+            try {
+                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+                try {
+                    Date date = sdff.parse(transactiontime);
+
+                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                    CurrentDate1 = day.format(date);
+
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } catch (Exception e2) {
+
+                try {
+                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd");
+                    try {
+                        Date date = sdff.parse(transactiontime);
+
+                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                        CurrentDate1 = day.format(date);
+
+                    } catch (Exception e3) {
+                        e3.printStackTrace();
+                    }
+                } catch (Exception e4) {
+                    CurrentDate1 = transactiontime;
+
+                    e4.printStackTrace();
+                }
+                e2.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+
+        return CurrentDate1;
+
+    }
+
+
 }

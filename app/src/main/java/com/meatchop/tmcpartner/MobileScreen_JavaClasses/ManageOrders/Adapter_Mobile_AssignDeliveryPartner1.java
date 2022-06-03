@@ -2,6 +2,7 @@ package com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +24,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
@@ -37,12 +41,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class Adapter_Mobile_AssignDeliveryPartner1 extends ArrayAdapter<AssignDeliveryPartner_PojoClass> {
         Context mContext;
         List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
-        String OrderKey,IntentFrom,deliverypartnerName;
+        String OrderKey,IntentFrom,deliverypartnerName,orderid,customerMobileNo,vendorkey;
 
+    boolean orderdetailsnewschema = false;
+    Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
 
+/*
 public Adapter_Mobile_AssignDeliveryPartner1(Context mContext, List<AssignDeliveryPartner_PojoClass> deliveryPartnerList, String orderKey, String intentFrom, String deliverypartnerName) {
         super(mContext, R.layout.mobile_screen_assigning_deliverypartner_listitem1, deliveryPartnerList);
         this.OrderKey=orderKey;
@@ -53,7 +62,23 @@ public Adapter_Mobile_AssignDeliveryPartner1(Context mContext, List<AssignDelive
         }
 
 
-public int getCount() {
+ */
+    public Adapter_Mobile_AssignDeliveryPartner1(Context mContext, List<AssignDeliveryPartner_PojoClass> deliveryPartnerList, String orderkey, String intentFrom, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        super(mContext, R.layout.mobile_screen_assigning_deliverypartner_listitem1, deliveryPartnerList);
+        this.OrderKey=orderkey;
+        this.orderid=orderid;
+        this.customerMobileNo=customerMobileNo;
+        this.vendorkey=vendorkey;
+
+        this.mContext=mContext;
+        this.deliveryPartnerList=deliveryPartnerList;
+        this.IntentFrom=intentFrom;
+        this.deliverypartnerName=deliverypartnerName;
+
+    }
+
+
+    public int getCount() {
         return super.getCount();
         }
 
@@ -70,6 +95,16 @@ public int getPosition(@Nullable AssignDeliveryPartner_PojoClass item) {
 
 public View getView(final int pos, View view, ViewGroup v) {
 @SuppressLint("ViewHolder") final View listViewItem = LayoutInflater.from(mContext).inflate(R.layout.mobile_screen_assigning_deliverypartner_listitem1, (ViewGroup) view, false);
+    SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+    if (IntentFrom.equals("MobileManageOrders")) {
+        orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+
+    }
+    else{
+        orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
+
+    }        //orderdetailsnewschema = true;
+    //orderdetailsnewschema = true;
 
 
 
@@ -85,7 +120,8 @@ final AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass =deliveryP
         String deliveryPartnerKey = assignDeliveryPartner_pojoClass.getDeliveryPartnerKey();
         String deliveryPartnerMobileNo = assignDeliveryPartner_pojoClass.getDeliveryPartnerMobileNo();
         String deliveryPartnerName = assignDeliveryPartner_pojoClass.getDeliveryPartnerName();
-        if(deliverypartnerName.equals("null")){
+
+    if(deliverypartnerName.equals("null")){
             assignPartner_widget.setText("Assign");
         }
         else{
@@ -182,25 +218,101 @@ public void onClick(View view) {
 
 
 
-
-
     JSONObject jsonObject = new JSONObject();
-        try {
-        jsonObject.put("key", OrderKey);
-        jsonObject.put("deliveryuserkey", deliveryPartnerKey);
-        jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
-        jsonObject.put("deliveryusername", deliveryPartnerName);
+    String Api_toChangeOrderDetailsUsingOrderid = "";
+
+    try {
 
 
-        } catch (JSONException e) {
-        e.printStackTrace();
-        Log.d(Constants.TAG, "JSONOBJECT: " + e);
+        if(orderdetailsnewschema){
+            if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+
+
+
+                    try {
+                        jsonObject.put("vendorkey", vendorkey);
+                        jsonObject.put("orderid", orderid);
+                        jsonObject.put("deliveryuserkey", deliveryPartnerKey);
+                        jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
+                        jsonObject.put("deliveryusername", deliveryPartnerName);
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+                    }
+
+
+
+                Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorTrackingOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
+                JSONObject customerDetails_JsonObject = new JSONObject();
+
+
+
+
+
+                    try {
+                        customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                        customerDetails_JsonObject.put("orderid", orderid);
+                        customerDetails_JsonObject.put("deliveryuserkey", deliveryPartnerKey);
+                        customerDetails_JsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
+                        customerDetails_JsonObject.put("deliveryusername", deliveryPartnerName);
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+                    }
+
+                String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerTrackingOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
+
+                initUpdateCustomerOrderDetailsInterface(mContext);
+                Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
+                asyncTask_TO_update.execute();
+
+
+            }
+            else{
+                Toast.makeText(mContext, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
+            }
 
         }
+        else {
+
+            Api_toChangeOrderDetailsUsingOrderid = Constants.api_updateTrackingOrderTable;
+
+            try {
+                jsonObject.put("key", OrderKey);
+                jsonObject.put("deliveryuserkey", deliveryPartnerKey);
+                jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
+                jsonObject.put("deliveryusername", deliveryPartnerName);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+            }
+        }
+
+
+
+
+
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        //Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+    }
+
+
      //   Log.d(Constants.TAG, "Request Payload: " + jsonObject);
 
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_updateTrackingOrderTable,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
         jsonObject, new Response.Listener<JSONObject>() {
 @Override
 public void onResponse(@NonNull JSONObject response) {
@@ -226,8 +338,8 @@ public void onResponse(@NonNull JSONObject response) {
 
                         for (int i = 0; i < Mobile_ManageOrders1.sorted_OrdersList.size(); i++) {
                             final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Mobile_ManageOrders1.sorted_OrdersList.get(i);
-                            String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                            if (TrackingTableKey.equals(OrderKey)) {
+                            String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                            if (orderid_local.equals(orderid)) {
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
@@ -253,8 +365,8 @@ public void onResponse(@NonNull JSONObject response) {
 
                         for (int i = 0; i < searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++) {
                             final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
-                            String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                            if (TrackingTableKey.equals(OrderKey)) {
+                            String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                            if (orderid_local.equals(orderid)) {
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
@@ -285,8 +397,8 @@ public void onResponse(@NonNull JSONObject response) {
 
                         for (int i = 0; i < Edit_Or_CancelTheOrders.ordersList.size(); i++) {
                             final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.ordersList.get(i);
-                            String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                            if (TrackingTableKey.equals(OrderKey)) {
+                            String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                            if (orderid_local.equals(orderid)) {
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
                                 modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
@@ -300,8 +412,8 @@ public void onResponse(@NonNull JSONObject response) {
                         if(Edit_Or_CancelTheOrders.sorted_OrdersList.size()>0){
                             for (int i = 0; i < Edit_Or_CancelTheOrders.sorted_OrdersList.size(); i++) {
                                 final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.sorted_OrdersList.get(i);
-                                String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                                if (TrackingTableKey.equals(OrderKey)) {
+                                String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                if (orderid_local.equals(orderid)) {
                                     modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
                                     modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
                                     modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
@@ -337,8 +449,8 @@ public void onResponse(@NonNull JSONObject response) {
 
                                 for (int i = 0; i < searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++) {
                                     final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
-                                    String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                                    if (TrackingTableKey.equals(OrderKey)) {
+                                    String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                    if (orderid_local.equals(orderid)) {
                                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
                                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
                                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
@@ -362,8 +474,8 @@ public void onResponse(@NonNull JSONObject response) {
 
                                 for (int i = 0; i < Mobile_ManageOrders1.sorted_OrdersList.size(); i++) {
                                     final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Mobile_ManageOrders1.sorted_OrdersList.get(i);
-                                    String TrackingTableKey = modal_manageOrders_forOrderDetailList1.getKeyfromtrackingDetails().toString();
-                                    if (TrackingTableKey.equals(OrderKey)) {
+                                    String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                    if (orderid_local.equals(orderid)) {
                                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
                                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
                                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
@@ -437,6 +549,32 @@ final Map<String, String> params = new HashMap<>();
         }
 
 
+    private void initUpdateCustomerOrderDetailsInterface(Context mContext) {
+
+        mResultCallback_UpdateCustomerOrderDetailsTableInterface  = new Update_CustomerOrderDetails_TrackingTableInterface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try{
+                    Toast.makeText(mContext, "Succesfully Added the Delivery Partner in Customer Details", Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+                try{
+                    Toast.makeText(mContext, "Failed to Added the Delivery Partner  in Customer Details", Toast.LENGTH_SHORT).show();
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        };
+    }
 
 
 

@@ -4,6 +4,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
+import com.meatchop.tmcpartner.Constants;
+
 public class Helper {
     public static void getListViewSize(ListView myListView, double screenInches) {
         ListAdapter myListAdapter=myListView.getAdapter();
@@ -18,7 +21,7 @@ public class Helper {
             View listItem=myListAdapter.getView(size, null, myListView);
             listItem.measure(0, 0);
          //   //Log.i("height of listItem :", String.valueOf(totalHeight));
-            if(screenInches<8) {
+            if(screenInches< Constants.default_mobileScreenSize) {
                 if (totalHeight < 500) {
                     totalHeight += listItem.getMeasuredHeight() + 130;
           //          //Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
@@ -28,7 +31,7 @@ public class Helper {
               //      //Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
                 }
             }
-            if (screenInches>8){
+            if (screenInches>Constants.default_mobileScreenSize){
                 totalHeight += listItem.getMeasuredHeight();
 
             }

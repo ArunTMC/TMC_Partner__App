@@ -5,6 +5,8 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import com.meatchop.tmcpartner.Constants;
+
 public class helper_weight_cut_Listview {
 
 
@@ -21,7 +23,7 @@ public class helper_weight_cut_Listview {
             View listItem=myListAdapter.getView(size, null, myListView);
             listItem.measure(0, 0);
             //   //Log.i("height of listItem :", String.valueOf(totalHeight));
-            if(screenInches<8) {
+            if(screenInches< Constants.default_mobileScreenSize) {
                 if (totalHeight < 500) {
                     totalHeight += listItem.getMeasuredHeight() ;
                     //          //Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
@@ -31,7 +33,7 @@ public class helper_weight_cut_Listview {
                     //      //Log.i("height of listItem: 1  ", String.valueOf(totalHeight));
                 }
             }
-            if (screenInches>8){
+            if (screenInches>Constants.default_mobileScreenSize){
                 totalHeight += listItem.getMeasuredHeight();
 
             }
