@@ -462,7 +462,9 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
             e.printStackTrace();
         }
         mVolleyService = new VendorOrdersTableService(mResultCallback,SlotwiseAppOrderslist.this);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        //String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_SingleOrdertype + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+slotDate+"&vendorkey="+vendorKey;
 
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);

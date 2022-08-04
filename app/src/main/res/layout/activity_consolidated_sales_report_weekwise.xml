@@ -454,11 +454,11 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:layout_weight="1"
+                                android:id="@+id/deliveryCharge_label"
                                 android:fontFamily="@font/open_sans_bold"
                                 android:text="(E) Delivery Charge  "
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
-
 
                             <TextView
                                 android:id="@+id/deliveryChargeAmount_textwidget"

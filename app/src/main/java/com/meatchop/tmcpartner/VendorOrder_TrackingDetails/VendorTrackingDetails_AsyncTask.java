@@ -337,18 +337,18 @@ public class VendorTrackingDetails_AsyncTask extends AsyncTask<String, String,  
 
 
 
+                                            if ((!manageOrdersPojoClass.getUsermobile().equals("+919876543210"))) {
 
-                                            if(!orderTrackingDetailsURL.contains("orderstatus=CANCELLED")){
-                                                if(!orderStatus.toString().toUpperCase().equals(Constants.CANCELLED_ORDER_STATUS)){
+                                                if (!orderTrackingDetailsURL.contains("orderstatus=CANCELLED")) {
+                                                    if (!orderStatus.toString().toUpperCase().equals(Constants.CANCELLED_ORDER_STATUS)) {
+                                                        orderTrackingList.add(manageOrdersPojoClass);
+
+                                                    }
+                                                } else {
                                                     orderTrackingList.add(manageOrdersPojoClass);
 
                                                 }
                                             }
-                                            else{
-                                                orderTrackingList.add(manageOrdersPojoClass);
-
-                                            }
-
 
                                            // orderTrackingList.add(manageOrdersPojoClass);
 

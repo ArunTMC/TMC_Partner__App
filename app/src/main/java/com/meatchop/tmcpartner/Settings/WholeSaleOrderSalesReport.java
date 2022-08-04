@@ -614,7 +614,8 @@ public class WholeSaleOrderSalesReport extends AppCompatActivity {
 
         CouponDiscount=0;
         mVolleyService = new VendorOrdersTableService(mResultCallback,WholeSaleOrderSalesReport.this);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=WHOLESALEORDER";
+      //  String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=WHOLESALEORDER";
+          String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_SingleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=WHOLESALEORDER";
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 

@@ -1071,7 +1071,9 @@ public class PlotOrdersLocationWithTokenNo extends AppCompatActivity implements 
 
         showProgressBar(true);
         mVolleyService = new VendorOrdersTableService(mResultCallback,PlotOrdersLocationWithTokenNo.this);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+       // String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_SingleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
 
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);

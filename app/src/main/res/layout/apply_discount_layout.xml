@@ -22,6 +22,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:id="@+id/userDetails_AfterFetchedLayout"
+                    android:visibility="gone"
                     android:orientation="vertical">
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -132,25 +134,38 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
-                    android:id="@+id/billDetailsLayout"
                     android:orientation="vertical">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="6dp"
-                        android:visibility="gone"
+                        android:id="@+id/fetchUserLayout"
+                        android:visibility="visible"
                         android:orientation="horizontal">
 
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
+                            android:layout_weight="5"
+                            android:id="@+id/mobileno_fetchUserlayout"
                             android:textColor="@color/TMC_Primary_Text_Color"
                             android:textSize="20dp"
                             android:fontFamily="@font/open_sans_bold"
-                            android:text="@string/Bill_Details" />
+                            android:text="+91" />
 
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="35dp"
+                            android:paddingStart="5dp"
+                            android:layout_weight=".6"
+                            android:id="@+id/fetchUser_button"
+                            android:layout_marginStart="7dp"
+                            android:textSize="13sp"
+                            android:paddingEnd="5dp"
+                            android:textColor="@color/TMC_White"
+                            android:background="@drawable/orange_selected_button_background"
+                            android:text="CHECK IF NEW User"/>
 
                     </LinearLayout>
 
@@ -229,7 +244,7 @@
 
                                 android:textAllCaps="false"
                                 android:textColor="@color/TMC_White"
-                                android:background="@drawable/orange_selected_button_background"
+                                android:background="@drawable/button_background"
                                 android:text="Apply Discount" />
                         </LinearLayout>
                     </LinearLayout>

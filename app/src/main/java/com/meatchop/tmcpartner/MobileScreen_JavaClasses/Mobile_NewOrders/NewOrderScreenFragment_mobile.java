@@ -5,18 +5,31 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
+import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,29 +67,54 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.itextpdf.io.font.FontConstants;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.layout.element.Text;
+import com.itextpdf.text.Anchor;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chapter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.DeliveredOrdersTimewiseReport;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
 import com.meatchop.tmcpartner.Settings.Modal_Address;
+import com.meatchop.tmcpartner.Settings.Modal_DeliverySlabDetails;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
 import com.meatchop.tmcpartner.Settings.ReportListviewSizeHelper;
+import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,7 +125,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
+import static android.os.Build.VERSION.SDK_INT;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetails;
@@ -128,7 +169,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     String StoreAddressLine3 = "Chennai - 600044";
     String StoreLanLine = "PH No :4445568499";
     String selectedPaymentMode  ="NONE SELECTED";
-    String selectedOrderType  ="POS Order";
+    String selectedOrderType  = Constants.POSORDER;
 
     public  BottomSheetDialog bottomSheetDialog;
 
@@ -143,7 +184,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     boolean isUpdateRedeemPointsWithoutKeyMethodCalled =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false,isPhoneOrderSelected=false;
     double screenInches;
     double totalredeempointsusergetfromorder=0,pointsfor100rs_double=0;
-    String ordertype="",customermobileno="",maxpointsinaday_String="",minordervalueforredeem_String="",pointsfor100rs_String="";
+    String ordertype="",customermobileno="",customerName ="",maxpointsinaday_String="",minordervalueforredeem_String="",pointsfor100rs_String="";
     double maxpointsinaday_double,minordervalueforredeem_double,finalamounttoPay;
     List<Modal_MenuItemStockAvlDetails> MenuItemStockAvlDetails=new ArrayList<>();
     List<Modal_MenuItem> MenuItemArray=new ArrayList<>();
@@ -152,6 +193,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     // Member object for the chat services
     private BluetoothPrintDriver mChatService = null;
 
+    private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
+    private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
 
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
@@ -170,7 +213,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     private BluetoothAdapter mBtAdapter;
     long sTime =0;
     String finaltoPayAmountinmethod="";
-    String mConnectedDeviceName ;
+    String mConnectedDeviceName ,defaultPrinterType ="";
     boolean isPrinterCnnected = false;
     public boolean shouldGetPrintNow_Global = false;
     String printerName = "";
@@ -201,6 +244,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     boolean isNewUser = false;
     boolean isAddress_Added_ForUser = false;
     boolean isUsertype_AlreadyPhone = false;
+    boolean updateUserName = false;
+    boolean userFetchedManually = false;
 
     String user_key_toAdd_Address = "";
     ListView address_listView;
@@ -211,9 +256,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     LinearLayout addNewAddress_widget;
     LinearLayout addNewAddress_ParentLayout_bottomSheet;
     Adapter_AddressList adapter_addressList ;
-    TextView fulladdress_textview;
+    TextView fulladdress_textview,deliveryChargeTextWidget;
     ScrollView scrollView;
+    AutoCompleteTextView autoCompleteCustomerName_widget;
+    String selectedAddress = "",selectedAddressKey = "";
+    String userLatitude = "0", userLongitude = "0",deliveryDistance = "0";
+    Modal_Address selected_Address_modal = new Modal_Address();
 
+
+    public List<Modal_DeliverySlabDetails> deliverySlabDetailsArrayList=new ArrayList<>();
+    public double maxi_deliverableDistance_inSlabDetails =0;
+    public double deliveryAmt_fromMaxiDistance_inSlabDetails =0;
+    public String deliveryAmount_for_this_order ="0";
+    TextView  toPay_textWidget;
+    String tokenNo="00",userStatus ="";
     public NewOrderScreenFragment_mobile() {
         // Required empty public constructor
     }
@@ -237,20 +293,46 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         completemenuItem = new ArrayList<>();
         cart_Item_List.clear();
         cartItem_hashmap.clear();
-
+        userFetchedManually = false;
+        isAddress_Added_ForUser = false;
+        isAddressForPhoneOrderSelected = false;
         isNewUser =false;
+        updateUserName = false;
         isUsertype_AlreadyPhone =false;
         customermobileno = "";
+        customerName ="";
+        deliveryDistance ="";
+        user_key_toAdd_Address = "";
         userAddressKeyArrayList.clear();
+        userAddressArrayList.clear();
+        selected_Address_modal = new Modal_Address();
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(getActivity());
+            //Toast.makeText(getActivity(), "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                //  Toast.makeText(getActivity(), "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
+        }
 
 
-
-        try{
+            try{
             SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
             vendorKey = shared.getString("VendorKey","");
             vendorType = shared.getString("VendorType","");
              vendorName = shared.getString("VendorName", "");
-
             usermobileNo = (shared.getString("UserPhoneNumber", "+91"));
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
             StoreAddressLine1 = (shared.getString("VendorAddressline1", ""));
@@ -258,6 +340,13 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
             orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+
+                SharedPreferences printerDatasharedPreferences
+                        = requireContext().getSharedPreferences("PrinterConnectionData",
+                        MODE_PRIVATE);
+
+                defaultPrinterType = printerDatasharedPreferences.getString("printerType",String.valueOf(Constants.Bluetooth_PrinterType));
+
             //orderdetailsnewschema = true;
 
         }
@@ -294,12 +383,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             //Log.i(TAG, "call adapter cart_Item " + getData());
 
            completemenuItem= getMenuItemfromString(MenuItems);
+
             //getMenuItemStockAvlDetailsArrayAndMenuItemFromSharedPreferences();
 
-
             getMenuItemArrayFromSharedPreferences();
+            if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)){
+                getwholesaleCustomerlistFromSharedPref();
+                if(defaultPrinterType.equals(Constants.PDF_PrinterType)){
+                    AskForStoragePermission();
 
-            getwholesaleCustomerlistFromSharedPref();
+                }
+            }
+            else{
+                getDeliverySlabDetails();
+            }
 
         }
 
@@ -521,26 +618,65 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 startActivity(intent);
 
                  */
-                if(isanyProducthaveZeroAsweight){
-                    AlertDialogClass.showDialog(getActivity(), R.string.Orders_weight_Cant_be_leave_unedited);
+                JSONArray itemDespArray = new JSONArray();
+             //   GeneratePDF("orderplacedTime", "UserMobile", "tokenno", "itemTotalwithoutGst", "taxAmount", finaltoPayAmountinmethod, "orderid", cart_Item_List, cartItem_hashmap, "Payment_mode", discountAmount, ordertype, itemDespArray);
 
-                }
-                else {
-                    if ((!Objects.requireNonNull(mobile_ItemTotal_textwidget).getText().toString().equals("0")) && (!Objects.requireNonNull(mobile_ToPay_textwidget).getText().toString().equals("0")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("0.0")) && (!mobile_ToPay_textwidget.getText().toString().equals("0.0")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("0.00")) && (!mobile_ToPay_textwidget.getText().toString().equals("0.00")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("")) && (!mobile_ToPay_textwidget.getText().toString().equals(""))) {
-                        if (checkforBarcodeInCart("empty")) {
-                            NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
 
-                            NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
-                            CallAdapter();
-
-                        }
-
-                        openBottomSheetToCompleteBilling();
-                    } else {
-                        AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
+                if(defaultPrinterType.equals(Constants.PDF_PrinterType)){
+                    int writeExternalStoragePermission = ContextCompat.checkSelfPermission(mContext, WRITE_EXTERNAL_STORAGE);
+                    //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                    // If do not grant write external storage permission.
+                    if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                        AskForStoragePermission();
 
                     }
+                    else{
+                        if(isanyProducthaveZeroAsweight){
+                            AlertDialogClass.showDialog(getActivity(), R.string.Orders_weight_Cant_be_leave_unedited);
+
+                        }
+                        else {
+                            if ((!Objects.requireNonNull(mobile_ItemTotal_textwidget).getText().toString().equals("0")) && (!Objects.requireNonNull(mobile_ToPay_textwidget).getText().toString().equals("0")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("0.0")) && (!mobile_ToPay_textwidget.getText().toString().equals("0.0")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("0.00")) && (!mobile_ToPay_textwidget.getText().toString().equals("0.00")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("")) && (!mobile_ToPay_textwidget.getText().toString().equals(""))) {
+                                if (checkforBarcodeInCart("empty")) {
+                                    NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
+
+                                    NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
+                                    CallAdapter();
+
+                                }
+
+                                openBottomSheetToCompleteBilling();
+                            } else {
+                                AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
+
+                            }
+                        }
+                    }
                 }
+                else{
+                    if(isanyProducthaveZeroAsweight){
+                        AlertDialogClass.showDialog(getActivity(), R.string.Orders_weight_Cant_be_leave_unedited);
+
+                    }
+                    else {
+                        if ((!Objects.requireNonNull(mobile_ItemTotal_textwidget).getText().toString().equals("0")) && (!Objects.requireNonNull(mobile_ToPay_textwidget).getText().toString().equals("0")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("0.0")) && (!mobile_ToPay_textwidget.getText().toString().equals("0.0")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("0.00")) && (!mobile_ToPay_textwidget.getText().toString().equals("0.00")) && (!mobile_ItemTotal_textwidget.getText().toString().equals("")) && (!mobile_ToPay_textwidget.getText().toString().equals(""))) {
+                            if (checkforBarcodeInCart("empty")) {
+                                NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
+
+                                NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
+                                CallAdapter();
+
+                            }
+
+                            openBottomSheetToCompleteBilling();
+                        } else {
+                            AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
+
+                        }
+                    }
+                }
+
+
             }
         });
 
@@ -549,6 +685,192 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         return rootView;
     }
+
+    private void getDeliverySlabDetails() {
+        showProgressBar(true);
+        deliverySlabDetailsArrayList.clear();
+        maxi_deliverableDistance_inSlabDetails =0;
+        final double[] localDeliverableDistance = {0};
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetDeliverySlotSlabDetails + vendorKey,null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+                        try {
+                            showProgressBar(false);
+                            JSONArray JArray = response.getJSONArray("content");
+                            int i1 = 0;
+                            int arrayLength = JArray.length();
+                            if (arrayLength < 1) {
+                                Toast.makeText(mContext, "There is no Delivery slab details for this vendor" +
+                                        "", Toast.LENGTH_LONG).show();
+
+
+                            }
+
+                            for (; i1 < (arrayLength); i1++) {
+                                Modal_DeliverySlabDetails modal_deliverySlabDetails = new Modal_DeliverySlabDetails();
+                                try {
+                                    JSONObject json = JArray.getJSONObject(i1);
+                                    try{
+                                        modal_deliverySlabDetails.setKey(String.valueOf(json.getString("key")));
+                                    }
+                                    catch (Exception e){
+
+                                        modal_deliverySlabDetails.setKey(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        modal_deliverySlabDetails.setDeliverycharge(String.valueOf(json.getString("deliverycharge")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_deliverySlabDetails.setDeliverycharge(String.valueOf("0"));
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        modal_deliverySlabDetails.setMaxkms(String.valueOf(json.getString("maxkms")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_deliverySlabDetails.setMaxkms(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        localDeliverableDistance[0] = Double.valueOf(String.valueOf(json.getString("maxkms")));
+                                    }
+                                    catch (Exception e ){
+                                        localDeliverableDistance[0] = 0;
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        if(localDeliverableDistance[0] >=maxi_deliverableDistance_inSlabDetails){
+                                            maxi_deliverableDistance_inSlabDetails = localDeliverableDistance[0];
+                                            deliveryAmt_fromMaxiDistance_inSlabDetails = Double.valueOf(String.valueOf(json.getString("deliverycharge")));
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+                                    try{
+                                        modal_deliverySlabDetails.setMinkms(String.valueOf(json.getString("minkms")));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                        modal_deliverySlabDetails.setMinkms(String.valueOf(""));
+                                    }
+
+
+
+
+
+                                    try{
+                                        modal_deliverySlabDetails.setVendorkey(String.valueOf(json.getString("vendorkey")));
+
+                                    }
+                                    catch (Exception e){
+                                        modal_deliverySlabDetails.setVendorkey(String.valueOf(""));
+                                        e.printStackTrace();
+                                    }
+
+
+
+
+                                    deliverySlabDetailsArrayList.add(modal_deliverySlabDetails);
+
+
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                // Toast.makeText(mContext, "in address" , Toast.LENGTH_LONG).show();
+
+                                try {
+                                    if(arrayLength - i1 == 1){
+
+
+                                        showProgressBar(false);
+                                    }
+                                }
+
+                                catch (Exception e){
+                                    showProgressBar(false);
+                                    e.printStackTrace();
+
+                                }
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            showProgressBar(false);
+                            e.printStackTrace();
+
+                        }
+
+
+
+                    }
+
+                },new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                try {
+                    Toast.makeText(mContext, "Error in Delivery slab ", Toast.LENGTH_LONG).show();
+
+                    showProgressBar(false);
+
+
+                    //Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
+                    //Log.d(Constants.TAG, "Location cnanot be found Error: " + error.toString());
+
+                    error.printStackTrace();
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", "vendor_1");
+                params.put("orderplacedtime", "11 Jan 2021");
+
+                return params;
+            }
+
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
+
+
 
     private void getwholesaleCustomerlistFromSharedPref() {
 
@@ -571,9 +893,11 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 String mobileno = "",customerName = "";
                 mobileno = String.valueOf(modal_wholeSaleCustomers.getMobileno());
                 customerName = String.valueOf(modal_wholeSaleCustomers.getCustomerName());
-                if (!wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileno)) {
-                    wholeSaleCustomersMobileNoStringHashmap.put(mobileno,customerName);
+                if(!customerName.equals("")) {
+                    if (!wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileno)) {
+                        wholeSaleCustomersMobileNoStringHashmap.put(mobileno, customerName);
 
+                    }
                 }
             }
 
@@ -623,15 +947,16 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Button  checkout_button_Widget = bottomSheetDialog.findViewById(R.id.checkout_button_Widget);
         TextView itemtotal_textWidget = bottomSheetDialog.findViewById(R.id.itemtotal_textWidget);
         TextView discountTextWidget = bottomSheetDialog.findViewById(R.id.discountTextWidget);
-        TextView toPay_textWidget = bottomSheetDialog.findViewById(R.id.toPay_textWidget);
+         toPay_textWidget = bottomSheetDialog.findViewById(R.id.toPay_textWidget);
         Spinner paymentModeSpinner_Widget = bottomSheetDialog.findViewById(R.id.paymentModeSpinner_Widget);
-        AutoCompleteTextView autoCompleteCustomerName_widget = bottomSheetDialog.findViewById(R.id.autoCompleteCustomerName_widget);
+        deliveryChargeTextWidget = bottomSheetDialog.findViewById(R.id.deliveryChargeTextWidget);
         Spinner orderTypeSpinner_Widget = bottomSheetDialog.findViewById(R.id.orderTypeSpinner_Widget);
         Button selectAddress_buttonWidget = bottomSheetDialog.findViewById(R.id.selectAddress_buttonWidget);
 
 
+        Button fetchUser_buttonWidget = bottomSheetDialog.findViewById(R.id.fetchUser_buttonWidget);
 
-        LinearLayout close_bottom_sheet = bottomSheetDialog.findViewById(R.id.close_bottom_sheet);
+        CheckBox updateUserName_widget = bottomSheetDialog.findViewById(R.id.updateUserName_widget);
 
          LinearLayout customerName_layout = bottomSheetDialog.findViewById(R.id.customerName_layout);
         LinearLayout displaySelectedAddress_parentLayout = bottomSheetDialog.findViewById(R.id.displaySelectedAddress_parentLayout);
@@ -651,6 +976,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         EditText landmark_editText = addressBottomSheet.findViewById(R.id.landmark_editText);
         EditText pincode_editText = addressBottomSheet.findViewById(R.id.pincode_editText);
         EditText address_type_editText = addressBottomSheet.findViewById(R.id.type_address_editText);
+        EditText deliveryDistance_address_editText = addressBottomSheet.findViewById(R.id.deliveryDistance_address_editText);
+
 
         ScrollView scrollView = addressBottomSheet.findViewById(R.id.scrollView);
         scrollView.setSmoothScrollingEnabled(true);
@@ -661,13 +988,30 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
 
 
-
-        Objects.requireNonNull(itemtotal_textWidget).setText(finaltoPayAmount);
-        Objects.requireNonNull(toPay_textWidget).setText(finaltoPayAmount);
-        Objects.requireNonNull(discountTextWidget).setText("0");
+        String itemTotal = "";
+        try{
+            itemTotal = mobile_ItemTotal_textwidget.getText().toString();
+        }
+        catch (Exception e){
+            itemTotal = "";
+            e.printStackTrace();
+        }
 
         String[] paymentType=getResources().getStringArray(R.array.PaymentMode);
-        String[] ordertype=getResources().getStringArray(R.array.OrderType);
+        String[] ordertype = new String[0];
+
+        try{
+            if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)) {
+                ordertype =  getResources().getStringArray(R.array.B2BOrderType);
+            }
+            else{
+                ordertype =  getResources().getStringArray(R.array.OrderType);
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
         ArrayAdapter<String> arrayAdapterpaymentType = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, paymentType);
         arrayAdapterpaymentType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -678,18 +1022,48 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Objects.requireNonNull(orderTypeSpinner_Widget).setAdapter(arrayAdapterordertype);
 
         discountAmount ="0";
-        discount_editWidget.setText("0");
+        deliveryAmount_for_this_order ="0";
         customermobileno="";
-        customermobileno_editwidget.setText("");
+        customerName ="";
         userAddressArrayList.clear();
         userAddressKeyArrayList.clear();
+        selectedAddressKey = String.valueOf("");
+        selectedAddress = String.valueOf("");
+        userLatitude = String.valueOf("0");
+        userLongitude = String.valueOf("0");
+        deliveryDistance ="";
+        user_key_toAdd_Address ="";
+
+        fulladdress_textview.setText("");
+        customermobileno_editwidget.setText("");
+        autoCompleteCustomerName_widget.setText("");
+        userstoreNumberCheckboxWidget.setChecked(false);
+        discount_editWidget.setText("0");
+
+        selected_Address_modal = new Modal_Address();
+        isPhoneOrderSelected = false;
+        isAddressForPhoneOrderSelected = false;
+        isAddressForPhoneOrderSelected = false;
+        updateUserName = false;
+        isNewUser = false;
+        isAddress_Added_ForUser = false;
+        isAddressForPhoneOrderSelected = false;
+        isUsertype_AlreadyPhone = false;
+        userFetchedManually = false;
+
+
+        Objects.requireNonNull(itemtotal_textWidget).setText(itemTotal);
+        Objects.requireNonNull(toPay_textWidget).setText(itemTotal);
+        Objects.requireNonNull(discountTextWidget).setText("0");
+        deliveryChargeTextWidget .setText(String.valueOf(deliveryAmount_for_this_order));
+        mobile_ToPay_textwidget .setText(itemTotal);
 
         if(vendorType.equals(Constants.WholeSales_VendorType)){
             customerName_layout.setVisibility(View.VISIBLE);
 
             userstoreNumberCheckboxWidget.setVisibility(View.GONE);
-
-
+            fetchUser_buttonWidget.setVisibility(View.GONE);
+            updateUserName_widget.setVisibility(View.GONE);
 
             if(wholeSaleCustomersArrayList.size()>0){
                  adapter_autoCompleteWholeSaleCustomers = new Adapter_AutoCompleteWholeSaleCustomers_Mobile(mContext,wholeSaleCustomersArrayList, NewOrderScreenFragment_mobile.this);
@@ -703,17 +1077,103 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         }
         else{
             userstoreNumberCheckboxWidget.setVisibility(View.VISIBLE);
+            customerName_layout.setVisibility(View.VISIBLE);
+            fetchUser_buttonWidget.setVisibility(View.VISIBLE);
+            updateUserName_widget.setVisibility(View.VISIBLE);
 
-            customerName_layout.setVisibility(View.GONE);
         }
 
 
+        customermobileno_editwidget.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String defaultStoreNumber = "";
+                if(vendorKey.equals("vendor_1")){
+                    defaultStoreNumber =  ("8939189102");
+
+                }
+                else if(vendorKey.equals("vendor_2")){
+                    defaultStoreNumber =  ("9597580128");
+
+                }
+                else{
+                    defaultStoreNumber =  StoreLanLine;
+
+                }
+                if(s.toString().equals(defaultStoreNumber) ){
+                    userstoreNumberCheckboxWidget.setChecked(true);
+                }
+                else{
+                    userstoreNumberCheckboxWidget.setChecked(false);
+
+                }
+
+
+                if(isAddressForPhoneOrderSelected){
+                    deliveryAmount_for_this_order ="0";
+                    isAddressForPhoneOrderSelected = false;
+                    isUsertype_AlreadyPhone= false;
+                    userFetchedManually = false;
+                    updateUserName = false;
+                    isNewUser = false;
+                    selected_Address_modal = new Modal_Address();
+                    fulladdress_textview.setText("Please select an Address");
+
+                    selectedAddressKey = String.valueOf("");
+                    selectedAddress = String.valueOf("");
+                    userLatitude = String.valueOf("0");
+                    userLongitude = String.valueOf("0");
+                    deliveryDistance ="";
+                    user_key_toAdd_Address ="";
+                    updateUserName_widget.setChecked(false);
+
+                    for(int i =0 ; i< userAddressArrayList.size(); i++){
+                        userAddressArrayList.get(i).setAddressSelected(false);
+                    }
+                    add_amount_ForBillDetails();
+                }
+            }
+        });
+
+
+
+        fetchUser_buttonWidget .setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                userFetchedManually = true;
+                String mobileno = String.valueOf(customermobileno_editwidget.getText().toString());
+                if(mobileno.length()==10) {
+
+                getUserDetailsUsingMobileNo(mobileno);
+                }
+                else
+                {
+                    AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_mobile_no_text);
+
+                }
+
+            }
+        });
         selectAddress_buttonWidget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String mobileno = String.valueOf(customermobileno_editwidget.getText().toString());
                 if(mobileno.length()==10) {
-                addressBottomSheet.show();
+
+                    addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
+                    selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+
+                    addressBottomSheet.show();
 
 
                 loadingPanel_addressbottomSheet.setVisibility(View.VISIBLE);
@@ -726,10 +1186,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                         } else {
                             customermobileno = mobileno;
                             fulladdress_textview.setText("Please select an Address");
-
                             userAddressArrayList.clear();
-                              userAddressKeyArrayList.clear();
-                            //showProgressBar(true);
+                            userAddressKeyArrayList.clear();
+                            selectedAddressKey = String.valueOf("");
+                            selectedAddress = String.valueOf("");
+                            userLatitude = String.valueOf("0");
+                            userLongitude = String.valueOf("0");
+                            deliveryDistance ="";
+                            user_key_toAdd_Address ="";
+
+                            selected_Address_modal = new Modal_Address();
+                            isAddress_Added_ForUser = false;
+                            isAddressForPhoneOrderSelected = false;
+
+
                             getUserDetailsUsingMobileNo(mobileno);
 
                         }
@@ -737,9 +1207,19 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     } else {
                         customermobileno = mobileno;
                         fulladdress_textview.setText("Please select an Address");
-
                         userAddressArrayList.clear();
                         userAddressKeyArrayList.clear();
+                        selectedAddressKey = String.valueOf("");
+                        selectedAddress = String.valueOf("");
+                        userLatitude = String.valueOf("0");
+                        userLongitude = String.valueOf("0");
+                        deliveryDistance ="";
+                        user_key_toAdd_Address ="";
+
+                        selected_Address_modal = new Modal_Address();
+                        isAddress_Added_ForUser = false;
+                        isAddressForPhoneOrderSelected = false;
+
                         //showProgressBar(true);
                         getUserDetailsUsingMobileNo(mobileno);
 
@@ -790,6 +1270,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Objects.requireNonNull(paymentModeSpinner_Widget).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
                 selectedPaymentMode = parent.getItemAtPosition(position).toString().toUpperCase();
               //  Toast.makeText(parent.getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
             }
@@ -805,15 +1286,27 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
                 selectedOrderType = parent.getItemAtPosition(position).toString().toUpperCase();
-                if(selectedOrderType.equals("PHONEORDER")){
-                    isPhoneOrderSelected = true;
+                if(selectedOrderType.equals(Constants.PhoneOrder)){
+                    if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)) {
+                        displaySelectedAddress_parentLayout.setVisibility(View.GONE);
 
-                    displaySelectedAddress_parentLayout.setVisibility(View.VISIBLE);
+                        isPhoneOrderSelected = false;
+                        isAddressForPhoneOrderSelected = false;
+                        selectedOrderType =  Constants.POSORDER;
+                        orderTypeSpinner_Widget.setSelection(0);
+                    }
+                    else{
+                        isPhoneOrderSelected = true;
+
+                        displaySelectedAddress_parentLayout.setVisibility(View.VISIBLE);
+                    }
+
                 }
                 else{
                     displaySelectedAddress_parentLayout.setVisibility(View.GONE);
 
                     isPhoneOrderSelected = false;
+                        isAddressForPhoneOrderSelected = false;
 
                 }
                 //  Toast.makeText(parent.getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
@@ -821,8 +1314,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
                 isPhoneOrderSelected = false;
+        isAddressForPhoneOrderSelected = false;
 
-                selectedOrderType = "POS Order";
+                selectedOrderType =  Constants.POSORDER;
             }
         });
 
@@ -841,9 +1335,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     double discountAmountdouble = Double.parseDouble(discountAmount);
                                     if(discountAmountdouble>0) {
 
-                                        double toPayAmt = Double.parseDouble(finaltoPayAmount);
+                                        double toPayAmt = Double.parseDouble(String.valueOf(new_totalAmount_withGst));
                                         if (toPayAmt > discountAmountdouble) {
                                             toPayAmt = toPayAmt - discountAmountdouble;
+                                            toPayAmt = toPayAmt +Double.parseDouble( deliveryAmount_for_this_order);
                                             int toPayAmountInt = (int) Math.round((toPayAmt));
                                             totalAmounttopay = toPayAmt;
                                             discountTextWidget.setText(discountAmount+".00");
@@ -873,7 +1368,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 }
 
                 catch(Exception e ){
-                    discountAmount = "0";
+                    discountAmount ="0";
+
                     discountTextWidget.setText(discountAmount+".00");
                     e.printStackTrace();
                 }
@@ -892,7 +1388,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             public void onClick(View v) {
                 if (Objects.requireNonNull(customermobileno_editwidget).getText().toString().length() == 10) {
                     showProgressBar(true);
-                    String customerName = "";
+                    customermobileno = "";
+                    customerName ="";
                     try{
                         customermobileno = "+91"+customermobileno_editwidget.getText().toString();
 
@@ -931,46 +1428,74 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     if (!selectedPaymentMode.equals("NONE SELECTED")) {
 
                         if (cart_Item_List.size() > 0 && cartItem_hashmap.size() > 0) {
-                            if(isAddressForPhoneOrderSelected) {
-                                if ((!Objects.requireNonNull(itemtotal_textWidget).getText().toString().equals("0")) && (!Objects.requireNonNull(toPay_textWidget).getText().toString().equals("0")) && (!itemtotal_textWidget.getText().toString().equals("0.0")) && (!toPay_textWidget.getText().toString().equals("0.0")) && (!itemtotal_textWidget.getText().toString().equals("0.00")) && (!toPay_textWidget.getText().toString().equals("0.00")) && (!itemtotal_textWidget.getText().toString().equals("")) && (!toPay_textWidget.getText().toString().equals(""))) {
-                                    if (checkforBarcodeInCart("empty")) {
-                                        NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
+                                   if ((!Objects.requireNonNull(itemtotal_textWidget).getText().toString().equals("0")) && (!Objects.requireNonNull(toPay_textWidget).getText().toString().equals("0")) && (!itemtotal_textWidget.getText().toString().equals("0.0")) && (!toPay_textWidget.getText().toString().equals("0.0")) && (!itemtotal_textWidget.getText().toString().equals("0.00")) && (!toPay_textWidget.getText().toString().equals("0.00")) && (!itemtotal_textWidget.getText().toString().equals("")) && (!toPay_textWidget.getText().toString().equals(""))) {
+                                        if (checkforBarcodeInCart("empty")) {
+                                            NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
 
-                                        NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
-                                    }
+                                            NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
+                                        }
 
-                                    sTime = System.currentTimeMillis();
-                                    Currenttime = getDate_and_time();
+                                        sTime = System.currentTimeMillis();
+                                        Currenttime = getDate_and_time();
 
-                                    //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
-                                    if (selectedPaymentMode.equals("CASH")) {
-                                        selectedPaymentMode = Constants.CASH_ON_DELIVERY;
-
-
-                                    }
-                                    customermobileno = Objects.requireNonNull(customermobileno_editwidget).getText().toString();
-                                    finaltoPayAmountinmethod = toPay_textWidget.getText().toString();
-                                    PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
-
-                                    bottomSheetDialog.cancel();
-                                    Toast.makeText(getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+                                        //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
+                                        if (selectedPaymentMode.equals("CASH")) {
+                                            selectedPaymentMode = Constants.CASH_ON_DELIVERY;
 
 
-                                } else {
-                                    showProgressBar(false);
+                                        }
+                                       if(isPhoneOrderSelected) {
+                                           if (isAddressForPhoneOrderSelected)
+                                           {
+                                             customermobileno = Objects.requireNonNull(customermobileno_editwidget).getText().toString();
+                                            finaltoPayAmountinmethod = toPay_textWidget.getText().toString();
 
-                                    AlertDialogClass.showDialog(getActivity(), R.string.Cant_place_order);
 
-                                }
+                                               generateTokenNo(vendorKey);
 
 
-                        } else {
-                            AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
 
-                        }
+                                            bottomSheetDialog.cancel();
+                                            Toast.makeText(getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+                                           }
+                                           else {
+                                               AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                           }
+                                       }
+                                       else
+                                       {
+                                           customermobileno = Objects.requireNonNull(customermobileno_editwidget).getText().toString();
+                                           finaltoPayAmountinmethod = toPay_textWidget.getText().toString();
+                                           PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
+
+                                           bottomSheetDialog.cancel();
+                                           Toast.makeText(getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+                                       }
+
+
+
+                                   /*    customermobileno = Objects.requireNonNull(customermobileno_editwidget).getText().toString();
+                                       finaltoPayAmountinmethod = toPay_textWidget.getText().toString();
+                                       PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
+
+                                       bottomSheetDialog.cancel();
+                                       Toast.makeText(getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+
+
+                                    */
+
+                                   } else {
+                                       showProgressBar(false);
+                                       AlertDialogClass.showDialog(getActivity(), R.string.Cant_place_order);
+
+                                   }
+
+
+
                         }
                         else{
-                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+                            AlertDialogClass.showDialog(getActivity(), R.string.Cart_is_empty);
 
                         }
                     }
@@ -988,6 +1513,36 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             }
         });
+
+
+        updateUserName_widget.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+
+                    try {
+                        customerName = String.valueOf(autoCompleteCustomerName_widget.getText().toString());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                    if (!customerName.equals("") && !customerName.equals("null") && !customerName.equals("NULL")) {
+
+                        updateUserName = true;
+                    } else {
+                        updateUserName_widget.setChecked(false);
+                        AlertDialogClass.showDialog(getActivity(), R.string.Enter_the_customerName_text);
+                    }
+
+                } else {
+                    updateUserName = false;
+
+                }
+            }
+        });
+
 
         bottomSheetDialog.show();
 
@@ -1037,12 +1592,22 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         addNewAddress_widget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-              
+
+                contact_personName_editText.setText("");
+                contact_personMobileNo_editText.setText("");
+                addressLine1_editText.setText("");
+                addressLine2_editText.setText("");
+                landmark_editText.setText("");
+                pincode_editText.setText("");
+                address_type_editText.setText("");
+                deliveryDistance_address_editText.setText("");
 
                 if(isNewUser){
                     String userKey = "";
                     try{
-                        userKey =  String.valueOf(UUID.randomUUID())+"-"+String.valueOf(System.currentTimeMillis());
+                        //userKey =  String.valueOf(UUID.randomUUID())+"-"+String.valueOf(System.currentTimeMillis());
+                        userKey =  String.valueOf(System.currentTimeMillis());
+
                     }
                     catch (Exception e){
                         userKey = "";
@@ -1056,7 +1621,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     else{
                         Toast.makeText(mContext, "User Key is Empty", Toast.LENGTH_SHORT).show();
                     }
-                    
+
 
                 }
 
@@ -1093,35 +1658,81 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 String landmark = String.valueOf(landmark_editText.getText());
                 String pincode = String.valueOf(pincode_editText.getText());
                 String type = String.valueOf(address_type_editText.getText());
-            
+                String deliveryDistance = String.valueOf(deliveryDistance_address_editText.getText().toString());
+                    double deliveryDistanceDouble = 0;
+                    try{
+                        deliveryDistanceDouble = Double.parseDouble(deliveryDistance);
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
               //  Toast.makeText(mContext, "UUID : "+ addressKey, Toast.LENGTH_SHORT).show();
-            
-                Modal_Address modal_address = new Modal_Address();
-                modal_address.setContactpersonname(contactPersonName);
-                modal_address.setContactpersonmobileno(contactPersonMobileNo);
-                modal_address.setAddressline1(addressLine1);
-                modal_address.setAddressline2(addressLine2);
-                modal_address.setLandmark(landmark);
-                modal_address.setPincode(pincode);
-                modal_address.setAddresstype(type);
-                modal_address.setVendorname(vendorName);
-                modal_address.setVendorkey(vendorKey);
-                modal_address.setUserkey(user_key_toAdd_Address);
-                modal_address.setLocationlong("0");
-                modal_address.setLocationlat("0");
-                modal_address.setDeliverydistance("0");
-                modal_address.setKey(addressKey);
-                modal_address.setIsNewAddress(true);
-                if(!userAddressKeyArrayList.contains(addressKey)){
-                    userAddressKeyArrayList.add(addressKey);
-                    userAddressArrayList.add(modal_address);
+                if(addressLine1.length()>0){
+                    if(addressLine2.length()>0){
+                        if(pincode.length()>0){
+                            if(deliveryDistance.length()>0){
+                                if (type.length() > 0) {
+
+
+                                    Modal_Address modal_address = new Modal_Address();
+                                modal_address.setContactpersonname(contactPersonName);
+                                modal_address.setContactpersonmobileno(contactPersonMobileNo);
+                                modal_address.setAddressline1(addressLine1);
+                                modal_address.setAddressline2(addressLine2);
+                                modal_address.setLandmark(landmark);
+                                modal_address.setPincode(pincode);
+                                modal_address.setAddresstype(type);
+                                modal_address.setVendorname(vendorName);
+                                modal_address.setVendorkey(vendorKey);
+                                modal_address.setUserkey(user_key_toAdd_Address);
+                                modal_address.setLocationlong("0");
+                                modal_address.setLocationlat("0");
+                                modal_address.setKey(addressKey);
+                                modal_address.setDeliverydistance(deliveryDistance);
+                                modal_address.setIsNewAddress(true);
+                                if(!userAddressKeyArrayList.contains(addressKey)){
+                                    userAddressKeyArrayList.add(addressKey);
+                                    userAddressArrayList.add(modal_address);
+
+                                }
+
+
+                                selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+                                addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
+                                setAddressListAdapter ();
+
+                                }
+                                else
+                                {
+                                    AlertDialogClass.showDialog(getActivity(), R.string.AddressType_is_empty);
+
+                                }
+
+
+                            }
+                            else
+                            {
+                                AlertDialogClass.showDialog(getActivity(), R.string.DeliveryDistance_is_empty);
+
+                            }
+                        }
+                        else
+                        {
+                            AlertDialogClass.showDialog(getActivity(), R.string.Pincode_is_empty);
+
+                        }
+                    }
+                    else
+                    {
+                        AlertDialogClass.showDialog(getActivity(), R.string.addressLine2_is_empty);
+
+                    }
+                }
+                else
+                {
+                    AlertDialogClass.showDialog(getActivity(), R.string.addressLine1_is_empty);
 
                 }
-
-
-                selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
-                addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
-
                 }
                 else{
                     Toast.makeText(mContext, "Address key is Empty", Toast.LENGTH_SHORT).show();
@@ -1138,6 +1749,81 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     }
 
+    private void generateTokenNo(String vendorKey) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_generateTokenNo+vendorKey,
+                null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                Toast.makeText(mContext,"Token Succesfully Generated",Toast.LENGTH_SHORT).show();
+
+                try {
+                    String token_no = response.getString("tokenNumber");
+                    tokenNo = token_no;
+                    //PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
+                    PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+
+                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Not_Found_Instruction,
+                            R.string.OK_Text,R.string.Empty_Text,
+                            new TMCAlertDialogClass.AlertListener() {
+                                @Override
+                                public void onYes() {
+                                    Toast.makeText(mContext,"Please Generate tokenNo in Manage Order",Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onNo() {
+
+                                }
+                            });
+
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+             //   PlaceOrdersinDatabaseaAndPrintRecipt(selectedPaymentMode, finaltoPayAmountinmethod, sTime, Currenttime, cart_Item_List);
+
+                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Token_No_Error_Instruction,
+                        R.string.OK_Text,R.string.Empty_Text,
+                        new TMCAlertDialogClass.AlertListener() {
+                            @Override
+                            public void onYes() {
+                                Toast.makeText(mContext,"Please Generate tokenNo in Manage Order",Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onNo() {
+
+                            }
+                        });
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
+
 
     private void getUserDetailsUsingMobileNo(String mobileno) {
 
@@ -1149,7 +1835,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             e.printStackTrace();
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getUserDetailsWithMobileNo+"?usermobileno="+encodedMobileNo, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getTMCUserDetailsWithMobileNo+"?usermobileno="+encodedMobileNo, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1164,6 +1850,19 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 if (arrayLength < 1) {
                                     Toast.makeText(mContext, "This mobileno is a new User" +
                                             "", Toast.LENGTH_LONG).show();
+                                    try{
+                                        customerName = "";
+                                    }
+                                    catch (Exception e){
+                                        customerName ="";
+                                        e.printStackTrace();
+                                    }
+                                    try{
+                                        autoCompleteCustomerName_widget.setText(String.valueOf(customerName));
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
 
                                     isNewUser = true;
                                     isAddress_Added_ForUser = false;
@@ -1176,8 +1875,16 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                     try {
                                         JSONObject json = JArray.getJSONObject(i1);
-                                        String key = json.getString("key");
-                                        String usertype = "";
+                                        String uniquekey = "";
+                                        if(json.has("key")){
+                                            uniquekey =json.getString("key");
+                                        }
+                                        else{
+                                            uniquekey =json.getString("uniquekey");
+
+
+                                        }
+                                        String usertype = "",customer_name ="";
                                         try{
                                             usertype = json.getString("usertype");
                                         }
@@ -1186,7 +1893,37 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             e.printStackTrace();
                                         }
 
-                                        Toast.makeText(mContext, "getting address" +
+                                        try{
+                                            customer_name = json.getString("name");
+                                        }
+                                        catch (Exception e){
+                                            customer_name ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            userStatus = json.getString("userstatus");
+                                        }
+                                        catch (Exception e){
+                                            userStatus ="";
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            customerName = customer_name;
+                                        }
+                                        catch (Exception e){
+                                            customerName ="";
+                                            e.printStackTrace();
+                                        }
+                                        try{
+                                            autoCompleteCustomerName_widget.setText(String.valueOf(customerName));
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                        Toast.makeText(mContext, "Got User details" +
                                                 "", Toast.LENGTH_LONG).show();
                                         if(usertype.toUpperCase().contains("PHONE")){
                                             isUsertype_AlreadyPhone = true;
@@ -1196,15 +1933,27 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             isUsertype_AlreadyPhone = false;
 
                                         }
-                                        getAddressUsingUserKey(key);
+                                        if(userFetchedManually) {
+                                            userFetchedManually = false;
 
-                                    } catch (JSONException e) {
+                                        }
+                                        else{
+                                             getAddressUsingUserKey(uniquekey);
+
+                                        }
+
+                                    }
+                                    catch (JSONException e) {
+                                        Toast.makeText(mContext, " Error in  user" +String.valueOf(e), Toast.LENGTH_LONG).show();
+
                                         e.printStackTrace();
                                     }
                                 }
 
                             } catch (JSONException e) {
                                 setAddressListAdapter();
+                                Toast.makeText(mContext, " Error in getting user" +String.valueOf(e), Toast.LENGTH_LONG).show();
+
                                 e.printStackTrace();
 
                             }
@@ -1259,6 +2008,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     private void getAddressUsingUserKey(String key) {
 
+        userAddressKeyArrayList.clear();
+        userAddressArrayList.clear();
+        isAddressForPhoneOrderSelected = false;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetAddressUsingUserKey + key,null,
                 new com.android.volley.Response.Listener<JSONObject>() {
@@ -1579,34 +2331,37 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                     try {
                         String message = response.getString("message");
-                        if (message.equals("success")) {
-                            if (wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileNo)) {
-                                for (int i = 0; i < wholeSaleCustomersArrayList.size(); i++) {
-                                    Modal_WholeSaleCustomers modal_wholeSaleCustomers = wholeSaleCustomersArrayList.get(i);
-                                    String mobilenoFromArray = String.valueOf(modal_wholeSaleCustomers.getMobileno());
-                                    if (mobilenoFromArray.equals(mobileNo)) {
-                                        modal_wholeSaleCustomers.setCustomerName(customerName);
+                        if(!customerName.equals("")){
 
+                            if (message.equals("success")) {
+                                if (wholeSaleCustomersMobileNoStringHashmap.containsKey(mobileNo)) {
+                                    for (int i = 0; i < wholeSaleCustomersArrayList.size(); i++) {
+                                        Modal_WholeSaleCustomers modal_wholeSaleCustomers = wholeSaleCustomersArrayList.get(i);
+                                        String mobilenoFromArray = String.valueOf(modal_wholeSaleCustomers.getMobileno());
+                                        if (mobilenoFromArray.equals(mobileNo)) {
+                                            modal_wholeSaleCustomers.setCustomerName(customerName);
+
+                                        }
                                     }
+
+
+                                } else {
+                                    Modal_WholeSaleCustomers modal_wholeSaleCustomers = new Modal_WholeSaleCustomers();
+                                    modal_wholeSaleCustomers.setMobileno(mobileNo);
+                                    modal_wholeSaleCustomers.setCustomerName(customerName);
+                                    wholeSaleCustomersArrayList.add(modal_wholeSaleCustomers);
+
                                 }
+                                wholeSaleCustomersMobileNoStringHashmap.put(mobileNo, customerName);
 
-
-                            } else {
-                                Modal_WholeSaleCustomers modal_wholeSaleCustomers = new Modal_WholeSaleCustomers();
-                                modal_wholeSaleCustomers.setMobileno(mobileNo);
-                                modal_wholeSaleCustomers.setCustomerName(customerName);
-                                wholeSaleCustomersArrayList.add(modal_wholeSaleCustomers);
+                                adapter_autoCompleteWholeSaleCustomers.notifyDataSetChanged();
+                                updateDatainSharedPreference(wholeSaleCustomersArrayList);
+                                Toast.makeText(mContext, " " + customerName + " is Added Now", Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
 
                             }
-                            wholeSaleCustomersMobileNoStringHashmap.put(mobileNo, customerName);
-
-                            adapter_autoCompleteWholeSaleCustomers.notifyDataSetChanged();
-                            updateDatainSharedPreference(wholeSaleCustomersArrayList);
-                            Toast.makeText(mContext, " " + customerName + " is Added Now", Toast.LENGTH_SHORT).show();
-
-                        } else {
-                            Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
-
                         }
                     } catch (JSONException e) {
                         Toast.makeText(mContext, "Error in adding " + customerName, Toast.LENGTH_SHORT).show();
@@ -1825,6 +2580,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             jsonObject.put("addressline1", addressline1);
                                             jsonObject.put("addressline2", addressline2);
                                             jsonObject.put("addresstype", addresstype);
+                                            jsonObject.put("createdtime", getDate_and_time());
+                                            jsonObject.put("isvendorremapping", "");
                                             jsonObject.put("contactpersonmobileno", "+91" + contactpersonmobileno);
                                             jsonObject.put("contactpersonname", contactpersonname);
                                             jsonObject.put("deliverydistance", deliverydistance);
@@ -1866,10 +2623,11 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 }
 
 
-               if(! isUsertype_AlreadyPhone ){
+               if( !isUsertype_AlreadyPhone || updateUserName){
                    Add_OR_Update_Entry_inTMCUserTable("PHONE");
 
                }
+
 
             }
             else
@@ -1878,6 +2636,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
             }
+
+
 
 
 
@@ -1902,18 +2662,36 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 public void onClick(View view) {
                                     dialog.cancel();
 
-                                    isNewUser =false;
-                                    isUsertype_AlreadyPhone =false;
-                                    customermobileno = "";
+
+
+                                    customermobileno="";
+                                    customerName ="";
                                     userAddressArrayList.clear();
                                     userAddressKeyArrayList.clear();
+                                    selectedAddressKey = String.valueOf("");
+                                    selectedAddress = String.valueOf("");
+                                    userLatitude = String.valueOf("0");
+                                    userLongitude = String.valueOf("0");
+                                    deliveryDistance ="";
+                                    user_key_toAdd_Address ="";
 
+                                    fulladdress_textview.setText("");
+                                    autoCompleteCustomerName_widget.setText("");
+
+                                    selected_Address_modal = new Modal_Address();
+                                    isPhoneOrderSelected = false;
+                                      isAddressForPhoneOrderSelected = false;
+                                    updateUserName = false;
+                                    isNewUser = false;
+                                    isAddress_Added_ForUser = false;
+                                    isAddressForPhoneOrderSelected = false;
+                                    isUsertype_AlreadyPhone = false;
+                                    userFetchedManually = false;
 
                                     cart_Item_List.clear();
                                     cartItem_hashmap.clear();
                                     ispaymentMode_Clicked = false;
                                     isOrderDetailsMethodCalled = false;
-
                                     isPaymentDetailsMethodCalled = false;
                                     isOrderTrackingDetailsMethodCalled = false;
                                     isCustomerOrdersTableServiceCalled  = false;
@@ -1924,7 +2702,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     old_total_Amount = 0;
                                     createEmptyRowInListView("empty");
                                     CallAdapter();
-                                    discountAmount = "0";
+                                    discountAmount ="0";
+                                    deliveryAmount_for_this_order ="0";
                                     showProgressBar(false);
                                     totalAmounttopay=0;
                                     finalamounttoPay=0;
@@ -1936,7 +2715,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     /*
                                     discount_Edit_widget.setText("0");
                                     discount_rs_text_widget.setText(discountAmount);
-                                    OrderTypefromSpinner = "POS Order";
+                                    OrderTypefromSpinner =  Constants.POSORDER;
                                     orderTypeSpinner.setSelection(0);
                                     total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
                                     taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
@@ -1985,98 +2764,81 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             }
 
+            if(defaultPrinterType.equals(Constants.PDF_PrinterType)) {
 
 
+                if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
+                    GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
+                }
+                else{
 
-            if (BluetoothPrintDriver.IsNoConnection()) {
-
-                //  Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
-
-                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Do_You_Want_to_Connect_Printer_Now,
-                        R.string.Yes_Text, R.string.No_Text,
-                        new TMCAlertDialogClass.AlertListener() {
-                            @Override
-                            public void onYes() {
-                                ConnectPrinter();
-
-                            }
-
-                            @Override
-                            public void onNo() {
-                                if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
-                                    GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
+                    if(!isCustomerOrdersTableServiceCalled){
+                        try{
+                            if(orderdetailsnewschema){
+                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                if(isPhoneOrderSelected){
+                                    ordertype = Constants.PhoneOrder;
                                 }
                                 else{
-
-                                    if(!isCustomerOrdersTableServiceCalled){
-                                        try{
-                                            if(orderdetailsnewschema){
-                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                if(isPhoneOrderSelected){
-                                                    ordertype = Constants.PhoneOrder;
-                                                }
-                                                else{
-                                                    ordertype = Constants.POSORDER;
-
-                                                }
-                                                isCustomerOrdersTableServiceCalled =true;
-                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
-                                                asyncTask.execute();
-
-                                            }
-
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-
-                                        }
-                                    }
-
-                                    if (!isOrderDetailsMethodCalled) {
-                                        shouldGetPrintNow_Global = false;
-                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                                    }
-                                    if (!isOrderTrackingDetailsMethodCalled) {
-
-                                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
-                                    }
-                                }
-
-
-
-
-
-                                try{
-                                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
+                                    ordertype = Constants.POSORDER;
 
                                 }
-                                catch (Exception e){
-                                    e.printStackTrace();
-                                }
-
-                                String UserMobile = "+91" + customermobileno;
-
-                                //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
-                                //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                                updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+                                isCustomerOrdersTableServiceCalled =true;
 
 
-
-                                return;
+                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
+                                asyncTask.execute();
 
                             }
-                        });
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+                        }
+                    }
+
+                    if (!isOrderDetailsMethodCalled) {
+                        shouldGetPrintNow_Global = false;
+                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                    }
+                    if (!isOrderTrackingDetailsMethodCalled) {
+
+                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                    }
+                }
+
+
+
+
+
+                try{
+                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                String UserMobile = "+91" + customermobileno;
+
+                //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
+                //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
+                updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+
+
+                return;
+
             }
+            else {
 
 
+                if (BluetoothPrintDriver.IsNoConnection()) {
 
-             if(!BluetoothPrintDriver.IsNoConnection()){
-                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    //  Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
 
-                if (!mBluetoothAdapter.isEnabled()) {
-                    Toast.makeText(mContext,"Printer Is Not Connected",Toast.LENGTH_LONG).show();
-
-                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Bluetooth_turnedOff_Information,
+                    new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Do_You_Want_to_Connect_Printer_Now,
                             R.string.Yes_Text, R.string.No_Text,
                             new TMCAlertDialogClass.AlertListener() {
                                 @Override
@@ -2087,41 +2849,37 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                 @Override
                                 public void onNo() {
+                                    if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
+                                        GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
+                                    } else {
 
-                                    if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
-                                        GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
-                                    }
-                                    else{
-                                        if(!isCustomerOrdersTableServiceCalled){
-                                            try{
-                                                if(orderdetailsnewschema){
+                                        if (!isCustomerOrdersTableServiceCalled) {
+                                            try {
+                                                if (orderdetailsnewschema) {
                                                     initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                    if(isPhoneOrderSelected){
+                                                    if (isPhoneOrderSelected) {
                                                         ordertype = Constants.PhoneOrder;
-                                                    }
-                                                    else{
+                                                    } else {
                                                         ordertype = Constants.POSORDER;
 
                                                     }
-                                                    isCustomerOrdersTableServiceCalled =true;
-                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                    isCustomerOrdersTableServiceCalled = true;
+
+
+                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus ,customerName,"0");
                                                     asyncTask.execute();
 
                                                 }
 
-                                            }
-                                            catch (Exception e){
+                                            } catch (Exception e) {
                                                 e.printStackTrace();
 
                                             }
                                         }
 
-
-
-
                                         if (!isOrderDetailsMethodCalled) {
                                             shouldGetPrintNow_Global = false;
-                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
                                         }
                                         if (!isOrderTrackingDetailsMethodCalled) {
 
@@ -2130,13 +2888,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     }
 
 
+                                    try {
+                                        totalredeempointsusergetfromorder = Math.round((pointsfor100rs_double * totalAmounttopay) / 100);
 
-
-                                    try{
-                                        totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
-
-                                    }
-                                    catch (Exception e){
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                     }
 
@@ -2144,83 +2899,149 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                     //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
                                     //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                                    updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
-
+                                    updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
 
 
                                     return;
+
                                 }
                             });
-
                 }
-                else{
 
-                    if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
-                        GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
-                    }
-                    else{
 
-                        if(!isCustomerOrdersTableServiceCalled){
-                            try{
-                                if(orderdetailsnewschema){
-                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                    if(isPhoneOrderSelected){
-                                        ordertype = Constants.PhoneOrder;
-                                    }
-                                    else{
-                                        ordertype = Constants.POSORDER;
+                if (!BluetoothPrintDriver.IsNoConnection()) {
+                    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                    if (!mBluetoothAdapter.isEnabled()) {
+                        Toast.makeText(mContext, "Printer Is Not Connected", Toast.LENGTH_LONG).show();
+
+                        new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Bluetooth_turnedOff_Information,
+                                R.string.Yes_Text, R.string.No_Text,
+                                new TMCAlertDialogClass.AlertListener() {
+                                    @Override
+                                    public void onYes() {
+                                        ConnectPrinter();
 
                                     }
-                                    isCustomerOrdersTableServiceCalled =true;
-                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
-                                    asyncTask.execute();
+
+                                    @Override
+                                    public void onNo() {
+
+                                        if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
+                                            GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
+                                        } else {
+                                            if (!isCustomerOrdersTableServiceCalled) {
+                                                try {
+                                                    if (orderdetailsnewschema) {
+                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                        if (isPhoneOrderSelected) {
+                                                            ordertype = Constants.PhoneOrder;
+                                                        } else {
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+                                                        isCustomerOrdersTableServiceCalled = true;
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus ,customerName,"0");
+                                                        asyncTask.execute();
+
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+
+                                                }
+                                            }
+
+
+                                            if (!isOrderDetailsMethodCalled) {
+                                                shouldGetPrintNow_Global = false;
+                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                            }
+                                            if (!isOrderTrackingDetailsMethodCalled) {
+
+                                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                            }
+                                        }
+
+
+                                        try {
+                                            totalredeempointsusergetfromorder = Math.round((pointsfor100rs_double * totalAmounttopay) / 100);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        String UserMobile = "+91" + customermobileno;
+
+                                        //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
+                                        //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
+                                        updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+
+
+                                        return;
+                                    }
+                                });
+
+                    } else {
+
+                        if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
+                            GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
+                        } else {
+
+                            if (!isCustomerOrdersTableServiceCalled) {
+                                try {
+                                    if (orderdetailsnewschema) {
+                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                        if (isPhoneOrderSelected) {
+                                            ordertype = Constants.PhoneOrder;
+                                        } else {
+                                            ordertype = Constants.POSORDER;
+
+                                        }
+                                        isCustomerOrdersTableServiceCalled = true;
+                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus,customerName,"0");
+                                        asyncTask.execute();
+
+                                    }
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
 
                                 }
-
                             }
-                            catch (Exception e){
-                                e.printStackTrace();
 
+
+                            if (!isOrderDetailsMethodCalled) {
+                                shouldGetPrintNow_Global = true;
+                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                            }
+                            if (!isOrderTrackingDetailsMethodCalled) {
+
+                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
                             }
                         }
 
 
+                        try {
+                            totalredeempointsusergetfromorder = Math.round((pointsfor100rs_double * totalAmounttopay) / 100);
 
-
-                        if (!isOrderDetailsMethodCalled) {
-                            shouldGetPrintNow_Global = true;
-                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        if (!isOrderTrackingDetailsMethodCalled) {
 
-                            PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
-                        }
-                    }
+                        String UserMobile = "+91" + customermobileno;
 
+                        //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
+                        //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
+                        updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
 
-
-
-
-                    try{
-                        totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
 
                     }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    String UserMobile = "+91" + customermobileno;
-
-                    //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
-                    //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                    updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
 
 
                 }
 
-
             }
-
 
 
 
@@ -2233,10 +3054,40 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("mobileno",customermobileno);
+            jsonObject.put("mobileno","+91"+customermobileno);
             jsonObject.put("email","");
-            jsonObject.put("name","");
-            jsonObject.put("uniquekey",user_key_toAdd_Address);
+
+           if(updateUserName){
+                jsonObject.put("name",customerName);
+
+            }
+           else{
+               jsonObject.put("name","");
+
+           }
+           if(!isPhoneOrderSelected) {
+               if (user_key_toAdd_Address.equals("")) {
+                   String userKey = "";
+                   try {
+                       userKey = String.valueOf(UUID.randomUUID()) + "-" + String.valueOf(System.currentTimeMillis());
+                   } catch (Exception e) {
+                       userKey = "";
+                       e.printStackTrace();
+                   }
+
+                   if ((!String.valueOf(userKey).equals("")) || (!String.valueOf(userKey).toUpperCase().equals("NULL"))) {
+                       user_key_toAdd_Address = String.valueOf(userKey);
+                       jsonObject.put("uniquekey",user_key_toAdd_Address);
+
+                   } else {
+                       Toast.makeText(mContext, "User Key is Empty", Toast.LENGTH_SHORT).show();
+                   }
+               }
+           }
+           else{
+               jsonObject.put("uniquekey",user_key_toAdd_Address);
+
+           }
             jsonObject.put("authorizationcode","");
             jsonObject.put("appversion","");
             jsonObject.put("fcmtoken","");
@@ -2371,6 +3222,59 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     }
 
+    private String getSlotTime(String slottime, String orderplacedtime) {
+        String result = "", lastFourDigits = "";
+        //   Log.d(TAG, "slottime  "+slottime);
+        if (slottime.contains("mins")) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+
+                final Date date = sdf.parse(orderplacedtime);
+                final Calendar calendar = Calendar.getInstance();
+                String timeoftheSlot ="";
+                try {
+                    timeoftheSlot = (slottime.replaceAll("[^\\d.]", ""));
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                int timeoftheSlotDouble =0;
+                try {
+                    timeoftheSlotDouble = Integer.parseInt(timeoftheSlot);
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                calendar.setTime(date);
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                String placedtime = String.valueOf(sdff.format(calendar.getTime()));
+                calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
+
+                System.out.println("Time here " + sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + orderplacedtime);
+                result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
+                System.out.println("Time here 90 mins" + result);
+
+                result = result.replaceAll("GMT[+]05:30", "");
+
+                //  System.out.println("Time here "+result);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            if (slottime.length() > 5) {
+                lastFourDigits = slottime.substring(slottime.length() - 5);
+            } else {
+                lastFourDigits = slottime;
+            }
+
+            //  result = slotdate + " " + lastFourDigits + ":00";
+
+        }
+        return result;
+    }
+
+
     public String getDate_and_time()
     {
 
@@ -2415,7 +3319,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         bottomSheetDialog.setContentView(R.layout.billingscreen_mobile_neworderfragment);
         bottomSheetDialog.setCanceledOnTouchOutside(false);
         fulladdress_textview = bottomSheetDialog.findViewById(R.id.fulladdress_textview);
-
+         autoCompleteCustomerName_widget = bottomSheetDialog.findViewById(R.id.autoCompleteCustomerName_widget);
 
         addressBottomSheet = new BottomSheetDialog(mContext);
         addressBottomSheet.setContentView(R.layout.select_address_bottomsheet);
@@ -2889,6 +3793,38 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     e.printStackTrace();
                 }
 
+                new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+
+
+                double deliveryAmount_for_this_order_double =0;
+                try{
+                    deliveryAmount_for_this_order_double = Double.parseDouble(deliveryAmount_for_this_order);
+                }
+                catch (Exception e ){
+                    deliveryAmount_for_this_order_double =0;
+                    e.printStackTrace();
+                }
+                double discountAmount_for_this_order_double =0;
+
+                try{
+                    discountAmount_for_this_order_double = Double.parseDouble(discountAmount) ;
+                }
+                catch (Exception e){
+                    discountAmount_for_this_order_double =0;
+                    e.printStackTrace();
+                }
+
+                try{
+                    new_to_pay_Amount = (new_to_pay_Amount + deliveryAmount_for_this_order_double) - (discountAmount_for_this_order_double) ;
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+
                 //find subtotal
             }
         }
@@ -2903,10 +3839,13 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             mobile_GST_textwidget.setText(decimalFormat.format(old_taxes_and_charges_Amount));
             new_totalAmount_withoutGst= (int) Math.round(old_total_Amount);
             newGst =  (int) Math.round(old_taxes_and_charges_Amount);
-            new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
-            finaltoPayAmount = String.valueOf(new_totalAmount_withGst)+".00";
-            mobile_ToPay_textwidget.setText(String.valueOf(new_totalAmount_withGst)+".00");
-            totalAmounttopay=new_totalAmount_withGst;
+           // new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+            finaltoPayAmount = String.valueOf((int) Math.round(new_to_pay_Amount))+".00";
+            mobile_ToPay_textwidget.setText(String.valueOf(finaltoPayAmount));
+             toPay_textWidget.setText(String.valueOf(finaltoPayAmount));
+
+            deliveryChargeTextWidget .setText(String.valueOf(deliveryAmount_for_this_order));
+            totalAmounttopay= Double.parseDouble(finaltoPayAmount);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -2962,16 +3901,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         String orderid = String.valueOf(sTime);
         String orderplacedTime = Currenttime;
-        String tokenno = "";
+        String tokenno = tokenNo;
         String userid = "";
         ordertype = Constants.POSORDER;
         String deliverytype = Constants.STOREPICKUP_DELIVERYTYPE;
         String slotdate = "";
-        if(isPhoneOrderSelected){
-            ordertype = Constants.PhoneOrder;
-            deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
-            slotdate  = CurrentDate;
-        }
+        String slottimerange = "";
         String slotname = "";
         if(orderdetailsnewschema){
             slotname = "";
@@ -2981,10 +3916,16 @@ public class NewOrderScreenFragment_mobile extends Fragment {
              slotname = "EXPRESSDELIVERY";
 
         }
+        if(isPhoneOrderSelected){
+            ordertype = Constants.PhoneOrder;
+            deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
+            slotname = "EXPRESSDELIVERY";
+            slottimerange ="120 mins";
+            slotdate  = CurrentDate;
+        }
 
         String orderPlacedDate = getDate();
 
-        String slottimerange = "";
         String UserMobile = "+91" + customermobileno;
         String vendorkey = sh.getString("VendorKey", "");
         String vendorName = sh.getString("VendorName", "");
@@ -3014,11 +3955,31 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 public void onClick(View view) {
                                     dialog.cancel();
 
-                                    isNewUser =false;
-                                    isUsertype_AlreadyPhone =false;
-                                    customermobileno = "";
+
+                                    customermobileno="";
+                                    customerName ="";
                                     userAddressArrayList.clear();
                                     userAddressKeyArrayList.clear();
+                                    selectedAddressKey = String.valueOf("");
+                                    selectedAddress = String.valueOf("");
+                                    userLatitude = String.valueOf("0");
+                                    userLongitude = String.valueOf("0");
+                                    deliveryDistance ="";
+                                    user_key_toAdd_Address ="";
+
+                                    fulladdress_textview.setText("");
+                                    autoCompleteCustomerName_widget.setText("");
+
+                                    selected_Address_modal = new Modal_Address();
+                                    isPhoneOrderSelected = false;
+                                      isAddressForPhoneOrderSelected = false;
+                                    updateUserName = false;
+                                    isNewUser = false;
+                                    isAddress_Added_ForUser = false;
+                                    isAddressForPhoneOrderSelected = false;
+                                    isUsertype_AlreadyPhone = false;
+                                    userFetchedManually = false;
+
 
 
                                     cart_Item_List.clear();
@@ -3026,6 +3987,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     ispaymentMode_Clicked = false;
                                     isOrderDetailsMethodCalled = false;
                                     isPhoneOrderSelected = false;
+                                     isAddressForPhoneOrderSelected = false;
 
                                     isPaymentDetailsMethodCalled = false;
                                     isCustomerOrdersTableServiceCalled  = false;
@@ -3037,7 +3999,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     old_total_Amount = 0;
                                     createEmptyRowInListView("empty");
                                     CallAdapter();
-                                    discountAmount = "0";
+                                    discountAmount ="0";
+                                       deliveryAmount_for_this_order ="0";
 
                                     finaltoPayAmount = "0";
                                     new_totalAmount_withoutGst =0;
@@ -3053,7 +4016,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     isUpdateRedeemPointsMethodCalled=false;
 
                                     discount_rs_text_widget.setText(discountAmount);
-                                    OrderTypefromSpinner = "POS Order";
+                                    OrderTypefromSpinner =  Constants.POSORDER;
                                     orderTypeSpinner.setSelection(0);
                                     total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
                                     taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
@@ -4031,7 +4994,14 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 jsonObject.put("coupondiscount", CouponDiscountAmount);
 
             }
-            jsonObject.put("deliveryamount", 0);
+
+            double deliveryAmount_double =0;
+            try{
+                deliveryAmount_double = Double.parseDouble(deliveryAmount_for_this_order);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
             jsonObject.put("couponkey", StoreCoupon);
 
             jsonObject.put("ordertype", ordertype);
@@ -4039,11 +5009,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             jsonObject.put("deliverytype", deliverytype);
             jsonObject.put("slotname", slotname);
-            jsonObject.put("slottimerange", "");
 
             jsonObject.put("orderid", orderid);
             jsonObject.put("orderplacedtime", orderplacedTime);
-            jsonObject.put("tokenno", (tokenno));
             jsonObject.put("userid", userid);
             if(orderdetailsnewschema) {
                 jsonObject.put("usermobileno", UserMobile);
@@ -4055,6 +5023,29 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 jsonObject.put("slotdate", "");
 
             }
+
+            if(isPhoneOrderSelected) {
+                jsonObject.put("slottimerange", slottimerange);
+                jsonObject.put("useraddress", selectedAddress);
+                jsonObject.put("userkey", user_key_toAdd_Address);
+                jsonObject.put("tokenno", (tokenno));
+                jsonObject.put("deliveryamount", deliveryAmount_double);
+                if(userStatus.toUpperCase().equals(Constants.USERSTATUS_FLAGGED)){
+                    jsonObject.put("userstatus", (Constants.USERSTATUS_FLAGGED));
+                }
+            }
+            else{
+                jsonObject.put("slottimerange", "");
+                jsonObject.put("tokenno", (""));
+                jsonObject.put("deliveryamount", 0);
+
+            }
+            if ((!customerName.equals("")) && (!customerName.equals("null")) && (!customerName.equals(null)) && (!customerName.equals(" "))) {
+
+                jsonObject.put("username",customerName);
+
+            }
+
             jsonObject.put("vendorkey", vendorkey);
             jsonObject.put("vendorname", vendorName);
             jsonObject.put("payableamount", Double.parseDouble(finaltoPayAmountinmethod));
@@ -4098,22 +5089,28 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     if (message.equals("success")) {
                         // StartTwice startTwice =new StartTwice(UserMobile,tokenno,itemTotalwithoutGst,taxAmount,payableAmount,orderid,cart_Item_List,cartItem_hashmap,Payment_mode);
                         // startTwice.main();
+                        if(defaultPrinterType.toUpperCase().equals(Constants.PDF_PrinterType)) {
 
-                        if(finalShouldGetPrintNow) {
+                            GeneratePDF(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype, itemDespArray);
 
-                            printRecipt(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype);
+                        }
+                        else{
+
+                            if(finalShouldGetPrintNow) {
+                                printRecipt(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype, itemDespArray);
+                            }
+                            else{
+
+                                if(!isinventorycheck){
+
+                                    turnoffProgressBarAndResetArray();
+                                }
+
+                            }
                             isOrderPlacedinOrderdetails = true;
                             //  showProgressBar(false);
                         }
-                        else{
-                            isOrderPlacedinOrderdetails = true;
 
-                            if(!isinventorycheck){
-
-                            turnoffProgressBarAndResetArray();
-                            }
-
-                        }
 
 
 
@@ -4169,6 +5166,912 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     }
 
 
+
+
+/*
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 2296) {
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+                if(grantResults[0]== PackageManager.PERMISSION_GRANTED) {
+                    if (Environment.isExternalStorageManager()) {
+                        // perform action when allow permission success
+
+
+                        try {
+                            Toast.makeText(mContext, "Permission Granted for storage access!", Toast.LENGTH_SHORT).show();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+
+
+                    }
+                }
+                else {
+                    AskForStoragePermission();
+                    Toast.makeText(mContext, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+    }
+
+
+
+
+ */
+    private void AskForStoragePermission() {
+
+        try {
+
+            if (SDK_INT >= Build.VERSION_CODES.R) {
+
+                if (Environment.isExternalStorageManager()) {
+                    try {
+
+                       // GeneratePDF(orderplacedTime, userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode, discountAmount, ordertype, itemDespArray);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                } else {
+                    try {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                        intent.addCategory("android.intent.category.DEFAULT");
+                        intent.setData(Uri.parse(String.format("package:%s", mContext.getApplicationContext().getPackageName())));
+                        startActivityForResult(intent, 2296);
+                    } catch (Exception e) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                        startActivityForResult(intent, 2296);
+                    }
+                }
+
+            } else {
+
+
+                int writeExternalStoragePermission = ContextCompat.checkSelfPermission(mContext, WRITE_EXTERNAL_STORAGE);
+                //Log.d("ExportInvoiceActivity", "writeExternalStoragePermission "+writeExternalStoragePermission);
+                // If do not grant write external storage permission.
+                if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+                    // Request user to grant write external storage permission.
+                    ActivityCompat.requestPermissions((Activity) mContext, new String[]{WRITE_EXTERNAL_STORAGE},
+                            REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                } else {
+                    //showProgressBar(true);
+                    try {
+                       // GeneratePDF(orderplacedTime, userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode, discountAmount, ordertype, itemDespArray);
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ;
+                    }
+                }
+            }
+
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void GeneratePDF(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype, JSONArray itemDespArray) {
+
+        String extstoragedir = Environment.getExternalStorageDirectory().toString();
+        String state = Environment.getExternalStorageState();
+        //Log.d("PdfUtil", "external storage state "+state+" extstoragedir "+extstoragedir);
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+        File folder = new File(path);
+        //  File folder = new File(fol, "pdf");
+        if (!folder.exists()) {
+            boolean bool = folder.mkdirs();
+        }
+        try {
+            String filename = "New Orders _Bill Recipt" + System.currentTimeMillis() + ".pdf";
+            final File file = new File(folder, filename);
+            file.createNewFile();
+            try {
+                FileOutputStream fOut = new FileOutputStream(file);
+                Document layoutDocument = new Document();
+                PdfWriter.getInstance(layoutDocument, fOut);
+                layoutDocument.open();
+                addVendorDetails(layoutDocument,orderplacedTime, userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode, discountAmount, ordertype, itemDespArray);
+
+                layoutDocument.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            // document = new PdfDocument(new PdfWriter("MyFirstInvoice.pdf"));
+
+
+
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+
+            /*Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
+            pdfViewIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+            pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            pdfViewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            Intent intent = Intent.createChooser(pdfViewIntent, "View");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+
+             */
+
+
+
+
+            try {
+                if(!isinventorycheck){
+
+                    turnoffProgressBarAndResetArray();
+                }
+
+                Uri pdfUri;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    pdfUri = FileProvider.getUriForFile(mContext, mContext.getPackageName() + ".provider", file);
+                } else {
+                    pdfUri = Uri.fromFile(file);
+                }
+                Intent share = new Intent();
+                share.setAction(Intent.ACTION_SEND);
+                share.setType("application/xls");
+                share.putExtra(Intent.EXTRA_STREAM, pdfUri);
+                startActivity(Intent.createChooser(share, "Share"));
+
+
+
+                // startActivityForResult(intent, OPENPDF_ACTIVITY_REQUEST_CODE);
+            } catch (ActivityNotFoundException e) {
+                // Instruct the user to install a PDF reader here, or something
+            }
+            // }
+        } catch (IOException e) {
+            if(!isinventorycheck){
+
+                turnoffProgressBarAndResetArray();
+            }
+            Log.i("error", e.getLocalizedMessage());
+        } catch (Exception ex) {
+            if(!isinventorycheck){
+
+                turnoffProgressBarAndResetArray();
+            }
+            ex.printStackTrace();
+        }
+
+    }
+
+    private static void addEmptyLine(Paragraph paragraph, int number) {
+        for (int i = 0; i < number; i++) {
+            paragraph.add(new Paragraph(" "));
+        }
+    }
+
+    private void addVendorDetails(Document layoutDocument, String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype, JSONArray itemDespArray) {
+        try {
+            SharedPreferences sharedPreferences
+                    = mContext.getSharedPreferences("VendorLoginData",
+                    MODE_PRIVATE);
+
+            String VendorAddressline1 = sharedPreferences.getString("VendorAddressline1", "");
+            String VendorAddressline2 = sharedPreferences.getString("VendorAddressline2", "");
+            String VendorPincode = sharedPreferences.getString("VendorPincode", "");
+            String VendorMobileno = sharedPreferences.getString("VendorMobileNumber", "");
+
+            Font font = new Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 39, Font.BOLD);
+
+
+            Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 18,
+                    Font.BOLD);
+
+            Font subtitleFont = new Font(Font.FontFamily.TIMES_ROMAN, 14,
+                    Font.NORMAL);
+            Font subtitleFontLabel = new Font(Font.FontFamily.TIMES_ROMAN, 14,
+                    Font.BOLD);
+
+            Font itemNameFont = new Font(Font.FontFamily.TIMES_ROMAN, 15,
+                    Font.NORMAL);
+
+            Font itemNameFontLabel = new Font(Font.FontFamily.TIMES_ROMAN, 15,
+                    Font.BOLD);
+
+            Font normalFont = new Font(Font.FontFamily.TIMES_ROMAN, 13,
+                    Font.NORMAL);
+            
+            /*Anchor anchor = new Anchor("First Chapter", catFont);
+            anchor.setName("First Chapter");
+            Chapter catPart = new Chapter(new Paragraph(anchor), 1);
+            layoutDocument.add(catPart);
+
+             */
+
+           /*Paragraph titlepara = new Paragraph();
+            // We add one empty line
+           // addEmptyLine(titlepara, 1);
+            // Lets write a big header
+            titlepara.add(new Paragraph("The Meat Chop", catFont));
+            titlepara.setSpacingBefore(5);
+            titlepara.setAlignment(Element.ALIGN_JUSTIFIED);
+            layoutDocument.add(titlepara);
+            */
+
+
+            PdfPTable phraseTitle_table = new PdfPTable(1);
+
+
+            Phrase phraseTitle = new Phrase("THE MEAT CHOP", titleFont);
+            PdfPCell phraseTitlecell = new PdfPCell(phraseTitle);
+            phraseTitlecell.setBorder(Rectangle.NO_BORDER);
+            phraseTitlecell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseTitlecell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseTitlecell.setPaddingLeft(10);
+            phraseTitlecell.setPaddingBottom(15);
+            phraseTitle_table.addCell(phraseTitlecell);
+
+
+            Phrase phraseDesp = new Phrase("Fresh Goat Meat and Seafood", normalFont);
+            PdfPCell phraseDespcell = new PdfPCell(phraseDesp);
+            phraseDespcell.setBorder(Rectangle.NO_BORDER);
+            phraseDespcell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseDespcell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseDespcell.setPaddingLeft(10);
+            phraseTitle_table.addCell(phraseDespcell);
+
+
+            Phrase phraseAddress = new Phrase(VendorAddressline1 + " " + VendorAddressline2, normalFont);
+            PdfPCell phraseAddressCell = new PdfPCell(phraseAddress);
+            phraseAddressCell.setBorder(Rectangle.NO_BORDER);
+            phraseAddressCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseAddressCell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseAddressCell.setPaddingLeft(10);
+            phraseTitle_table.addCell(phraseAddressCell);
+
+
+            Phrase phrasePincode = new Phrase("Pincode : " + VendorPincode, normalFont);
+            PdfPCell phrasePincodecell = new PdfPCell(phrasePincode);
+            phrasePincodecell.setBorder(Rectangle.NO_BORDER);
+            phrasePincodecell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phrasePincodecell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phrasePincodecell.setPaddingLeft(10);
+            phraseTitle_table.addCell(phrasePincodecell);
+
+            Phrase phraseMobileNo = new Phrase(VendorMobileno, normalFont);
+            PdfPCell phraseMobilenocell = new PdfPCell(phraseMobileNo);
+            phraseMobilenocell.setBorder(Rectangle.NO_BORDER);
+            phraseMobilenocell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseMobilenocell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseMobilenocell.setPaddingLeft(10);
+            phraseTitle_table.addCell(phraseMobilenocell);
+
+
+            Phrase phraseGSTIN = new Phrase("GSTIN : 33AAJCC0055D1Z9", normalFont);
+            PdfPCell phraseGstincell = new PdfPCell(phraseGSTIN);
+            phraseGstincell.setBorder(Rectangle.NO_BORDER);
+            phraseGstincell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseGstincell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseGstincell.setPaddingLeft(10);
+            phraseTitle_table.addCell(phraseGstincell);
+
+
+            Phrase phraseorderplacedTime = new Phrase(orderplacedTime, normalFont);
+            PdfPCell phraseOrderPlacedTimecell = new PdfPCell(phraseorderplacedTime);
+            phraseOrderPlacedTimecell.setBorder(Rectangle.NO_BORDER);
+            phraseOrderPlacedTimecell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseOrderPlacedTimecell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseOrderPlacedTimecell.setPaddingLeft(10);
+            phraseTitle_table.addCell(phraseOrderPlacedTimecell);
+
+            Phrase phraseorderid = new Phrase("#" + orderid, normalFont);
+            PdfPCell phraseOrderidcell = new PdfPCell(phraseorderid);
+            phraseOrderidcell.setBorder(Rectangle.NO_BORDER);
+            phraseOrderidcell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseOrderidcell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseOrderidcell.setPaddingLeft(10);
+            phraseOrderidcell.setPaddingBottom(10);
+            phraseTitle_table.addCell(phraseOrderidcell);
+
+
+            Phrase phraseDots = new Phrase("                  ");
+            PdfPCell phraseDotscell = new PdfPCell(phraseDots);
+            phraseDotscell.setBorder(Rectangle.NO_BORDER);
+            phraseDotscell.setPaddingLeft(10);
+            phraseDotscell.setBorderWidthBottom(01);
+            phraseTitle_table.addCell(phraseDotscell);
+
+            layoutDocument.add(phraseTitle_table);
+
+/*
+            PdfPTable phrasebody_table = new PdfPTable(1);
+
+
+            Phrase phrasebodySubTitle1 = new Phrase("Item Name ", subtitleFont);
+
+            PdfPCell subtitle1cell = new PdfPCell(new Phrase(phrasebodySubTitle1));
+            subtitle1cell.setBorder(Rectangle.NO_BORDER);
+            subtitle1cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            subtitle1cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            subtitle1cell.setPaddingLeft(10);
+            subtitle1cell.setPaddingRight(20);
+            phrasebody_table.addCell(subtitle1cell);
+
+            Phrase phrasebodySubTitle2 = new Phrase("Weight * Rate ", subtitleFont);
+            PdfPCell subtitle2cell = new PdfPCell(new Phrase(phrasebodySubTitle2));
+            subtitle2cell.setBorder(Rectangle.NO_BORDER);
+            subtitle2cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            subtitle2cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            subtitle2cell.setPaddingLeft(10);
+            subtitle2cell.setPaddingRight(20);
+            phrasebody_table.addCell(subtitle2cell);
+            Phrase phrasebodySubTitle3 = new Phrase("Price ", subtitleFont);
+            PdfPCell subtitle3cell = new PdfPCell(new Phrase(phrasebodySubTitle3));
+            subtitle3cell.setBorder(Rectangle.NO_BORDER);
+            subtitle3cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            subtitle3cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            subtitle3cell.setPaddingLeft(10);
+            subtitle3cell.setPaddingRight(20);
+            phrasebody_table.addCell(subtitle3cell);
+
+
+            Phrase phraseEmptyLine = new Phrase("                  ");
+            PdfPCell phraseEmptycell = new PdfPCell(phraseEmptyLine);
+            phraseEmptycell.setBorder(Rectangle.NO_BORDER);
+            phraseEmptycell.setPaddingLeft(10);
+            phraseEmptycell.setBorderWidthBottom(01);
+            phrasebody_table.addCell(phraseEmptycell);
+            layoutDocument.add(phrasebody_table);
+
+
+ */
+            double oldSavedAmount = 0;
+
+            for (int i = 0; i < cart_item_list.size(); i++) {
+                double savedAmount;
+                String itemUniqueCode = cart_item_list.get(i);
+                Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
+
+                String fullitemName = String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+                       /* int indexofbraces = itemName.indexOf("(");
+                        if (indexofbraces >= 0) {
+                            itemName = itemName.substring(0, indexofbraces);
+
+                        }
+                        if (itemName.length() > 21) {
+                            itemName = itemName.substring(0, 21);
+                            itemName = itemName + "...";
+                        }
+
+                        */
+                String itemName = "";
+                String itemNameAfterBraces = "";
+
+                String tmcSubCtgyKey = String.valueOf(Objects.requireNonNull(modal_newOrderItems).getTmcsubctgykey());
+                try {
+                    if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                        int indexofbraces = fullitemName.indexOf("(");
+                        int lastindexofbraces = fullitemName.indexOf(")");
+                        int lengthofItemname = fullitemName.length();
+                        lastindexofbraces = lastindexofbraces + 1;
+
+                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                            itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                            itemName = fullitemName.substring(0, indexofbraces);
+                            itemName = itemName + itemNameAfterBraces;
+                            fullitemName = fullitemName.substring(0, indexofbraces);
+                            fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                        }
+
+                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                            // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                            itemName = fullitemName.substring(0, indexofbraces);
+
+                            fullitemName = fullitemName.substring(0, indexofbraces);
+                            fullitemName = fullitemName;
+
+
+                        }
+
+                        if (fullitemName.length() > 21) {
+                            itemName = fullitemName.substring(0, 21);
+                            itemName = itemName + "...";
+
+                            fullitemName = fullitemName.substring(0, 21);
+                            fullitemName = fullitemName + "...";
+                        }
+                        if (fullitemName.length() < 21) {
+                            itemName = fullitemName;
+
+                            fullitemName = fullitemName;
+
+                        }
+                    } else {
+                        int indexofbraces = fullitemName.indexOf("(");
+                        if (indexofbraces >= 0) {
+                            itemName = fullitemName.substring(0, indexofbraces);
+
+                        }
+                        if (fullitemName.length() > 21) {
+                            itemName = fullitemName.substring(0, 21);
+                            itemName = itemName + "...";
+                        }
+                        if (fullitemName.length() < 21) {
+                            itemName = fullitemName;
+
+                        }
+                    }
+                } catch (Exception e) {
+                    itemName = fullitemName;
+
+                    e.printStackTrace();
+                }
+
+
+                savedAmount = Double.parseDouble(modal_newOrderItems.getSavedAmount());
+                oldSavedAmount = savedAmount + oldSavedAmount;
+                String Gst = "Rs." + modal_newOrderItems.getGstAmount();
+                String subtotal = "Rs." + modal_newOrderItems.getSubTotal_perItem();
+                String quantity = modal_newOrderItems.getQuantity();
+                String itemrate = "Rs." + modal_newOrderItems.getItemFinalPrice();
+                String weight = modal_newOrderItems.getItemFinalWeight();
+                String weight_inKG = "";  double weight_inKGDouble = 0;double weight_inGRAMSDouble = 0;String weight_inGrams = "";
+                String pricePer_KG = "";
+
+
+                try{
+                    weight_inGrams = (weight.replaceAll("[^\\d.]", ""));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                try{
+                    weight_inGRAMSDouble  = Double.parseDouble(weight_inGrams);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                try{
+                    weight_inKGDouble  = weight_inGRAMSDouble /1000 ;
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                try{
+                    DecimalFormat decimalFormat = new DecimalFormat("0.00");
+                    weight_inKG  = String.valueOf(decimalFormat.format(weight_inKGDouble));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+                try{
+                    pricePer_KG   = String.valueOf(modal_newOrderItems.getTmcpriceperkg());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                String itemDespName_Weight_quantity = "";
+
+                //´ÖÌå
+                if (!weight.equals(" ") && weight.length() > 0) {
+                    itemDespName_Weight_quantity = String.valueOf(fullitemName + "( " + weight + " )" + " * " + quantity);
+                } else {
+
+                    itemDespName_Weight_quantity = String.valueOf(fullitemName + " * " + quantity);
+                }
+                try{
+                PdfPTable phrasebodyItemDetails_table = new PdfPTable(2);
+
+                Phrase phrasebodyitemNameLabel = new Phrase("Item Name : ", itemNameFontLabel);
+                PdfPCell itemNameLabelcell = new PdfPCell(new Phrase(phrasebodyitemNameLabel));
+                itemNameLabelcell.setBorder(Rectangle.NO_BORDER);
+                itemNameLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                itemNameLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                itemNameLabelcell.setPaddingLeft(10);
+                itemNameLabelcell.setPaddingRight(20);
+                itemNameLabelcell.setPaddingBottom(5);
+                phrasebodyItemDetails_table.addCell(itemNameLabelcell);
+
+
+
+                Phrase phrasebodyitemName = new Phrase(fullitemName, itemNameFont);
+                PdfPCell itemNamecell = new PdfPCell(new Phrase(phrasebodyitemName));
+                itemNamecell.setBorder(Rectangle.NO_BORDER);
+                itemNamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                itemNamecell.setPaddingLeft(10);
+                itemNamecell.setPaddingRight(20);
+                itemNamecell.setPaddingBottom(5);
+                phrasebodyItemDetails_table.addCell(itemNamecell);
+
+               /* Phrase phrasebodyempty = new Phrase("", normalFont);
+                PdfPCell emptycell = new PdfPCell(new Phrase(phrasebodyempty));
+                emptycell.setBorder(Rectangle.NO_BORDER);
+                emptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                emptycell.setPaddingLeft(10);
+                emptycell.setPaddingRight(20);
+                emptycell.setPaddingBottom(5);
+                phrasebodyItemDetails_table.addCell(emptycell);
+
+
+                */
+
+
+                if(weight_inKG.equals("")|| weight_inKG.equals("0") || weight_inKG.equals("null") ||weight_inKG.equals(null) ) {
+                    Phrase phrasebodyWeightLabel = new Phrase("Weight : ", subtitleFontLabel);
+                    PdfPCell itemWeightLabelcell = new PdfPCell(new Phrase(phrasebodyWeightLabel));
+                    itemWeightLabelcell.setBorder(Rectangle.NO_BORDER);
+                    itemWeightLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    itemWeightLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    itemWeightLabelcell.setPaddingLeft(10);
+                    itemWeightLabelcell.setPaddingRight(20);
+                    itemWeightLabelcell.setPaddingBottom(5);
+                    phrasebodyItemDetails_table.addCell(itemWeightLabelcell);
+
+
+                    Phrase phrasebodyWeight = new Phrase(weight, subtitleFont);
+                    PdfPCell itemWeightcell = new PdfPCell(new Phrase(phrasebodyWeight));
+                    itemWeightcell.setBorder(Rectangle.NO_BORDER);
+                    itemWeightcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    itemWeightcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    itemWeightcell.setPaddingLeft(10);
+                    itemWeightcell.setPaddingRight(20);
+                    itemWeightLabelcell.setPaddingBottom(5);
+                    phrasebodyItemDetails_table.addCell(itemWeightcell);
+
+
+                   /* Phrase phrasebodyempty2 = new Phrase("", normalFont);
+                    PdfPCell emptycell2 = new PdfPCell(new Phrase(phrasebodyempty2));
+                    emptycell2.setBorder(Rectangle.NO_BORDER);
+                    emptycell2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    emptycell2.setPaddingLeft(10);
+                    emptycell2.setPaddingRight(20);
+                    emptycell2.setPaddingBottom(5);
+                    phrasebodyItemDetails_table.addCell(emptycell2);
+
+                    */
+                }
+                else{
+                    Phrase phrasebodyWeightLabel = new Phrase("Weight * PricePerKg : ", subtitleFontLabel);
+                    PdfPCell itemWeightLabelcell = new PdfPCell(new Phrase(phrasebodyWeightLabel));
+                    itemWeightLabelcell.setBorder(Rectangle.NO_BORDER);
+                    itemWeightLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+                    itemWeightLabelcell.setPaddingLeft(10);
+                    itemWeightLabelcell.setPaddingRight(20);
+                    itemWeightLabelcell.setPaddingBottom(5);
+                    phrasebodyItemDetails_table.addCell(itemWeightLabelcell);
+
+
+                    Phrase phrasebodyWeight = new Phrase(weight_inKG +"Kg  *  "+ pricePer_KG+" Rs ", subtitleFont);
+                    PdfPCell itemWeightcell = new PdfPCell(new Phrase(phrasebodyWeight));
+                    itemWeightcell.setBorder(Rectangle.NO_BORDER);
+                    itemWeightcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    itemWeightcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    itemWeightcell.setPaddingLeft(10);
+                    itemWeightcell.setPaddingRight(20);
+                    itemWeightLabelcell.setPaddingBottom(5);
+                    phrasebodyItemDetails_table.addCell(itemWeightcell);
+
+
+                   /* Phrase phrasebodyempty2 = new Phrase("", normalFont);
+                    PdfPCell emptycell2 = new PdfPCell(new Phrase(phrasebodyempty2));
+                    emptycell2.setBorder(Rectangle.NO_BORDER);
+                    emptycell2.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    emptycell2.setPaddingLeft(10);
+                    emptycell2.setPaddingRight(10);
+                    emptycell2.setPaddingBottom(5);
+                    phrasebodyItemDetails_table.addCell(emptycell2);
+
+                    */
+                }
+
+            /*
+                Phrase phrasebodyQuantityLabel = new Phrase("Quantity : ", subtitleFontLabel);
+                PdfPCell itemQuantityLabelcell = new PdfPCell(new Phrase(phrasebodyQuantityLabel));
+                itemQuantityLabelcell.setBorder(Rectangle.NO_BORDER);
+                itemQuantityLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                itemQuantityLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                itemQuantityLabelcell.setPaddingLeft(10);
+                itemQuantityLabelcell.setPaddingRight(20);
+                itemQuantityLabelcell.setPaddingBottom(5);
+
+                phrasebodyItemDetails_table.addCell(itemQuantityLabelcell);
+
+
+                Phrase phrasebodyQuantity = new Phrase( quantity, subtitleFont);
+                PdfPCell itemQuantitycell = new PdfPCell(new Phrase(phrasebodyQuantity));
+                itemQuantitycell.setBorder(Rectangle.NO_BORDER);
+                itemQuantitycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                itemQuantitycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                itemQuantitycell.setPaddingLeft(10);
+                itemQuantitycell.setPaddingBottom(5);
+
+                itemQuantitycell.setPaddingRight(20);
+                phrasebodyItemDetails_table.addCell(itemQuantitycell);
+
+
+
+
+
+                Phrase phrasebodyempty3 = new Phrase("", normalFont);
+                PdfPCell emptycell3 = new PdfPCell(new Phrase(phrasebodyempty3));
+                emptycell3.setBorder(Rectangle.NO_BORDER);
+                emptycell3.setHorizontalAlignment(Element.ALIGN_LEFT);
+                emptycell3.setPaddingLeft(10);
+                emptycell3.setPaddingRight(20);
+                emptycell3.setPaddingBottom(5);
+                phrasebodyItemDetails_table.addCell(emptycell3);
+
+
+             */
+
+
+                Phrase phrasebodyPriceLabel = new Phrase("Price : ", subtitleFontLabel);
+                PdfPCell itemPriceLabelcell = new PdfPCell(new Phrase(phrasebodyPriceLabel));
+                itemPriceLabelcell.setBorder(Rectangle.NO_BORDER);
+                itemPriceLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                itemPriceLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                itemPriceLabelcell.setPaddingLeft(10);
+                itemPriceLabelcell.setPaddingRight(20);
+                itemPriceLabelcell.setPaddingBottom(20);
+                phrasebodyItemDetails_table.addCell(itemPriceLabelcell);
+
+
+                Phrase phrasebodyPrice = new Phrase(subtotal, subtitleFont);
+                PdfPCell itemPricecell = new PdfPCell(new Phrase(phrasebodyPrice));
+                itemPricecell.setBorder(Rectangle.NO_BORDER);
+                itemPricecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                itemPricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                itemPricecell.setPaddingLeft(10);
+                itemPricecell.setPaddingRight(20);
+                itemPricecell.setPaddingBottom(20);
+                phrasebodyItemDetails_table.addCell(itemPricecell);
+
+
+            /*
+                Phrase phrasebodyempty1 = new Phrase("", normalFont);
+                PdfPCell emptycell1 = new PdfPCell(new Phrase(phrasebodyempty1));
+                emptycell1.setBorder(Rectangle.NO_BORDER);
+                emptycell1.setHorizontalAlignment(Element.ALIGN_LEFT);
+                emptycell1.setPaddingLeft(10);
+                emptycell1.setPaddingRight(20);
+                emptycell1.setPaddingBottom(20);
+                phrasebodyItemDetails_table.addCell(emptycell1);
+
+
+             */
+
+
+
+                layoutDocument.add(phrasebodyItemDetails_table);
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+/*
+                try{
+                    PdfPTable phrasebodyItemWeight_table = new PdfPTable(1);
+
+                    Phrase phrasebodyPrice = new Phrase("Price : "+ subtotal, subtitleFont);
+                    PdfPCell itemPricecell = new PdfPCell(new Phrase(phrasebodyPrice));
+                    itemPricecell.setBorder(Rectangle.NO_BORDER);
+                    itemPricecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    itemPricecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    itemPricecell.setPaddingLeft(10);
+                    itemPricecell.setPaddingRight(20);
+                    phrasebodyItemWeight_table.addCell(itemPricecell);
+
+
+                    Phrase phrasebodyWeight = new Phrase("Weight : "+ weight, subtitleFont);
+                    PdfPCell itemWeightcell = new PdfPCell(new Phrase(phrasebodyWeight));
+                    itemWeightcell.setBorder(Rectangle.NO_BORDER);
+                    itemWeightcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    itemWeightcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    itemWeightcell.setPaddingLeft(10);
+                    itemWeightcell.setPaddingRight(20);
+                    phrasebodyItemWeight_table.addCell(itemWeightcell);
+
+                    layoutDocument.add(phrasebodyItemWeight_table);
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+ */
+            }
+            PdfPTable phrase_table = new PdfPTable(1);
+
+            Phrase phraseEmptyLine2 = new Phrase("                  ");
+            PdfPCell phraseEmptycell2 = new PdfPCell(phraseEmptyLine2);
+            phraseEmptycell2.setBorder(Rectangle.NO_BORDER);
+            phraseEmptycell2.setPaddingLeft(10);
+            phraseEmptycell2.setBorderWidthBottom(01);
+            phrase_table.addCell(phraseEmptycell2);
+            layoutDocument.add(phrase_table);
+
+            PdfPTable phrasebody1_table = new PdfPTable(2);
+
+            Phrase phraseSubTotalLabel = new Phrase( "SubTotal : ", normalFont);
+            PdfPCell subTotalLabelcell = new PdfPCell(new Phrase(phraseSubTotalLabel));
+            subTotalLabelcell.setBorder(Rectangle.NO_BORDER);
+            subTotalLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            subTotalLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            subTotalLabelcell.setPaddingLeft(10);
+            subTotalLabelcell.setPaddingRight(20);
+            subTotalLabelcell.setPaddingBottom(5);
+            subTotalLabelcell.setPaddingTop(10);
+            phrasebody1_table.addCell(subTotalLabelcell);
+
+
+            Phrase phraseSubTotal = new Phrase( "Rs. "+new_totalAmount_withGst+".00", normalFont);
+            PdfPCell subTotalcell = new PdfPCell(new Phrase(phraseSubTotal));
+            subTotalcell.setBorder(Rectangle.NO_BORDER);
+            subTotalcell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            subTotalcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            subTotalcell.setPaddingLeft(10);
+            subTotalcell.setPaddingRight(20);
+            subTotalcell.setPaddingBottom(5);
+            subTotalLabelcell.setPaddingTop(10);
+            phrasebody1_table.addCell(subTotalcell);
+
+
+
+            if(!discountAmount.equals("0")){
+                Phrase phraseDiscountLabel = new Phrase( "Discount Amount : ", normalFont);
+                PdfPCell discountLabelcell = new PdfPCell(new Phrase(phraseDiscountLabel));
+                discountLabelcell.setBorder(Rectangle.NO_BORDER);
+                discountLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                discountLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                discountLabelcell.setPaddingLeft(10);
+                discountLabelcell.setPaddingRight(20);
+                discountLabelcell.setPaddingBottom(5);
+                phrasebody1_table.addCell(discountLabelcell);
+
+
+                Phrase phraseDiscount = new Phrase( "Rs. "+discountAmount+".00", normalFont);
+                PdfPCell discountcell = new PdfPCell(new Phrase(phraseDiscount));
+                discountcell.setBorder(Rectangle.NO_BORDER);
+                discountcell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                discountcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                discountcell.setPaddingLeft(10);
+                discountcell.setPaddingRight(20);
+                discountcell.setPaddingBottom(5);
+                phrasebody1_table.addCell(discountcell);
+
+            }
+
+            Phrase phraseNetTotalLabel = new Phrase( "NetTotal : ", normalFont);
+            PdfPCell netTotalLabelcell = new PdfPCell(new Phrase(phraseNetTotalLabel));
+            netTotalLabelcell.setBorder(Rectangle.NO_BORDER);
+            netTotalLabelcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            netTotalLabelcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            netTotalLabelcell.setPaddingLeft(10);
+            netTotalLabelcell.setPaddingRight(20);
+            netTotalLabelcell.setPaddingBottom(3);
+            phrasebody1_table.addCell(netTotalLabelcell);
+
+
+            Phrase phraseNetTotal = new Phrase( "Rs. "+finaltoPayAmountinmethod, normalFont);
+            PdfPCell netTotalcell = new PdfPCell(new Phrase(phraseNetTotal));
+            netTotalcell.setBorder(Rectangle.NO_BORDER);
+            netTotalcell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            netTotalcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            netTotalcell.setPaddingLeft(10);
+            netTotalcell.setPaddingRight(20);
+            netTotalcell.setPaddingBottom(3);
+            phrasebody1_table.addCell(netTotalcell);
+
+            layoutDocument.add(phrasebody1_table);
+
+
+            PdfPTable phrasebody2_table = new PdfPTable(1);
+
+            Phrase phraseEmptyLine1 = new Phrase("                  ");
+            PdfPCell phraseEmptycell1 = new PdfPCell(phraseEmptyLine1);
+            phraseEmptycell1.setBorder(Rectangle.NO_BORDER);
+            phraseEmptycell1.setPaddingLeft(10);
+            phraseEmptycell1.setBorderWidthBottom(01);
+            phraseEmptycell1.setPaddingBottom(10);
+            phrasebody2_table.addCell(phraseEmptycell1);
+
+
+            Phrase phraseOrderType = new Phrase( "Order Type :  "+ordertype, normalFont);
+            PdfPCell orderTypecell = new PdfPCell(new Phrase(phraseOrderType));
+            orderTypecell.setBorder(Rectangle.NO_BORDER);
+            orderTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            orderTypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            orderTypecell.setPaddingLeft(10);
+            orderTypecell.setPaddingRight(20);
+            orderTypecell.setPaddingBottom(10);
+            orderTypecell.setPaddingTop(10);
+            phrasebody2_table.addCell(orderTypecell);
+
+
+            Phrase phrasePaymentMode = new Phrase( "Payment Mode : "+ payment_mode, normalFont);
+            PdfPCell paymentModecell = new PdfPCell(new Phrase(phrasePaymentMode));
+            paymentModecell.setBorder(Rectangle.NO_BORDER);
+            paymentModecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            paymentModecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModecell.setPaddingLeft(10);
+            paymentModecell.setPaddingRight(20);
+            paymentModecell.setPaddingBottom(10);
+            phrasebody2_table.addCell(paymentModecell);
+
+
+            Phrase phraseUserMobileNo = new Phrase( "Customer Mobile No : "+ userMobile, normalFont);
+            PdfPCell userMobileNocell = new PdfPCell(new Phrase(phraseUserMobileNo));
+            userMobileNocell.setBorder(Rectangle.NO_BORDER);
+            userMobileNocell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            userMobileNocell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            userMobileNocell.setPaddingLeft(10);
+            userMobileNocell.setPaddingRight(20);
+            userMobileNocell.setPaddingBottom(10);
+            phrasebody2_table.addCell(userMobileNocell);
+
+            Phrase phraseUsername = new Phrase( "Customer Name : "+ customerName, subtitleFontLabel);
+            PdfPCell usernamecell = new PdfPCell(new Phrase(phraseUsername));
+            usernamecell.setBorder(Rectangle.NO_BORDER);
+            usernamecell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            usernamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            usernamecell.setPaddingLeft(10);
+            usernamecell.setPaddingRight(20);
+            usernamecell.setPaddingBottom(30);
+            phrasebody2_table.addCell(usernamecell);
+
+
+
+
+            Phrase phraseFinalNote = new Phrase("Thank You for Choosing US !!!! ", normalFont);
+            PdfPCell phraseFinalNotecell = new PdfPCell(phraseFinalNote);
+            phraseFinalNotecell.setBorder(Rectangle.NO_BORDER);
+            phraseFinalNotecell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            phraseFinalNotecell.setVerticalAlignment(Element.ALIGN_CENTER);
+            phraseFinalNotecell.setPaddingLeft(10);
+            phrasebody2_table.addCell(phraseFinalNotecell);
+
+
+
+            layoutDocument.add(phrasebody2_table);
+
+
+
+
+
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    
+
     private void AddDataInStockOutGoingTable(double grossweightingrams_double, String orderid, String stockIncomingKey_avlDetails, String itemName, String barcode, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey) {
 
         String stockType = "";
@@ -4200,7 +6103,14 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             jsonObject.put("barcode",String.valueOf(barcode));
             jsonObject.put("itemname", String.valueOf(itemName));
             jsonObject.put("outgoingdate",String.valueOf(Currenttime));
-            jsonObject.put("outgoingtype", String.valueOf(Constants.SALES_FULFILLED_OUTGOINGTYPE));
+            if(ordertype.equals(String.valueOf(Constants.PhoneOrder))){
+                jsonObject.put("outgoingtype", String.valueOf(Constants.SALES_ALLOCATED_OUTGOINGTYPE));
+
+            }
+            else {
+                jsonObject.put("outgoingtype", String.valueOf(Constants.SALES_FULFILLED_OUTGOINGTYPE));
+
+            }
             jsonObject.put("outgoingqty",grossweightingrams_double);
             jsonObject.put("salesorderid", String.valueOf(orderid));
             jsonObject.put("stocktype",(stockType));
@@ -4341,18 +6251,35 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             stockincomingkey_stockOutGngDetails_String[0] = "";
                                             outgoingqty_stockOutGngDetails_String[0] = "0";
                                             receivedStock_AvlDetails_double[0] = 0;
+
+
+
                                             try {
-                                                if (json.has("outgoingqty")) {
-                                                    outgoingqty_stockOutGngDetails_String[0] = (json.getString("outgoingqty"));
+                                                if (json.has("outgoingtype")) {
+                                                    outgoingtype_stockOutGngDetails_String[0] = (json.getString("outgoingtype"));
                                                 } else {
-                                                    outgoingqty_stockOutGngDetails_String[0] = "0";
+                                                    outgoingtype_stockOutGngDetails_String[0] = "";
                                                 }
                                             } catch (Exception e) {
-                                                outgoingqty_stockOutGngDetails_String[0] = "0";
+                                                outgoingtype_stockOutGngDetails_String[0] = "";
 
                                                 e.printStackTrace();
                                             }
                                             if(!outgoingtype_stockOutGngDetails_String[0].equals(Constants.SALES_CANCELLED_OUTGOINGTYPE)){
+
+                                                try {
+                                                    if (json.has("outgoingqty")) {
+                                                        outgoingqty_stockOutGngDetails_String[0] = (json.getString("outgoingqty"));
+                                                    } else {
+                                                        outgoingqty_stockOutGngDetails_String[0] = "0";
+                                                    }
+                                                } catch (Exception e) {
+                                                    outgoingqty_stockOutGngDetails_String[0] = "0";
+
+                                                    e.printStackTrace();
+                                                }
+
+
                                             try {
                                                 if (json.has("stocktype")) {
                                                     stocktype_stockOutGngDetails_String[0] = (json.getString("stocktype"));
@@ -4368,18 +6295,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                             Log.i(TAG, "getStock incoming stocktype_stockOutGngDetails_String" + stocktype_stockOutGngDetails_String[0]);
 
-
-                                            try {
-                                                if (json.has("outgoingtype")) {
-                                                    outgoingtype_stockOutGngDetails_String[0] = (json.getString("outgoingtype"));
-                                                } else {
-                                                    outgoingtype_stockOutGngDetails_String[0] = "";
-                                                }
-                                            } catch (Exception e) {
-                                                outgoingtype_stockOutGngDetails_String[0] = "";
-
-                                                e.printStackTrace();
-                                            }
                                             Log.i(TAG, "getStock incoming outgoingtype_stockOutGngDetails_String" + outgoingtype_stockOutGngDetails_String[0]);
 
 
@@ -4760,7 +6675,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                             String menuItemKeyFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getMenuItemId());
 
                             if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
-                                modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(false));
                                 uploadMenuAvailabilityStatusTranscationinDB(usermobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorKey,Currenttime,menuItemKey_avlDetails,message, "", false, "");
                                 savedMenuIteminSharedPrefrences(completemenuItem,iterator_menuitemStockAvlDetails);
 
@@ -4862,7 +6777,25 @@ if(!key_avlDetails.equals("")) {
                 if (message.equals("success")) {
                     //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
                     // showProgressBar(false);
+                    if(changeItemAvailability) {
+                        for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < completemenuItem.size(); iterator_menuitemStockAvlDetails++) {
 
+                            Modal_NewOrderItems modal_menuItemStockAvlDetails = completemenuItem.get(iterator_menuitemStockAvlDetails);
+
+                            String menuItemKeyFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getMenuItemId());
+
+                            if (menuItemKey_avlDetails.equals(menuItemKeyFromMenuAvlDetails)) {
+                                modal_menuItemStockAvlDetails.setItemavailability_AvlDetails(String.valueOf(isitemAvailable));
+                                modal_menuItemStockAvlDetails.setItemavailability(String.valueOf(isitemAvailable));
+                                modal_menuItemStockAvlDetails.setStockbalance_AvlDetails(String.valueOf(finalStockBalance_double));
+                                modal_menuItemStockAvlDetails.setAllownegativestock(String.valueOf(false));
+                                uploadMenuAvailabilityStatusTranscationinDB(usermobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorKey,Currenttime,menuItemKey_avlDetails,message, "", false, "");
+                                savedMenuIteminSharedPrefrences(completemenuItem,iterator_menuitemStockAvlDetails);
+
+                            }
+
+                        }
+                    }
 
                 } else {
                     Toast.makeText(mContext, "No  Menu Item Stock Avl details for " + itemName, Toast.LENGTH_LONG).show();
@@ -5176,7 +7109,7 @@ if(!key_avlDetails.equals("")) {
 
     }
 
-    private void printRecipt(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype) {
+    private void printRecipt(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype, JSONArray itemDespArray) {
 /*
         Handler    handler = new Handler();
 
@@ -5196,13 +7129,637 @@ if(!key_avlDetails.equals("")) {
 
 showProgressBar(true);
 
+        String OrderPlacedtime = "";
+        String Orderid = "";
+        String CouponDiscount ="";
+        String OrderType = "";
+        String PayableAmountfromArray = "";
+        String PayableAmount = "";
+        String PaymentMode = "";
+        String MobileNumber ="";
+        String TokenNo="";
+        final String[] Notes = {""};
+        final String[] Slotname = {""};
+        final String[] SlotDate = {""};
+        final String[] DeliveryTime = {""};
+        final String[] DeliveryType = {""};
+        final String[] DeliveryAmount = {""};
+        final String[] DistanceFromStore = {""};
+        final String[] Address = {""};
+
     try {
             new Thread(new Runnable() {
                 public void run() {
 
 
+                if(ordertype.equals(Constants.PhoneOrder)) {
+
+
+                    try {
+                        Slotname[0] = Constants.EXPRESS_DELIVERY_SLOTNAME;
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+
+
+
+                    try {
+                        SlotDate[0] = getDate();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+                    try {
+                        DeliveryTime[0] =   getSlotTime("120 mins",orderplacedTime);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+                    try {
+                        DeliveryType[0] = Constants.HOME_DELIVERY_DELIVERYTYPE;
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+                    try {
+                        DeliveryAmount[0] = selected_Address_modal.getDeliveryCharge();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+                    try {
+                        DistanceFromStore[0] = selected_Address_modal.getDeliverydistance();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+                    try {
+                        Address[0] = selected_Address_modal.getAddressline1();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+
+                    }
+
+
+
+
+                    try {
+
+                        JSONArray array = itemDespArray;
+                        //Log.i("tag","array.length()"+ array.length());
+                        String b = array.toString();
+                        //  modal_manageOrders_pojo_class.setItemdesp_string(b);
+                        String itemDesp = "";
+
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject json = array.getJSONObject(i);
+
+
+                            if (json.has("marinadeitemdesp")) {
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x05);
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                try {
+                                    BluetoothPrintDriver.printString("TokenNo : " + tokenNo);
+                                    BluetoothPrintDriver.BT_Write("\r");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(mContext, "Printer Is Not Connected", Toast.LENGTH_LONG).show();
+                                }
+
+                                BluetoothPrintDriver.LF();
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                                BluetoothPrintDriver.printString("Order Id : " + orderid);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                                String finalitemname = "", finalitemNetweight = "", finalgrossweight = "", finalQuantity = "";
+                                JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
+                                Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                                marinades_manageOrders_pojo_class.itemName = marinadesObject.getString("itemname");
+                                marinades_manageOrders_pojo_class.ItemFinalPrice = marinadesObject.getString("tmcprice");
+                                marinades_manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                                marinades_manageOrders_pojo_class.GstAmount = marinadesObject.getString("gstamount");
+                                if (json.has("netweight")) {
+                                    marinades_manageOrders_pojo_class.ItemFinalWeight = marinadesObject.getString("netweight");
+
+                                } else {
+                                    marinades_manageOrders_pojo_class.ItemFinalWeight = "";
+
+                                }
+
+                                String fullitemName = String.valueOf(marinadesObject.getString("itemname"));
+                                String itemName = "";
+                                String itemNameAfterBraces = "";
+
+                                String tmcSubCtgyKey = String.valueOf(marinadesObject.getString("tmcsubctgykey"));
+                                try {
+                                    if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                                        int indexofbraces = fullitemName.indexOf("(");
+                                        int lastindexofbraces = fullitemName.indexOf(")");
+                                        int lengthofItemname = fullitemName.length();
+                                        lastindexofbraces = lastindexofbraces + 1;
+
+                                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                            itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                            itemName = fullitemName.substring(0, indexofbraces);
+                                            itemName = itemName + itemNameAfterBraces;
+                                            fullitemName = fullitemName.substring(0, indexofbraces);
+                                            fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                                        }
+
+                                        if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                            // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                            itemName = fullitemName.substring(0, indexofbraces);
+
+                                            fullitemName = fullitemName.substring(0, indexofbraces);
+                                            fullitemName = fullitemName;
+
+
+                                        }
+
+                                        if (fullitemName.length() > 21) {
+                                            itemName = fullitemName.substring(0, 21);
+                                            itemName = itemName + "...";
+
+
+                                        }
+
+                                    } else {
+                              /*  int indexofbraces = fullitemName.indexOf("(");
+                                if (indexofbraces >= 0) {
+                                    itemName = fullitemName.substring(0, indexofbraces);
+
+                                }
+                                if (fullitemName.length() > 21) {
+                                    itemName = fullitemName.substring(0, 21);
+                                    itemName = itemName + "...";
+                                }
+                                if (fullitemName.length() < 21) {
+                                    itemName = fullitemName;
+
+                                }
+
+                               */
+
+                                        if (fullitemName.contains("(")) {
+                                            int openbraces = fullitemName.indexOf("(");
+                                            int closebraces = fullitemName.indexOf(")");
+                                            System.out.println(fullitemName);
+                                            itemName = fullitemName.substring(openbraces + 1, closebraces);
+                                            System.out.println(itemName);
+
+                                        }
+                                        if (!itemName.matches("[a-zA-Z0-9]+")) {
+                                            fullitemName = fullitemName.replaceAll(
+                                                    "[^a-zA-Z0-9()]", "");
+                                            fullitemName = fullitemName.replaceAll(
+                                                    "[()]", " ");
+                                            System.out.println("no english");
+
+                                            System.out.println(fullitemName);
+
+                                        } else {
+                                            fullitemName = fullitemName.replaceAll(
+                                                    "[^a-zA-Z0-9()]", "");
+                                            System.out.println("have English");
+
+                                            System.out.println(fullitemName);
+
+                                        }
+
+
+                                    }
+                                } catch (Exception e) {
+                                    itemName = fullitemName;
+
+                                    e.printStackTrace();
+                                }
+                                if (tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                    BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                    BluetoothPrintDriver.printString("Grill House  " + fullitemName);
+                                    BluetoothPrintDriver.BT_Write("\r");
+                                    BluetoothPrintDriver.LF();
+                                } else if (tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                    BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                    BluetoothPrintDriver.printString("Ready to Cook  " + fullitemName);
+                                    BluetoothPrintDriver.BT_Write("\r");
+                                    BluetoothPrintDriver.LF();
+                                } else {
+                                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                                    BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                    BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                    BluetoothPrintDriver.printString(fullitemName);
+                                    BluetoothPrintDriver.BT_Write("\r");
+                                    BluetoothPrintDriver.LF();
+                                }
+
+                                try {
+                                    finalitemNetweight = marinadesObject.getString("netweight");
+                                    //Log.i("tag","grossweight Log    "+                grossweight);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                try {
+                                    finalQuantity = String.valueOf(json.get("quantity"));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                try {
+                                    finalgrossweight = marinadesObject.getString("grossweight");
+
+
+                                    if ((finalgrossweight.equals("")) || (finalgrossweight.equals(null)) || (finalgrossweight.equals(" - "))) {
+                                        try {
+                                            finalgrossweight = marinadesObject.getString("grossweightingrams");
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                        //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+                                    }
+
+                                } catch (Exception e) {
+                                    try {
+                                        if (finalgrossweight.equals("")) {
+                                            finalgrossweight = marinadesObject.getString("grossweightingrams");
+                                            //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                                        }
+                                    } catch (Exception e1) {
+                                        e1.printStackTrace();
+                                    }
+                                    e.printStackTrace();
+                                }
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                                BluetoothPrintDriver.printString("Grossweight : " + finalgrossweight);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                                BluetoothPrintDriver.printString("Netweight : " + finalitemNetweight);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                                BluetoothPrintDriver.printString("Quantity : " + finalQuantity);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+                                BluetoothPrintDriver.LF();
+
+                                BluetoothPrintDriver.FeedAndCutPaper((byte) 66, (byte) 40);
+
+                            }
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x05);
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            try {
+                                BluetoothPrintDriver.printString("TokenNo : " + tokenno);
+                                BluetoothPrintDriver.BT_Write("\r");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(mContext, "Printer Is Not Connected", Toast.LENGTH_LONG).show();
+                            }
+
+                            BluetoothPrintDriver.LF();
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Order Id : " + orderid);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            String finalitemname = "", finalCutName = "", finalitemNetweight = "", finalgrossweight = "", finalQuantity = "";
+
+
+                            Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                            if (json.has("netweight")) {
+                                manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
+
+                            } else {
+                                manageOrders_pojo_class.ItemFinalWeight = "";
+
+                            }
+
+                            manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+                            manageOrders_pojo_class.ItemFinalPrice = String.valueOf(json.get("tmcprice"));
+                            manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                            manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
+
+
+                            String fullitemName = String.valueOf(json.getString("itemname"));
+                            String itemName = "";
+                            String itemNameAfterBraces = "";
+
+                            String tmcSubCtgyKey = String.valueOf(json.getString("tmcsubctgykey"));
+                            try {
+                                if (tmcSubCtgyKey.equals("tmcsubctgy_6") || tmcSubCtgyKey.equals("tmcsubctgy_3")) {
+                                    int indexofbraces = fullitemName.indexOf("(");
+                                    int lastindexofbraces = fullitemName.indexOf(")");
+                                    int lengthofItemname = fullitemName.length();
+                                    lastindexofbraces = lastindexofbraces + 1;
+
+                                    if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces > indexofbraces)) {
+                                        itemNameAfterBraces = fullitemName.substring(lastindexofbraces, lengthofItemname);
+
+                                        itemName = fullitemName.substring(0, indexofbraces);
+                                        itemName = itemName + itemNameAfterBraces;
+                                        fullitemName = fullitemName.substring(0, indexofbraces);
+                                        fullitemName = fullitemName + itemNameAfterBraces;
+
+
+                                    }
+
+                                    if ((indexofbraces >= 0) && (lastindexofbraces >= 0) && (lastindexofbraces == indexofbraces)) {
+                                        // itemNameAfterBraces = fullitemName.substring(lastindexofbraces,lengthofItemname);
+
+                                        itemName = fullitemName.substring(0, indexofbraces);
+
+                                        fullitemName = fullitemName.substring(0, indexofbraces);
+                                        fullitemName = fullitemName;
+
+
+                                    }
+
+                                    if (fullitemName.length() > 21) {
+                                        itemName = fullitemName.substring(0, 21);
+                                        itemName = itemName + "...";
+
+
+                                    }
+
+                                } else {
+                           /* int indexofbraces = fullitemName.indexOf("(");
+                            if (indexofbraces >= 0) {
+                                itemName = fullitemName.substring(0, indexofbraces);
+
+                            }
+                            if (fullitemName.length() > 21) {
+                                itemName = fullitemName.substring(0, 21);
+                                itemName = itemName + "...";
+                            }
+                            if (fullitemName.length() < 21) {
+                                itemName = fullitemName;
+
+                            }
+
+                            */
+
+                                    if (fullitemName.contains("(")) {
+                                        int openbraces = fullitemName.indexOf("(");
+                                        int closebraces = fullitemName.indexOf(")");
+                                        System.out.println(fullitemName);
+                                        itemName = fullitemName.substring(openbraces + 1, closebraces);
+                                        System.out.println(itemName);
+
+                                    }
+                                    if (!itemName.matches("[a-zA-Z0-9]+")) {
+                                        fullitemName = fullitemName.replaceAll(
+                                                "[^a-zA-Z0-9()]", "");
+                                        fullitemName = fullitemName.replaceAll(
+                                                "[()]", " ");
+                                        System.out.println("no english");
+
+                                        System.out.println(fullitemName);
+
+                                    } else {
+                                        fullitemName = fullitemName.replaceAll(
+                                                "[^a-zA-Z0-9()]", "");
+                                        System.out.println("have English");
+
+                                        System.out.println(fullitemName);
+
+                                    }
+
+
+                                }
+                            } catch (Exception e) {
+                                itemName = fullitemName;
+
+                                e.printStackTrace();
+                            }
+                            BluetoothPrintDriver.Begin();
+
+                            if (tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                BluetoothPrintDriver.printString("Grill House  " + fullitemName);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+                            } else if (tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                BluetoothPrintDriver.printString("Ready to Cook  " + fullitemName);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+                            } else {
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x02);
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 100);
+                                BluetoothPrintDriver.printString(fullitemName);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+                            }
+                            try {
+                                if (json.has("cutname")) {
+                                    finalCutName = json.getString("cutname");
+
+                                } else {
+                                    finalCutName = "";
+                                }
+                                //Log.i("tag","grossweight Log    "+                grossweight);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            try {
+                                finalitemNetweight = json.getString("netweight");
+                                //Log.i("tag","grossweight Log    "+                grossweight);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                finalQuantity = json.getString("quantity");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                finalgrossweight = json.getString("grossweight");
+
+
+                                if ((finalgrossweight.equals("")) || (finalgrossweight.equals(null)) || (finalgrossweight.equals(" - "))) {
+                                    try {
+                                        finalgrossweight = json.getString("grossweightingrams");
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    //Log.i("tag","grossweight Log   2 "+                grossweight);
+
+
+                                }
+
+                            } catch (Exception e) {
+                                try {
+                                    if (finalgrossweight.equals("")) {
+                                        finalgrossweight = json.getString("grossweightingrams");
+                                        //Log.i("tag","grossweight Log   3 "+                grossweight);
+
+
+                                    }
+                                } catch (Exception e1) {
+                                    e1.printStackTrace();
+                                }
+                                e.printStackTrace();
+                            }
+
+
+                            if ((finalCutName.length() > 0) && (!finalCutName.equals(null)) && (!finalCutName.equals("null"))) {
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetLineSpacing((byte) 55);
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.printString("----------------------------------------------");
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                                BluetoothPrintDriver.Begin();
+
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                //   BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 60);
+
+                                BluetoothPrintDriver.printString((finalCutName.toUpperCase()));
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.printString("----------------------------------------------");
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                            }
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Grossweight : " + finalgrossweight);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Netweight : " + finalitemNetweight);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetLineSpacing((byte) 60);
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Quantity : " + finalQuantity);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+                            BluetoothPrintDriver.LF();
+
+                            BluetoothPrintDriver.FeedAndCutPaper((byte) 66, (byte) 40);
+
+
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
                     double oldSavedAmount = 0;
                     String CouponDiscount = "0";
+                    String deliveryCharges = "0";
 
 
                     String Title = "The Meat Chop";
@@ -5604,7 +8161,8 @@ showProgressBar(true);
 
                         String totalRate = "Rs." +itemTotalwithoutGst;
                         String totalGst = "Rs." + taxAmount;
-                        String totalSubtotal = "Rs." + finaltoPayAmount;
+                        String totalSubtotal = "Rs." + new_totalAmount_withGst+ ".00";
+
                         if (totalRate.length() == 7) {
                             //10spaces
                             totalRate = totalRate + "             ";
@@ -5737,7 +8295,7 @@ showProgressBar(true);
                                 if (CouponDiscount.length() == 8) {
                                     //18spaces
                                     //NEW TOTAL =8
-                                    CouponDiscount = " Discount Amount                      " + CouponDiscount;
+                                    CouponDiscount = "Discount Amount                      " + CouponDiscount;
                                 }
                                 if (CouponDiscount.length() == 9) {
                                     //17spaces
@@ -5770,7 +8328,7 @@ showProgressBar(true);
                                 BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                                 BluetoothPrintDriver.SetAlignMode((byte) 0);
                                 BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                                BluetoothPrintDriver.printString(CouponDiscount);
+                                BluetoothPrintDriver.printString(" "+CouponDiscount);
                                 BluetoothPrintDriver.BT_Write("\r");
                                 BluetoothPrintDriver.LF();
 
@@ -5786,6 +8344,89 @@ showProgressBar(true);
                             }
 
 
+                        }
+
+                        if(ordertype.toUpperCase().equals(Constants.PhoneOrder)) {
+                            deliveryCharges = "0";
+                            deliveryCharges = deliveryAmount_for_this_order;
+                            if (!deliveryCharges.equals("0")) {
+                                deliveryCharges = "Rs. " + deliveryCharges;
+
+                                if ((!deliveryCharges.equals("Rs.0.0")) && (!deliveryCharges.equals("Rs.0")) && (!deliveryCharges.equals("Rs.0.00")) && (deliveryCharges != (null)) && (!deliveryCharges.equals("")) && (!deliveryCharges.equals("Rs. .00")) && (!deliveryCharges.equals("Rs..00"))) {
+
+                                    if (deliveryCharges.length() == 4) {
+                                        //20spaces
+                                        //NEW TOTAL =4
+                                        deliveryCharges = "Delivery Charge                           " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 5) {
+                                        //21spaces
+                                        //NEW TOTAL =5
+                                        deliveryCharges = "Delivery Charge                         " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 6) {
+                                        //20spaces
+                                        //NEW TOTAL =6
+                                        deliveryCharges = "Delivery Charge                        " + deliveryCharges;
+                                    }
+
+                                    if (deliveryCharges.length() == 7) {
+                                        //19spaces
+                                        //NEW TOTAL =7
+                                        deliveryCharges = "Delivery Charge                       " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 8) {
+                                        //18spaces
+                                        //NEW TOTAL =8
+                                        deliveryCharges = "Delivery Charge                      " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 9) {
+                                        //17spaces
+                                        //NEW TOTAL =9
+                                        deliveryCharges = "Delivery Charge                     " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 10) {
+                                        //16spaces
+                                        //NEW TOTAL =9
+                                        deliveryCharges = "Delivery Charge                    " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 11) {
+                                        //15spaces
+                                        //NEW TOTAL =9
+                                        deliveryCharges = "Delivery Charge                   " + deliveryCharges;
+                                    }
+                                    if (deliveryCharges.length() == 12) {
+                                        //14spaces
+                                        //NEW TOTAL =9
+                                        CouponDiscount = "Delivery Charge                  " + deliveryCharges;
+                                    }
+
+                                    if (deliveryCharges.length() == 13) {
+                                        //13spaces
+                                        //NEW TOTAL =9
+                                        deliveryCharges = "Delivery Charge                 " + deliveryCharges;
+                                    }
+
+                                    BluetoothPrintDriver.Begin();
+                                    BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                    BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                                    BluetoothPrintDriver.printString(" " + deliveryCharges);
+                                    BluetoothPrintDriver.BT_Write("\r");
+                                    BluetoothPrintDriver.LF();
+
+                                    BluetoothPrintDriver.Begin();
+                                    BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                    BluetoothPrintDriver.SetLineSpacing((byte) 65);
+                                    BluetoothPrintDriver.printString("----------------------------------------------");
+                                    BluetoothPrintDriver.BT_Write("\r");
+                                    BluetoothPrintDriver.LF();
+
+
+                                }
+
+
+                            }
                         }
                         String NetTotal = "Rs."+finaltoPayAmountinmethod;
 
@@ -5931,7 +8572,7 @@ showProgressBar(true);
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                        BluetoothPrintDriver.printString("ordertype : "+ordertype);
+                        BluetoothPrintDriver.printString("Ordertype : "+ordertype);
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
 
@@ -5958,14 +8599,127 @@ showProgressBar(true);
                         BluetoothPrintDriver.Begin();
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
-                        BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                        BluetoothPrintDriver.SetLineSpacing((byte) 115);
                         BluetoothPrintDriver.printString("User Mobile : " +userMobile);
-                        BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.BT_Write("\n");
-
                         BluetoothPrintDriver.LF();
 
 
+                        if(ordertype.equals(Constants.PhoneOrder)){
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 49);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 110);
+                            BluetoothPrintDriver.SetBold((byte) 0x08);//´ÖÌå
+                            BluetoothPrintDriver.SetCharacterFont((byte)0);
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x07);
+                            BluetoothPrintDriver.SetFontEnlarge((byte) 0x30);
+                            BluetoothPrintDriver.printString("TOKENNO: "+tokenNo);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                            BluetoothPrintDriver.printString("Slot Name : "+ Slotname[0]);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                            BluetoothPrintDriver.printString("Slot Date : "+ SlotDate[0]);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                            if(Slotname[0].equals(Constants.EXPRESSDELIVERY_SLOTNAME)){
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                                BluetoothPrintDriver.printString("Order Placed time : "+OrderPlacedtime);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+
+
+                            }
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                            BluetoothPrintDriver.printString("Delivery time : "+ DeliveryTime[0]);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                            BluetoothPrintDriver.printString("Delivery type : "+ DeliveryType[0]);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+                            BluetoothPrintDriver.printString("Distance from Store : "+ DistanceFromStore[0] +" Kms");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 80);
+                            BluetoothPrintDriver.printString("Address : ");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 120);
+                            BluetoothPrintDriver.printString(Address[0]);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                            if(!Notes[0].equals("")) {
+
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 70);
+                                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x01);
+                                BluetoothPrintDriver.SetFontEnlarge((byte) 0x10);
+                                BluetoothPrintDriver.printString("Notes :" + Notes[0]);
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+                            }
+                            else{
+                                BluetoothPrintDriver.Begin();
+                                BluetoothPrintDriver.SetAlignMode((byte) 0);
+                                BluetoothPrintDriver.SetLineSpacing((byte) 30);
+                                BluetoothPrintDriver.printString("");
+                                BluetoothPrintDriver.BT_Write("\r");
+                                BluetoothPrintDriver.LF();
+                            }
+
+
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 120);
+                            BluetoothPrintDriver.printString("                                          ");
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                        }
 
 
 
@@ -5984,7 +8738,7 @@ showProgressBar(true);
 
                         if (!isPrintedSecondTime) {
 
-                            turnoffProgressBar(orderplacedTime,userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode,discountAmount,ordertype);
+                            turnoffProgressBar(orderplacedTime,userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode,discountAmount,ordertype,itemDespArray);
                         }
                         else {
                             turnoffProgressBarAndResetArray();
@@ -6005,7 +8759,7 @@ showProgressBar(true);
 
     }
 
-    private void turnoffProgressBar(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype) {
+    private void turnoffProgressBar(String orderplacedTime, String userMobile, String tokenno, String itemTotalwithoutGst, String taxAmount, String finaltoPayAmountinmethod, String orderid, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String payment_mode, String discountAmount, String ordertype, JSONArray itemDespArray) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -6020,7 +8774,7 @@ showProgressBar(true);
                             public void onYes() {
                                 isPrintedSecondTime = true;
 
-                                printRecipt(orderplacedTime,userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode,discountAmount,ordertype);
+                                printRecipt(orderplacedTime,userMobile, tokenno, itemTotalwithoutGst, taxAmount, finaltoPayAmountinmethod, orderid, cart_item_list, cartItem_hashmap, payment_mode,discountAmount,ordertype, itemDespArray);
 
                             }
 
@@ -6046,11 +8800,30 @@ showProgressBar(true);
             public void run() {
 
 
-                isNewUser =false;
-                                    isUsertype_AlreadyPhone =false;
-                customermobileno = "";
+                customermobileno="";
+                customerName ="";
                 userAddressArrayList.clear();
                 userAddressKeyArrayList.clear();
+                selectedAddressKey = String.valueOf("");
+                selectedAddress = String.valueOf("");
+                userLatitude = String.valueOf("0");
+                userLongitude = String.valueOf("0");
+                deliveryDistance ="";
+                user_key_toAdd_Address ="";
+
+                fulladdress_textview.setText("");
+                autoCompleteCustomerName_widget.setText("");
+
+                selected_Address_modal = new Modal_Address();
+                isPhoneOrderSelected = false;
+        isAddressForPhoneOrderSelected = false;
+                updateUserName = false;
+                isNewUser = false;
+                isAddress_Added_ForUser = false;
+                isAddressForPhoneOrderSelected = false;
+                isUsertype_AlreadyPhone = false;
+                userFetchedManually = false;
+
 
                 cart_Item_List.clear();
                 cartItem_hashmap.clear();
@@ -6067,11 +8840,13 @@ showProgressBar(true);
                 old_total_Amount = 0;
                 createEmptyRowInListView("empty");
                 CallAdapter();
-                discountAmount = "0";
+                discountAmount ="0";
+        deliveryAmount_for_this_order ="0";
 
                 finaltoPayAmount = "0";
                 new_totalAmount_withoutGst =0;
                 isPhoneOrderSelected = false;
+        isAddressForPhoneOrderSelected = false;
 
                 isPrintedSecondTime = false;
                 isUpdateCouponTransactionMethodCalled=false;
@@ -6201,6 +8976,7 @@ showProgressBar(true);
                 e.printStackTrace();
             }
 
+            jsonObject.put("slotdate", getDate());
 
             jsonObject.put("discountamount", discountamountt);
             jsonObject.put("gstamount", gstamountt);
@@ -6278,11 +9054,56 @@ showProgressBar(true);
 
         String orderid = String.valueOf(sTime);
         String orderplacedDate_time = getDate_and_time();
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + orderplacedDate_time);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + getDate_and_time());
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttiime);
-        //Log.d(Constants.TAG, "orderplacedDate_time: " + Currenttime);
+        double userLat_double = 0;
+        double userLon_double = 0;
+        double deliveryDistance_double =0;
+        try{
+            deliveryDistance = deliveryDistance.replaceAll("[^\\d.]", "");
 
+        }
+        catch (Exception e){
+            deliveryDistance ="0";
+            e.printStackTrace();
+        }
+
+        try{
+            deliveryDistance_double = Double.parseDouble(deliveryDistance);
+        }
+        catch (Exception e){
+            deliveryDistance_double =0;
+        }
+
+
+        try{
+            userLatitude = userLatitude.replaceAll("[^\\d.]", "");
+
+        }
+        catch (Exception e){
+            userLatitude ="0";
+        e.printStackTrace();
+        }
+
+        try{
+            userLat_double = Double.parseDouble(userLatitude);
+        }
+        catch (Exception e){
+            userLat_double =0;
+        }
+        try{
+            userLongitude = userLongitude.replaceAll("[^\\d.]", "");
+
+        }
+        catch (Exception e){
+            userLongitude ="0";
+            e.printStackTrace();
+        }
+
+        try{
+            userLon_double = Double.parseDouble(userLongitude);
+        }
+        catch (Exception e){
+            userLon_double =0;
+        }
         SharedPreferences sh
                 = mContext.getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
@@ -6290,7 +9111,6 @@ showProgressBar(true);
 
         JSONObject  orderTrackingTablejsonObject = new JSONObject();
         try {
-            orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
             orderTrackingTablejsonObject.put("orderplacedtime",Currenttime);
             if(orderdetailsnewschema){
 
@@ -6300,7 +9120,28 @@ showProgressBar(true);
             orderTrackingTablejsonObject.put("usermobileno","+91" + customermobileno);
             orderTrackingTablejsonObject.put("orderid",orderid);
             orderTrackingTablejsonObject.put("vendorkey",vendorkey);
-            orderTrackingTablejsonObject.put("orderstatus","DELIVERED");
+            if(isPhoneOrderSelected) {
+                orderTrackingTablejsonObject.put("orderconfirmedtime",Currenttime);
+                orderTrackingTablejsonObject.put("useraddresskey", selectedAddressKey);
+                orderTrackingTablejsonObject.put("orderstatus",Constants.CONFIRMED_ORDER_STATUS);
+
+                orderTrackingTablejsonObject.put("useraddresslat", userLat_double);
+                orderTrackingTablejsonObject.put("useraddresslong", userLon_double);
+                orderTrackingTablejsonObject.put("deliverydistanceinkm",deliveryDistance_double);
+
+/*
+                orderTrackingTablejsonObject.put("orderstatus","DELIVERED");
+                orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
+
+
+
+ */
+            }
+            else{
+                orderTrackingTablejsonObject.put("orderstatus","DELIVERED");
+                orderTrackingTablejsonObject.put("orderdeliverytime",Currenttime);
+
+            }
 
         }
 
@@ -6667,7 +9508,7 @@ showProgressBar(true);
 
                                             }
                                             isCustomerOrdersTableServiceCalled =true;
-                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
                                             asyncTask.execute();
 
                                         }
@@ -6799,7 +9640,7 @@ showProgressBar(true);
 
                                                         }
                                                         isCustomerOrdersTableServiceCalled =true;
-                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
                                                         asyncTask.execute();
 
                                                     }
@@ -6865,7 +9706,7 @@ showProgressBar(true);
         switch (requestCode) {
             case REQUEST_CONNECT_DEVICE:
                 // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     // Get the device MAC address
                     try {
                         String address = data.getExtras()
@@ -6880,24 +9721,41 @@ showProgressBar(true);
                     }
                 }
                 break;
+
+
             case REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
-                if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled, so set up a chat session
-                    setupChat();
-                    Intent serverIntent = null;
-                    //showBottomSheetDialog();
-                    // Launch the DeviceListActivity to see devices and do scan
-                    serverIntent = new Intent(mContext, DeviceListActivity.class);
-                    startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
-                } else {
-                    // User did not enable Bluetooth or an error occured
-                    Log.d("TAG", "BT not enabled");
-                    Toast.makeText(mContext, "bt_not_enabled_leaving", Toast.LENGTH_SHORT).show();
-                    //  finish();
+                if(defaultPrinterType.equals(Constants.PDF_PrinterType)){
+                    getActivity().setResult(RESULT_OK);
+                    getActivity().finish();
                 }
+                else {
+
+
+                    if (resultCode == RESULT_OK) {
+                        // Bluetooth is now enabled, so set up a chat session
+                        setupChat();
+                        Intent serverIntent = null;
+                        //showBottomSheetDialog();
+                        // Launch the DeviceListActivity to see devices and do scan
+                        serverIntent = new Intent(mContext, DeviceListActivity.class);
+                        startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+                    } else {
+                        // User did not enable Bluetooth or an error occured
+                        Log.d("TAG", "BT not enabled");
+                        Toast.makeText(mContext, "bt_not_enabled_leaving", Toast.LENGTH_SHORT).show();
+                        //  finish();
+                    }
+                }
+                break;
+
+            default:
+                break;
+
         }
     }
+
+
 
     private void GetDatafromCreditOrderDetailsTable(String paymentMode, long sTime, String currenttime) {
         totalamountUserHaveAsCredit = 0;
@@ -6960,7 +9818,7 @@ showProgressBar(true);
 
                                                     }
                                                     isCustomerOrdersTableServiceCalled =true;
-                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
                                                     asyncTask.execute();
 
                                                 }
@@ -7005,7 +9863,7 @@ showProgressBar(true);
 
                                                 }
                                                 isCustomerOrdersTableServiceCalled =true;
-                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod);
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
                                                 asyncTask.execute();
 
                                             }

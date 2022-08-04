@@ -323,7 +323,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             whole_showlocation.setVisibility(View.GONE);
         }
         try{
-            if(ordertype.equals(Constants.APPORDER)) {
+            if((ordertype.equals(Constants.APPORDER)) ||(ordertype.equals(Constants.PhoneOrder)) ) {
                 try {
                     deliverydistance = String.valueOf(modal_manageOrders_pojo_class.getDeliverydistance());
                     distancebetweencustomer_vendortext_widget.setText(deliverydistance+" Km");
@@ -342,7 +342,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                     if (modal_manageOrders_pojo_class.getUseraddresskey() != null) {
                     getUserAddressAndLat_LongFromAddressTable(modal_manageOrders_pojo_class.getUseraddresskey().toString());
                 } else {
-                    Toast.makeText(MobileScreen_OrderDetails1.this, "Userkey cnanot be found", Toast.LENGTH_LONG).show();
+                   // Toast.makeText(MobileScreen_OrderDetails1.this, "Userkey cnanot be found", Toast.LENGTH_LONG).show();
                     Location_loadinganim_layout.setVisibility(View.GONE);
                     showlocation.setVisibility(View.VISIBLE);
                 }

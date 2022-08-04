@@ -2543,7 +2543,7 @@ else{
                         modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                         modal_manageOrders_forOrderDetailList1.slottime_in_long = modal_manageOrders_forOrderDetailList.getSlottime_in_long();
                         modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
-
+                        modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
                         modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                         modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
@@ -2591,6 +2591,7 @@ else{
                             modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                             modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
                             modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                            modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
 
                             modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -2656,6 +2657,7 @@ else{
                                 modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                                 modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
                                 modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                                modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
 
                                 modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -2790,6 +2792,7 @@ else{
                                 modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                                 modal_manageOrders_forOrderDetailList1.delayedtime = modal_manageOrders_forOrderDetailList.getDelayedtime();
                                 modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
+                                modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
 
                                 modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -3029,7 +3032,9 @@ else{
         };
         mContext = DeliveredOrdersTimewiseReport.this;
         mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_AppOrder_PhoneOrder + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype1=APPORDER"+"&ordertype2=PHONEORDER";
+
+       // String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey_status +"?slotdate="+FromDate+"&vendorkey="+vendorKey+"&orderstatus=DELIVERED";
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 

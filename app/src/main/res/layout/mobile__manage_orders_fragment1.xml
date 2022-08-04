@@ -340,6 +340,7 @@
 
 
             </RelativeLayout>
+
             <LinearLayout
                 android:id="@+id/loadingpanelmask_dailyItemWisereport"
                 android:layout_width="match_parent"

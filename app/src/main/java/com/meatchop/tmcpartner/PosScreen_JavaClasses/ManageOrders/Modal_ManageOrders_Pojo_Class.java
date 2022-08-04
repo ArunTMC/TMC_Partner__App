@@ -8,13 +8,150 @@ import android.os.Parcelable;
 import org.json.JSONArray;
 
 public class  Modal_ManageOrders_Pojo_Class implements Parcelable {
-public String portionsize,vendorname,menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
+public String parentItemName,receivedstock,barcode,allownegativestock,isitemAvailable,stockincomingkey,stockbalance,stockavldetailskey,tmcctgykey,inventorydetailsstring,pricetypeforpos,username,userstatus,portionsize,vendorname,menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
 public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
 public   String merchantorderid,isdataFetchedFromOrderTrackingDetails="FALSE",subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
-public JSONArray itemdesp;
-    public int intTokenNo;
-public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplacement=false;
-      String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
+public JSONArray itemdesp,inventorydetails;
+public int intTokenNo;
+public boolean ischilditem,isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplacement=false,isCorrectGrossweight = false,isGrossweightEdited = false;
+public String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
+
+
+    public String getParentItemName() {
+        return parentItemName;
+    }
+
+    public void setParentItemName(String parentItemName) {
+        this.parentItemName = parentItemName;
+    }
+
+    public boolean isIschilditem() {
+        return ischilditem;
+    }
+
+    public void setIschilditem(boolean ischilditem) {
+        this.ischilditem = ischilditem;
+    }
+
+    public String getReceivedstock() {
+        return receivedstock;
+    }
+
+    public void setReceivedstock(String receivedstock) {
+        this.receivedstock = receivedstock;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public String getAllownegativestock() {
+        return allownegativestock;
+    }
+
+    public void setAllownegativestock(String allownegativestock) {
+        this.allownegativestock = allownegativestock;
+    }
+
+    public String getIsitemAvailable() {
+        return isitemAvailable;
+    }
+
+    public void setIsitemAvailable(String isitemAvailable) {
+        this.isitemAvailable = isitemAvailable;
+    }
+
+    public String getStockincomingkey() {
+        return stockincomingkey;
+    }
+
+    public void setStockincomingkey(String stockincomingkey) {
+        this.stockincomingkey = stockincomingkey;
+    }
+
+    public String getStockbalance() {
+        return stockbalance;
+    }
+
+    public void setStockbalance(String stockbalance) {
+        this.stockbalance = stockbalance;
+    }
+
+    public String getStockavldetailskey() {
+        return stockavldetailskey;
+    }
+
+    public void setStockavldetailskey(String stockavldetailskey) {
+        this.stockavldetailskey = stockavldetailskey;
+    }
+
+    public String getTmcctgykey() {
+        return tmcctgykey;
+    }
+
+    public void setTmcctgykey(String tmcctgykey) {
+        this.tmcctgykey = tmcctgykey;
+    }
+
+    public String getInventorydetailsstring() {
+        return inventorydetailsstring;
+    }
+
+    public void setInventorydetailsstring(String inventorydetailsstring) {
+        this.inventorydetailsstring = inventorydetailsstring;
+    }
+
+    public JSONArray getInventorydetails() {
+        return inventorydetails;
+    }
+
+    public void setInventorydetails(JSONArray inventorydetails) {
+        this.inventorydetails = inventorydetails;
+    }
+
+    public boolean isGrossweightEdited() {
+        return isGrossweightEdited;
+    }
+
+    public void setisGrossweightEdited(boolean grossweightEdited) {
+        isGrossweightEdited = grossweightEdited;
+    }
+
+    public boolean isCorrectGrossweight() {
+        return isCorrectGrossweight;
+    }
+
+    public void setisCorrectGrossweight(boolean correctGrossweight) {
+        isCorrectGrossweight = correctGrossweight;
+    }
+
+    public String getPricetypeforpos() {
+        return pricetypeforpos;
+    }
+
+    public void setPricetypeforpos(String pricetypeforpos) {
+        this.pricetypeforpos = pricetypeforpos;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUserstatus() {
+        return userstatus;
+    }
+
+    public void setUserstatus(String userstatus) {
+        this.userstatus = userstatus;
+    }
 
     public boolean getisItemMarkedForReplacement() {
         return isItemMarkedForReplacement;
@@ -529,6 +666,7 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         menuItemKey = in.readString();
         vendorname  = in.readString();
         merchantorderid  = in.readString();
+        userstatus  = in.readString();
     }
 
     public static final Creator<Modal_ManageOrders_Pojo_Class> CREATOR = new Creator<Modal_ManageOrders_Pojo_Class>() {
@@ -791,7 +929,6 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         parcel.writeString(ItemFinalWeight);
         parcel.writeString(slotdate);
         parcel.writeString(slotname);
-
         parcel.writeString(deliverytype);
         parcel.writeString(slottimerange);
         parcel.writeString(useraddress);
@@ -818,5 +955,6 @@ public boolean isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplace
         parcel.writeString(menuItemKey);
         parcel.writeString(vendorname);
         parcel.writeString(merchantorderid);
+        parcel.writeString(userstatus);
     }
 }

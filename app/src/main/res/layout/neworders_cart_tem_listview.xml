@@ -26,11 +26,11 @@
             tools:ignore="ExtraText">
             <TextView
                 android:id="@+id/item_NO"
-                android:layout_width="70dp"
+                android:layout_width="60dp"
                 android:layout_height="match_parent"
-                android:textSize="30sp"
+                android:textSize="28sp"
                 android:gravity="center_vertical|center_horizontal"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:fontFamily="@font/open_sans_bold"
                 android:text="01" />
 
@@ -39,10 +39,10 @@
                 android:id="@+id/barcode_widget"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_weight=".8"
                 android:focusedByDefault="true"
                 android:textColorHint="@color/TMC_Hint_Color"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="5dp"
                 android:backgroundTint="@color/EditTextBorderColor"
                 android:hint="enter barcode"
                 android:inputType="numberDecimal"
@@ -62,7 +62,7 @@
                 android:backgroundTint="@color/EditTextBorderColor"
                 android:layout_gravity="center"
                 android:textColorHint="@color/TMC_Hint_Color"
-                android:layout_marginStart="30dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginEnd="1dp"
                 android:fontFamily="@font/open_sans_bold"
                 android:hint="Enter menu"
@@ -78,7 +78,7 @@
                 android:layout_height="match_parent"
                 android:textSize="16sp"
                 android:hint="Enter weight of the Item"
-                android:layout_weight="1.2"
+                android:layout_weight="1"
                 android:layout_gravity="center"
                 android:visibility="visible"
                 android:layout_marginStart="10dp"
@@ -100,24 +100,35 @@
                 android:layout_height="match_parent"
                 android:textSize="16sp"
                 android:hint="Enter weight of the Item"
-                android:layout_weight="1.2"
+                android:layout_weight="1"
                 android:layout_gravity="center"
                 android:visibility="gone"
                 android:imeOptions="actionDone"
-
                 android:layout_marginStart="10dp"
                 android:text="0"
                 android:singleLine="true"
                 android:paddingStart="15dp"
                 android:inputType="phone"
                 android:digits="0123456789"
-
                 android:paddingEnd="15dp"
                 android:gravity="center_vertical|center_horizontal"
                 android:textColorHint="@color/TMC_Hint_Color"
                 android:layout_marginEnd="5dp"
                 android:fontFamily="@font/open_sans_semibold"
                 android:layout_width="0dp" />
+            <LinearLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:id="@+id/edit_weight_layout"
+                android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@mipmap/edit_icon" />
+            </LinearLayout>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -132,7 +143,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1.5"
+                android:layout_weight="1.2"
                 android:visibility="visible"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
@@ -150,8 +161,8 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:layout_gravity="center"
                         android:layout_marginStart="10dp"
                         android:background="@mipmap/plus" />
@@ -177,9 +188,8 @@
 
                         android:orientation="horizontal">
                         <ImageView
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:layout_gravity="center"
                             android:layout_marginStart="10dp"
                             android:background="@mipmap/minus" />
@@ -199,6 +209,42 @@
                 android:layout_marginEnd="10dp"
                 android:fontFamily="@font/open_sans_semibold"
                 android:text="100rs" />
+
+            <EditText
+                android:id="@+id/itemprice_edittextwidget"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:digits="0123456789"
+                android:fontFamily="@font/open_sans_semibold"
+                android:gravity="center_vertical|center_horizontal"
+                android:hint="Enter weight of the Item"
+                android:imeOptions="actionDone"
+                android:inputType="phone"
+                android:paddingStart="15dp"
+                android:paddingEnd="15dp"
+                android:singleLine="true"
+                android:text="0"
+                android:textColorHint="@color/TMC_Hint_Color"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:id="@+id/edit_price_layout"
+                android:gravity="center"
+                android:visibility="gone"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:background="@mipmap/edit_icon" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="40dp"

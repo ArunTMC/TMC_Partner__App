@@ -109,7 +109,6 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="10dp"
-
                     android:background="@drawable/border_line" />
 
                 <LinearLayout
@@ -388,13 +387,35 @@
                 </LinearLayout>
 
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/phone_orders_list"
+                    android:visibility="visible"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/PhoneOrdersList"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
+
+
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
                     android:id="@+id/wholesale_orders_list"
-                    android:visibility="visible"
+                    android:visibility="gone"
                     android:orientation="vertical">
 
                     <TextView
@@ -598,7 +619,7 @@
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
                     android:id="@+id/addWholeSaleOrders_placing_layout"
-                    android:visibility="visible"
+                    android:visibility="gone"
                     android:orientation="vertical">
 
                     <TextView
@@ -802,12 +823,31 @@
 
                         />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:id="@+id/PhoneSaleSalesReport"
 
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/Phone_Sales_Report"
+                        android:textSize="16sp"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:fontFamily="@font/open_sans_semibold"
+
+                        />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
+                    android:visibility="gone"
                     android:id="@+id/WholeSaleSalesReport"
 
                     android:orientation="vertical">
@@ -916,7 +956,6 @@
                     android:layout_height="10dp"
                     android:layout_marginTop="15dp"
                     android:layout_marginBottom="15dp"
-
                     android:background="@mipmap/thick_border_line_seperator"
                     />
 
@@ -931,7 +970,7 @@
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:id="@+id/dataAnalyticsLinearLayout"
-                     android:visibility="gone"
+                android:visibility="gone"
 
                 android:orientation="vertical">
 
@@ -1234,6 +1273,8 @@
                     </RadioGroup>
                 </LinearLayout>
 
+
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -1280,47 +1321,7 @@
                 </LinearLayout>
 
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:id="@+id/mobilePrinterConnectLayout"
-                    android:gravity="center_vertical"
-                    >
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight=".1"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Printer Status : "
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="....Loading.... "
-                        android:layout_weight="1"
-                        android:id="@+id/printerConnectionStatus_Textwidget"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp"
-                        android:fontFamily="@font/open_sans_semibold"/>
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:id="@+id/connect_printer_button_widget"
-                        android:text="Connect"
-                        android:textSize="13sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginEnd="10dp"
-                        android:visibility="gone"
-                        android:background="@drawable/button_background"
-                        android:textColor="@color/TMC_White"
-
-                        />
-
-                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1382,7 +1383,47 @@
 
                         />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:id="@+id/mobilePrinterConnectLayout"
+                    android:gravity="center_vertical"
+                    >
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="Printer Status : "
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="....Loading.... "
+                        android:layout_weight="1"
+                        android:id="@+id/printerConnectionStatus_Textwidget"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/open_sans_semibold"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:id="@+id/connect_printer_button_widget"
+                        android:text="Connect"
+                        android:textSize="13sp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:visibility="visible"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/TMC_White"
+
+                        />
+
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="50dp"

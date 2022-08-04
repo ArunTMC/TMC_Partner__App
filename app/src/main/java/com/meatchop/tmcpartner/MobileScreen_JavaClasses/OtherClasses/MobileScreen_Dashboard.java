@@ -46,7 +46,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
-import com.gu.toolargetool.TooLargeTool;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderScreenFragment_mobile;
@@ -78,7 +77,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class MobileScreen_Dashboard extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
@@ -99,7 +97,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     boolean isMenuListSavedLocally = false;
 
     boolean isinventorycheck = false;
-    boolean orderdetailsnewschema = false;
+    boolean orderdetailsnewschema = false,updateweightforonlineorders =false;
 
     String MenuItemKey,vendorKey,tmcSubctgykey,tmcSubctgyname,tmcctgyname;
 
@@ -118,8 +116,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getWindow().getDecorView();
+
         setContentView(R.layout.activity_mobile_screen__dashboard);
-        TooLargeTool.startLogging(getApplication());
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
@@ -146,6 +146,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
                     vendorType = shared.getString("VendorType","");
                     orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+
                   // orderdetailsnewschema = false;
 
                     UserRole = shared.getString("userrole", "");
@@ -165,9 +166,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     tmcSubctgykey = getIntent().getStringExtra("tmcSubctgykey");
                     tmcSubctgyname = getIntent().getStringExtra("tmcSubctgyname");
                     tmcctgyname = getIntent().getStringExtra("tmcctgyname");
-              //      Log.d(TAG, "tmcSubctgykey "+tmcSubctgykey);
-            //        Log.d(TAG, "tmcSubctgyname "+tmcSubctgyname);
-                //    Log.d(TAG, "tmcctgyname "+tmcctgyname);
+              //      //Log.d(TAG, "tmcSubctgykey "+tmcSubctgykey);
+            //        //Log.d(TAG, "tmcSubctgyname "+tmcSubctgyname);
+                //    //Log.d(TAG, "tmcctgyname "+tmcctgyname);
 
                     checkForInternetConnectionAndGetMenuItemAndMobileAppData();
 
@@ -192,15 +193,27 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     try{
                         Adjusting_Widgets_Visibility(true);
                         if(!UserRole.equals(Constants.REPORTSVIEWER_ROLENAME)){
-                            mfragment = new Mobile_ManageOrders1();
-                            loadMyFragment(mfragment);
-                            Adjusting_Widgets_Visibility(false);
+                            if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)){
+                                Adjusting_Widgets_Visibility(false);
+                                bottomNavigationView.setVisibility(View.VISIBLE);
+
+                                Toast.makeText(MobileScreen_Dashboard.this,"You Don't have access to this screen",Toast.LENGTH_LONG).show();
+
+                            }
+                            else{
+                                mfragment = new Mobile_ManageOrders1();
+                                loadMyFragment(mfragment);
+                                Adjusting_Widgets_Visibility(false);
+                            }
+
 
 
                         }
                         else{
+
                            // loadMyFragment(new Mobile_ManageOrders1());
                             Adjusting_Widgets_Visibility(false);
+                            bottomNavigationView.setVisibility(View.VISIBLE);
 
                             Toast.makeText(MobileScreen_Dashboard.this,"You Don't have access to this screen",Toast.LENGTH_LONG).show();
 
@@ -227,6 +240,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     Toast.makeText(MobileScreen_Dashboard.this,"You Don't have Access to replace/refund the Order",Toast.LENGTH_LONG).show();
+                                    bottomNavigationView.setVisibility(View.VISIBLE);
 
                                 }
                             }
@@ -266,6 +280,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 }
                                 else{
+                                    bottomNavigationView.setVisibility(View.VISIBLE);
 
                                     Toast.makeText(MobileScreen_Dashboard.this,"You Don't have Access to place Order",Toast.LENGTH_LONG).show();
 
@@ -355,17 +370,19 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                 getDatafromMobileApp();
                 //  ConnectPrinter();
-                getDeliveryPartnerList();
+
                // getMenuItemCutDetails();
                // getMenuItemWeightDetails();
                 completemenuItem = getMenuItemusingStoreId(vendorKey);
-                completeMarinademenuItem =  getMarinadeMenuItemusingStoreId(vendorKey);
-                if(vendorType.equals(Constants.WholeSales_VendorType)) {
+
+                if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)) {
                     getWholeSalesOrderCustomersList();
                 }
+                else{
+                    getDeliveryPartnerList();
+                    completeMarinademenuItem =  getMarinadeMenuItemusingStoreId(vendorKey);
 
-
-
+                }
 
 
       /*      Thread thread1 = new Thread() {
@@ -462,14 +479,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        //Log.d(Constants.TAG, "Response: " + response);
+                        ////Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONArray result  = response.getJSONArray("content");
-                            //Log.d(Constants.TAG, "Response: " + result);
+                            ////Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
-                            //Log.d("Constants.TAG", "Response: " + arrayLength);
+                            ////Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -516,9 +533,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.toString());
+                                    ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -533,9 +550,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "Error: " + error.toString());
+                ////Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -593,17 +610,17 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
 
-                        //Log.d(Constants.TAG, "Response: " + response);
+                        ////Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                            JSONObject resultobject  = response.getJSONObject("content");
                             JSONObject resultitem = resultobject.getJSONObject("Item");
-                            //Log.d(Constants.TAG, "Response: " + result);
+                            ////Log.d(Constants.TAG, "Response: " + result);
                             JSONArray result = new JSONArray();
                             result.put(resultitem);
                             int i1=0;
                             int arrayLength = result.length();
-                            //Log.d("Constants.TAG", "Response: " + arrayLength);
+                            ////Log.d("Constants.TAG", "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -624,8 +641,19 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                        e.printStackTrace();
                                    }
                                     try{
-                                        //defaultprintertype =  String.valueOf(json.get("defaultprintertype"));
-                                        defaultprintertype = String.valueOf(Constants.Bluetooth_PrinterType);
+                                        if(json.has("defaultprintertype")) {
+                                            defaultprintertype = String.valueOf(json.get("defaultprintertype"));
+                                            if (defaultprintertype.equals(Constants.PDF_PrinterType)) {
+                                                defaultprintertype = String.valueOf(Constants.PDF_PrinterType);
+
+                                            } else {
+                                                defaultprintertype = String.valueOf(Constants.Bluetooth_PrinterType);
+                                            }
+                                        }
+                                        else{
+                                            defaultprintertype = String.valueOf(Constants.Bluetooth_PrinterType);
+
+                                        }
 
                                     }
                                     catch (Exception e){
@@ -650,16 +678,16 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                         e.printStackTrace();
                                     }
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, updateweightforonlineorders);
 
 
                                 } catch (JSONException e) {
 
                                     e.printStackTrace();
-                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.toString());
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                    ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.toString());
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, updateweightforonlineorders);
 
                                 }
 
@@ -667,7 +695,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, updateweightforonlineorders);
 
                         }
 
@@ -676,10 +704,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "Error: " + error.toString());
-                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                ////Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
+                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, updateweightforonlineorders);
 
                 error.printStackTrace();
             }
@@ -713,7 +741,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
     private String  getMenuItemStockAvlDetails() {
-        Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
+        //Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
         completemenuItemStockAvlDetails="";
         MenuItemStockAvlDetails.clear();
         SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
@@ -736,18 +764,18 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 try{
-                    Log.d(TAG, "starting:onResponse ");
+                    //Log.d(TAG, "starting:onResponse ");
 
-                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                    //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                     try {
                         JSONArray JArray = response.getJSONArray("content");
                         completemenuItemStockAvlDetails = new String(String.valueOf(JArray));
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
                         String Key="";
                         for (; i1 < (arrayLength); i1++) {
@@ -761,7 +789,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.key = "";
-                                    Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                    //Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                                 }
@@ -772,7 +800,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.barcode = "";
-                                    Log.d(Constants.TAG, "There is no barcode for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no barcode for this Menu: " +Key );
 
 
                                 }
@@ -782,7 +810,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.itemavailability = "";
-                                    Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +Key );
 
 
                                 }
@@ -800,7 +828,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.lastupdatedtime = "0";
-                                    Log.d(Constants.TAG, "There is no lastupdatedtime for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no lastupdatedtime for this Menu: " +Key );
 
 
                                 }
@@ -820,7 +848,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.menuitemkey = "0";
-                                    Log.d(Constants.TAG, "There is no menuitemkey for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no menuitemkey for this Menu: " +Key );
 
 
                                 }
@@ -839,7 +867,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.stockbalance = "0";
-                                    Log.d(Constants.TAG, "There is no stockbalance for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no stockbalance for this Menu: " +Key );
 
 
                                 }
@@ -850,7 +878,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.stockincomingkey = "";
-                                    Log.d(Constants.TAG, "There is no stockincomingkey for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no stockincomingkey for this Menu: " +Key );
 
 
                                 }
@@ -860,7 +888,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.vendorkey = "";
-                                    Log.d(Constants.TAG, "There is no vendorkey for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no vendorkey for this Menu: " +Key );
 
 
                                 }
@@ -868,21 +896,21 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
 
-                                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                Log.d(Constants.TAG, "e: " + e.getMessage());
-                                Log.d(Constants.TAG, "e: " + e.toString());
+                                //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                //Log.d(Constants.TAG, "e: " + e.toString());
 
                             }
 
 
                         }
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                     } catch (JSONException e) {
@@ -892,7 +920,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                     saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
-                    Log.d(TAG, "sending :Response "+completemenuItem);
+                    //Log.d(TAG, "sending :Response "+completemenuItem);
 
 
 
@@ -900,7 +928,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-                    Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+                    //Log.d(TAG, "MenuItems: " + completemenuItem.toString());
 
 
 
@@ -915,9 +943,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                 completemenuItemStockAvlDetails="";
                 MenuItemStockAvlDetails.clear();
                 SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
@@ -1073,13 +1101,13 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                         try {
                             String jsonString =response.toString();
-                            Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                            //Log.d(Constants.TAG, " response: onMobileAppData " + response);
                             JSONObject jsonObject = new JSONObject(jsonString);
                             JSONArray JArray  = jsonObject.getJSONArray("content");
-                            //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                            ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1=0;
                             int arrayLength = JArray.length();
-                            //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                            ////Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                             for(;i1<(arrayLength);i1++) {
@@ -1089,29 +1117,33 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     try{
                                         orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
+                                        updateweightforonlineorders = (json.getBoolean("updateweightforonlineorders"));
+                                       // updateweightforonlineorders = false;
                                       // orderdetailsnewschema = false;
-                                        saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                        saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema,updateweightforonlineorders);
 
 
 
 
                                     }
                                     catch (Exception e){
-                                        saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                       // updateweightforonlineorders = false;
+
+                                        saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, updateweightforonlineorders);
                                         e.printStackTrace();
                                     }
 
-
-                                    JSONArray array  = json.getJSONArray("redeemdata");
+                                    
+                                    JSONArray array  = json.getJSONArray("redeemdata ");
 
                                     for(int i=0; i < array.length(); i++) {
                                         JSONObject redeemdata_json = array.getJSONObject(i);
                                         String maxpointsinaday = redeemdata_json.getString("maxpointsinaday");
                                         String minordervalueforredeem = redeemdata_json.getString("minordervalueforredeem");
                                         String pointsfor100rs = redeemdata_json.getString("pointsfor100rs");
-                                        Log.d("Constants.TAG", "maxpointsinaday Response: " + maxpointsinaday);
-                                        Log.d("Constants.TAG", "minordervalueforredeem Response: " + minordervalueforredeem);
-                                        Log.d("Constants.TAG", "pointsfor100rs Response: " + pointsfor100rs);
+                                        //Log.d("Constants.TAG", "maxpointsinaday Response: " + maxpointsinaday);
+                                        //Log.d("Constants.TAG", "minordervalueforredeem Response: " + minordervalueforredeem);
+                                        //Log.d("Constants.TAG", "pointsfor100rs Response: " + pointsfor100rs);
                                         saveredeemDetailsinSharePreferences(maxpointsinaday,minordervalueforredeem,pointsfor100rs);
                                      //   AlertDialogClass.showDialog(MobileScreen_Dashboard.this, Constants.Order_Value_should_be_above+" "+minordervalueforredeem+" rs",0);
 
@@ -1132,11 +1164,11 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         String deliverymanager_role = parrtnerappacessdetails_data_json.getString("deliverymanager");
                                         String reportsviewer_role = parrtnerappacessdetails_data_json.getString("reportsviewer");
                                         String storemanager_role = parrtnerappacessdetails_data_json.getString("storemanager");
-                                        Log.d("Constants.TAG", "admin_role Response: " + admin_role);
-                                        Log.d("Constants.TAG", "cashier_role Response: " + cashier_role);
-                                        Log.d("Constants.TAG", "deliverymanager_role Response: " + deliverymanager_role);
-                                        Log.d("Constants.TAG", "reportsviewer_role Response: " + reportsviewer_role);
-                                        Log.d("Constants.TAG", "storemanager_role Response: " + storemanager_role);
+                                        //Log.d("Constants.TAG", "admin_role Response: " + admin_role);
+                                        //Log.d("Constants.TAG", "cashier_role Response: " + cashier_role);
+                                        //Log.d("Constants.TAG", "deliverymanager_role Response: " + deliverymanager_role);
+                                        //Log.d("Constants.TAG", "reportsviewer_role Response: " + reportsviewer_role);
+                                        //Log.d("Constants.TAG", "storemanager_role Response: " + storemanager_role);
 
                                         savepartnerappacessdetailsinSharePreferences(admin_role,cashier_role,deliverymanager_role,reportsviewer_role,storemanager_role);
                                         //   AlertDialogClass.showDialog(MobileScreen_Dashboard.this, Constants.Order_Value_should_be_above+" "+minordervalueforredeem+" rs",0);
@@ -1157,7 +1189,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
 
                 SharedPreferences preferences =getSharedPreferences("RedeemData",Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
@@ -1390,7 +1422,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
                         try {
-                            Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                            //Log.d(Constants.TAG, " response: onMobileAppData " + response);
                             JSONArray JArray = response.getJSONArray("content");
 
                             int arrayLength = JArray.length();
@@ -1561,7 +1593,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
 
                 SharedPreferences preferences =getSharedPreferences("MenuItemWeightDetails",Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
@@ -1658,7 +1690,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
                         try {
-                            Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                            //Log.d(Constants.TAG, " response: onMobileAppData " + response);
                             JSONArray JArray = response.getJSONArray("content");
 
                             int arrayLength = JArray.length();
@@ -1843,7 +1875,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
 
                 SharedPreferences preferences =getSharedPreferences("MenuItemCutDetails",Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
@@ -1936,7 +1968,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
     private String getMenuItemusingStoreId(String vendorKey) {
-        Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+        //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
         completemenuItem="";
         MenuList.clear();
         SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
@@ -1959,9 +1991,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 try{
-                    Log.d(TAG, "starting:onResponse ");
+                    //Log.d(TAG, "starting:onResponse ");
 
-                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                    //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                     try {
                        // completemenuItem = new String(String.valueOf(response));
@@ -1969,10 +2001,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                         JSONArray JArray = response.getJSONArray("content");
                    //    completemenuItem = new String(String.valueOf(JArray));
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                         for (; i1 < (arrayLength); i1++) {
@@ -2002,7 +2034,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         }
                                     } else {
                                         showinPOS = true;
-                                        Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2020,7 +2052,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         MenuItemKey = String.valueOf(json.get("key"));
                                     } else {
                                         modal_menuItem.key = "";
-                                        Log.d(Constants.TAG, "There is no key for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
                                     }
@@ -2030,7 +2062,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.applieddiscountpercentage = "";
-                                        Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2040,7 +2072,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.showinapp = "TRUE";
-                                        Log.d(Constants.TAG, "There is no showinapp for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no showinapp for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2051,7 +2083,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.barcode = "";
-                                        Log.d(Constants.TAG, "There is no barcode for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no barcode for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2071,7 +2103,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.swiggyprice = "0";
-                                        Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2091,7 +2123,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         }
                                     } else {
                                         modal_menuItem.bigbasketprice = "0";
-                                        Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2111,7 +2143,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         }
                                     } else {
                                         modal_menuItem.dunzoprice = "0";
-                                        Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2131,7 +2163,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         }
                                     } else {
                                         modal_menuItem.wholesaleprice = "0";
-                                        Log.d(Constants.TAG, "There is no wholesaleprice for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no wholesaleprice for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2142,7 +2174,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.displayno = "";
-                                        Log.d(Constants.TAG, "There is no displayno for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no displayno for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2151,7 +2183,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.gstpercentage = "";
-                                        Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2160,7 +2192,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.itemavailability = "";
-                                        Log.d(Constants.TAG, "There is no itemavailability for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2169,7 +2201,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.itemname = "";
-                                        Log.d(Constants.TAG, "There is no ItemName for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no ItemName for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2179,7 +2211,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.reportname = "";
-                                        //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                                        ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                                     }
@@ -2189,7 +2221,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.pricetypeforpos = "";
-                                        Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2200,7 +2232,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.itemuniquecode = "";
-                                        Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2210,7 +2242,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.menuboarddisplayname = "";
-                                        Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2220,7 +2252,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.showinmenuboard = "";
-                                        Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2230,7 +2262,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.grossweight = "";
-                                        Log.d(Constants.TAG, "There is no grossweight for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no grossweight for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2240,7 +2272,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.grossweightingrams = "";
-                                        Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2251,7 +2283,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.netweight = "";
-                                        Log.d(Constants.TAG, "There is no netweight for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no netweight for this Menu: ");
 
 
                                     }
@@ -2260,7 +2292,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.portionsize = "";
-                                        Log.d(Constants.TAG, "There is no portionsize for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no portionsize for this Menu: ");
 
 
                                     }
@@ -2271,7 +2303,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.tmcctgykey = "";
-                                        Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2280,7 +2312,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.tmcprice = "";
-                                        Log.d(Constants.TAG, "There is no tmcprice for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no tmcprice for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2289,7 +2321,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.tmcpriceperkg = "";
-                                        Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2298,7 +2330,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.tmcsubctgykey = "";
-                                        Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " + MenuItemKey);
+                                        //Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " + MenuItemKey);
 
 
                                     }
@@ -2308,7 +2340,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.menuItemId = "";
-                                        Log.d(Constants.TAG, "There is no key for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
                                     }
@@ -2325,7 +2357,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.itemweightdetails = "nil";
-                                        Log.d(Constants.TAG, "There is no key for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
                                     }
@@ -2343,7 +2375,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.itemcutdetails = "nil";
-                                        Log.d(Constants.TAG, "There is no key for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
                                     }
@@ -2360,7 +2392,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     } else {
                                         modal_menuItem.inventorydetails = "nil";
-                                        Log.d(Constants.TAG, "There is no inventorydetails for this Menu: ");
+                                        //Log.d(Constants.TAG, "There is no inventorydetails for this Menu: ");
 
 
                                     }
@@ -2400,14 +2432,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                     MenuList.add(modal_menuItem);
 
-                                    Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                                    //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
                                 }
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                Log.d(Constants.TAG, "e: " + e.getMessage());
-                                Log.d(Constants.TAG, "e: " + e.toString());
+                                //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                //Log.d(Constants.TAG, "e: " + e.toString());
 
                             }
 
@@ -2427,7 +2459,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             }
                         }
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                     } catch (JSONException e) {
@@ -2442,7 +2474,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-                    Log.d(TAG, "sending :Response "+completemenuItem);
+                    //Log.d(TAG, "sending :Response "+completemenuItem);
 
 
 
@@ -2450,7 +2482,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-                    Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+                    //Log.d(TAG, "MenuItems: " + completemenuItem.toString());
 
 
 
@@ -2465,9 +2497,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                 completemenuItem="";
                 MenuList.clear();
                 SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
@@ -2579,10 +2611,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
                         for (; i1 < (arrayLength); i1++) {
 
@@ -2763,9 +2795,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                 completemenuItem="";
                 MenuList.clear();
                 SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
@@ -2854,7 +2886,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
     private String getMarinadeMenuItemusingStoreId(String vendorKey) {
-        Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+        //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
         completeMarinademenuItem="";
         MarinadeMenuList.clear();
         SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
@@ -2877,16 +2909,16 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 try{
-                    Log.d(TAG, "starting:onResponse ");
+                    //Log.d(TAG, "starting:onResponse ");
 
-                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                    //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                     try {
                         JSONArray JArray = response.getJSONArray("content");
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                         for (; i1 < (arrayLength); i1++) {
@@ -2900,7 +2932,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.key = "";
-                                    Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                    //Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                                 }
@@ -2911,7 +2943,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.applieddiscountpercentage = "";
-                                    Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2921,7 +2953,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.barcode = "";
-                                    Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2932,7 +2964,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.displayno = "";
-                                    Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2942,7 +2974,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.gstpercentage = "";
-                                    Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2952,7 +2984,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.itemavailability = "";
-                                    Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2962,7 +2994,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.itemname = "";
-                                    Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2974,7 +3006,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.pricetypeforpos = "";
-                                    Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2986,7 +3018,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.itemuniquecode = "";
-                                    Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2997,7 +3029,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.menuboarddisplayname = "";
-                                    Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3008,7 +3040,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.showinmenuboard = "";
-                                    Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3019,7 +3051,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.grossweight = "";
-                                    Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3030,7 +3062,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.grossweightingrams = "";
-                                    Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3042,7 +3074,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.netweight = "";
-                                    Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
+                                    //Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
 
                                 }    if(json.has("portionsize")){
@@ -3051,7 +3083,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.portionsize = "";
-                                    Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
+                                    //Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
 
 
                                 }
@@ -3064,7 +3096,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.tmcctgykey = "";
-                                    Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3074,7 +3106,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.tmcprice = "";
-                                    Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3084,7 +3116,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.tmcpriceperkg = "";
-                                    Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3094,7 +3126,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.tmcsubctgykey = "";
-                                    Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
+                                    //Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -3105,7 +3137,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                 }
                                 else{
                                     modal_menuItem.menuItemId = "";
-                                    Log.d(Constants.TAG, "There is no key for this Menu: "  );
+                                    //Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
                                 }
@@ -3116,21 +3148,21 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 MarinadeMenuList.add(modal_menuItem);
 
-                                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MarinadeMenuList);
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MarinadeMenuList);
 
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                Log.d(Constants.TAG, "e: " + e.getMessage());
-                                Log.d(Constants.TAG, "e: " + e.toString());
+                                //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                //Log.d(Constants.TAG, "e: " + e.toString());
 
                             }
 
 
                         }
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray MarinademenuListFull: " + MarinadeMenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray MarinademenuListFull: " + MarinadeMenuList);
 
 
                     } catch (JSONException e) {
@@ -3155,9 +3187,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                Log.d(TAG, "Error: " + error.getMessage());
-                Log.d(TAG, "Error: " + error.toString());
+                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(TAG, "Error: " + error.getMessage());
+                //Log.d(TAG, "Error: " + error.toString());
                 completeMarinademenuItem="";
                 MarinadeMenuList.clear();
                 SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
@@ -3319,7 +3351,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos, boolean isorderdetailsnewschema) {
+    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos, boolean isorderdetailsnewschema, boolean updateWeightforonlineorders) {
 
         SharedPreferences printerDatasharedPreferences
                 = getSharedPreferences("PrinterConnectionData",
@@ -3365,6 +3397,11 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 orderdetailsnewschema
         );
 
+        myEdit.putBoolean(
+                "updateweightforonlineorders",
+                updateweightforonlineorders
+        );
+
         myEdit.apply();
 
     }
@@ -3382,16 +3419,23 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             isMenuListSavedLocally = true;
             if(UserRole.equals(Constants.REPORTSVIEWER_ROLENAME)){
                 CurrentFragment = new SettingsFragment();
-
                 loadMyFragment(new SettingsFragment());
                 bottomNavigationView.setSelectedItemId(R.id.settings_navigatioBar_widget);
             }
             else{
-                CurrentFragment = new Mobile_ManageOrders1();
 
-                loadMyFragment(new Mobile_ManageOrders1());
-                bottomNavigationView.setSelectedItemId(R.id.manage_order_navigatioBar_widget);
+                if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)){
+                    CurrentFragment = new NewOrderScreenFragment_mobile();
 
+                    loadMyFragment(new NewOrderScreenFragment_mobile());
+                    bottomNavigationView.setSelectedItemId(R.id.new_order_navigatioBar_widget);
+                }
+                else {
+                    CurrentFragment = new Mobile_ManageOrders1();
+
+                    loadMyFragment(new Mobile_ManageOrders1());
+                    bottomNavigationView.setSelectedItemId(R.id.manage_order_navigatioBar_widget);
+                }
             }
 
 
@@ -3486,6 +3530,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.frame, fm)
+
                     .addToBackStack(null)
                     .commit();
 

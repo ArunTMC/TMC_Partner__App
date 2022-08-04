@@ -14,6 +14,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
+import com.meatchop.tmcpartner.Settings.Modal_Address;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,15 +37,15 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
     String CouponDiscountAmount =""; String currenttime ="";
     boolean isAddCustomerDetailsFinished = false  , isAddCustomerTrackingDetailsFinished = false;
     String orderPlacedDate = "",ordertype="";
-    String customermobileno ="";
+    String customermobileno ="",tokenno ="";
     int new_totalAmount_withoutGst= 0;
     long sTime;
     String finaltoPayAmountinmethod = "",vendorKey="",vendorName="";
     Context mContext = null;
-    String addApiStatus = "";
+    String addApiStatus = "",userStatus="",userName ="",redeemPoints_String="";
 
     Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
-
+    Modal_Address selected_Address_modal = new Modal_Address();
 
     public Add_CustomerOrder_TrackingTable_AsyncTask(Context mContext, Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String paymentMode, String discountAmount, String currenttime, String customermobileno, String ordertype, String vendorKey, String vendorName, long sTime, String finaltoPayAmountinmethod) {
 
@@ -64,8 +65,32 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
         this.mResultCallback_Add_CustomerOrder_TrackingTableInterface = mResultCallback_Add_CustomerOrder_TrackingTableInterface;
         this.  isAddCustomerDetailsFinished = false;
         this.isAddCustomerTrackingDetailsFinished = false;
+        this.selected_Address_modal = new Modal_Address();
 
+    }
 
+    public Add_CustomerOrder_TrackingTable_AsyncTask(Context mContext, Add_CustomerOrder_TrackingTableInterface mResultCallback_add_customerOrder_trackingTableInterface, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String selectedPaymentMode, String discountAmount, String currenttime, String customermobileno, String ordertype, String vendorKey, String vendorName, long sTime, String finaltoPayAmountinmethod, Modal_Address selected_address_modal,String tokenno ,String userStatus ,String userName,String redeemPoints_String) {
+        this. cart_item_list = cart_item_list;
+        this.cartItem_hashmap = cartItem_hashmap;
+        this.paymentMode = selectedPaymentMode;
+        this.CouponDiscountAmount = discountAmount;
+        this.currenttime = currenttime;
+        this.customermobileno = customermobileno;
+        this.sTime = sTime;
+        this.orderPlacedDate =getDate();
+        this.finaltoPayAmountinmethod = finaltoPayAmountinmethod;
+        this.ordertype = ordertype;
+        this.vendorKey = vendorKey;
+        this.vendorName = vendorName;
+        this. mContext = mContext;
+        this. tokenno = tokenno;
+        this.mResultCallback_Add_CustomerOrder_TrackingTableInterface = mResultCallback_add_customerOrder_trackingTableInterface;
+        this.  isAddCustomerDetailsFinished = false;
+        this.isAddCustomerTrackingDetailsFinished = false;
+        this.selected_Address_modal = selected_address_modal;
+        this.userStatus  = userStatus;
+        this.userName  = userName;
+        this.redeemPoints_String = redeemPoints_String;
     }
 
 
@@ -334,8 +359,16 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
         }
         String StoreCoupon = "";
         if((CouponDiscountAmount.equals("0"))||(CouponDiscountAmount.equals(""))||(CouponDiscountAmount.equals("0.00"))){
-            StoreCoupon = "";
 
+            StoreCoupon = "";
+            if((redeemPoints_String .equals("0"))||(redeemPoints_String.equals("0.00"))||(redeemPoints_String.equals(""))) {
+                StoreCoupon = "";
+
+            }
+            else{
+                StoreCoupon = "REDEEM";
+
+            }
         }
         else{
             StoreCoupon = "STORECOUPON";
@@ -346,12 +379,21 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
         double  CouponDiscountAmount_double =0;
         try {
             try {
-                if (!CouponDiscountAmount.equals("")) {
+                if((!CouponDiscountAmount .equals("0")) && (!CouponDiscountAmount.equals("0.00")) && (!CouponDiscountAmount.equals(""))){
                     CouponDiscountAmount = (CouponDiscountAmount.replaceAll("[^\\d.]", ""));
                     CouponDiscountAmount_double = Double.parseDouble(CouponDiscountAmount);
                 }
                 else{
-                    CouponDiscountAmount_double =0;
+                    if((!redeemPoints_String .equals("0")) && (!redeemPoints_String.equals("0.00")) && (!redeemPoints_String.equals(""))) {
+                        CouponDiscountAmount =  redeemPoints_String;
+                        CouponDiscountAmount = (CouponDiscountAmount.replaceAll("[^\\d.]", ""));
+                        CouponDiscountAmount_double = Double.parseDouble(CouponDiscountAmount);
+
+                    }
+                    else{
+                        CouponDiscountAmount_double = 0;
+
+                    }
                 }
 
 
@@ -368,12 +410,12 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
                 jsonObject.put("coupondiscount", CouponDiscountAmount);
 
             }
-            jsonObject.put("deliveryamount", 0);
+
             jsonObject.put("couponkey", StoreCoupon);
 
             jsonObject.put("ordertype", ordertype);
             jsonObject.put("gstamount", Double.parseDouble("0"));
-            String deliverytype ="",slotname ="";
+            String deliverytype ="",slotname ="",slottimerange ="";
             if(ordertype.toUpperCase().equals(Constants.POSORDER) || ordertype.toUpperCase().equals(Constants.WholeSaleOrder)){
                 deliverytype = Constants.STOREPICKUP_DELIVERYTYPE;
             }
@@ -381,16 +423,59 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
                 deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
                 slotname = Constants.EXPRESSDELIVERY_SLOTNAME;
             }
-
-            jsonObject.put("deliverytype", deliverytype);
-            jsonObject.put("slotname", slotname);
-            jsonObject.put("slotdate", orderPlacedDate);
-            jsonObject.put("slottimerange", "");
+             jsonObject.put("slotdate", orderPlacedDate);
 
             jsonObject.put("orderid", String.valueOf(sTime));
             jsonObject.put("orderplacedtime", currenttime);
-            jsonObject.put("tokenno", (""));
-            jsonObject.put("userid","");
+
+            if(ordertype.toUpperCase().equals(Constants.PhoneOrder)) {
+                deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
+                slotname = "EXPRESSDELIVERY";
+                slottimerange ="120 mins";
+                jsonObject.put("deliverytype", deliverytype);
+                jsonObject.put("slotname", slotname);
+                jsonObject.put("slottimerange", slottimerange);
+                jsonObject.put("deliveryamount", Double.parseDouble(selected_Address_modal.getDeliveryCharge()));
+                jsonObject.put("tokenno", (tokenno));
+                if(userStatus.toUpperCase().equals(Constants.USERSTATUS_FLAGGED)){
+                    jsonObject.put("userstatus", (userStatus));
+
+                }
+                try{
+                    jsonObject.put("userkey",String.valueOf(selected_Address_modal.getUserkey()));
+
+                }
+                catch (Exception e){
+                    jsonObject.put("userkey", (""));
+                    e.printStackTrace();
+                }
+
+                try{
+                    jsonObject.put("useraddress",String.valueOf(selected_Address_modal.getAddressline1()));
+
+                }
+                catch (Exception e){
+                    jsonObject.put("useraddress", (""));
+                    e.printStackTrace();
+                }
+            }
+            else{
+                jsonObject.put("useraddress", (""));
+                jsonObject.put("userkey", (""));
+                jsonObject.put("userkey", (""));
+                jsonObject.put("userstatus", (""));
+
+                jsonObject.put("slottimerange", slottimerange);
+                jsonObject.put("deliverytype", deliverytype);
+                jsonObject.put("slotname", slotname);
+                jsonObject.put("deliveryamount", Double.parseDouble("0"));
+                jsonObject.put("tokenno", (""));
+            }
+            if ((!userName.equals("")) && (!userName.equals("null")) && (!userName.equals(null)) && (!userName.equals(" "))) {
+
+                jsonObject.put("username",userName);
+
+            }
 
             jsonObject.put("usermobileno", "+91"+customermobileno);
             jsonObject.put("vendorkey", vendorKey);
@@ -399,7 +484,6 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
 
             jsonObject.put("paymentmode", paymentMode);
             jsonObject.put("itemdesp", itemDespArray);
-            jsonObject.put("couponid","" );
 
             jsonObject.put("orderplaceddate", orderPlacedDate);
 
@@ -494,14 +578,131 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
         try {
             JSONObject orderTrackingTablejsonObject = new JSONObject();
             try {
-                orderTrackingTablejsonObject.put("orderdeliverytime", currenttime);
                 orderTrackingTablejsonObject.put("orderplacedtime", currenttime);
                 orderTrackingTablejsonObject.put("slotdate", orderPlacedDate);
+                String userLatitude ="", userLongitude ="",deliveryDistance ="";
+                double userLat_double = 0;
+                double userLon_double = 0;
 
+                double deliveryDistance_double =0;
+                try{
+                    deliveryDistance = String.valueOf(selected_Address_modal.getDeliverydistance());
+
+
+                }
+                catch (Exception e){
+                    deliveryDistance ="0";
+                    e.printStackTrace();
+                }
+                try{
+                    deliveryDistance = deliveryDistance.replaceAll("[^\\d.]", "");
+
+                }
+                catch (Exception e){
+                    deliveryDistance ="0";
+                    e.printStackTrace();
+                }
+
+                try{
+                    deliveryDistance_double = Double.parseDouble(deliveryDistance);
+                }
+                catch (Exception e){
+                    deliveryDistance_double =0;
+                }
+
+
+                try{
+                    userLatitude = String.valueOf(selected_Address_modal.getLocationlat());
+
+                }
+                catch (Exception e){
+                    userLatitude ="0";
+                    e.printStackTrace();
+                }
+                try{
+                    userLongitude = String.valueOf(selected_Address_modal.getLocationlong());
+
+                }
+                catch (Exception e){
+                    userLongitude ="0";
+                    e.printStackTrace();
+                }
+                try{
+                    userLatitude = userLatitude.replaceAll("[^\\d.]", "");
+
+                }
+                catch (Exception e){
+                    userLatitude ="0";
+                    e.printStackTrace();
+                }
+
+                try{
+                    userLat_double = Double.parseDouble(userLatitude);
+                }
+                catch (Exception e){
+                    userLat_double =0;
+                }
+                try{
+                    userLongitude = userLongitude.replaceAll("[^\\d.]", "");
+
+                }
+                catch (Exception e){
+                    userLongitude ="0";
+                    e.printStackTrace();
+                }
+
+                try{
+                    userLon_double = Double.parseDouble(userLongitude);
+                }
+                catch (Exception e){
+                    userLon_double =0;
+                }
+
+
+
+                if(ordertype.toUpperCase().equals(Constants.PhoneOrder)) {
+                    orderTrackingTablejsonObject.put("orderstatus", Constants.CONFIRMED_ORDER_STATUS);
+                    orderTrackingTablejsonObject.put("orderconfirmedtime", currenttime);
+                    orderTrackingTablejsonObject.put("deliverydistanceinkm",deliveryDistance_double);
+
+                    try{
+                        orderTrackingTablejsonObject.put("useraddresskey", String.valueOf(selected_Address_modal.getKey()));
+
+                    }
+                    catch (Exception e){
+                        orderTrackingTablejsonObject.put("useraddresskey", "");
+
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        orderTrackingTablejsonObject.put("useraddresslat", userLat_double);
+
+                    }
+                    catch (Exception e){
+                        orderTrackingTablejsonObject.put("useraddresslat", 0);
+
+                        e.printStackTrace();
+                    }
+                    try{
+                        orderTrackingTablejsonObject.put("useraddresslong", userLon_double);
+
+                    }
+                    catch (Exception e){
+                        orderTrackingTablejsonObject.put("useraddresslong", "");
+
+                        e.printStackTrace();
+                    }
+
+                }
+                else{
+                    orderTrackingTablejsonObject.put("orderstatus", "DELIVERED");
+                    orderTrackingTablejsonObject.put("orderdeliverytime", currenttime);
+
+                }
                 orderTrackingTablejsonObject.put("usermobileno", "+91" + customermobileno);
                 orderTrackingTablejsonObject.put("orderid", String.valueOf(sTime));
                 orderTrackingTablejsonObject.put("vendorkey", vendorKey);
-                orderTrackingTablejsonObject.put("orderstatus", "DELIVERED");
 
             } catch (JSONException e) {
                 e.printStackTrace();

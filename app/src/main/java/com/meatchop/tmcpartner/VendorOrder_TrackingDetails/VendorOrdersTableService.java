@@ -110,6 +110,40 @@ public class VendorOrdersTableService   {
                                             }
 
 
+
+
+                                            try {
+                                                if (json.has("userstatus")) {
+                                                    manageOrdersPojoClass.userstatus = String.valueOf(json.get("userstatus"));
+                                                  //  manageOrdersPojoClass.userstatus = Constants.USERSTATUS_FLAGGED;
+
+                                                } else {
+                                                    manageOrdersPojoClass.userstatus = "";
+                                                }
+                                            } catch (Exception e) {
+                                                manageOrdersPojoClass.userstatus = "";
+
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+                                                if (json.has("username")) {
+                                                    manageOrdersPojoClass.username = String.valueOf(json.get("username"));
+                                                    //  manageOrdersPojoClass.userstatus = Constants.USERSTATUS_FLAGGED;
+
+                                                } else {
+                                                    manageOrdersPojoClass.username = "";
+                                                }
+                                            } catch (Exception e) {
+                                                manageOrdersPojoClass.username = "";
+
+                                                e.printStackTrace();
+                                            }
+
+
+
+
+
                                             try {
                                                 if (json.has("couponkey")) {
                                                     manageOrdersPojoClass.couponkey = String.valueOf(json.get("couponkey"));
@@ -539,8 +573,10 @@ public class VendorOrdersTableService   {
                                                 }
                                             }
 
+                                            if ((!manageOrdersPojoClass.getUsermobile().equals("+919876543210"))) {
 
-                                            ordersList.add(manageOrdersPojoClass);
+                                                ordersList.add(manageOrdersPojoClass);
+                                            }
                                             if (arrayLength - i1 == 1) {
                                                 isVendorOrderDetailsFetched = true;
                                             }
@@ -1306,27 +1342,30 @@ public class VendorOrdersTableService   {
 
     public String getLongValuefortheDate(String orderplacedtime) {
         String longvalue = "";
-        try {
-            String time1 = orderplacedtime;
-            //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
-            Date date = sdf.parse(time1);
-            long time1long = date.getTime() / 1000;
-            longvalue = String.valueOf(time1long);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        if(!orderplacedtime.equals("") && !orderplacedtime.equals("null") && !orderplacedtime.equals(null) ) {
             try {
                 String time1 = orderplacedtime;
+                //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
                 Date date = sdf.parse(time1);
                 long time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception ex) {
+                //  ex.printStackTrace();
+                try {
+                    String time1 = orderplacedtime;
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                    Date date = sdf.parse(time1);
+                    long time1long = date.getTime() / 1000;
+                    longvalue = String.valueOf(time1long);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         return longvalue;

@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -1251,7 +1252,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
                                         try {
-                                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                                            if (ordertype.toUpperCase().equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder)) {
 
 
                                                 if (json.has("deliverydistance")) {
@@ -4476,10 +4477,10 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         }
         else{
             changeDeliveryPartner.setVisibility(View.VISIBLE);
-            if(ordertype.equals(Constants.APPORDER)) {
+            if(ordertype.equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder)) {
                 if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.equals(Constants.ADMIN_ROLENAME))) {
                     if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME))) {
-                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+918939189102"))) {
+                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+918939189102")) || (UserPhoneNumber.equals("+918939887159")) ) {
                             cancelOrder_button.setVisibility(View.VISIBLE);
                         } else {
                             cancelOrder_button.setVisibility(View.GONE);
@@ -4496,7 +4497,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             }
             else{
                 cancelOrder_button.setVisibility(View.GONE);
-                if ((UserRole.equals(Constants.ADMIN_ROLENAME)) || (UserPhoneNumber.equals("+916380050384")) || (UserPhoneNumber.equals("+918939189102"))) {
+                if ((UserRole.equals(Constants.ADMIN_ROLENAME)) || (UserPhoneNumber.equals("+916380050384")) || (UserPhoneNumber.equals("+918939189102")) || (UserPhoneNumber.equals("+918939887159"))) {
                     cancelOrder_button.setVisibility(View.VISIBLE);
                 }
             }
@@ -4515,7 +4516,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             AddressLayout .setVisibility(View.GONE);
         }
 
-        if (ordertype.equals(Constants.APPORDER)) {
+        if (ordertype.equals(Constants.APPORDER)  || ordertype.equals(Constants.PhoneOrder)) {
             customerlatitude = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslat());
             customerLongitutde = String.valueOf(modal_manageOrders_pojo_class.getUseraddresslon());
             try {
@@ -4862,7 +4863,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
                                         try {
-                                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                                            if (ordertype.toUpperCase().equals(Constants.APPORDER)  || ordertype.equals(Constants.PhoneOrder)) {
                                                 if (json.has("useraddress")) {
 
                                                     String addresss =  String.valueOf(json.get("useraddress"));
@@ -4886,7 +4887,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
                                         try {
-                                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                                            if (ordertype.toUpperCase().equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder)) {
 
 
                                                 if (json.has("deliverydistance")) {
@@ -5037,13 +5038,14 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         bottomSheetDialog.setContentView(R.layout.change_paymentmode_bottomsheet_dialog);
         RadioGroup pos_radioGroup = bottomSheetDialog.findViewById(R.id.posOrders_radiogrp);
         RadioGroup app_radioGroup = bottomSheetDialog.findViewById(R.id.appOrders_radiogrp);
-
+        RadioButton phonepe_phoneorder_radionbutton  = bottomSheetDialog.findViewById(R.id.phonepe_phoneorder);
         Button changePaymentMode = bottomSheetDialog.findViewById(R.id.ChangePaymentMode);
 
         if(ordertype.equals(Constants.APPORDER)){
             pos_radioGroup.setVisibility(View.GONE);
             pos_radioGroup.setSelected(false);
             app_radioGroup.setVisibility(View.VISIBLE);
+
             if(paymentmode.equals(Constants.CASH_ON_DELIVERY)){
                 app_radioGroup.check(R.id.cash_on_Delivery);
             }
@@ -5074,11 +5076,17 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             }
 
         }
-        if(ordertype.equals(Constants.POSORDER)){
+        if(ordertype.equals(Constants.POSORDER) || ordertype.equals(Constants.PhoneOrder)){
             app_radioGroup.setVisibility(View.GONE);
             app_radioGroup.setSelected(false);
             pos_radioGroup.setVisibility(View.VISIBLE);
+            if(ordertype.equals(Constants.PhoneOrder)){
+                phonepe_phoneorder_radionbutton.setVisibility(View.VISIBLE);
 
+            }
+            else {
+                phonepe_phoneorder_radionbutton.setVisibility(View.GONE);
+            }
             if(paymentmode.equals(Constants.CASH_ON_DELIVERY)){
                 pos_radioGroup.check(R.id.cash);
             }
@@ -5093,6 +5101,10 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             }
             else if(paymentmode.equals(Constants.CREDIT)){
                 app_radioGroup.check(R.id.credit_pos);
+
+            }
+            else if(paymentmode.equals(Constants.PHONEPE)){
+                app_radioGroup.check(R.id.phonepe_phoneorder);
 
             }
 
@@ -5175,7 +5187,14 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                         Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,
                                 paymentModeString, Toast.LENGTH_SHORT).show();
                         break;
+                    case R.id.phonepe_phoneorder:
+
+                        paymentModeString = Constants.PHONEPE;
+                        Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this,
+                                paymentModeString, Toast.LENGTH_SHORT).show();
+                        break;
                 }
+
             }
         });
 

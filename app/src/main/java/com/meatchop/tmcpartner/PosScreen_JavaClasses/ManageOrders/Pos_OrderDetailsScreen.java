@@ -11,6 +11,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,12 +32,15 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.FetchAddressIntentService;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.DeliveryPartnerSettlementReport;
 import com.meatchop.tmcpartner.Settings.GetDeliverypartnersAssignedOrders;
+import com.meatchop.tmcpartner.Settings.Helper;
 import com.meatchop.tmcpartner.Settings.Pos_Orders_List;
+import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 import com.meatchop.tmcpartner.Settings.WholeSaleOrdersList;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
@@ -61,6 +65,8 @@ TextView deliveryCharges_text_widget,notes_textwidget,distancebetweencustomer_ve
 Button changeDeliveryPartner;
     Adapter_forOrderDetails_Listview adapter_forOrderDetails_listview;
     List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
+    double screenInches;
+
     ListView itemDesp_listview;
     LinearLayout deliveryPartnerAssignLayout,refresh_googleAddress_loadinganim_layout,refresh_googleAddress_image_layout,refresh_googleAddress_layout,refreshpaymentmode__loadinganim_layout,refreshpaymentmode_image_layout,refresh_paymentmode_layout;
     static LinearLayout loadingPanel;
@@ -171,10 +177,35 @@ Button changeDeliveryPartner;
         }
 
 
+        try {
+            ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
+            screenInches = screenSizeOfTheDevice.getDisplaySize(Pos_OrderDetailsScreen.this);
+            //    Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            try {
+                DisplayMetrics dm = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(dm);
+                double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
+                double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
+                screenInches = Math.sqrt(x + y);
+                // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+            }
+            catch (Exception e1){
+                e1.printStackTrace();
+            }
+
+
+        }
+
+
+
 
         ordertype = String.valueOf(modal_manageOrders_pojo_class.getOrderType());
             try {
-                if(ordertype.equals(Constants.APPORDER)) {
+                if(ordertype.equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder)) {
                     try {
                         deliverydistance = String.valueOf(modal_manageOrders_pojo_class.getDeliverydistance());
                         distancebetweencustomer_vendortext_widget.setText(deliverydistance+" Km");
@@ -218,7 +249,7 @@ Button changeDeliveryPartner;
                     String  paymentmode  = (String.valueOf(modal_manageOrders_pojo_class.getPaymentmode()).toUpperCase());
                     try {
 
-                        if(ordertype.equals(Constants.APPORDER)) {
+                        if(ordertype.equals(Constants.APPORDER) ) {
 
                             if ((paymentmode.equals(Constants.CASH_ON_DELIVERY)) || paymentmode.equals("cash")) {
                                 showProgressBar(true);
@@ -610,6 +641,7 @@ Button changeDeliveryPartner;
         add_amount_ForBillDetails(OrderdItems_desp);
         adapter_forOrderDetails_listview = new Adapter_forOrderDetails_Listview(Pos_OrderDetailsScreen.this, OrderdItems_desp);
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
+        Helper.getListViewSize(itemDesp_listview, screenInches);
 
     }
 

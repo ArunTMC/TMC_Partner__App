@@ -35,33 +35,121 @@
 
 
             <LinearLayout
+                android:id="@+id/searchlayout"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="58dp"
+                android:gravity="clip_vertical"
                 android:orientation="horizontal">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="5dp"
-                    android:fontFamily="@font/open_sans_semibold"
-                    android:text="@string/ItemStatus"
-                    android:gravity="center_vertical"
-                    android:layout_gravity="center"
-                    android:textSize="19sp" />
 
-                <TextView
-                    android:id="@+id/itemAvailabilityCount_textWidget"
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="5dp"
-                    android:fontFamily="@font/open_sans_semibold"
-                    android:text="-----"
-                    android:visibility="gone"
-                    android:gravity="center_vertical"
-                    android:layout_gravity="center"
-                    android:textColor="@color/TMC_Orange"
-                    android:textSize="15sp" />
+                    android:layout_weight=".6"
 
+                    >
+
+
+
+                    <TextView
+                        android:id="@+id/subtitle_Textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginBottom="1dp"
+                        android:singleLine="true"
+                        android:gravity="center_vertical"
+                        android:text="Item Status"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+
+
+                    <!--      <AutoCompleteTextView
+                        android:id="@+id/search_barEdit"
+                        android:completionThreshold="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/EditTextBorderColor"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="1dp"
+                        android:gravity="center_vertical"
+                        android:maxLength="13"
+                        android:inputType="phone"
+                        android:visibility="visible"
+                        android:text="+91"
+                        android:digits="+0123456789"
+                        android:background="#00000000"
+                        android:hint="@string/Enter_the_mobile_no_text"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp" />
+
+                    -->
+
+
+                    <EditText
+                        android:id="@+id/searchbarEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="1dp"
+                        android:gravity="center_vertical"
+                        android:inputType="textPersonName"
+                        android:visibility="gone"
+                        android:text=""
+                        android:background="#00000000"
+                        android:layout_toStartOf="@+id/search_close_btn"
+                        android:hint="Enter Menu Item Name"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="14sp" />
+
+
+                    <ImageView
+                        android:id="@+id/search_button"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginEnd="3dp"
+
+                        android:foregroundGravity="center_vertical"
+                        app:srcCompat="@mipmap/search_icon"
+                        />
+
+                    <ImageView
+                        android:id="@+id/searchBarCloseButton"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="true"
+                        android:visibility="gone"
+
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginEnd="3dp"
+                        android:foregroundGravity="bottom"
+                        app:srcCompat="@mipmap/close_icon" />
+
+
+                </RelativeLayout>
+                <LinearLayout
+                    android:layout_width="25dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight=".1"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginStart="6dp"
+
+                    android:id="@+id/newOrdersSync_Layout"
+                    android:orientation="horizontal">
+
+
+                </LinearLayout>
             </LinearLayout>
             <View
                 android:layout_width="match_parent"
@@ -79,7 +167,7 @@
                 android:visibility="gone"
                 android:layout_marginStart="10dp"
                 android:layout_weight="1"
-                android:text="EXPRESS DELIVERY"
+                android:text="EXPRESSDELIVERY"
                 app:thumbTint="@drawable/switch_thumb_selector"
                 app:trackTint="@drawable/switch_track_selector"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />

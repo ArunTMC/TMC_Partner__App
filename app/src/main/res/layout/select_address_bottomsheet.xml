@@ -340,6 +340,8 @@
                         android:layout_marginEnd="10dp"
                         android:paddingStart="5dp"
                         android:paddingEnd="5dp"
+                        android:imeOptions="actionNext"
+
                         android:hint="Ram Kumar"
                         android:background="@drawable/grey_color_textview_backgrounf"
                         android:textColor="@color/TMC_Primary_Text_Color"
@@ -386,6 +388,8 @@
                         android:paddingStart="5dp"
                         android:paddingEnd="5dp"
                         android:text=""
+                        android:imeOptions="actionNext"
+
                         android:background="@drawable/grey_color_textview_backgrounf"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textColorHint="@color/TMC_Hint_Color"
@@ -422,6 +426,7 @@
 
                 <EditText
                     android:id="@+id/addressLine1_editText"
+                    android:imeOptions="actionNext"
 
                     android:layout_width="match_parent"
                     android:layout_height="35sp"
@@ -462,6 +467,7 @@
 
                 <EditText
                     android:id="@+id/addressLine2_editText"
+                    android:imeOptions="actionNext"
 
                     android:layout_width="match_parent"
                     android:layout_height="35sp"
@@ -483,48 +489,108 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:visibility="visible"
-                android:layout_marginTop="7dp"
-                android:layout_marginBottom="7dp"
-                android:layout_height="wrap_content">
-
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:textColor="@color/TMC_Orange"
-                    android:textSize="12sp"
+                    android:orientation="horizontal"
+                    android:visibility="visible"
+                    android:layout_marginTop="7dp"
+                    android:layout_marginBottom="7dp"
+                    android:layout_height="wrap_content">
 
-                    android:text="LandMark"/>
-
-                <EditText
-                    android:id="@+id/landmark_editText"
-
-                    android:layout_width="match_parent"
-                    android:layout_height="35sp"
-                    android:text=""
-                    android:layout_marginTop="5dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:paddingStart="5dp"
-                    android:paddingEnd="5dp"
-                    android:hint="Near Tambaram Bus Stand"
-                    android:background="@drawable/pale_orange_background"
-                    android:textColor="@color/TMC_Primary_Text_Color"
-                    android:textColorHint="@color/TMC_Hint_Color"
-                    android:textSize="14sp"
-
-                    />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:visibility="visible"
+                        android:layout_height="wrap_content">
 
 
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="12sp"
 
-            </LinearLayout>
+                            android:text="LandMark"/>
+
+                        <EditText
+                            android:id="@+id/landmark_editText"
+                            android:imeOptions="actionNext"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="35sp"
+                            android:text=""
+                            android:layout_marginTop="5dp"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginEnd="10dp"
+                            android:paddingStart="5dp"
+                            android:paddingEnd="5dp"
+                            android:hint="Near Tambaram Bus Stand"
+                            android:background="@drawable/pale_orange_background"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textColorHint="@color/TMC_Hint_Color"
+                            android:textSize="14sp"
+
+                            />
 
 
-            <LinearLayout
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+
+                        android:visibility="visible"
+                        android:layout_height="wrap_content">
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="12sp"
+
+                            android:text="Delivery Distance in KM "/>
+
+                        <EditText
+                            android:id="@+id/deliveryDistance_address_editText"
+                            android:imeOptions="actionNext"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="35sp"
+                            android:text=""
+                            android:layout_marginTop="5dp"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginEnd="10dp"
+                            android:paddingStart="5dp"
+                            android:paddingEnd="5dp"
+                            android:hint="6.4"
+                            android:inputType="phone"
+                            android:digits="0123456789."
+                            android:maxLength="5"
+
+                            android:background="@drawable/pale_orange_background"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textColorHint="@color/TMC_Hint_Color"
+                            android:textSize="14sp"
+
+                            />
+
+
+                    </LinearLayout>
+
+
+
+                </LinearLayout>
+
+
+
+                <LinearLayout
                 android:layout_width="match_parent"
                 android:orientation="horizontal"
                 android:visibility="visible"
@@ -551,7 +617,11 @@
 
                 <EditText
                     android:id="@+id/pincode_editText"
+                    android:imeOptions="actionNext"
 
+                    android:inputType="phone"
+                    android:digits="0123456789"
+                    android:maxLength="6"
                     android:layout_width="match_parent"
                     android:layout_height="35sp"
                     android:text=""
@@ -584,13 +654,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
-                        android:textColor="@color/TMC_Black"
+                        android:textColor="@color/TMC_Orange"
                         android:textSize="12sp"
 
                         android:text="Type"/>
 
                     <EditText
                         android:id="@+id/type_address_editText"
+                        android:imeOptions="actionDone"
 
                         android:layout_width="match_parent"
                         android:layout_height="35sp"
@@ -601,7 +672,7 @@
                         android:paddingStart="5dp"
                         android:paddingEnd="5dp"
                         android:hint="Home"
-                        android:background="@drawable/grey_color_textview_backgrounf"
+                        android:background="@drawable/pale_orange_background"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textColorHint="@color/TMC_Hint_Color"
                         android:textSize="14sp"

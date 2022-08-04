@@ -142,6 +142,15 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+
+        replacementTransactionDetailsList.clear();
+        orderidlist.clear();
+        orderStatuslist.clear();
+        hashMap_replacementTransactionDetails.clear();
+        orderidHashMap.clear();
+        replacementTransactionDetails_SortedList.clear();
+
+
         String Todaysdate = getDatewithNameoftheDay();
         dateSelector_text.setText(Todaysdate);
         String newFormatOfDate = changeOldDatetoNewFormat(Todaysdate);
@@ -2222,9 +2231,14 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
 
     private void getReplacementTransactionDetails(String todaysdate, String vendorKey) {
         Adjusting_Widgets_Visibility(true);
-
-        String transactiontime1 = todaysdate+"T00:00:00";
-        String transactiontime2 = todaysdate+"T23:59:59";
+        replacementTransactionDetailsList.clear();
+        orderidlist.clear();
+        orderStatuslist.clear();
+        hashMap_replacementTransactionDetails.clear();
+        orderidHashMap.clear();
+        replacementTransactionDetails_SortedList.clear();
+        String transactiontime1 = todaysdate+" 00:00:00";
+        String transactiontime2 = todaysdate+" 23:59:59";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetReplacementTransactionDetailsForTransactionTimeVendorkey + "?transactiontime1=" + transactiontime1 + "&vendorkey=" + vendorKey + "&transactiontime2=" + transactiontime2, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override

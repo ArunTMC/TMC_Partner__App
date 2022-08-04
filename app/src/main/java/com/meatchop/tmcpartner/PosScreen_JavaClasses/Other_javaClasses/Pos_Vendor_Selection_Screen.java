@@ -56,7 +56,7 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
     private String pos_vendorAddressline1,pos_vendorAddressline2,pos_vendorPincode,minimumscreensizeforpos;
     private String pos_vendorStatus, pos_vendorFssaino,pos_vendorLatitude,pos_vendorLongitude,defaultprintertype;
     LinearLayout loadingPanel,loadingpanelmask;
-    private  Boolean inventoryCheckBool = false;
+    private  Boolean inventoryCheckBool = false ,isweighteditable = false;
     double screenInches;
 
     List<Modal_vendor> vendorList=new ArrayList<>();
@@ -131,6 +131,18 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
                 catch (Exception e){
                     e.printStackTrace();
                 }
+
+                try {
+                    isweighteditable = Boolean.parseBoolean(getVendorData(position, "isweighteditable"));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+
             }
 
             @Override
@@ -874,6 +886,10 @@ public class Pos_Vendor_Selection_Screen extends AppCompatActivity  {
         myEdit.putBoolean(
                 "inventoryCheckBool",
                 inventoryCheckBool
+        );
+        myEdit.putBoolean(
+                "isweighteditable",
+                isweighteditable
         );
         myEdit.apply();
 

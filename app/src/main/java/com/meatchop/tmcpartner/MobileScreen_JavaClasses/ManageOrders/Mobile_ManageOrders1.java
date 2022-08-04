@@ -50,14 +50,17 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.meatchop.tmcpartner.Settings.DeviceListActivity;
+import com.meatchop.tmcpartner.Settings.Modal_MenuItem_Settings;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
 import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableService;
@@ -66,6 +69,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -103,7 +107,7 @@ public class Mobile_ManageOrders1 extends Fragment {
     static LinearLayout loadingpanelmask;
     LinearLayout newOrdersSync_Layout;
     List<Modal_ManageOrders_Pojo_Class> websocket_OrdersList;
-    public static String completemenuItem;
+    List<Modal_MenuItem>MenuItem = new ArrayList<>();
     static List<Modal_ManageOrders_Pojo_Class> ordersList;
     Button todaysOrder,tomorrowsOrder;
     static List<Modal_ManageOrders_Pojo_Class> sorted_OrdersList;
@@ -293,7 +297,7 @@ public class Mobile_ManageOrders1 extends Fragment {
         isSearchButtonClicked =false;
         String PreviousDaydate =  getDatewithNameofthePreviousDay();
         Adjusting_Widgets_Visibility(false);
-
+        getMenuItemArrayFromSharedPreferences();
         if(orderdetailsnewschema){
             Adjusting_Widgets_Visibility(true);
 
@@ -379,6 +383,8 @@ public class Mobile_ManageOrders1 extends Fragment {
                                 modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
                                 modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                                 modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                                modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
+
 
                                 modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                                 modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -758,7 +764,8 @@ public class Mobile_ManageOrders1 extends Fragment {
         ordersList.clear();
         sorted_OrdersList.clear();
         mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+       // String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_AppOrder_PhoneOrder + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype1=APPORDER"+"&ordertype2=PHONEORDER";
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
         if(isnewOrdersSyncButtonClicked){
             return;
@@ -771,14 +778,6 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
 
-    public void showBluetoothConnectionBottomSheetDialog(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
-        try {
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -1333,7 +1332,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                     }
 
 
-                    if (ordertype.equals(Constants.APPORDER)){
+                    if ((ordertype.equals(Constants.APPORDER)) || (ordertype.equals(Constants.PhoneOrder))){
 
                         if (json.has("orderid")) {
                             manageOrdersPojoClass.orderid = String.valueOf(json.get("orderid"));
@@ -1955,6 +1954,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                         modal_manageOrders_forOrderDetailList1.useraddresslat = modal_manageOrders_forOrderDetailList.getUseraddresslat();
                         modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                         modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus().toUpperCase();
 
 
                         modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -2037,6 +2037,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                         modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus().toUpperCase();
 
                         modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                         modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
@@ -2100,6 +2101,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
                         modal_manageOrders_forOrderDetailList1.useraddress = modal_manageOrders_forOrderDetailList.getUseraddress();
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus().toUpperCase();
 
                         modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                         modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
@@ -2629,6 +2631,20 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
 
+    private void getMenuItemArrayFromSharedPreferences() {
+        final SharedPreferences sharedPreferencesMenuitem = mContext.getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String json = sharedPreferencesMenuitem.getString("MenuList", "");
+        if (json.isEmpty()) {
+            Toast.makeText(mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
+        } else {
+            Type type = new TypeToken<List<Modal_MenuItem>>() {
+            }.getType();
+            MenuItem  = gson.fromJson(json, type);
+        }
+
+    }
 
 
     public void printRecipt(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
@@ -2737,7 +2753,7 @@ public class Mobile_ManageOrders1 extends Fragment {
         }
 
         try {
-            OrderType= modal_manageOrders_pojo_class.getOrderType();
+            OrderType= modal_manageOrders_pojo_class.getOrderType().toUpperCase();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -4708,8 +4724,11 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
             if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
+                if(!CouponDiscount.contains(".")){
+                    CouponDiscount = CouponDiscount+".00";
+                }
                 couponDiscount_double = Double.parseDouble (CouponDiscount);
-                if (OrderType.equals(Constants.APPORDER)) {
+                if ((OrderType.equals(Constants.APPORDER)) || ((OrderType.equals(Constants.PhoneOrder)))) {
                     if (CouponDiscount.length() == 4) {
                         //20spaces
                         //NEW TOTAL =4
@@ -4851,6 +4870,13 @@ public class Mobile_ManageOrders1 extends Fragment {
             }
 
             try{
+                deliveryAmount_double = Double.parseDouble(DeliveryAmount);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try{
                 totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt = totalAmountFromAddingSubtotalWithDiscount+deliveryAmount_double;
 
             }
@@ -4859,6 +4885,19 @@ public class Mobile_ManageOrders1 extends Fragment {
             }
 
            if( deliveryAmount_double>0) {
+               DeliveryAmount = "Rs."+DeliveryAmount+".00";
+               if (DeliveryAmount.length() == 2) {
+                   //25spaces
+                   //DeliveryAmount =15
+                   DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
+               }
+
+               if (DeliveryAmount.length() == 3) {
+                   //25spaces
+                   //DeliveryAmount =15
+                   DeliveryAmount = "Delivery Amount                        " + DeliveryAmount;
+               }
+
                if (DeliveryAmount.length() == 4) {
                    //25spaces
                    //DeliveryAmount =15
@@ -4988,12 +5027,30 @@ public class Mobile_ManageOrders1 extends Fragment {
             BluetoothPrintDriver.LF();
 
 
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.SetLineSpacing((byte) 90);
+            BluetoothPrintDriver.printString("Order Type : "+OrderType);
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
+            BluetoothPrintDriver.Begin();
+            BluetoothPrintDriver.SetLineSpacing((byte) 65);
+            BluetoothPrintDriver.SetAlignMode((byte) 0);
+            BluetoothPrintDriver.printString("----------------------------------------------");
+            BluetoothPrintDriver.BT_Write("\r");
+            BluetoothPrintDriver.LF();
+
             BluetoothPrintDriver.Begin();
             BluetoothPrintDriver.SetAlignMode((byte) 0);
             BluetoothPrintDriver.SetLineSpacing((byte) 90);
             BluetoothPrintDriver.printString("Payment Mode : "+PaymentMode);
             BluetoothPrintDriver.BT_Write("\r");
             BluetoothPrintDriver.LF();
+
+
+
 
             BluetoothPrintDriver.Begin();
             BluetoothPrintDriver.SetAlignMode((byte) 0);

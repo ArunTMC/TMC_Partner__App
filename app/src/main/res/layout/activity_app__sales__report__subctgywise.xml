@@ -299,7 +299,7 @@
                 android:layout_width="match_parent"
                 android:scrollIndicators="none"
                 android:scrollbars="none"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:id="@+id/scrollView"
                 android:layout_height="match_parent">
 

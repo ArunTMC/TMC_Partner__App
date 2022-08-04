@@ -56,7 +56,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private String mobile_vendorAddressline1,mobile_vendorAddressline2,mobile_vendorPincode;
     private String mobile_vendorStatus, mobile_vendorFssaino,minimumscreensizeforpos,mobile_VendorType;
     private String mobile_vendorLatitude;
-    private String mobile_vendorLongitude,newtoken="",vendortype = "";
+    private String mobile_vendorLongitude,newtoken="",vendortype = "",mobile_vendorPrinterType="";
     private ArrayAdapter mobile_spinner_aAdapter;
     private Button mobile_vendorDetails_verification_button;
     private  Boolean mobile_vendorLogin = false;
@@ -899,6 +899,26 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
     private void saveVendorLoginStatus() {
         //Log.i(Constants.TAG,"VendorLoginStatus"+ mobile_vendorLogin);
+
+
+        SharedPreferences printerDatasharedPreferences
+                = getSharedPreferences("PrinterConnectionData",
+                MODE_PRIVATE);
+
+        SharedPreferences.Editor printerDatamyEdit
+                = printerDatasharedPreferences.edit();
+
+        printerDatamyEdit.putString(
+                "printerType",
+                mobile_vendorPrinterType);
+
+        printerDatamyEdit.putString(
+                "printerStatus",
+                "Success");
+        printerDatamyEdit.apply();
+
+
+
         SharedPreferences sharedPreferences
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
@@ -967,6 +987,8 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                 inventoryCheckBool
         );
 
+
+
         myEdit.apply();
 
     }
@@ -1004,6 +1026,8 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
         mobile_VendorType = getVendorData(position,"vendortype");
         mobile_vendorLatitude =getVendorData(position,"locationlat");
         mobile_vendorLongitude =getVendorData(position,"locationlong");
+        mobile_vendorPrinterType =getVendorData(position,"defaultprintertype");
+
         try {
             inventoryCheckBool = Boolean.parseBoolean(getVendorData(position, "inventorycheckpos"));
         }

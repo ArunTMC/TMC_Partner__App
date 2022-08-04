@@ -8,7 +8,7 @@
     <RadioGroup
         android:layout_width="match_parent"
         android:id="@+id/posOrders_radiogrp"
-        android:visibility="gone"
+        android:visibility="visible"
         android:layout_height="wrap_content">
 
         <RadioButton
@@ -19,7 +19,14 @@
             android:theme="@style/RadioButtonStyle"
 
             android:text="Cash" />
+        <RadioButton
+            android:id="@+id/phonepe_phoneorder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:theme="@style/RadioButtonStyle"
 
+            android:text="Phonepe" />
         <RadioButton
             android:id="@+id/card"
             android:layout_width="match_parent"
@@ -47,7 +54,7 @@
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
             android:theme="@style/RadioButtonStyle"
-            android:visibility="gone"
+            android:visibility="visible"
 
             android:layout_height="wrap_content"
             android:text="Credit" />
@@ -59,7 +66,7 @@
     <RadioGroup
         android:layout_width="match_parent"
         android:id="@+id/appOrders_radiogrp"
-        android:visibility="visible"
+        android:visibility="gone"
 
         android:layout_height="wrap_content">
 
@@ -104,7 +111,7 @@
             android:layout_width="match_parent"
             android:layout_marginTop="8dp"
             android:theme="@style/RadioButtonStyle"
-            android:visibility="gone"
+            android:visibility="visible"
             android:layout_height="wrap_content"
             android:text="Credit" />
 

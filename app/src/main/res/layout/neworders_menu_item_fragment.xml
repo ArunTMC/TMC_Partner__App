@@ -73,11 +73,11 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginStart="25dp"
+                        android:layout_marginStart="45dp"
                         android:layout_weight="1.3"
                         android:fontFamily="@font/open_sans_bold"
                         android:gravity="center_horizontal"
-                        android:paddingStart="5dp"
+                        android:paddingStart="25dp"
                         android:paddingEnd="20dp"
 
                         android:text="Quantity"
@@ -90,7 +90,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginEnd="55dp"
-                        android:layout_weight=".9"
+                        android:layout_weight=".8"
                         android:fontFamily="@font/open_sans_bold"
 
                         android:gravity="center_horizontal"
@@ -119,7 +119,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1.2"
+                android:layout_weight="1.4"
                 android:orientation="vertical">
 
 
@@ -182,12 +182,25 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:id="@+id/gstLabel_Widget"
                                 android:fontFamily="@font/open_sans_light"
                                 android:text="@string/Taxes_and_charges"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="25sp" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:id="@+id/deliveryChargesLabel_widget"
+                                android:fontFamily="@font/open_sans_light"
+                                android:text="Delivery Amt"
+                                android:visibility="gone"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="25sp" />
+
 
                             <TextView
+                                android:id="@+id/discount_textview_labelwidget"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
@@ -195,8 +208,10 @@
                                 android:text="@string/Coupon_discount"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="25sp" />
+
                             <TextView
                                 android:layout_width="0dp"
+                                android:id="@+id/redeemedpoints_Labeltextwidget"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_light"
@@ -261,7 +276,16 @@
                                 android:textColor="@color/TMC_Primary_Text_Color"
 
                                 android:textSize="25sp" />
-
+                            <TextView
+                                android:id="@+id/deliveryChargestext_widget"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="0.00"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:visibility="gone"
+                                android:textSize="25sp" />
                             <TextView
                                 android:id="@+id/discount_rs_text_widget"
 
@@ -329,9 +353,12 @@
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight=".6"
-                                    android:orientation="horizontal">
-
+                                    android:layout_weight=".55"
+                                    android:orientation="vertical">
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
                                     <TextView
                                         android:layout_width="110dp"
                                         android:layout_height="wrap_content"
@@ -341,42 +368,93 @@
                                         android:textColor="@color/TMC_Primary_Text_Color"
                                         android:textColorHint="@color/TMC_Hint_Color"
                                         android:textSize="25sp" />
-                                    <EditText
-                                        android:id="@+id/Customer_mobileNo_Edit_widget"
-                                        android:layout_width="200dp"
-                                        android:layout_height="wrap_content"
-                                        android:digits="0123456789"
-                                        android:fontFamily="@font/open_sans_bold"
-                                        android:hint="9594321850"
-                                        android:inputType="phone"
-                                        android:maxLength="10"
-                                        android:layout_marginStart="18dp"
-                                        android:textColor="@color/TMC_Primary_Text_Color"
-                                        android:textColorHint="@color/TMC_Hint_Color"
-                                        android:textSize="25sp" />
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:fontFamily="@font/open_sans_bold"
-                                        android:layout_marginStart="10dp"
-                                        android:text="Enter Customer Name"
-                                        android:visibility="gone"
+                                        <CheckBox
+                                            android:id="@+id/useStoreNumberCheckBox"
+                                            android:layout_width="200dp"
+                                            android:layout_height="match_parent"
+                                            android:textSize="13sp"
+                                            android:fontFamily="@font/open_sans_bold"
+                                            android:text="Use Store Number" />
 
-                                        android:id="@+id/customername_labelWidget"
-                                        android:textColor="@color/TMC_Primary_Text_Color"
-                                        android:textColorHint="@color/TMC_Hint_Color"
-                                        android:textSize="20sp" />
+                                    </LinearLayout>
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
+
+                                        <EditText
+                                            android:id="@+id/Customer_mobileNo_Edit_widget"
+                                            android:layout_width="200dp"
+                                            android:layout_height="wrap_content"
+                                            android:digits="0123456789"
+                                            android:fontFamily="@font/open_sans_bold"
+                                            android:hint="9594321850"
+                                            android:inputType="phone"
+                                            android:maxLength="10"
+                                            android:textColor="@color/TMC_Primary_Text_Color"
+                                            android:textColorHint="@color/TMC_Hint_Color"
+                                            android:textSize="20sp" />
+
+                                        <Button
+                                        android:layout_width="100dp"
+                                        android:layout_height="35dp"
+                                        android:paddingStart="5dp"
+                                        android:id="@+id/fetchUser_button"
+                                        android:layout_marginStart="7dp"
+                                        android:textSize="13sp"
+                                        android:paddingEnd="5dp"
+                                        android:textColor="@color/TMC_White"
+                                        android:background="@drawable/orange_selected_button_background"
+                                        android:text="Fetch User"/>
+                                    </LinearLayout>
+
+                                </LinearLayout>
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight=".42"
+                                    android:paddingStart="10dp"
+                                    android:layout_marginTop="5dp"
+                                    android:paddingEnd="1dp"
+                                    android:visibility="visible"
+                                    android:id="@+id/wholesalecustomernameParentLayout"
+                                    android:orientation="vertical">
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            android:id="@+id/customername_labelWidget"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="10dp"
+                                            android:fontFamily="@font/open_sans_bold"
+                                            android:text="Name"
+                                            android:textColor="@color/TMC_Primary_Text_Color"
+                                            android:textColorHint="@color/TMC_Hint_Color"
+                                            android:textSize="20sp"
+                                            android:visibility="visible" />
+                                    <CheckBox
+                                        android:id="@+id/updateUserNameCheckBox"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:textSize="13sp"
+                                        android:layout_marginStart="5dp"
+                                        android:fontFamily="@font/open_sans_bold"
+                                        android:text="Update Name" />
+                                    </LinearLayout>
+
                                     <AutoCompleteTextView
                                         android:id="@+id/autoComplete_customerNameText_widget"
                                         android:paddingStart="10dp"
                                         android:paddingEnd="10dp"
                                         android:completionThreshold="1"
-                                        android:visibility="gone"
-                                        android:layout_width="400dp"
+                                        android:visibility="visible"
+                                        android:layout_width="200dp"
                                         android:layout_height="wrap_content"
-                                        android:textSize="18sp"
+                                        android:textSize="16sp"
                                         android:backgroundTint="@color/EditTextBorderColor"
-                                        android:layout_gravity="center"
                                         android:textColorHint="@color/TMC_Hint_Color"
                                         android:layout_marginStart="10dp"
 
@@ -389,32 +467,20 @@
 
                                     </AutoCompleteTextView>
 
-
-                                    <CheckBox
-                                        android:id="@+id/useStoreNumberCheckBox"
-                                        android:layout_width="200dp"
-                                        android:layout_height="match_parent"
-                                        android:textSize="15sp"
-                                        android:fontFamily="@font/open_sans_bold"
-                                        android:layout_marginStart="15dp"
-                                        android:text="Use Store Number" />
-
                                 </LinearLayout>
-
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
+                                    android:layout_weight=".5"
                                     android:visibility="gone"
                                     android:id="@+id/discountAmountLayout"
-                                    android:orientation="horizontal">
+                                    android:orientation="vertical">
 
                                     <TextView
                                         android:layout_width="250dp"
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="10dp"
                                         android:fontFamily="@font/open_sans_bold"
-                                        android:layout_marginBottom="5dp"
                                         android:text="Discount  Amount"
 
                                         android:textColor="@color/TMC_Primary_Text_Color"
@@ -426,7 +492,7 @@
                                     <EditText
                                         android:id="@+id/discount_Edit_widget"
                                         android:layout_width="192dp"
-                                        android:layout_height="46dp"
+                                        android:layout_height="wrap_content"
                                         android:layout_marginStart="10dp"
                                         android:digits="0123456789"
                                         android:fontFamily="@font/open_sans_bold"
@@ -435,21 +501,21 @@
                                         android:maxLength="10"
                                         android:text="0"
 
-                                        android:layout_marginTop="5dp"
+                                        android:layout_marginTop="2dp"
                                         android:gravity="center"
                                         android:textColor="@color/TMC_Primary_Text_Color"
                                         android:textColorHint="@color/TMC_Hint_Color"
-                                        android:textSize="25sp" />
+                                        android:textSize="20sp" />
 
                                 </LinearLayout>
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
+                                    android:layout_weight=".5"
                                     android:visibility="gone"
 
                                     android:id="@+id/redeemPointsLayout"
-                                    android:orientation="horizontal">
+                                    android:orientation="vertical">
 
                                     <TextView
                                         android:layout_width="250dp"
@@ -461,14 +527,14 @@
 
                                         android:textColor="@color/TMC_Primary_Text_Color"
                                         android:textColorHint=" @color/TMC_Hint_Color"
-                                        android:textSize="25sp" />
+                                        android:textSize="22sp" />
 
 
 
                                     <TextView
                                         android:id="@+id/redeemed_points_text_widget"
                                         android:layout_width="192dp"
-                                        android:layout_height="46dp"
+                                        android:layout_height="wrap_content"
                                         android:layout_marginStart="10dp"
                                         android:digits="0123456789"
                                         android:fontFamily="@font/open_sans_bold"
@@ -476,13 +542,60 @@
                                         android:inputType="phone"
                                         android:maxLength="10"
                                         android:text="0"
-                                        android:layout_marginTop="5dp"
+                                        android:layout_marginTop="3dp"
                                         android:gravity="center"
                                         android:textColor="@color/TMC_Primary_Text_Color"
                                         android:textSize="25sp" />
 
                                 </LinearLayout>
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:visibility="visible"
+                                    android:id="@+id/selectedAddress_showingLayout"
+                                    android:gravity="center"
+                                    android:layout_marginEnd="35dp"
+                                    android:orientation="horizontal">
 
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="3"
+                                        android:layout_marginTop="7dp"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="5dp"
+                                            android:fontFamily="@font/open_sans_bold"
+                                            android:text="Selected Address :"
+                                            android:textColor="@color/TMC_Primary_Text_Color"
+                                            android:textColorHint=" @color/TMC_Hint_Color"
+                                            android:textSize="16sp" />
+
+                                        <TextView
+                                            android:id="@+id/selectedAddress_textWidget"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="61dp"
+                                            android:layout_marginStart="5dp"
+                                            android:layout_marginTop="4dp"
+                                            android:fontFamily="@font/open_sans_bold"
+                                            android:hint="Please Select Address to place Phone Order"
+                                            android:textColor="@color/TMC_Primary_Text_Color"
+                                            android:textSize="20sp" />
+
+                                    </LinearLayout>
+                                    <Button
+                                        android:layout_width="0dp"
+                                        android:layout_height="40dp"
+                                        android:layout_weight="1"
+                                        android:id="@+id/select_address_button_widget"
+                                        android:background="@drawable/button_background"
+                                        android:textColor="@color/TMC_White"
+                                        android:text="Select Address"/>
+                                    </LinearLayout>
                             </LinearLayout>
 
                             <LinearLayout
@@ -496,7 +609,7 @@
                                     android:layout_width="200dp"
                                     android:layout_height="50dp"
                                     android:layout_marginStart="50dp"
-                                    android:layout_marginTop="35dp"
+                                    android:layout_marginTop="25dp"
                                     android:layout_marginBottom="10dp"
                                     android:background="@drawable/button_background"
                                     android:text="@string/Check_out"
@@ -506,25 +619,25 @@
 
                                 <Button
                                     android:id="@+id/redeemPoints_widget"
-                                    android:layout_width="200dp"
+                                    android:layout_width="180dp"
                                     android:layout_height="50dp"
                                     android:layout_marginStart="10dp"
-                                    android:layout_marginTop="35dp"
+                                    android:layout_marginTop="25dp"
                                     android:layout_marginBottom="10dp"
                                     android:background="@drawable/button_background"
                                     android:text="@string/RedeemPoints"
                                     android:textAllCaps="false"
                                     android:visibility="visible"
                                     android:textColor="@color/TMC_White"
-                                    android:textSize="25sp" />
+                                    android:textSize="20sp" />
 
 
                                 <Button
                                     android:id="@+id/discount_widget"
                                     android:layout_width="180dp"
-                                    android:layout_height="55dp"
-                                    android:layout_marginStart="50dp"
-                                    android:layout_marginTop="30dp"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="20dp"
+                                    android:layout_marginTop="25dp"
                                     android:layout_marginBottom="30dp"
 
                                     android:background="@drawable/button_background"
@@ -536,10 +649,10 @@
 
                                 <Button
                                     android:id="@+id/check_redeemPoints_widget"
-                                    android:layout_width="180dp"
-                                    android:layout_height="55dp"
-                                    android:layout_marginStart="50dp"
-                                    android:layout_marginTop="24dp"
+                                    android:layout_width="210dp"
+                                    android:layout_height="50dp"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="25dp"
                                     android:layout_marginBottom="30dp"
 
                                     android:background="@drawable/button_background"

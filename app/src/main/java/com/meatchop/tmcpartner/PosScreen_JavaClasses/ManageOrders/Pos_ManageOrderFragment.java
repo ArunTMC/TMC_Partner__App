@@ -293,6 +293,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             modal_usbPrinter.orderdetailskey = "selectedOrder.getOrderdetailskey()";
             modal_usbPrinter.deliverydistance ="selectedOrder.getDeliverydistance()";
             modal_usbPrinter.payment_mode ="selectedOrder. getPaymentmode()";
+            modal_usbPrinter.deliveryamount ="selectedOrder. getDeliveryamount()";
 
 
 
@@ -568,6 +569,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                                 modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
                                 modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
 
+                                modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                                 modal_manageOrders_forOrderDetailList1.orderplacedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderplacedtime_in_long();
                                 modal_manageOrders_forOrderDetailList1.orderconfirmedtime_in_long = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime_in_long();
@@ -937,7 +939,9 @@ public class Pos_ManageOrderFragment extends Fragment {
         ordersList.clear();
         sorted_OrdersList.clear();
         mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+      //  String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_AppOrder_PhoneOrder + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype1=APPORDER"+"&ordertype2=PHONEORDER";
+
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
 
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
@@ -1152,6 +1156,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             modal_usbPrinter.orderdetailskey = selectedOrder.getOrderdetailskey();
             modal_usbPrinter.deliverydistance =selectedOrder.getDeliverydistance();
             modal_usbPrinter.payment_mode =selectedOrder. getPaymentmode();
+            modal_usbPrinter.deliveryamount =selectedOrder. getDeliveryamount();
 
 
 
@@ -1329,7 +1334,7 @@ public class Pos_ManageOrderFragment extends Fragment {
             OrderPlacedtime = modal_usbPrinter.getOrderplacedtime();
             Orderid = modal_usbPrinter.getOrderid();
             CouponDiscount = modal_usbPrinter.getFinalCouponDiscountAmount();
-            OrderType = modal_usbPrinter.getOrdertype();
+            OrderType = modal_usbPrinter.getOrdertype().toUpperCase();
             PayableAmount = modal_usbPrinter.getPayableAmount();
             PaymentMode = modal_usbPrinter.getPayment_mode();
             MobileNumber = modal_usbPrinter.getUserMobile();
@@ -2130,10 +2135,110 @@ public class Pos_ManageOrderFragment extends Fragment {
 
         text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
-        if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
+        try{
+
             couponDiscount_double = Double.parseDouble (CouponDiscount);
-            CouponDiscount = "Rs. "+CouponDiscount;
-            if (OrderType.equals(Constants.APPORDER)) {
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
+            totalAmountFromAddingSubtotalWithDiscount =  totalAmountFromAddingSubtotal - couponDiscount_double ;
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            deliveryAmount_double = Double.parseDouble(DeliveryAmount);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt = totalAmountFromAddingSubtotalWithDiscount+deliveryAmount_double;
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        if( deliveryAmount_double>0) {
+            DeliveryAmount = "Rs."+DeliveryAmount+".00";
+
+           /* if (DeliveryAmount.length() == 4) {
+                //25spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 5) {
+                //24spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                      " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 6) {
+                //23spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                     " + DeliveryAmount;
+            }
+
+            if (DeliveryAmount.length() == 7) {
+                //22spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                    " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 8) {
+                //21spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                   " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 9) {
+                //20spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                  " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 10) {
+                //19spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                 " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 11) {
+                //18spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount                " + DeliveryAmount;
+            }
+            if (DeliveryAmount.length() == 12) {
+                //17spaces
+                //DeliveryAmount =15
+                DeliveryAmount = "Delivery Amount               " + DeliveryAmount;
+            }
+
+
+            */
+            text_to_Print = text_to_Print+"[L]  Delivery Amount "+"[R]      " +DeliveryAmount+" \n";
+
+        //    text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
+
+            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
+
+
+
+        }
+
+        if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
+            //couponDiscount_double = Double.parseDouble (CouponDiscount);
+            if(!CouponDiscount.contains("Rs.")){
+                CouponDiscount = "Rs. "+CouponDiscount;
+
+            }
+            if(!CouponDiscount.contains(".00")){
+                CouponDiscount = CouponDiscount+".00";
+
+            }
+            if (OrderType.equals(Constants.APPORDER) ) {
              /*   if (CouponDiscount.length() == 4) {
                     //20spaces
                     //NEW TOTAL =4
@@ -2193,8 +2298,8 @@ public class Pos_ManageOrderFragment extends Fragment {
 
             }
 
-            if (OrderType.equals(Constants.POSORDER)) {
-                couponDiscount_double = Double.parseDouble (CouponDiscount);
+            if ((OrderType.equals(Constants.POSORDER))|| (OrderType.equals(Constants.PhoneOrder))) {
+               // couponDiscount_double = Double.parseDouble (CouponDiscount);
                 /*
                 if (CouponDiscount.length() == 4) {
                     //20spaces
@@ -2253,87 +2358,11 @@ public class Pos_ManageOrderFragment extends Fragment {
             }
 
 
-        //    text_to_Print = text_to_Print+"[L]" +CouponDiscount+" \n";
+            //    text_to_Print = text_to_Print+"[L]" +CouponDiscount+" \n";
 
             text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
-
-
-
-        }
-
-        try{
-            totalAmountFromAddingSubtotalWithDiscount =  totalAmountFromAddingSubtotal - couponDiscount_double ;
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
-        try{
-            totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt = totalAmountFromAddingSubtotalWithDiscount+deliveryAmount_double;
-
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-
-        if( deliveryAmount_double>0) {
-           /* if (DeliveryAmount.length() == 4) {
-                //25spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 5) {
-                //24spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                      " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 6) {
-                //23spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                     " + DeliveryAmount;
-            }
-
-            if (DeliveryAmount.length() == 7) {
-                //22spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                    " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 8) {
-                //21spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                   " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 9) {
-                //20spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                  " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 10) {
-                //19spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                 " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 11) {
-                //18spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount                " + DeliveryAmount;
-            }
-            if (DeliveryAmount.length() == 12) {
-                //17spaces
-                //DeliveryAmount =15
-                DeliveryAmount = "Delivery Amount               " + DeliveryAmount;
-            }
-
-
-            */
-            text_to_Print = text_to_Print+"[L]  Delivery Amount "+"[R]      " +DeliveryAmount+" \n";
-
-        //    text_to_Print = text_to_Print+"[L]" +DeliveryAmount+" \n";
-
-            text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
 
@@ -2397,6 +2426,7 @@ public class Pos_ManageOrderFragment extends Fragment {
         text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 
 
+        text_to_Print = text_to_Print+"[L]  <b>Order Type : " +OrderType+" </b>\n";
 
         text_to_Print = text_to_Print+"[L]  <b>Payment Mode : " +PaymentMode+" </b>\n";
 
@@ -4692,7 +4722,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
             if ((!CouponDiscount.equals("0.0")) && (!CouponDiscount.equals("0")) && (!CouponDiscount.equals("0.00")) && (CouponDiscount != (null)) && (!CouponDiscount.equals(""))) {
                 couponDiscount_double = Double.parseDouble (CouponDiscount);
-                if (OrderType.equals(Constants.APPORDER)) {
+                if (OrderType.equals(Constants.APPORDER) || OrderType.equals(Constants.PhoneOrder)) {
                     if (CouponDiscount.length() == 4) {
                         //20spaces
                         //NEW TOTAL =4
@@ -5340,7 +5370,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                         ordertype="#";
                         manageOrdersPojoClass.orderType ="";
                     }
-                    if(ordertype.equals(Constants.APPORDER)) {
+                    if(ordertype.equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder))  {
 
 
                         if (json.has("orderid")) {
@@ -5596,7 +5626,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                         }
 
                         try {
-                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                            if (ordertype.toUpperCase().equals(Constants.APPORDER) || ordertype.toUpperCase().equals(Constants.PhoneOrder)) {
                                 if (json.has("useraddress")) {
 
                                     String addresss = String.valueOf(json.get("useraddress"));
@@ -5617,7 +5647,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                             E.printStackTrace();
                         }
                         try {
-                            if (ordertype.toUpperCase().equals(Constants.APPORDER)) {
+                            if (ordertype.toUpperCase().equals(Constants.APPORDER) || ordertype.toUpperCase().equals(Constants.PhoneOrder) ) {
 
 
                                 if (json.has("deliverydistance")) {
@@ -5771,9 +5801,8 @@ public class Pos_ManageOrderFragment extends Fragment {
     }
 
 
-    private void displayorderDetailsinListview(String orderStatus, List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner) {
+    public void displayorderDetailsinListview(String orderStatus, List<Modal_ManageOrders_Pojo_Class> ordersList, int slottypefromSpinner) {
         //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.size());
-        int newCount=0,confirmedCount=0,readyForPickupCount=0,transitCount=0,deliveredCount=0;
 
         if(ordersList.size()>0) {
             sorted_OrdersList.clear();
@@ -5833,6 +5862,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                         modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                         modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                         modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                         modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -5894,6 +5924,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                         modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                         modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                         modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                         modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -5953,6 +5984,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                         modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
 
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                         modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
                         modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
@@ -5964,86 +5996,8 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                 }
             }
+                calculate_and_displayno_of_orders_statuswise();
 
-
-            for (int i = 0; i < ordersList.size(); i++) {
-                //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
-
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
-                String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
-                if (orderstatusfromOrderList.equals(Constants.NEW_ORDER_STATUS)) {
-                    newCount++;
-
-                    Log.i("Tag", "Count New : " + newCount);
-
-                } else if (orderstatusfromOrderList.equals(Constants.CONFIRMED_ORDER_STATUS)) {
-                    confirmedCount++;
-
-
-                    Log.i("Tag", "Count confirmed : " + confirmedCount);
-
-                } else if (orderstatusfromOrderList.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
-                    readyForPickupCount++;
-
-
-                    Log.i("Tag", "Count ready : " + readyForPickupCount);
-
-                } else if (orderstatusfromOrderList.equals(Constants.PICKEDUP_ORDER_STATUS)) {
-                    transitCount++;
-
-
-                    Log.i("Tag", "Count transit : " + transitCount);
-
-                } else if (orderstatusfromOrderList.equals(Constants.DELIVERED_ORDER_STATUS)) {
-                    deliveredCount++;
-
-
-                    Log.i("Tag", "Count delivered : " + deliveredCount);
-
-                } else {
-                    Log.i("Tag", "Count Status not matched ");
-
-                }
-            }
-
-
-            if (newCount > 0) {
-                new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, newCount));
-            } else {
-                new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
-
-            }
-
-
-            if (confirmedCount > 0) {
-                confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, confirmedCount));
-            } else {
-                confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
-
-            }
-
-
-            if (readyForPickupCount > 0) {
-                ready_Order_widget.setText(String.format("%s ( %d )", Constants.READY_FOR_PICKUP_ORDER_STATUS, readyForPickupCount));
-            } else {
-                ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
-
-            }
-
-
-            if (transitCount > 0) {
-                transist_Order_widget.setText(String.format("%s ( %d )", Constants.PICKEDUP_ORDER_STATUS, transitCount));
-            } else {
-                transist_Order_widget.setText(String.format("%s", Constants.PICKEDUP_ORDER_STATUS));
-
-            }
-
-            if (deliveredCount > 0) {
-                delivered_Order_widget.setText(String.format("%s ( %d )", Constants.DELIVERED_ORDER_STATUS, deliveredCount));
-            } else {
-                delivered_Order_widget.setText(String.format("%s", Constants.DELIVERED_ORDER_STATUS));
-
-            }
 
             if (sorted_OrdersList.size() > 0) {
                 if (orderStatus.equals(Constants.NEW_ORDER_STATUS)) {
@@ -6150,6 +6104,91 @@ public class Pos_ManageOrderFragment extends Fragment {
         }
 
 //callAdapter();
+    }
+
+    public void calculate_and_displayno_of_orders_statuswise() {
+        int newCount=0,confirmedCount=0,readyForPickupCount=0,transitCount=0,deliveredCount=0;
+
+
+        for (int i = 0; i < ordersList.size(); i++) {
+            //Log.d(Constants.TAG, "displayorderDetailsinListview ordersList: " + ordersList.get(i));
+
+            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList = ordersList.get(i);
+            String orderstatusfromOrderList = modal_manageOrders_forOrderDetailList.getOrderstatus().toUpperCase();
+            if (orderstatusfromOrderList.equals(Constants.NEW_ORDER_STATUS)) {
+                newCount++;
+
+                Log.i("Tag", "Count New : " + newCount);
+
+            } else if (orderstatusfromOrderList.equals(Constants.CONFIRMED_ORDER_STATUS)) {
+                confirmedCount++;
+
+
+                Log.i("Tag", "Count confirmed : " + confirmedCount);
+
+            } else if (orderstatusfromOrderList.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)) {
+                readyForPickupCount++;
+
+
+                Log.i("Tag", "Count ready : " + readyForPickupCount);
+
+            } else if (orderstatusfromOrderList.equals(Constants.PICKEDUP_ORDER_STATUS)) {
+                transitCount++;
+
+
+                Log.i("Tag", "Count transit : " + transitCount);
+
+            } else if (orderstatusfromOrderList.equals(Constants.DELIVERED_ORDER_STATUS)) {
+                deliveredCount++;
+
+
+                Log.i("Tag", "Count delivered : " + deliveredCount);
+
+            } else {
+                Log.i("Tag", "Count Status not matched ");
+
+            }
+        }
+
+
+        if (newCount > 0) {
+            new_Order_widget.setText(String.format("%s ( %d )", Constants.NEW_ORDER_STATUS, newCount));
+        } else {
+            new_Order_widget.setText(String.format("%s", Constants.NEW_ORDER_STATUS));
+
+        }
+
+
+        if (confirmedCount > 0) {
+            confirmed_Order_widget.setText(String.format("%s ( %d )", Constants.CONFIRMED_ORDER_STATUS, confirmedCount));
+        } else {
+            confirmed_Order_widget.setText(String.format("%s", Constants.CONFIRMED_ORDER_STATUS));
+
+        }
+
+
+        if (readyForPickupCount > 0) {
+            ready_Order_widget.setText(String.format("%s ( %d )", Constants.READY_FOR_PICKUP_ORDER_STATUS, readyForPickupCount));
+        } else {
+            ready_Order_widget.setText(String.format("%s", Constants.READY_FOR_PICKUP_ORDER_STATUS));
+
+        }
+
+
+        if (transitCount > 0) {
+            transist_Order_widget.setText(String.format("%s ( %d )", Constants.PICKEDUP_ORDER_STATUS, transitCount));
+        } else {
+            transist_Order_widget.setText(String.format("%s", Constants.PICKEDUP_ORDER_STATUS));
+
+        }
+
+        if (deliveredCount > 0) {
+            delivered_Order_widget.setText(String.format("%s ( %d )", Constants.DELIVERED_ORDER_STATUS, deliveredCount));
+        } else {
+            delivered_Order_widget.setText(String.format("%s", Constants.DELIVERED_ORDER_STATUS));
+
+        }
+
     }
 
     void showOrderInstructionText(boolean show) {

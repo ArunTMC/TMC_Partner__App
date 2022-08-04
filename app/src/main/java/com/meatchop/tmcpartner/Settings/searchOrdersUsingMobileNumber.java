@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
@@ -49,7 +48,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.dantsu.escposprinter.connection.DeviceConnection;
 import com.dantsu.escposprinter.connection.usb.UsbConnection;
-import com.dantsu.escposprinter.connection.usb.UsbPrintersConnections;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
@@ -711,6 +709,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                                 modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
                                 modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                                 modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+                                modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
 
                                 modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
@@ -3117,6 +3116,12 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             }
 
 
+            try{
+                deliveryAmount_double = Double.parseDouble(DeliveryAmount);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
 
             try{
@@ -3127,7 +3132,23 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+
             if( deliveryAmount_double>0) {
+                DeliveryAmount = "Rs."+DeliveryAmount+".00";
+
+                if (DeliveryAmount.length() == 2) {
+                    //25spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                       " + DeliveryAmount;
+                }
+
+                if (DeliveryAmount.length() == 3) {
+                    //25spaces
+                    //DeliveryAmount =15
+                    DeliveryAmount = "Delivery Amount                        " + DeliveryAmount;
+                }
+
+
                 if (DeliveryAmount.length() == 4) {
                     //25spaces
                     //DeliveryAmount =15
@@ -4010,7 +4031,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         };
         mContext = searchOrdersUsingMobileNumber.this;
         mVolleyService = new VendorOrdersTableService(mResultCallback,mContext);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        //String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_SingleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 
@@ -5123,6 +5146,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         modal_manageOrders_forOrderDetailList1.slottimerange = modal_manageOrders_forOrderDetailList.getSlottimerange();
                         modal_manageOrders_forOrderDetailList1.deliverydistance = modal_manageOrders_forOrderDetailList.getDeliverydistance();
                         deliverydistancefromarray = Double.parseDouble(modal_manageOrders_forOrderDetailList.getDeliverydistance());
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                         modal_manageOrders_forOrderDetailList1.orderconfirmedtime = modal_manageOrders_forOrderDetailList.getOrderconfirmedtime();
                         modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
@@ -5191,6 +5215,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                         modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                         modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
                         modal_manageOrders_forOrderDetailList1.slotdate = modal_manageOrders_forOrderDetailList.getSlotdate();
@@ -5266,6 +5291,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                         modal_manageOrders_forOrderDetailList1.useraddresslon = modal_manageOrders_forOrderDetailList.getUseraddresslon();
                         modal_manageOrders_forOrderDetailList1.notes = modal_manageOrders_forOrderDetailList.getNotes();
                         modal_manageOrders_forOrderDetailList1.useraddresskey = modal_manageOrders_forOrderDetailList.getUseraddresskey();
+                        modal_manageOrders_forOrderDetailList1.userstatus = modal_manageOrders_forOrderDetailList.getUserstatus();
 
                         modal_manageOrders_forOrderDetailList1.deliveryamount = modal_manageOrders_forOrderDetailList.getDeliveryamount();
                         modal_manageOrders_forOrderDetailList1.orderdetailskey = modal_manageOrders_forOrderDetailList.getOrderdetailskey();
@@ -5920,6 +5946,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             modal_usbPrinter.orderdetailskey = selectedOrder.getOrderdetailskey();
             modal_usbPrinter.deliverydistance =selectedOrder.getDeliverydistance();
             modal_usbPrinter.payment_mode =selectedOrder. getPaymentmode();
+            modal_usbPrinter.deliveryamount =selectedOrder. getDeliveryamount();
 
 
 
@@ -7044,6 +7071,14 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         }
 
         try{
+            deliveryAmount_double = Double.parseDouble(DeliveryAmount);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
             totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt = totalAmountFromAddingSubtotalWithDiscount+deliveryAmount_double;
 
         }
@@ -7052,6 +7087,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         }
 
         if( deliveryAmount_double>0) {
+            DeliveryAmount = "Rs."+DeliveryAmount+".00";
+
          /*   if (DeliveryAmount.length() == 4) {
                 //25spaces
                 //DeliveryAmount =15

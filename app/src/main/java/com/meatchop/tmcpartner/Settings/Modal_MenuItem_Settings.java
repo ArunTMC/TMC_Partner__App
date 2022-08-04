@@ -2,7 +2,7 @@ package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuItem_Settings extends Throwable {
 
-    String menuItemKeyFromInventoryDetails="",itemnameFromInventoryDetails ="",relationtypeFromInventoryDetails ="";
+    String menuItemKeyFromInventoryDetails="",itemnameFromInventoryDetails ="",relationtypeFromInventoryDetails ="CHILD";
     String grossweightinGramsFromInventoryDetails, netweightingramsFromInventoryDetails;
     boolean isshowavailabilityFromInventoryDetails = false;
 

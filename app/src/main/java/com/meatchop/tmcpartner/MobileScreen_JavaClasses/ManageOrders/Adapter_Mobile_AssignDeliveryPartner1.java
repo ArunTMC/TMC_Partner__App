@@ -32,6 +32,7 @@ import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.Settings.Adapter_Mobile_SearchOrders_usingMobileNumber_ListView;
 import com.meatchop.tmcpartner.Settings.Edit_Or_CancelOrder_OrderDetails_Screen;
 import com.meatchop.tmcpartner.Settings.Edit_Or_CancelTheOrders;
+import com.meatchop.tmcpartner.Settings.Phone_Orders_List;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONException;
@@ -172,6 +173,24 @@ public void onClick(View view) {
         e.printStackTrace();
     }
 
+    try {
+        if (IntentFrom.equals("PhoneOrdersList")) {
+
+            try {
+
+                Adapter_Mobile_SearchOrders_usingMobileNumber_ListView.bottomSheetDialog.dismiss();
+
+
+                Phone_Orders_List.loadingpanelmask.setVisibility(View.VISIBLE);
+                Phone_Orders_List.loadingPanel.setVisibility(View.VISIBLE);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
 
     try {
         if (IntentFrom.contains("orderdetails")) {
@@ -388,6 +407,38 @@ public void onResponse(@NonNull JSONObject response) {
                 e.printStackTrace();
             }
 
+
+
+            try {
+                if (IntentFrom.equals("PhoneOrdersList")) {
+
+                    try {
+
+                        Adapter_Mobile_SearchOrders_usingMobileNumber_ListView.bottomSheetDialog.dismiss();
+
+                        for (int i = 0; i < Phone_Orders_List.sorted_OrdersList.size(); i++) {
+                            final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.sorted_OrdersList.get(i);
+                            String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                            if (orderid_local.equals(orderid)) {
+                                modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+                            }
+                        }
+                        Phone_Orders_List.loadingpanelmask.setVisibility(View.GONE);
+                        Phone_Orders_List.loadingPanel.setVisibility(View.GONE);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+
+
             try {
                 if (IntentFrom.equals("EditOrders")) {
 
@@ -440,7 +491,7 @@ public void onResponse(@NonNull JSONObject response) {
 
 
             try {
-                if (IntentFrom.contains("orderdetails")) {
+                //if (IntentFrom.contains("orderdetails")) {
                     try {
                         if (IntentFrom.contains("AppOrdersList")) {
                             try {
@@ -467,6 +518,35 @@ public void onResponse(@NonNull JSONObject response) {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
+                    try {
+                        if (IntentFrom.contains("PhoneOrdersList")) {
+                            try {
+
+                                MobileScreen_OrderDetails1.bottomSheetDialog.dismiss();
+
+                                for (int i = 0; i < Phone_Orders_List.sorted_OrdersList.size(); i++) {
+                                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.sorted_OrdersList.get(i);
+                                    String orderid_local = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                    if (orderid_local.equals(orderid)) {
+                                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                        modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+                                        MobileScreen_OrderDetails1.deliveryPartner_name_widget.setText(deliveryPartnerName);
+                                        MobileScreen_OrderDetails1.deliveryPartner_mobileNo_widget.setText(deliveryPartnerMobileNo);
+
+                                    }
+                                }
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
                     try {
                         if (IntentFrom.contains("MobileManageOrders")) {
                             try {
@@ -495,7 +575,7 @@ public void onResponse(@NonNull JSONObject response) {
                     MobileScreen_OrderDetails1.loadingpanelmask.setVisibility(View.GONE);
                     MobileScreen_OrderDetails1.loadingPanel.setVisibility(View.GONE);
 
-                }
+            //    }
 
 
 

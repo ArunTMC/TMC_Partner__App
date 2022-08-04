@@ -30,6 +30,7 @@ import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_Mana
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.Settings.Phone_Orders_List;
 import com.meatchop.tmcpartner.Settings.searchOrdersUsingMobileNumber;
 
 import org.json.JSONException;
@@ -292,6 +293,42 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                                             intent = new Intent(mContext, searchOrdersUsingMobileNumber.class);
 
                                         }
+
+
+                                        else if(fromActivityName.equals("PhoneSearchOrders")){
+
+
+                                            for(int i = 0; i< Phone_Orders_List.sorted_OrdersList.size(); i++){
+                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.sorted_OrdersList.get(i);
+                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                if(TrackingTableorderid.equals(orderid)){
+                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                }
+                                            }
+                                            for(int i = 0; i< Phone_Orders_List.ordersList.size(); i++){
+                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.ordersList.get(i);
+                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                if(TrackingTableorderid.equals(orderid)){
+                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                }
+                                            }
+                                            try {
+                                                Phone_Orders_List.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                            intent = new Intent(mContext, Phone_Orders_List.class);
+
+                                        }
+
+
                                         else {
                                             intent = new Intent(mContext, Pos_Dashboard_Screen.class);
 

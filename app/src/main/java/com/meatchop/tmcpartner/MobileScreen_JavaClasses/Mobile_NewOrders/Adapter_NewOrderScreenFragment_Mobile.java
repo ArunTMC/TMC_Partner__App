@@ -234,6 +234,15 @@ public class Adapter_NewOrderScreenFragment_Mobile extends RecyclerView.Adapter<
 
                     Modal_NewOrderItems newItem_newOrdersPojoClass = (Objects.requireNonNull(NewOrderScreenFragment_mobile.cartItem_hashmap.get(barcode)));
                     String pricetypeforpos = newItem_newOrdersPojoClass.getPricetypeforpos().toString();
+                    int quantity = 1;
+                    try{
+                        quantity = Integer.parseInt(newItem_newOrdersPojoClass.getQuantity());
+
+                    }
+                    catch (Exception e){
+                        quantity = 1;
+                        e.printStackTrace();
+                    }
 
                     int priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
                     String itemWeight = holder.mobile_itemWeight_widget.getText().toString();
@@ -292,8 +301,7 @@ public class Adapter_NewOrderScreenFragment_Mobile extends RecyclerView.Adapter<
                                 //Log.e("TAg", "weight2" + weight);
                                 item_total = Double.parseDouble(decimalFormat.format(item_total));
 
-
-                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(item_total)) + ".00");
+                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(item_total*quantity)) + ".00");
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(item_total));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
                                 newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
@@ -306,7 +314,7 @@ public class Adapter_NewOrderScreenFragment_Mobile extends RecyclerView.Adapter<
                             }
 
                             if (weight == 1000) {
-                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(priceperKg) + ".00");
+                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(priceperKg*quantity) + ".00");
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(priceperKg));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
                                 newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
@@ -337,7 +345,7 @@ public class Adapter_NewOrderScreenFragment_Mobile extends RecyclerView.Adapter<
                                 total = Double.parseDouble(decimalFormat.format((total)));
 
 
-                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(total)) + ".00");
+                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(total*quantity)) + ".00");
                                 newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(total));
                                 newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
                                 //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);

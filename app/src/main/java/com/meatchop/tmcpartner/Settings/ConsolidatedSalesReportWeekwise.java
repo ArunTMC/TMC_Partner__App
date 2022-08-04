@@ -96,8 +96,8 @@ import static android.os.Build.VERSION.SDK_INT;
 public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     LinearLayout fetchData,endDateSelectorLayout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker,enddatepicker;
-    TextView instruction_textview,wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget,vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-    String vendorname,deliveryamount="0",vendorKey, ordertype, slotname, DateString;
+    TextView deliveryCharge_label,instruction_textview,wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget,vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    String vendorname,deliveryamount="0", deliveryAmountPhoneOrder ="0",vendorKey, ordertype, slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
     double screenInches;
@@ -136,6 +136,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
     public static List<String> deliveryChargeOrderidArray;
     public static HashMap<String, String> deliveryCharge_hashmap = new HashMap();
+
+
+    public static List<String> phoneorderdeliveryChargeOrderidArray;
+    public static HashMap<String, String> phoneorderdeliveryCharge_hashmap = new HashMap();
 
 
 
@@ -239,7 +243,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         endDateSelector_text = findViewById(R.id.endDateSelector_text);
         refundAmount_textwidget = findViewById(R.id.refundAmount_textwidget);
         replacementAmount_textwidget = findViewById(R.id.replacementAmount_textwidget);
-
+        deliveryCharge_label = findViewById(R.id.deliveryCharge_label);
 
         //  getdatainstruction = findViewById(R.id.getdatainstruction);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
@@ -260,6 +264,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         dunzoOrders_couponDiscountOrderidArray = new ArrayList<>();
         bigBasketOrders_couponDiscountOrderidArray = new ArrayList<>();
         wholesaleOrders_couponDiscountOrderidArray  = new ArrayList<>();
+        phoneorderdeliveryChargeOrderidArray  = new ArrayList<>();
 
         ordertypeArray = new ArrayList<>();
         Order_Item_List.clear();
@@ -277,11 +282,13 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         Pos_couponDiscountOrderidArray.clear();
         phoneOrders_couponDiscount_hashmap.clear();
         phoneOrders_couponDiscountOrderidArray.clear();
+        
         swiggyOrders_couponDiscountOrderidArray.clear();
         dunzoOrders_couponDiscountOrderidArray.clear();
         bigBasketOrders_couponDiscountOrderidArray.clear();
         wholesaleOrders_couponDiscountOrderidArray.clear();
         wholesaleOrders_couponDiscount_hashmap.clear();
+        
         tmcSubCtgykey.clear();
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
@@ -289,7 +296,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         tmcSubCtgykey.clear();
         deliveryCharge_hashmap.clear();
         deliveryChargeOrderidArray.clear();
-
+        phoneorderdeliveryChargeOrderidArray.clear();
+        phoneorderdeliveryCharge_hashmap.clear();
+        phoneorderdeliveryChargeOrderidArray.clear();
+        phoneorderdeliveryCharge_hashmap.clear();
         replacementTransactiontypeHashmap.clear();
         replacementTransactiontypeArray.clear();
 
@@ -376,6 +386,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             wholesaleOrders_couponDiscount_hashmap.clear();
             tmcSubCtgykey.clear();
             deliveryChargeOrderidArray.clear();
+            phoneorderdeliveryChargeOrderidArray.clear();
+            phoneorderdeliveryCharge_hashmap.clear();
             oldpayableamount = 0;
             itemDespTotalAmount = 0;
             Pos_couponDiscount_hashmap.clear();
@@ -424,6 +436,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     couponDiscount_hashmap.clear();
                     deliveryCharge_hashmap.clear();
                     deliveryChargeOrderidArray.clear();
+                     phoneorderdeliveryChargeOrderidArray.clear();
+                     phoneorderdeliveryCharge_hashmap.clear();
                     oldpayableamount = 0;
                     itemDespTotalAmount = 0;
                     Pos_couponDiscount_hashmap.clear();
@@ -989,6 +1003,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                             wholesaleOrders_couponDiscount_hashmap.clear();
 
                             deliveryChargeOrderidArray.clear();
+                            phoneorderdeliveryChargeOrderidArray.clear();
+                            phoneorderdeliveryCharge_hashmap.clear();
                             oldpayableamount = 0;
                             itemDespTotalAmount = 0;
                             Pos_couponDiscount_hashmap.clear();
@@ -1235,6 +1251,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                             wholesaleOrders_couponDiscount_hashmap.clear();
 
                             deliveryChargeOrderidArray.clear();
+                             phoneorderdeliveryChargeOrderidArray.clear();
+                            phoneorderdeliveryCharge_hashmap.clear();
                             oldpayableamount = 0;
                             itemDespTotalAmount = 0;
                             Pos_couponDiscount_hashmap.clear();
@@ -1380,6 +1398,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     tmcSubCtgykey.clear();
                     deliveryCharge_hashmap.clear();
                     deliveryChargeOrderidArray.clear();
+                     phoneorderdeliveryChargeOrderidArray.clear();
+                     phoneorderdeliveryCharge_hashmap.clear();
                     wholesaleOrders_couponDiscountOrderidArray.clear();
                     wholesaleOrders_couponDiscount_hashmap.clear();
                     bigBasketOrders_couponDiscountOrderidArray.clear();
@@ -1427,6 +1447,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                 tmcSubCtgykey.clear();
                 deliveryCharge_hashmap.clear();
                 deliveryChargeOrderidArray.clear();
+               phoneorderdeliveryChargeOrderidArray.clear();
+               phoneorderdeliveryCharge_hashmap.clear();
                 wholesaleOrders_couponDiscountOrderidArray.clear();
                 wholesaleOrders_couponDiscount_hashmap.clear();
                 bigBasketOrders_couponDiscountOrderidArray.clear();
@@ -1563,17 +1585,6 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             }
 
 
-            try {
-
-                deliveryamount = String.valueOf(orders_pojo_class_fromResponse.getDeliveryamount());
-                modal_orderDetails.deliveryamount = deliveryamount;
-
-            } catch (Exception e) {
-                deliveryamount = "";
-                modal_orderDetails.deliveryamount = deliveryamount;
-
-                e.printStackTrace();
-            }
 
 
             try {
@@ -1592,18 +1603,63 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             try {
                 if (ordertype.equals(Constants.APPORDER)) {
 
+                    try {
+
+                        deliveryamount = String.valueOf(orders_pojo_class_fromResponse.getDeliveryamount());
+                        modal_orderDetails.deliveryamount = deliveryamount;
+
+                    } catch (Exception e) {
+                        deliveryamount = "";
+                        modal_orderDetails.deliveryamount = deliveryamount;
+
+                        e.printStackTrace();
+                    }
 
                     try {
-                        if (deliveryamount.equals("")) {
-                            deliveryamount = "0.00";
+                        if ((!deliveryamount.equals("")) && (!deliveryamount.equals("0")) && (!deliveryamount.equals("0.0")) && (!deliveryamount.equals("0.00")) ) {
+                           // deliveryamount = "0.00";
+
+                            if (!orderid.equals("")) {
+                                if (!deliveryChargeOrderidArray.contains(orderid)) {
+                                    deliveryChargeOrderidArray.add(orderid);
+                                    deliveryCharge_hashmap.put(orderid, deliveryamount);
+                                } else {
+
+
+                                }
+                            }
                         }
-                        if (!orderid.equals("")) {
-                            if (!deliveryChargeOrderidArray.contains(orderid)) {
-                                deliveryChargeOrderidArray.add(orderid);
-                                deliveryCharge_hashmap.put(orderid, deliveryamount);
-                            } else {
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
 
+                } else  if ((ordertype.equals(Constants.PhoneOrder))) {
+
+                    try {
+
+                        deliveryAmountPhoneOrder = String.valueOf(orders_pojo_class_fromResponse.getDeliveryamount());
+                        modal_orderDetails.deliveryamount = deliveryAmountPhoneOrder;
+
+                    } catch (Exception e) {
+                        deliveryAmountPhoneOrder = "";
+                        modal_orderDetails.deliveryamount = deliveryAmountPhoneOrder;
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if ((!deliveryAmountPhoneOrder.equals("")) && (!deliveryAmountPhoneOrder.equals("0")) && (!deliveryAmountPhoneOrder.equals("0.00")) && (!deliveryAmountPhoneOrder.equals("0.0"))) {
+                            //deliveryAmountPhoneOrder = "0.00";
+
+                            if (!orderid.equals("")) {
+                                if (!phoneorderdeliveryChargeOrderidArray.contains(orderid)) {
+                                    phoneorderdeliveryChargeOrderidArray.add(orderid);
+                                    phoneorderdeliveryCharge_hashmap.put(orderid, deliveryAmountPhoneOrder);
+                                } else {
+
+
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -1841,6 +1897,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     tmcSubCtgykey.clear();
                     deliveryCharge_hashmap.clear();
                     deliveryChargeOrderidArray.clear();
+        phoneorderdeliveryChargeOrderidArray.clear();
+        phoneorderdeliveryCharge_hashmap.clear();
                     wholesaleOrders_couponDiscountOrderidArray.clear();
                     wholesaleOrders_couponDiscount_hashmap.clear();
                     bigBasketOrders_couponDiscountOrderidArray.clear();
@@ -2032,18 +2090,19 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                                                     modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
 
                                                     //Log.d(Constants.TAG, "OrderType: " + slotname);
-                                                    if (deliveryamount.equals("")) {
-                                                        deliveryamount = "0.00";
-                                                    }
-                                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
-                                                    if (!orderid.equals("")) {
-                                                        if (!deliveryChargeOrderidArray.contains(orderid)) {
-                                                            deliveryChargeOrderidArray.add(orderid);
-                                                            deliveryCharge_hashmap.put(orderid, deliveryamount);
-                                                        } else {
-                                                            //Log.d(Constants.TAG, "This orderid already have an discount");
+                                                    if ((!deliveryamount.equals("")) && (!deliveryamount.equals("0")) && (!deliveryamount.equals("0.0")) && (!deliveryamount.equals("0.00")) ) {
+                                                        //deliveryamount = "0.00";
+
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        if (!orderid.equals("")) {
+                                                            if (!deliveryChargeOrderidArray.contains(orderid)) {
+                                                                deliveryChargeOrderidArray.add(orderid);
+                                                                deliveryCharge_hashmap.put(orderid, deliveryamount);
+                                                            } else {
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
 
 
+                                                            }
                                                         }
                                                     }
                                                 }catch(Exception e ){
@@ -2162,7 +2221,60 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
                                         else if((ordertype.equals(Constants.PhoneOrder))){
                                             if (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME) || slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) {
+                                                if (json.has("deliveryamount")) {
+                                                    try {
 
+                                                        deliveryAmountPhoneOrder = String.valueOf(json.get("deliveryamount"));
+                                                        modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+
+
+                                                        //Log.d(Constants.TAG, "OrderType: " + slotname);
+                                                        if ((!deliveryAmountPhoneOrder.equals("")) && (!deliveryAmountPhoneOrder.equals("0")) && (!deliveryAmountPhoneOrder.equals("0.00")) && (!deliveryAmountPhoneOrder.equals("0.0"))) {
+                                                           // deliveryAmountPhoneOrder = "0.00";
+
+                                                        //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                                        if (!orderid.equals("")) {
+                                                            if (!phoneorderdeliveryChargeOrderidArray.contains(orderid)) {
+                                                                phoneorderdeliveryChargeOrderidArray.add(orderid);
+                                                                phoneorderdeliveryCharge_hashmap.put(orderid, deliveryAmountPhoneOrder);
+                                                            } else {
+                                                                //Log.d(Constants.TAG, "This orderid already have an discount");
+
+
+                                                            }
+                                                        }
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                } else {
+                                                    modal_orderDetails.deliveryamount = "0.00";
+                                                    //Log.d(Constants.TAG, "There is no slotname: " + String.valueOf(json.get("ordertype")));
+
+                                                }
+
+
+                                                if (json.has("deliverytype")) {
+                                                    try {
+                                                        modal_orderDetails.deliverytype = String.valueOf(json.get("deliverytype"));
+                                                        deliverytype = String.valueOf(json.get("deliverytype"));
+
+
+                                                        //Log.d(Constants.TAG, "deliverytype 1: " + String.valueOf(json.get("orderid")));
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                        //Log.d(Constants.TAG, "deliverytype:2 " + String.valueOf(json.get("orderid")));
+
+                                                    }
+
+                                                } else {
+                                                    modal_orderDetails.deliverytype = "There is no deliverytype";
+                                                    //Log.d(Constants.TAG, " deliverytype3: " + String.valueOf(json.get("orderid")));
+
+
+                                                }
 
                                                 if (json.has("coupondiscount")) {
                                                     try {
@@ -2583,6 +2695,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             tmcSubCtgykey.clear();
             deliveryCharge_hashmap.clear();
             deliveryChargeOrderidArray.clear();
+        phoneorderdeliveryChargeOrderidArray.clear();
+        phoneorderdeliveryCharge_hashmap.clear();
             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -3821,8 +3935,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
     private void addOrderedItemAmountDetails(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        double deliveryChargee = 0;
-
+        double deliveryChargee = 0 , deliveryCharge_phoneOrder = 0;
+        int no_ofOrdersWithdeliveryCharge = 0, no_ofPhoneOrdersWithDeliveryCharge = 0;
         double totalAmountWithhGst = 0;
         double discountAmount = 0;
         double pos_discountAmount = 0;
@@ -3983,7 +4097,31 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
             }
 
+            try{
+                no_ofOrdersWithdeliveryCharge = deliveryChargeOrderidArray.size();
+            }
+            catch (Exception e){
+                no_ofOrdersWithdeliveryCharge = 0;
+                e.printStackTrace();
+            }
 
+
+
+            for (String orderid : phoneorderdeliveryChargeOrderidArray) {
+                String DeliveryChargeString = phoneorderdeliveryCharge_hashmap.get(orderid);
+                double deliveryCharge_double = Double.parseDouble(DeliveryChargeString);
+                deliveryCharge_phoneOrder = deliveryCharge_phoneOrder  + deliveryCharge_double;
+
+            }
+
+
+            try{
+                no_ofPhoneOrdersWithDeliveryCharge = phoneorderdeliveryChargeOrderidArray.size();
+            }
+            catch (Exception e){
+                no_ofPhoneOrdersWithDeliveryCharge = 0;
+                e.printStackTrace();
+            }
 
 
             for (int i = 0; i < order_item_list.size(); i++) {
@@ -4017,6 +4155,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     if ((ordertype.toUpperCase().equals(Constants.PhoneOrder))||(ordertype.equals("Phone Order"))) {
                         phoneorder_Amount = Double.parseDouble((Objects.requireNonNull(modal_orderDetails).getPhoneOrderSales()));
                         phoneorder_Amount = phoneorder_Amount-phoneOrders_discountAmount;
+                        phoneorder_Amount = phoneorder_Amount+deliveryCharge_phoneOrder;
+
                     }
 
                     if ((ordertype.toUpperCase().equals(Constants.WholeSaleOrder))||(ordertype.equals("WholeSale Order"))) {
@@ -4058,7 +4198,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             double totalAmountWithoutGst = totalAmountWithhGst-GST;
             discountAmount = discountAmount+pos_discountAmount+wholeSaleOrders_discountAmount+swiggyDiscount_amount+phoneOrders_discountAmount+dunzoOrders_discountAmount+bigBasketOrders_discountAmount;
             double totalAmt_with_CouponDiscount_double = totalAmountWithoutGst-discountAmount;
-            double totalAmt_with_CouponDiscount__deliverycharge = totalAmt_with_CouponDiscount_double+deliveryChargee;
+            double totalAmt_with_CouponDiscount__deliverycharge = totalAmt_with_CouponDiscount_double+deliveryChargee+deliveryCharge_phoneOrder;
             double totalAmt_with_CouponDiscount__deliverycharge_refund_replacement = totalAmt_with_CouponDiscount__deliverycharge - totalRefundAmount - totalReplacementAmount;
 
             double totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement = totalAmt_with_CouponDiscount__deliverycharge_refund_replacement-GST;
@@ -4079,8 +4219,13 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoorder_Amount)));
             bigBasketSales.setText(String.valueOf(decimalFormat.format(bigBasketorder_Amount)));
             wholesalesOrderSales.setText(String.valueOf(decimalFormat.format(wholeSaleorder_Amount)));
-
-            deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee)));
+            try{
+                deliveryCharge_label.setText("(E) Delivery Charge  ( "+String.valueOf(no_ofOrdersWithdeliveryCharge+no_ofPhoneOrdersWithDeliveryCharge)+" ) ");
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder)));
             phoneOrderSales.setText(String.valueOf(decimalFormat.format(phoneorder_Amount)));
             totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
 
@@ -4093,7 +4238,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             finalBillDetails.add("REPLACEMENT : ");
             FinalBill_hashmap.put("REPLACEMENT : ", String.valueOf(decimalFormat.format(totalReplacementAmount)));
             finalBillDetails.add("DELIVERY CHARGES  : ");
-            FinalBill_hashmap.put("DELIVERY CHARGES  : ", String.valueOf(deliveryamount));
+            FinalBill_hashmap.put("DELIVERY CHARGES  : ", String.valueOf(deliveryamount+deliveryAmountPhoneOrder));
             finalBillDetails.add("SUBTOTAL : ");
             FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             finalBillDetails.add("GST : ");
@@ -5453,6 +5598,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             double phoneorder_Amount = 0;
             double dunzoorder_Amount = 0;
             double bigBasketorder_Amount = 0;
+            double deliveryChargee=0,deliveryCharge_phoneOrder=0;
 
             String Payment_Amount = "0";
             double discountAmount = 0;
@@ -5512,6 +5658,24 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                 bigBasketorder_discountAmount = bigBasketorder_discountAmount + CouponDiscount_double;
 
             }
+
+
+
+            for (String orderid : deliveryChargeOrderidArray) {
+                String DeliveryChargeString = deliveryCharge_hashmap.get(orderid);
+                double deliveryCharge_double = Double.parseDouble(DeliveryChargeString);
+                deliveryChargee = deliveryChargee + deliveryCharge_double;
+
+            }
+
+
+            for (String orderid : phoneorderdeliveryChargeOrderidArray) {
+                String DeliveryChargeString = phoneorderdeliveryCharge_hashmap.get(orderid);
+                double deliveryCharge_double = Double.parseDouble(DeliveryChargeString);
+                deliveryCharge_phoneOrder = deliveryCharge_phoneOrder  + deliveryCharge_double;
+
+            }
+
 
             for(String ordertype :ordertypeArray){
                 String replacmentFromTextview = "",refundFromTextview = "";
@@ -5600,6 +5764,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     if ((ordertype.toUpperCase().equals(Constants.APPORDER))||(ordertype.equals("apporder"))) {
                         apporder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getAppSales())));
                         apporder_Amount = apporder_Amount-apporder_discountAmount;
+                        apporder_Amount = apporder_Amount + deliveryChargee;
+
                         paymentModeitemkeycell = new PdfPCell(new Phrase("APPORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
@@ -5622,6 +5788,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     if ((ordertype.toUpperCase().equals(Constants.PhoneOrder))||(ordertype.equals("Phone Order"))) {
                         phoneorder_Amount = Double.parseDouble(decimalFormat.format(Double.parseDouble(Objects.requireNonNull(modal_orderDetails).getPhoneOrderSales())));
                         phoneorder_Amount = phoneorder_Amount-phoneorder_discountAmount;
+                        phoneorder_Amount = phoneorder_Amount+deliveryCharge_phoneOrder;
+
                         paymentModeitemkeycell = new PdfPCell(new Phrase("PHONE ORDER :  "));
                         paymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
                         paymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);

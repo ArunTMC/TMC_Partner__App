@@ -74,8 +74,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     LinearLayout orderDetailsLayout,PrintReport_Layout,viewOrdersList_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel,getOrdersList_Layout;
     DatePickerDialog datepicker;
     TextView totaldeliveredOrdersCount,totalOrdersCount,preorder_cashOnDelivery,preorder_Phonepe,preorder_Razorpay,preorder_paytmSales;
-    TextView Phonepe,totalSales_headingText,Razorpay,Paytm, cashOnDelivery,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
-
+    TextView cashOnDelivery_phoneOrders,upiSales_phoneOrders,cardSales_phoneOrders,phonepe_phoneOrders,Phonepe,totalSales_headingText,Razorpay,Paytm, cashOnDelivery,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView creditSales,preorder_creditSales,creditSales_phoneOrders;
     TextView deliveryChargeAmount_textwidget,deliverypartnerName_textwidget,cashSales, cardSales,ordersInstruction;
     String vendorKey,CurrentDay_date,assignedOrdersString="";
     double screenInches;
@@ -105,11 +105,21 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
     public static List<String> preorderpaymentMode_DeliveryChargeOrderid;
     public static HashMap<String, Modal_OrderDetails> preorderpaymentMode_DeliveryChargeHashmap = new HashMap();
-    
+
+    public static List<String> phoneorder_paymentModeArray;
+    public static HashMap<String, Modal_OrderDetails> phoneorder_paymentModeHashmap  = new HashMap();;
+
+
+    public static List<String> phoneorderpaymentMode_DiscountOrderid = new ArrayList<>();
+    public static HashMap<String, Modal_OrderDetails>  phoneorderpaymentMode_DiscountHashmap  = new HashMap();;
+
+
+    public static List<String> phoneorderpaymentMode_DeliveryChargeOrderid = new ArrayList<>();
+    public static HashMap<String, Modal_OrderDetails> phoneorderpaymentMode_DeliveryChargeHashmap = new HashMap();
 
 
 
-    public static List<String> paymentMode_DeliveryChargeOrderid;
+    public static List<String> paymentMode_DeliveryChargeOrderid = new ArrayList<>();
     public static HashMap<String, Modal_OrderDetails> paymentMode_DeliveryChargeHashmap = new HashMap();
     
     public static List<String> finalBillDetails;
@@ -120,14 +130,15 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     public static HashMap<String, Modal_OrderDetails>  paymentMode_DiscountHashmap  = new HashMap();;
 
 
-    double CouponDiscount=0,Gst_from_array =0 ,CouponDiscount_preorder = 0,deliveryCharges=0,deliveryCharges_preorder=0,totalDeliveryCharges=0,totalCouponDiscount=0;
+    double CouponDiscount_phoneorder = 0,CouponDiscount=0,Gst_from_array =0 ,CouponDiscount_preorder = 0,deliveryCharges=0,deliveryCharges_preorder=0,deliveryCharges_phoneorder=0,totalDeliveryCharges=0,totalCouponDiscount=0;
 
     private JSONArray result = new JSONArray();
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
-    String deliveryPartnerStatus,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerName;
-    String finalCashAmount_pdf,finalRazorpayAmount_pdf,finalPhonepeAmount_pdf,finalPaytmAmount_pdf;
-    String finalpreorderCashAmount_pdf,finalpreorderRazorpayAmount_pdf,finalpreorderPhonepeAmount_pdf,finalpreorderPaytmAmount_pdf;
+    String deliveryPartnerStatus,deliveryPartnerKey,deliveryPartnerMobileNo ="",deliveryPartnerName;
+    String finalCashAmount_pdf,finalRazorpayAmount_pdf,finalPhonepeAmount_pdf,finalPaytmAmount_pdf,finalCreditAmount_pdf;
+    String finalpreorderCashAmount_pdf,finalpreorderRazorpayAmount_pdf,finalpreorderPhonepeAmount_pdf,finalpreorderPaytmAmount_pdf,finalpreorderCreditAmount_pdf;
+    String finalphoneorderCashAmount_pdf,finalphoneorderPhoenpeAmount_pdf,finalphoneorderCardAmount_pdf,finalphoneorderUPIAmount_pdf,finalphoneorderCreditAmount_pdf;
 
     boolean isSpinnerClicked = false;
     public String DeliveryPersonList;
@@ -176,6 +187,13 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         Razorpay = findViewById(R.id.Razorpay);
         Paytm  = findViewById(R.id.paytmSales);
         Phonepe  = findViewById(R.id.Phonepe);
+        cashOnDelivery_phoneOrders = findViewById(R.id.cashOnDelivery_phoneOrders);
+        phonepe_phoneOrders = findViewById(R.id.phonepe_phoneOrders);
+        cardSales_phoneOrders = findViewById(R.id.cardSales_phoneOrders);
+        upiSales_phoneOrders = findViewById(R.id.upiSales_phoneOrders);
+        creditSales = findViewById(R.id.creditSales);
+        preorder_creditSales  = findViewById(R.id.preorder_creditSales);
+        creditSales_phoneOrders  = findViewById(R.id.creditSales_phoneOrders);
         getOrdersList_Layout=findViewById(R.id.getOrdersList_Layout);
         ordersInstruction = findViewById(R.id.ordersInstruction);
         orderDetailsLayout = findViewById(R.id.orderDetailsLayout);
@@ -203,7 +221,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         paymentMode_DiscountOrderid = new ArrayList<>();
         preorderpaymentMode_DeliveryChargeOrderid = new ArrayList<>();
         paymentMode_DeliveryChargeOrderid = new ArrayList<>();
-
+        phoneorder_paymentModeArray = new ArrayList<>();
 
 
         OrderIdCount.clear();
@@ -226,6 +244,15 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         preorderpaymentMode_DeliveryChargeOrderid.clear();
         preorderpaymentMode_DeliveryChargeHashmap.clear();
 
+
+        phoneorder_paymentModeHashmap.clear();
+        phoneorder_paymentModeArray.clear();
+        phoneorderpaymentMode_DiscountOrderid.clear();
+        phoneorderpaymentMode_DiscountHashmap.clear();
+        phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+        phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+        
+        
         SharedPreferences sh
                 = getSharedPreferences("VendorLoginData",
                 MODE_PRIVATE);
@@ -299,7 +326,20 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                 preorderpaymentMode_DeliveryChargeOrderid.clear();
                 preorderpaymentMode_DeliveryChargeHashmap.clear();
+
+
+                phoneorder_paymentModeHashmap.clear();
+                phoneorder_paymentModeArray.clear();
+                phoneorderpaymentMode_DiscountOrderid.clear();
+                phoneorderpaymentMode_DiscountHashmap.clear();
+                phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
                 deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                 deliveryCharges_preorder=0;
                 CouponDiscount = 0;
                 CouponDiscount_preorder = 0;
@@ -353,10 +393,19 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     preorderpaymentMode_DiscountHashmap.clear();
                     paymentMode_DeliveryChargeHashmap.clear();
                     paymentMode_DeliveryChargeOrderid.clear();
-    
-                    preorderpaymentMode_DeliveryChargeOrderid.clear();
+
+                phoneorder_paymentModeHashmap.clear();
+                phoneorder_paymentModeArray.clear();
+                phoneorderpaymentMode_DiscountOrderid.clear();
+                phoneorderpaymentMode_DiscountHashmap.clear();
+                phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
                     preorderpaymentMode_DeliveryChargeHashmap.clear();
                     deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                     deliveryCharges_preorder=0;
                         
                     
@@ -576,10 +625,17 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         CouponDiscount_preorder =0;
         paymentMode_DeliveryChargeHashmap.clear();
         paymentMode_DeliveryChargeOrderid.clear();
-
+        phoneorder_paymentModeHashmap.clear();
+        phoneorder_paymentModeArray.clear();
+        phoneorderpaymentMode_DiscountOrderid.clear();
+        phoneorderpaymentMode_DiscountHashmap.clear();
+        phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+        phoneorderpaymentMode_DeliveryChargeHashmap.clear();
         preorderpaymentMode_DeliveryChargeOrderid.clear();
         preorderpaymentMode_DeliveryChargeHashmap.clear();
         deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
         deliveryCharges_preorder=0;
         delivered_OrderIdCount.clear();
         addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap,OrderIdCount);
@@ -629,10 +685,17 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             delivered_OrderIdCount.clear();
                             paymentMode_DeliveryChargeHashmap.clear();
                             paymentMode_DeliveryChargeOrderid.clear();
-
+                            phoneorder_paymentModeHashmap.clear();
+                            phoneorder_paymentModeArray.clear();
+                            phoneorderpaymentMode_DiscountOrderid.clear();
+                            phoneorderpaymentMode_DiscountHashmap.clear();
+                            phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                            phoneorderpaymentMode_DeliveryChargeHashmap.clear();
                             preorderpaymentMode_DeliveryChargeOrderid.clear();
                             preorderpaymentMode_DeliveryChargeHashmap.clear();
                             deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                             deliveryCharges_preorder=0;
 
                             addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap, OrderIdCount);
@@ -705,10 +768,17 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 delivered_OrderIdCount.clear();
                 paymentMode_DeliveryChargeHashmap.clear();
                 paymentMode_DeliveryChargeOrderid.clear();
-
+                phoneorder_paymentModeHashmap.clear();
+                phoneorder_paymentModeArray.clear();
+                phoneorderpaymentMode_DiscountOrderid.clear();
+                phoneorderpaymentMode_DiscountHashmap.clear();
+                phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                phoneorderpaymentMode_DeliveryChargeHashmap.clear();
                 preorderpaymentMode_DeliveryChargeOrderid.clear();
                 preorderpaymentMode_DeliveryChargeHashmap.clear();
                 deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                 deliveryCharges_preorder=0;
                 //getOrderForSelectedDate(DateString, vendorKey);
 
@@ -759,7 +829,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         String deliveryUserMobileNumberEncoded  = deliveryPartnerMobileNo;
         try {
             deliveryUserMobileNumberEncoded = URLEncoder.encode(deliveryPartnerMobileNo, "utf-8");
-        } catch (UnsupportedEncodingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         if(isVendorOrdersTableServiceCalled){
@@ -810,9 +880,18 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     paymentMode_DeliveryChargeHashmap.clear();
                     paymentMode_DeliveryChargeOrderid.clear();
 
+                    phoneorder_paymentModeHashmap.clear();
+                    phoneorder_paymentModeArray.clear();
+                    phoneorderpaymentMode_DiscountOrderid.clear();
+                    phoneorderpaymentMode_DiscountHashmap.clear();
+                    phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                    phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
                     preorderpaymentMode_DeliveryChargeOrderid.clear();
                     preorderpaymentMode_DeliveryChargeHashmap.clear();
                     deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                     deliveryCharges_preorder=0;
                     CouponDiscount = 0;
                     CouponDiscount_preorder = 0;
@@ -844,9 +923,18 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 paymentMode_DeliveryChargeHashmap.clear();
                 paymentMode_DeliveryChargeOrderid.clear();
 
+                phoneorder_paymentModeHashmap.clear();
+                phoneorder_paymentModeArray.clear();
+                phoneorderpaymentMode_DiscountOrderid.clear();
+                phoneorderpaymentMode_DiscountHashmap.clear();
+                phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
                 preorderpaymentMode_DeliveryChargeOrderid.clear();
                 preorderpaymentMode_DeliveryChargeHashmap.clear();
                 deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                 deliveryCharges_preorder=0;
                 CouponDiscount = 0;
                 CouponDiscount_preorder = 0;
@@ -860,7 +948,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         };
 
         mVolleyService = new VendorOrdersTableService(mResultCallback,DeliveryPartnerSettlementReport.this);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+       // String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype=APPORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_AppOrder_PhoneOrder + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&ordertype1=APPORDER"+"&ordertype2=PHONEORDER";
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingOrderDetails_slotDate_deliveryPartner + "?slotdate="+slotDate+"&vendorkey="+vendorKey+"&deliveryusermobileno="+deliveryUserMobileNumberEncoded;
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 
@@ -900,7 +989,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 }
 
                 try {
-                    paymentMode = String.valueOf(modal_manageOrders_pojo_classFromResponse.getPaymentmode());
+                    paymentMode = String.valueOf(modal_manageOrders_pojo_classFromResponse.getPaymentmode().toUpperCase());
                     modal_orderDetails.paymentmode = paymentMode;
 
                 } catch (Exception e) {
@@ -1192,7 +1281,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     }
 
 
-                    if (((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)))) {
+                    if((ordertype.equals(Constants.APPORDER)) && ((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)))){
+
 
 
                         try {
@@ -1396,6 +1486,204 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                     }
 
+                    if (ordertype.equals(Constants.PhoneOrder)) {
+
+
+                        try {
+                            modal_orderDetails.deliveryamount = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliveryamount());
+
+                            String deliveryCharges_phoneorder_string = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliveryamount());
+                            try {
+                                if (deliveryCharges_phoneorder_string.equals("")) {
+                                    deliveryCharges_phoneorder_string = "0";
+
+                                    double deliveryCharges_phoneorder_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+                                    deliveryCharges_phoneorder = deliveryCharges_phoneorder + deliveryCharges_phoneorder_double;
+
+                                    if (!phoneorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                        phoneorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfphoneorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                            String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                            double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+
+                                            DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_phoneorder_string));
+                                            phoneorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+                                    }
+                                } else {
+
+                                    double deliveryCharges_phoneorder_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+                                    deliveryCharges_phoneorder = deliveryCharges_phoneorder + deliveryCharges_phoneorder_double;
+
+
+                                    if (!phoneorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                        phoneorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfphoneorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 =phoneorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                            String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                            double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                            double DeliveryCharge_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+
+                                            DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_phoneorder_string));
+                                            phoneorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+
+
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        try {
+                            modal_orderDetails.coupondiscount = String.valueOf(modal_manageOrders_pojo_classFromResponse.getCoupondiscamount());
+
+                            String couponDiscount_string = String.valueOf(modal_manageOrders_pojo_classFromResponse.getCoupondiscamount());
+                            try {
+                                if (couponDiscount_string.equals("")) {
+                                    couponDiscount_string = "0";
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                    CouponDiscount_phoneorder = CouponDiscount_phoneorder + CouponDiscount_double;
+
+                                    if (!phoneorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                        phoneorderpaymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = false;
+                                        try {
+                                            isAlreadyAvailable = checkIfphoneorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ;
+                                        }
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount" + discountAmount);
+                                            }
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                            }
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                            }
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                            }
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                            phoneorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                    } else {
+                                        Log.d(Constants.TAG, "orderid already availabe");
+
+                                    }
+                                } else {
+
+                                    double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                    CouponDiscount_phoneorder = CouponDiscount_phoneorder + CouponDiscount_double;
+
+                                    if (paymentMode.equals("PAYTM")) {
+                                    }
+
+                                    if (paymentMode.equals("PAYTM")) {
+                                    }
+                                    if (!phoneorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                        phoneorderpaymentMode_DiscountOrderid.add(orderid);
+                                        boolean isAlreadyAvailable = checkIfphoneorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                        if (isAlreadyAvailable) {
+                                            Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                            String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                            if (paymentMode.equals("PAYTM")) {
+                                            }
+
+                                            double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                            double discountAmount_double = Double.parseDouble(couponDiscount_string);
+                                            discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                            if (paymentMode.equals("PAYTM")) {
+                                             }
+
+                                        } else {
+                                            Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                            modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                            if (paymentMode.equals("PAYTM")) {
+                                                Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                            }
+                                            phoneorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                        }
+
+
+                                        //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                    } else {
+                                        //Log.d(Constants.TAG, "orderid already availabe");
+
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+
+
+                            }
+
+
+                            //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
 
                     String deliverydistance = String.valueOf(modal_manageOrders_pojo_classFromResponse.getDeliverydistance());
                     if (deliverydistance != null && (!deliverydistance.equals("null"))) {
@@ -1414,7 +1702,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                         Log.d(Constants.TAG, "orderid is already added");
 
                     }
-                    getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
+                    getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname , ordertype);
                 }
 
                 if (orderslist_fromResponse.size() - 1 == i) {
@@ -1446,7 +1734,15 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                         paymentMode_DeliveryChargeOrderid.clear();
 
 
+                        phoneorder_paymentModeHashmap.clear();
+                        phoneorder_paymentModeArray.clear();
+                        phoneorderpaymentMode_DiscountOrderid.clear();
+                        phoneorderpaymentMode_DiscountHashmap.clear();
+                        phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                        phoneorderpaymentMode_DeliveryChargeHashmap.clear();
                         deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
 
                         addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
 
@@ -1489,10 +1785,17 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             CouponDiscount_preorder =0;
             paymentMode_DeliveryChargeHashmap.clear();
             paymentMode_DeliveryChargeOrderid.clear();
-
+            phoneorder_paymentModeHashmap.clear();
+            phoneorder_paymentModeArray.clear();
+            phoneorderpaymentMode_DiscountOrderid.clear();
+            phoneorderpaymentMode_DiscountHashmap.clear();
+            phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+            phoneorderpaymentMode_DeliveryChargeHashmap.clear();
             preorderpaymentMode_DeliveryChargeOrderid.clear();
             preorderpaymentMode_DeliveryChargeHashmap.clear();
             deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
             deliveryCharges_preorder=0;
             ConvertjsonToArray(result_JArray);
         }
@@ -1868,8 +2171,232 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                     }
 
+                        if (ordertype.equals(Constants.PhoneOrder)) {
 
-                    if (((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))))
+
+                            if (json.has("deliveryamount")) {
+
+                                modal_orderDetails.deliveryamount = String.valueOf(json.get("deliveryamount"));
+                                try {
+                                    String deliveryCharges_phoneorder_string = String.valueOf(json.get("deliveryamount"));
+                                    try {
+                                        if (deliveryCharges_phoneorder_string.equals("")) {
+                                            deliveryCharges_phoneorder_string = "0";
+
+                                            double deliveryCharges_preorder_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+                                            deliveryCharges_phoneorder = deliveryCharges_phoneorder + deliveryCharges_preorder_double;
+
+                                            if (!phoneorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                                phoneorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = false;
+                                                try {
+                                                    isAlreadyAvailable = checkIfphoneorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    ;
+                                                }
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                    String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                    double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                    double DeliveryCharge_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+
+                                                    DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_phoneorder_string));
+                                                    phoneorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "mode already availabe");
+
+                                            }
+                                        } else {
+
+                                            double deliveryCharges_phoneorder_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+                                            deliveryCharges_phoneorder = deliveryCharges_phoneorder + deliveryCharges_phoneorder_double;
+
+
+                                            if (!phoneorderpaymentMode_DeliveryChargeOrderid.contains(orderid)) {
+                                                phoneorderpaymentMode_DeliveryChargeOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = checkIfphoneorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(paymentMode);
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DeliveryChargeHashmap.get(paymentMode);
+                                                    String DeliveryCharge = modal_orderDetails1.getDeliveryamount();
+                                                    double DeliveryCharge_doublefromArray = Double.parseDouble(DeliveryCharge);
+                                                    double DeliveryCharge_double = Double.parseDouble(deliveryCharges_phoneorder_string);
+
+                                                    DeliveryCharge_double = DeliveryCharge_double + DeliveryCharge_doublefromArray;
+                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(DeliveryCharge_double));
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setDeliveryamount(String.valueOf(deliveryCharges_phoneorder_string));
+                                                    phoneorderpaymentMode_DeliveryChargeHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                                //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "mode already availabe");
+
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+
+
+                                    }
+
+
+                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            } else {
+                                String deliveryCharges_preorder_string = String.valueOf("0");
+                                double DeliveryCharge_double = Double.parseDouble(deliveryCharges_preorder_string);
+
+                                deliveryCharges_phoneorder = deliveryCharges_phoneorder + DeliveryCharge_double;
+
+
+                                modal_orderDetails.deliveryamount = "There is no deliveryCharges_preorder";
+
+                            }
+
+
+                            if (json.has("coupondiscount")) {
+
+                                modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
+                                try {
+                                    String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
+                                    try {
+                                        if (couponDiscount_string.equals("")) {
+                                            couponDiscount_string = "0";
+
+                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                            CouponDiscount_phoneorder = CouponDiscount_phoneorder + CouponDiscount_double;
+
+                                            if (!phoneorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                                phoneorderpaymentMode_DiscountOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = false;
+                                                try {
+                                                    isAlreadyAvailable = checkIfphoneorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                    ;
+                                                }
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                    String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount" + discountAmount);
+                                                    }
+                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+
+                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                    }
+                                                    modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount 1" + String.valueOf(discountAmount_double));
+                                                    }
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                    }
+                                                    modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                                    phoneorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                            } else {
+                                                Log.d(Constants.TAG, "orderid already availabe");
+
+                                            }
+                                        } else {
+
+                                            double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+                                            CouponDiscount_phoneorder = CouponDiscount_phoneorder + CouponDiscount_double;
+
+                                            if (paymentMode.equals("PAYTM")) {
+                                            }
+
+                                            if (paymentMode.equals("PAYTM")) {
+                                            }
+                                            if (!phoneorderpaymentMode_DiscountOrderid.contains(orderid)) {
+                                                phoneorderpaymentMode_DiscountOrderid.add(orderid);
+                                                boolean isAlreadyAvailable = checkIfphoneorderPaymentModeDiscountdetailisAlreadyAvailableInArray(paymentMode);
+                                                if (isAlreadyAvailable) {
+                                                    Modal_OrderDetails modal_orderDetails1 = phoneorderpaymentMode_DiscountHashmap.get(paymentMode);
+                                                    String discountAmount = modal_orderDetails1.getDiscountAmount();
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount 4 " + String.valueOf(discountAmount));
+                                                    }
+
+                                                    double discountAmount_doublefromArray = Double.parseDouble(discountAmount);
+                                                    double discountAmount_double = Double.parseDouble(couponDiscount_string);
+                                                    discountAmount_double = discountAmount_double + discountAmount_doublefromArray;
+                                                    modal_orderDetails1.setDiscountAmount(String.valueOf(discountAmount_double));
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount discountAmount_double" + String.valueOf(discountAmount_double));
+                                                    }
+
+                                                } else {
+                                                    Modal_OrderDetails modal_orderDetails1 = new Modal_OrderDetails();
+                                                    modal_orderDetails1.setDiscountAmount(String.valueOf(couponDiscount_string));
+                                                    if (paymentMode.equals("PAYTM")) {
+                                                        Log.i("TAG", "discountAmount 2" + String.valueOf(couponDiscount_string));
+                                                    }
+                                                    phoneorderpaymentMode_DiscountHashmap.put(paymentMode, modal_orderDetails1);
+                                                }
+
+
+                                                //Log.d(Constants.TAG, "mode already availabe");
+
+
+                                            } else {
+                                                //Log.d(Constants.TAG, "orderid already availabe");
+
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+
+
+                                    }
+
+
+                                    //Log.d(Constants.TAG, "coupondiscount" + String.valueOf(json.get("coupondiscount")));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            } else {
+                                String couponDiscount_string = String.valueOf("0");
+                                double CouponDiscount_double = Double.parseDouble(couponDiscount_string);
+
+                                CouponDiscount_phoneorder = CouponDiscount_phoneorder + CouponDiscount_double;
+
+
+                                modal_orderDetails.coupondiscount = "There is no coupondiscount";
+
+                            }
+
+                        }
+
+
+                        if ((ordertype.equals(Constants.APPORDER)) && ((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)) || (slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))))
                     {
 
                         if (json.has("deliveryamount")) {
@@ -2129,7 +2656,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                             Log.d(Constants.TAG, "orderid is already added");
 
                         }
-                        getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname);
+                        getItemDetailsFromItemDespArray(modal_orderDetails, paymentMode, slotname , ordertype);
                     }
 
 
@@ -2153,12 +2680,19 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     delivered_OrderIdCount.clear();
                     CouponDiscount = 0;
                     CouponDiscount_preorder =0;
-
+                    phoneorder_paymentModeHashmap.clear();
+                    phoneorder_paymentModeArray.clear();
+                    phoneorderpaymentMode_DiscountOrderid.clear();
+                    phoneorderpaymentMode_DiscountHashmap.clear();
+                    phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                    phoneorderpaymentMode_DeliveryChargeHashmap.clear();
                     paymentMode_DeliveryChargeHashmap.clear();
                     paymentMode_DeliveryChargeOrderid.clear();
 
 
                     deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
                     addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap,OrderIdCount);
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getLocalizedMessage());
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray e: " + e.getMessage());
@@ -2192,9 +2726,16 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                         CouponDiscount_preorder =0;
                         paymentMode_DeliveryChargeHashmap.clear();
                         paymentMode_DeliveryChargeOrderid.clear();
-
+                        phoneorder_paymentModeHashmap.clear();
+                        phoneorder_paymentModeArray.clear();
+                        phoneorderpaymentMode_DiscountOrderid.clear();
+                        phoneorderpaymentMode_DiscountHashmap.clear();
+                        phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                        phoneorderpaymentMode_DeliveryChargeHashmap.clear();
 
                         deliveryCharges=0;
+                        deliveryCharges_phoneorder =0;
+                        CouponDiscount_phoneorder=0;
 
                         addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
 
@@ -2226,8 +2767,15 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             paymentMode_DeliveryChargeHashmap.clear();
             paymentMode_DeliveryChargeOrderid.clear();
 
-
+            phoneorder_paymentModeHashmap.clear();
+            phoneorder_paymentModeArray.clear();
+            phoneorderpaymentMode_DiscountOrderid.clear();
+            phoneorderpaymentMode_DiscountHashmap.clear();
+            phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+            phoneorderpaymentMode_DeliveryChargeHashmap.clear();
             deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
             addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap, OrderIdCount);
 
             //    getOrderForSelectedDate(DateString, vendorKey);
@@ -2414,7 +2962,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     }
 
 
-    private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode, String slotname) {
+    private void getItemDetailsFromItemDespArray(Modal_OrderDetails modal_orderDetailsfromResponse, String paymentMode, String slotname, String ordertype) {
         //  DecimalFormat decimalFormat = new DecimalFormat("0.00");
         String newOrderWeightInGrams;
         double newweight = 0,gstAmount = 0,tmcprice=0;
@@ -2713,10 +3261,54 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                 }
 
                             }
+
+
+
+                            if(paymentMode.equals(Constants.CREDIT)) {
+                                double payment_tmcprice = 0, payment_gstamount = 0;
+                                if (!preorder_paymentModeArray.contains(paymentMode)) {
+                                    preorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                } else {
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+
+
                         }
 
 
-                        if((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))){
+                        if((ordertype.equals(Constants.APPORDER)) && ((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)))){
                             if(paymentMode.equals(Constants.PAYTM)){
                                 double payment_tmcprice=0,payment_gstamount=0;
                                 if(!paymentModeArray.contains(paymentMode)) {
@@ -2891,8 +3483,279 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                 }
 
                             }
+
+
+                            if(paymentMode.equals(Constants.CREDIT)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!paymentModeArray.contains(paymentMode)) {
+                                    paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+
                         }
 
+                        if(ordertype.equals(Constants.PhoneOrder)){
+                            if(paymentMode.equals(Constants.UPI)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                    phoneorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getUpiSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setUpiSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setUpiSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+                            if(paymentMode.equals(Constants.PHONEPE)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                    phoneorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getPhonepeSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+
+                            if(paymentMode.equals(Constants.CASH_ON_DELIVERY) || paymentMode.equals(Constants.CASH)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                    phoneorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCashOndeliverySales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+                            if(paymentMode.equals(Constants.CARD)) {
+                                double payment_tmcprice = 0, payment_gstamount = 0;
+                                if (!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                    phoneorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCardSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCardSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                } else {
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCardSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+
+
+                            if(paymentMode.equals(Constants.CREDIT)){
+                                double payment_tmcprice=0,payment_gstamount=0;
+                                if(!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                    phoneorder_paymentModeArray.add(paymentMode);
+                                }
+                                boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                                if (isItemAlreadyOrdered) {
+                                    try {
+                                        Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                        double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                        double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                        payment_tmcprice = marinadesObjectpayableAmount + tmcprice_from_HashMap;
+                                        payment_gstamount = marinadesObjectgstAmount + gstAmount_from_HashMap;
+                                        paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+
+
+                                }else{
+                                    try {
+                                        Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                        payment_tmcprice = marinadesObjectpayableAmount;
+                                        payment_gstamount = marinadesObjectgstAmount;
+                                        paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                        paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                        preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                    }
+                                    catch (Exception e ){
+                                        e.printStackTrace();
+                                    }
+                                }
+
+
+                            }
+
+
+
+                        }
 
 
 
@@ -3169,10 +4032,54 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                         }
+
+
+                        if (paymentMode.equals(Constants.CREDIT)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!preorder_paymentModeArray.contains(paymentMode)) {
+                                preorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfpreorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = preorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    preorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+
                     }
 
 
-                    if((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME))){
+                    if((ordertype.equals(Constants.APPORDER)) && ((slotname.equals(Constants.EXPRESS_DELIVERY_SLOTNAME))||(slotname.equals(Constants.EXPRESSDELIVERY_SLOTNAME)))){
 
 
                         if (paymentMode.equals(Constants.PAYTM)) {
@@ -3338,8 +4245,259 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
                         }
+
+                        if (paymentMode.equals(Constants.CREDIT)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!paymentModeArray.contains(paymentMode)) {
+                                paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+
                     }
 
+                    if(ordertype.equals(Constants.PhoneOrder)) {
+
+
+                        if (paymentMode.equals(Constants.UPI)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                phoneorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getUpiSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setUpiSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setUpiSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+                        if (paymentMode.equals(Constants.PHONEPE)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                phoneorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getPhonepeSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setPhonepeSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+                        if (paymentMode.equals(Constants.CARD)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                phoneorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCardSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCardSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCardSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+
+                        if (paymentMode.equals(Constants.CASH_ON_DELIVERY)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                phoneorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCashOndeliverySales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCashOndeliverySales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+                        if (paymentMode.equals(Constants.CREDIT)) {
+                            double payment_tmcprice = 0, payment_gstamount = 0;
+                            if (!phoneorder_paymentModeArray.contains(paymentMode)) {
+                                phoneorder_paymentModeArray.add(paymentMode);
+                            }
+                            boolean isItemAlreadyOrdered = checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(paymentMode);
+                            if (isItemAlreadyOrdered) {
+                                try {
+                                    Modal_OrderDetails paymentDetailsfrom_hashMap = phoneorder_paymentModeHashmap.get(paymentMode);
+                                    double tmcprice_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getCreditSales());
+                                    double gstAmount_from_HashMap = Double.parseDouble(paymentDetailsfrom_hashMap.getGstamount());
+                                    payment_tmcprice = tmcprice + tmcprice_from_HashMap;
+                                    payment_gstamount = gstAmount + gstAmount_from_HashMap;
+                                    paymentDetailsfrom_hashMap.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetailsfrom_hashMap.setGstamount(String.valueOf((payment_gstamount)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            } else {
+                                try {
+                                    Modal_OrderDetails paymentDetails = new Modal_OrderDetails();
+
+                                    payment_tmcprice = tmcprice;
+                                    payment_gstamount = gstAmount;
+                                    paymentDetails.setCreditSales(String.valueOf((payment_tmcprice)));
+                                    paymentDetails.setGstamount(String.valueOf((payment_gstamount)));
+
+
+                                    phoneorder_paymentModeHashmap.put(paymentMode, paymentDetails);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+
+                        }
+
+                    }
 
 
 
@@ -3500,14 +4658,16 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         totalOrdersCount.setText(String.valueOf(OrderIdCount.size()));
         totaldeliveredOrdersCount.setText(String.valueOf(delivered_OrderIdCount.size()));
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        double phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
+        double credit_amount=0,credit_Discount_amount = 0,phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
                 RazorpayDiscount_amount=0,totalAmount=0,GST=0,totalAmountWithOutGst=0,totalAmount_with_Coupondiscount_deliveryCharges_double=0;
-        double preorderphonepe_amount = 0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
+        double preordercredit_amount=0,preordercredit_Discount_amount = 0,preorderphonepe_amount = 0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
                 preorderRazorpayDiscount_amount=0,preordertotalAmount=0;
 
-        double razorpayDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
+        double credit_DeliveryCharge_amount = 0,preordercredit_DeliveryCharge_amount = 0,razorpayDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
                 cash_on_del_preorderDeliveryCharge=0,paytmpreorderDeliveryCharge=0,phonepepreorderDeliveryCharge=0;
 
+        double phoneordercredit_amount=0,phoneordercredit_Discount_amount=0,phoneordercredit_DeliveryCharge_amount = 0,phoneorderphonepe_amount = 0,phoneorderphonepe_Discount_amount = 0 ,phoneordercash_amount = 0,phoneordercash_Discount_amount = 0 ,phoneorderUpi_amount=0, phoneorderCard_amount=0,phoneorderUpiDiscount_amount = 0,
+                phoneorderCardDiscount_amount=0,phoneordertotalAmount=0,phoneorderCashDeliveryCharge =0,phoneorderCardDeliveryCharge =0,phoneorderUpiDeliveryCharge =0,phoneorderPhonePeDeliveryCharge =0;
 
 
 
@@ -3613,6 +4773,32 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     //Log.d(Constants.TAG, "before for " );
                     String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
                     phonepeDeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+            if (PaymentModefromArray.equals(Constants.CREDIT)) {
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
+                    credit_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(credit_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    credit_Discount_amount = Double.parseDouble(discount_String);
+
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+
+                    GST = GST + GST_array;
+
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    credit_DeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -3730,6 +4916,140 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         }
 
 
+        for(String phoneorderPaymentModefromArray : phoneorder_paymentModeArray) {
+            Modal_OrderDetails modal_orderDetails = phoneorder_paymentModeHashmap.get(phoneorderPaymentModefromArray);
+            Modal_OrderDetails Payment_Modewise_discount = phoneorderpaymentMode_DiscountHashmap.get(phoneorderPaymentModefromArray);
+            Modal_OrderDetails Payment_Modewise_DeliveryCharge = phoneorderpaymentMode_DeliveryChargeHashmap.get(phoneorderPaymentModefromArray);
+
+            if (phoneorderPaymentModefromArray.equals(Constants.UPI)) {
+
+
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getUpiSales());
+                    phoneorderUpi_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(phoneorderUpi_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    phoneorderUpiDiscount_amount = Double.parseDouble(discount_String);
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+                    GST = GST + GST_array;
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phoneorderUpiDeliveryCharge = Double.parseDouble(deliveryCharge_String);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+            if (phoneorderPaymentModefromArray.equals(Constants.CARD)) {
+
+
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
+                    phoneorderCard_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(phoneorderCard_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    phoneorderCardDiscount_amount = Double.parseDouble(discount_String);
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+                    GST = GST + GST_array;
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phoneorderCardDeliveryCharge = Double.parseDouble(deliveryCharge_String);
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+
+
+
+            if (phoneorderPaymentModefromArray.equals(Constants.CASH_ON_DELIVERY)) {
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
+                    phoneordercash_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(phoneordercash_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    phoneordercash_Discount_amount = Double.parseDouble(discount_String);
+
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+
+                    GST = GST + GST_array;
+
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phoneorderCashDeliveryCharge = Double.parseDouble(deliveryCharge_String);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+            if (phoneorderPaymentModefromArray.equals(Constants.PHONEPE)) {
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
+                    phoneorderphonepe_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(phoneorderphonepe_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    phoneorderphonepe_Discount_amount = Double.parseDouble(discount_String);
+
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+
+                    GST = GST + GST_array;
+
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phoneorderPhonePeDeliveryCharge = Double.parseDouble(deliveryCharge_String);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+            if (phoneorderPaymentModefromArray.equals(Constants.CREDIT)) {
+                try {
+                    String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
+                    phoneordercredit_amount = Double.parseDouble(tmcpriceperkg);
+                    int intAmount = (int) Math.ceil(phoneordercredit_amount);
+                    totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
+
+                    String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
+                    phoneordercredit_Discount_amount = Double.parseDouble(discount_String);
+
+                    String gst_String = String.valueOf(modal_orderDetails.getGstamount());
+                    double GST_array  = Double.parseDouble(gst_String);
+
+                    GST = GST + GST_array;
+
+                    //Log.d(Constants.TAG, "before for " );
+                    String deliveryCharge_String = Payment_Modewise_DeliveryCharge.getDeliveryamount().toString();
+                    phoneordercredit_DeliveryCharge_amount = Double.parseDouble(deliveryCharge_String);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+        }
 
         try{
             cash_amount = cash_amount-cash_Discount_amount+cash_on_del_DeliveryCharge_amount;
@@ -3768,7 +5088,14 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        try{
+            credit_amount = credit_amount-credit_Discount_amount+credit_DeliveryCharge_amount;
+            finalCreditAmount_pdf=String.valueOf(credit_amount);
 
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
 
@@ -3816,8 +5143,68 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         }
 
 
-        totalDeliveryCharges =deliveryCharges+deliveryCharges_preorder;
-        totalCouponDiscount = CouponDiscount+CouponDiscount_preorder;
+        try{
+            preordercredit_amount = preordercredit_amount-preordercredit_Discount_amount+preordercredit_DeliveryCharge_amount;
+            finalpreorderCreditAmount_pdf=String.valueOf(preordercredit_amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+
+
+        try{
+            phoneordercash_amount = phoneordercash_amount-phoneordercash_Discount_amount+phoneorderCashDeliveryCharge;
+            finalphoneorderCashAmount_pdf=String.valueOf(phoneordercash_amount);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
+            phoneorderUpi_amount = phoneorderUpi_amount-phoneorderUpiDiscount_amount+phoneorderUpiDeliveryCharge;
+            finalphoneorderUPIAmount_pdf=String.valueOf(phoneorderUpi_amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try{
+            phoneorderCard_amount = phoneorderCard_amount-phoneorderCardDiscount_amount+phoneorderCardDeliveryCharge;
+            finalphoneorderCardAmount_pdf=String.valueOf(phoneorderCard_amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try{
+            phoneorderphonepe_amount = phoneorderphonepe_amount-phoneorderphonepe_Discount_amount+phoneorderPhonePeDeliveryCharge;
+            finalphoneorderPhoenpeAmount_pdf=String.valueOf(phoneorderphonepe_amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            phoneordercredit_amount = phoneordercredit_amount-phoneordercredit_Discount_amount+phoneordercredit_DeliveryCharge_amount;
+            finalphoneorderCreditAmount_pdf =String.valueOf(phoneordercredit_amount);
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+        totalDeliveryCharges =deliveryCharges+deliveryCharges_preorder+deliveryCharges_phoneorder;
+        totalCouponDiscount = CouponDiscount+CouponDiscount_preorder+CouponDiscount_phoneorder;
         totalAmount_with_Coupondiscount_deliveryCharges_double = (totalAmountWithOutGst-totalCouponDiscount)+totalDeliveryCharges;
         totalAmount = totalAmount_with_Coupondiscount_deliveryCharges_double+GST;
 
@@ -3838,14 +5225,21 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
             Razorpay.setText(String.valueOf(decimalFormat.format(Razorpay_amount)));
             Paytm.setText(String.valueOf(decimalFormat.format(Paytm_amount)));
             Phonepe.setText(String.valueOf(decimalFormat.format(phonepe_amount)));
-
+            creditSales.setText(String.valueOf(decimalFormat.format(credit_amount)));
 
 
             preorder_cashOnDelivery.setText(String.valueOf(decimalFormat.format(preordercash_amount)));
             preorder_Razorpay.setText(String.valueOf(decimalFormat.format(preorderRazorpay_amount)));
             preorder_paytmSales.setText(String.valueOf(decimalFormat.format(preorderPaytm_amount)));
             preorder_Phonepe.setText(String.valueOf(decimalFormat.format(preorderphonepe_amount)));
+            preorder_creditSales.setText(String.valueOf(decimalFormat.format(preordercredit_amount)));
 
+
+            cashOnDelivery_phoneOrders.setText(String.valueOf(decimalFormat.format(phoneordercash_amount)));
+             cardSales_phoneOrders.setText(String.valueOf(decimalFormat.format(phoneorderCard_amount)));
+             phonepe_phoneOrders.setText(String.valueOf(decimalFormat.format(phoneorderphonepe_amount)));
+             upiSales_phoneOrders.setText(String.valueOf(decimalFormat.format(phoneorderUpi_amount)));
+            creditSales_phoneOrders.setText(String.valueOf(decimalFormat.format(phoneordercredit_amount)));
 
 
             totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmount)));
@@ -3978,7 +5372,10 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         return paymentMode_DiscountHashmap.containsKey(menuitemid);
     }
 
-
+    
+    private boolean checkIfphoneorderPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
+        return phoneorderpaymentMode_DiscountHashmap.containsKey(menuitemid);
+    }
 
     private boolean checkIfpreorderPaymentModeDiscountdetailisAlreadyAvailableInArray(String menuitemid) {
         return preorderpaymentMode_DiscountHashmap.containsKey(menuitemid);
@@ -3993,13 +5390,19 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         return paymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
     }
 
+    
 
-
+    private boolean checkIfphoneorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(String menuitemid) {
+        return phoneorderpaymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
+    }
     private boolean checkIfpreorderPaymentModeDeliveryChargedetailisAlreadyAvailableInArray(String menuitemid) {
         return preorderpaymentMode_DeliveryChargeHashmap.containsKey(menuitemid);
     }
 
 
+    private boolean checkIfphoneorderPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
+        return phoneorder_paymentModeHashmap.containsKey(menuitemid);
+    }
 
     private boolean checkIfpreorderPaymentdetailisAlreadyAvailableInArray(String menuitemid) {
         return preorder_paymentModeHashmap.containsKey(menuitemid);
@@ -4368,6 +5771,21 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                 }
 
+                if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalCreditAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+
+                    }
+
+                }
 
 
                 paymentModeemptycell = new PdfPCell(new Phrase(""));
@@ -4515,6 +5933,21 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                     }
 
                 }
+                if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalpreorderCreditAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+
+                    }
+
+                }
 
 
                 PreorderpaymentModeemptycell = new PdfPCell(new Phrase(""));
@@ -4555,6 +5988,174 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
             }
             layoutDocument.add(tablepreorderPaymentMode);
+
+
+
+
+
+
+
+            PdfPTable tablephoneorderPaymentModetitle = new PdfPTable(1);
+            tablephoneorderPaymentModetitle.setWidthPercentage(100);
+            tablephoneorderPaymentModetitle.setSpacingBefore(20);
+
+
+            PdfPCell paymentModephoneordertitle;
+            paymentModephoneordertitle = new PdfPCell(new Phrase("PHONE ORDER"));
+            paymentModephoneordertitle.setBorder(Rectangle.NO_BORDER);
+            paymentModephoneordertitle.setHorizontalAlignment(Element.ALIGN_CENTER);
+            paymentModephoneordertitle.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            paymentModephoneordertitle.setFixedHeight(25);
+            paymentModephoneordertitle.setPaddingLeft(25);
+            paymentModephoneordertitle.setBackgroundColor(BaseColor.LIGHT_GRAY);
+
+            paymentModephoneordertitle.setPaddingRight(20);
+
+            tablephoneorderPaymentModetitle.addCell(paymentModephoneordertitle);
+            layoutDocument.add(tablephoneorderPaymentModetitle);
+
+
+
+
+            PdfPTable tablephoneorderPaymentMode = new PdfPTable(4);
+            tablephoneorderPaymentMode.setWidthPercentage(100);
+            tablephoneorderPaymentMode.setSpacingBefore(20);
+            PdfPCell phoneorderpaymentModeemptycell;
+            PdfPCell phoneorderpaymentModeitemkeycell;
+            PdfPCell phoneorderpaymentModeemptycellone;
+
+            PdfPCell phoneorderpaymentModeitemValueCell;
+
+            String phoneorder_Payment_Amount = "0";
+
+
+            for (int i = 0; i < phoneorder_paymentModeArray.size(); i++) {
+                String key = phoneorder_paymentModeArray.get(i);
+                Modal_OrderDetails modal_orderDetails = phoneorder_paymentModeHashmap.get(key);
+                //Log.d("ExportReportActivity", "itemTotalRowsList name " + key);
+
+
+                DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+
+
+
+                if ((key.toUpperCase().equals(Constants.CASH_ON_DELIVERY)) || (key.toUpperCase().equals(Constants.CASH))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalphoneorderCashAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Cash Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key = "Card Sales";
+
+                    }
+                }
+                if ((key.toUpperCase().equals(Constants.UPI))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalphoneorderUPIAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="UPI Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="UPI Sales";
+
+                    }
+
+                }
+                if ((key.toUpperCase().equals(Constants.CARD))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalphoneorderCardAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="CARD Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="CARD Sales";
+
+                    }
+
+
+                }
+                if ((key.toUpperCase().equals(Constants.PHONEPE))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalphoneorderPhoenpeAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Phonepe Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Phonepe Sales";
+
+                    }
+
+                }
+                if ((key.toUpperCase().equals(Constants.CREDIT))) {
+                    try {
+                        payment_AmountDouble = Double.parseDouble(finalphoneorderCreditAmount_pdf);
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        payment_AmountDouble = 0.00;
+                        Payment_Amount = String.valueOf(decimalFormat.format(payment_AmountDouble));
+                        key="Credit Sales";
+
+                    }
+
+                }
+
+
+                phoneorderpaymentModeemptycell = new PdfPCell(new Phrase(""));
+                phoneorderpaymentModeemptycell.setBorder(Rectangle.NO_BORDER);
+                phoneorderpaymentModeemptycell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                phoneorderpaymentModeemptycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                phoneorderpaymentModeemptycell.setFixedHeight(25);
+                tablephoneorderPaymentMode.addCell(phoneorderpaymentModeemptycell);
+
+
+                phoneorderpaymentModeitemkeycell = new PdfPCell(new Phrase(key+" :  "));
+                phoneorderpaymentModeitemkeycell.setBorderColor(BaseColor.LIGHT_GRAY);
+                phoneorderpaymentModeitemkeycell.setBorder(Rectangle.NO_BORDER);
+                phoneorderpaymentModeitemkeycell.setMinimumHeight(25);
+                phoneorderpaymentModeitemkeycell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                phoneorderpaymentModeitemkeycell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                tablephoneorderPaymentMode.addCell(phoneorderpaymentModeitemkeycell);
+
+
+                phoneorderpaymentModeitemValueCell = new PdfPCell(new Phrase("Rs. " + Payment_Amount));
+                phoneorderpaymentModeitemValueCell.setBorderColor(BaseColor.LIGHT_GRAY);
+                phoneorderpaymentModeitemValueCell.setBorder(Rectangle.NO_BORDER);
+                phoneorderpaymentModeitemValueCell.setMinimumHeight(25);
+                phoneorderpaymentModeitemValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                phoneorderpaymentModeitemValueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                phoneorderpaymentModeitemValueCell.setPaddingRight(10);
+                tablephoneorderPaymentMode.addCell(phoneorderpaymentModeitemValueCell);
+
+
+                phoneorderpaymentModeemptycellone = new PdfPCell(new Phrase(""));
+                phoneorderpaymentModeemptycellone.setBorder(Rectangle.NO_BORDER);
+                phoneorderpaymentModeemptycellone.setHorizontalAlignment(Element.ALIGN_LEFT);
+                phoneorderpaymentModeemptycellone.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                phoneorderpaymentModeemptycellone.setFixedHeight(25);
+                tablephoneorderPaymentMode.addCell(phoneorderpaymentModeemptycellone);
+
+
+
+            }
+            layoutDocument.add(tablephoneorderPaymentMode);
+
 
 
 

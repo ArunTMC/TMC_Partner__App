@@ -752,6 +752,12 @@ tools:context=".Settings.Consolidated_Sales_Report">
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:visibility="gone"
+                    android:orientation="vertical">
 
                 <View
                     android:layout_width="match_parent"
@@ -763,6 +769,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
                     android:gravity="center_vertical"
+
                     android:orientation="horizontal">
 
 
@@ -905,6 +912,7 @@ tools:context=".Settings.Consolidated_Sales_Report">
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="16sp" />
 
+                </LinearLayout>
 
                 </LinearLayout>
                 <View

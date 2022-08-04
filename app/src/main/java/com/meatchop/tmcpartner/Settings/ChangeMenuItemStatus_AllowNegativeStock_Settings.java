@@ -7,15 +7,22 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -39,7 +46,10 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_ManageOrders_ListView1;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
@@ -57,6 +67,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 
@@ -93,8 +104,11 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
     String errorCode = "0";
     Dialog dialog ;
     Button restartAgain;
-    TextView title;
-
+    TextView title,subtitle_Textview;
+    ImageView searchButton,searchBarCloseButton;
+    EditText searchbarEdit;
+    public static List<Modal_MenuItem_Settings> filteredsubctgywise_menuItems;
+    boolean isSearchButtonClicked = false ;
 
 
     @Override
@@ -111,11 +125,21 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
         subctgy_on_Off_Switch = findViewById(R.id.subctgy_on_Off_Switch);
         subCtgyMenuSwitch_Layout  = findViewById(R.id.subCtgyMenuSwitch_Layout);
         itemAvailabilityCount_textWidget = findViewById(R.id.itemAvailabilityCount_textWidget);
+        searchButton =findViewById(R.id.search_button);
+        subtitle_Textview =findViewById(R.id.subtitle_Textview);
+        searchBarCloseButton =findViewById(R.id.searchBarCloseButton);
+        searchbarEdit =findViewById(R.id.searchbarEdit);
+
         Adjusting_Widgets_Visibility(true);
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", ""));
         UserPhoneNumber =  (shared.getString("UserPhoneNumber", ""));
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+        filteredsubctgywise_menuItems = new ArrayList<>();
+        displaying_menuItems = new ArrayList<>();
+        subCtgyName_arrayList = new ArrayList<>();
+        marinadeMenuList=new ArrayList<>();
+
         getMenuItemArrayFromSharedPreferences();
         getMenuItemStockAvlDetails();
         getMenuCategoryList();
@@ -123,10 +147,8 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
         //Bundle bundle = getIntent().getExtras();
         //    checkforVendorSlotDetails();
         //MenuItems = bundle.getString("key1", "Default");
-        displaying_menuItems = new ArrayList<>();
-        subCtgyName_arrayList = new ArrayList<>();
+
         // completemenuItem = new ArrayList<>();
-        marinadeMenuList=new ArrayList<>();
         //completemenuItem= getMenuItemfromString(MenuItems);
         //subctgy_on_Off_Switch.setChecked(false);
 
@@ -219,8 +241,167 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
         });
 
 
+        searchBarCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideKeyboard(searchbarEdit);
+                closeSearchBarEditText();
+                searchbarEdit.setText("");
+                isSearchButtonClicked =false;
+             //   callAdapter(displaying_menuItems);
+                getMenuItemsbasedOnSubCtgy(SubCtgyKey);
+
+            }
+        });
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int textlength = searchbarEdit.getText().toString().length();
+                isSearchButtonClicked =true;
+                showKeyboard(searchbarEdit);
+                showSearchBarEditText();
+            }
+        });
 
 
+        searchbarEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                filteredsubctgywise_menuItems.clear();
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                filteredsubctgywise_menuItems.clear();
+                isSearchButtonClicked =true;
+                String itemnameFromEditText = (editable.toString());
+                if(!itemnameFromEditText.equals("")) {
+                    String relationtypeFromInventoryDetails = "";
+
+                    for (int i = 0; i < displaying_menuItems.size(); i++) {
+                        try {
+
+                            final Modal_MenuItem_Settings modal_menuItem_sedisplaying_menuItemsttings = new Modal_MenuItem_Settings();
+                            final Modal_MenuItem_Settings modal_menuItemSettings = displaying_menuItems.get(i);
+                            String inventoryDetails = modal_menuItemSettings.getInventorydetails().toString();
+
+                            String itemName = modal_menuItemSettings.getItemname();
+                              if (itemName.toUpperCase().contains(itemnameFromEditText.toUpperCase())) {
+                                  if(!inventoryDetails.equals("") &&(! inventoryDetails.toString().equals("nil") )  ) {
+
+                                      try {
+                                          modal_menuItem_sedisplaying_menuItemsttings.relationtypeFromInventoryDetails = modal_menuItemSettings.getRelationtypeFromInventoryDetails();
+                                          relationtypeFromInventoryDetails = modal_menuItemSettings.getRelationtypeFromInventoryDetails();
+                                      } catch (Exception e) {
+                                          relationtypeFromInventoryDetails = "CHILD";
+                                          modal_menuItem_sedisplaying_menuItemsttings.relationtypeFromInventoryDetails = "CHILD";
+                                          e.printStackTrace();
+                                      }
+                                      if(!relationtypeFromInventoryDetails.toUpperCase().equals("PARENT")) {
+
+
+
+                                          modal_menuItem_sedisplaying_menuItemsttings.key = String.valueOf(modal_menuItemSettings.getKey());
+                                          modal_menuItem_sedisplaying_menuItemsttings.key_AvlDetails = String.valueOf(modal_menuItemSettings.getKey_AvlDetails());
+                                          modal_menuItem_sedisplaying_menuItemsttings.itemname = String.valueOf(modal_menuItemSettings.getItemname());
+                                          modal_menuItem_sedisplaying_menuItemsttings.menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
+                                          modal_menuItem_sedisplaying_menuItemsttings.tmcsubctgykey = String.valueOf(modal_menuItemSettings.getTmcsubctgykey());
+                                          modal_menuItem_sedisplaying_menuItemsttings.barcode = String.valueOf(modal_menuItemSettings.getBarcode());
+                                          modal_menuItem_sedisplaying_menuItemsttings.itemuniquecode = String.valueOf(modal_menuItemSettings.getItemuniquecode());
+                                          modal_menuItem_sedisplaying_menuItemsttings.displayno = String.valueOf(modal_menuItemSettings.getDisplayno());
+                                          modal_menuItem_sedisplaying_menuItemsttings.itemavailability_AvlDetails = String.valueOf(modal_menuItemSettings.getItemavailability_AvlDetails());
+                                          modal_menuItem_sedisplaying_menuItemsttings.allownegativestock = String.valueOf(modal_menuItemSettings.getAllownegativestock());
+                                          modal_menuItem_sedisplaying_menuItemsttings.itemavailability = String.valueOf(modal_menuItemSettings.getItemavailability());
+                                          modal_menuItem_sedisplaying_menuItemsttings.inventorydetails = String.valueOf(modal_menuItemSettings.getInventorydetails());
+                                          modal_menuItem_sedisplaying_menuItemsttings.stockbalance_AvlDetails = String.valueOf(modal_menuItemSettings.getStockbalance_AvlDetails());
+
+                                          try {
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeKey = String.valueOf(modal_menuItemSettings.getMarinadeKey());
+                                              modal_menuItem_sedisplaying_menuItemsttings.isMarinadeItem = true;
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeItemAvailability = String.valueOf(modal_menuItemSettings.getMarinadeItemAvailability());
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeBarcode = String.valueOf(modal_menuItemSettings.getMarinadeBarcode());
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeItemUniqueCode = String.valueOf(modal_menuItemSettings.getMarinadeItemUniqueCode());
+                                          } catch (Exception e) {
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeKey = "";
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeItemAvailability = "";
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeBarcode = "";
+                                              modal_menuItem_sedisplaying_menuItemsttings.marinadeItemUniqueCode = "";
+                                              modal_menuItem_sedisplaying_menuItemsttings.isMarinadeItem = false;
+                                          }
+                                          if (String.valueOf(modal_menuItemSettings.getItemavailability()).equals("TRUE")) {
+                                              total_no_item_availability = total_no_item_availability + 1;
+                                          }
+
+                                          filteredsubctgywise_menuItems.add(modal_menuItem_sedisplaying_menuItemsttings);
+
+                                      }
+
+                                  }
+                                  else{
+
+
+                                      modal_menuItem_sedisplaying_menuItemsttings.key = String.valueOf(modal_menuItemSettings.getKey());
+                                      modal_menuItem_sedisplaying_menuItemsttings.key_AvlDetails = String.valueOf(modal_menuItemSettings.getKey_AvlDetails());
+                                      modal_menuItem_sedisplaying_menuItemsttings.itemname = String.valueOf(modal_menuItemSettings.getItemname());
+                                      modal_menuItem_sedisplaying_menuItemsttings.menuItemId = String.valueOf(modal_menuItemSettings.getMenuItemId());
+                                      modal_menuItem_sedisplaying_menuItemsttings.tmcsubctgykey = String.valueOf(modal_menuItemSettings.getTmcsubctgykey());
+                                      modal_menuItem_sedisplaying_menuItemsttings.barcode = String.valueOf(modal_menuItemSettings.getBarcode());
+                                      modal_menuItem_sedisplaying_menuItemsttings.itemuniquecode = String.valueOf(modal_menuItemSettings.getItemuniquecode());
+                                      modal_menuItem_sedisplaying_menuItemsttings.displayno = String.valueOf(modal_menuItemSettings.getDisplayno());
+                                      modal_menuItem_sedisplaying_menuItemsttings.itemavailability_AvlDetails = String.valueOf(modal_menuItemSettings.getItemavailability_AvlDetails());
+                                      modal_menuItem_sedisplaying_menuItemsttings.allownegativestock = String.valueOf(modal_menuItemSettings.getAllownegativestock());
+                                      modal_menuItem_sedisplaying_menuItemsttings.itemavailability = String.valueOf(modal_menuItemSettings.getItemavailability());
+                                      modal_menuItem_sedisplaying_menuItemsttings.inventorydetails = String.valueOf(modal_menuItemSettings.getInventorydetails());
+                                      modal_menuItem_sedisplaying_menuItemsttings.stockbalance_AvlDetails = String.valueOf(modal_menuItemSettings.getStockbalance_AvlDetails());
+
+                                      try {
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeKey = String.valueOf(modal_menuItemSettings.getMarinadeKey());
+                                          modal_menuItem_sedisplaying_menuItemsttings.isMarinadeItem = true;
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeItemAvailability = String.valueOf(modal_menuItemSettings.getMarinadeItemAvailability());
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeBarcode = String.valueOf(modal_menuItemSettings.getMarinadeBarcode());
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeItemUniqueCode = String.valueOf(modal_menuItemSettings.getMarinadeItemUniqueCode());
+                                      } catch (Exception e) {
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeKey = "";
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeItemAvailability = "";
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeBarcode = "";
+                                          modal_menuItem_sedisplaying_menuItemsttings.marinadeItemUniqueCode = "";
+                                          modal_menuItem_sedisplaying_menuItemsttings.isMarinadeItem = false;
+                                      }
+                                      if (String.valueOf(modal_menuItemSettings.getItemavailability()).equals("TRUE")) {
+                                          total_no_item_availability = total_no_item_availability + 1;
+                                      }
+
+                                      filteredsubctgywise_menuItems.add(modal_menuItem_sedisplaying_menuItemsttings);
+                                  }
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+                    try {
+                     callAdapter(filteredsubctgywise_menuItems);
+                    } catch (Exception E) {
+                        E.printStackTrace();
+                    }
+
+
+                }
+                else{
+                    callAdapter(filteredsubctgywise_menuItems);
+
+
+                }
+
+            }
+        });
 
 
     }
@@ -1160,6 +1341,44 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
 
 
     }
+    private void hideKeyboard(EditText editText) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        Objects.requireNonNull(imm).hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
+    private void closeSearchBarEditText() {
+        subtitle_Textview.setVisibility(View.VISIBLE);
+        searchButton.setVisibility(View.VISIBLE);
+        searchBarCloseButton.setVisibility(View.GONE);
+        searchbarEdit.setVisibility(View.GONE);
+        subCtgyMenuSwitch_Layout.setVisibility(View.VISIBLE);
+        subctgy_on_Off_Switch.setVisibility(View.VISIBLE);
+    }
+
+    private void showSearchBarEditText() {
+        subtitle_Textview.setVisibility(View.GONE);
+        searchButton.setVisibility(View.GONE);
+        searchBarCloseButton.setVisibility(View.VISIBLE);
+        searchbarEdit.setVisibility(View.VISIBLE);
+        subCtgyMenuSwitch_Layout.setVisibility(View.GONE);
+        subctgy_on_Off_Switch.setVisibility(View.GONE);
+
+    }
+    private void showKeyboard(final EditText editText) {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                editText.requestFocus();
+                InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                editText.setSelection(editText.getText().length());
+            }
+        },0);
+    }
+
+
+
 
 
 
@@ -1260,6 +1479,7 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
 
 
     private void getMenuItemsbasedOnSubCtgy(String subCtgykey) {
+        Adjusting_Widgets_Visibility(true);
         total_no_item_availability =0;
         total_no_of_item =0;
         displaying_menuItems.clear();
@@ -1401,32 +1621,14 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
                 }
 
                 //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
-                try {
-                    Collections.sort(displaying_menuItems, new Comparator<Modal_MenuItem_Settings>() {
-                        public int compare(final Modal_MenuItem_Settings object1, final Modal_MenuItem_Settings object2) {
-                            Long i2 = Long.valueOf(object2.getDisplayno());
-                            Long i1 = Long.valueOf(object1.getDisplayno());
-                            return i1.compareTo(i2);
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                total_no_of_item = displaying_menuItems.size();
+
             }
                 //  itemAvailabilityCount_textWidget.setText("Out of "+String.valueOf(total_no_of_item)+" Items / "+String.valueOf(total_no_item_availability)+" Items Available");
              if(MenuItem.size()-1==i){
-                adapter_Change_menutem_availabilityWithAllowNegativeStock_settings = new Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings(ChangeMenuItemStatus_AllowNegativeStock_Settings.this, displaying_menuItems, ChangeMenuItemStatus_AllowNegativeStock_Settings.this,isinventorycheck);
-                 MenuItemsListView.setAdapter(adapter_Change_menutem_availabilityWithAllowNegativeStock_settings);
-                Adjusting_Widgets_Visibility(false);
-            //hide progress bar process will be done in Adapter file last line.
+                 callAdapter(displaying_menuItems);
+                  //hide progress bar process will be done in Adapter file last line.
             }
-            if(displaying_menuItems.size()<=0){
-                Adjusting_Widgets_Visibility(false);
 
-                itemAvailabilityCount_textWidget.setText("There is no MenuItem Under this SubCtgy");
-
-            }
 
 
         }
@@ -1437,6 +1639,30 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
 
     }
 
+    private void callAdapter(List<Modal_MenuItem_Settings> displaying_menuItems) {
+        try {
+            Collections.sort(displaying_menuItems, new Comparator<Modal_MenuItem_Settings>() {
+                public int compare(final Modal_MenuItem_Settings object1, final Modal_MenuItem_Settings object2) {
+                    Long i2 = Long.valueOf(object2.getDisplayno());
+                    Long i1 = Long.valueOf(object1.getDisplayno());
+                    return i1.compareTo(i2);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        total_no_of_item = displaying_menuItems.size();
+        adapter_Change_menutem_availabilityWithAllowNegativeStock_settings = new Adapter_ChangeMenutem_AvailabilityWithAllowNegativeStock_settings(ChangeMenuItemStatus_AllowNegativeStock_Settings.this, displaying_menuItems, ChangeMenuItemStatus_AllowNegativeStock_Settings.this,isinventorycheck);
+        MenuItemsListView.setAdapter(adapter_Change_menutem_availabilityWithAllowNegativeStock_settings);
+        Adjusting_Widgets_Visibility(false);
+
+        if(displaying_menuItems.size()<=0){
+
+          //  itemAvailabilityCount_textWidget.setText("There is no MenuItem Under this SubCtgy");
+
+        }
+
+    }
 
 
     void Adjusting_Widgets_Visibility(boolean show) {

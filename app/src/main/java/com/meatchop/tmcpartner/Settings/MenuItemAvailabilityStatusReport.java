@@ -5,10 +5,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,9 +21,14 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -29,6 +39,7 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.meatchop.tmcpartner.Constants.TAG;
+
 public class MenuItemAvailabilityStatusReport extends AppCompatActivity {
     LinearLayout loadingPanel,loadingpanelmask;
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
@@ -54,6 +67,7 @@ public class MenuItemAvailabilityStatusReport extends AppCompatActivity {
     TextView date_textWidget,vendorName_textWidget;
     public static List<Modal_SubCtgyList> subCtgyName_arrayList;
     public static HashMap<String, Modal_MenuItem_Settings>  MenuItemHashmap  = new HashMap();
+    String errorCode = "0";
 
     private RecyclerView recycler;
     private RecyclerView.LayoutManager manager;
@@ -83,12 +97,12 @@ public class MenuItemAvailabilityStatusReport extends AppCompatActivity {
         CurrentDate_time =getDate_and_time();
         getMenuItemArrayFromSharedPreferences();
 
-        getMenuCategoryList();
         subCtgyName_arrayList = new ArrayList<>();
         MenuItemHashmap.clear();
         subCtgyName_arrayList.clear();
         date_textWidget.setText(CurrentDate_time);
         vendorName_textWidget.setText(vendorName);
+
     }
 
 
@@ -103,6 +117,13 @@ public class MenuItemAvailabilityStatusReport extends AppCompatActivity {
             Type type = new TypeToken<List<Modal_MenuItem_Settings>>() {
             }.getType();
             MenuItem  = gson.fromJson(json, type);
+            if(MenuItem.size()>0){
+                getMenuItemStockAvlDetails();
+            }
+            else{
+                Toast.makeText(getApplicationContext(),"There is no MenuItem Please Restart the APP",Toast.LENGTH_LONG).show();
+
+            }
         }
 
     }
@@ -276,7 +297,272 @@ public class MenuItemAvailabilityStatusReport extends AppCompatActivity {
         Volley.newRequestQueue(MenuItemAvailabilityStatusReport.this).add(jsonObjectRequest);
 
     }
+    private void getMenuItemStockAvlDetails() {
+        Adjusting_Widgets_Visibility(true);
 
+        Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItemStockAvlDetails+vendorkey,
+                null, new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try{
+                    Log.d(TAG, "starting:onResponse ");
+
+                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+
+                    try {
+                        JSONArray JArray = response.getJSONArray("content");
+
+                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        int i1 = 0;
+                        int arrayLength = JArray.length();
+                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+                        for (; i1 < (arrayLength); i1++) {
+                            String menuItemkeyFromStockAvl = "";
+
+                            try {
+                                JSONObject json = JArray.getJSONObject(i1);
+                                try{
+                                    if(json.has("menuitemkey")){
+
+                                        menuItemkeyFromStockAvl =    String.valueOf(json.get("menuitemkey"));
+
+
+
+
+                                        for(int iterator = 0; iterator<MenuItem.size(); iterator++) {
+                                            Modal_MenuItem_Settings modal_menuItem = MenuItem.get(iterator);
+                                            String menuItemKey = "";
+                                            try {
+                                                menuItemKey = modal_menuItem.getKey().toString();
+                                            } catch (Exception e) {
+                                                menuItemKey = "";
+                                                e.printStackTrace();
+                                            }
+
+                                            if (menuItemKey.equals(menuItemkeyFromStockAvl)) {
+
+
+                                                if (json.has("key")) {
+                                                    modal_menuItem.key_AvlDetails = String.valueOf(json.get("key"));
+                                                } else {
+                                                    modal_menuItem.key_AvlDetails = "";
+                                                    Log.d(Constants.TAG, "There is no key for this Menu: ");
+
+
+                                                }
+
+                                                if (json.has("allownegativestock")) {
+                                                    modal_menuItem.allownegativestock = String.valueOf(json.get("allownegativestock"));
+                                                } else {
+                                                    modal_menuItem.allownegativestock = "";
+                                                    Log.d(Constants.TAG, "There is no allownegativestock for this Menu: ");
+
+
+                                                }
+
+
+                                                if (json.has("barcode")) {
+                                                    modal_menuItem.barcode_AvlDetails = String.valueOf(json.get("barcode"));
+
+                                                } else {
+                                                    modal_menuItem.barcode_AvlDetails = "";
+
+
+
+                                                }
+                                                if (json.has("itemavailability")) {
+                                                    modal_menuItem.itemavailability_AvlDetails = String.valueOf(json.get("itemavailability"));
+
+                                                } else {
+                                                    modal_menuItem.itemavailability_AvlDetails = "";
+
+
+
+                                                }
+                                                if (json.has("lastupdatedtime")) {
+                                                    modal_menuItem.lastupdatedtime_AvlDetails = String.valueOf(json.get("lastupdatedtime"));
+                                                    if (String.valueOf(json.get("lastupdatedtime")).equals("")) {
+                                                        modal_menuItem.lastupdatedtime_AvlDetails = "0";
+
+                                                    } else if (String.valueOf(json.get("lastupdatedtime")).equals("\r")) {
+
+                                                        modal_menuItem.lastupdatedtime_AvlDetails = "0";
+
+                                                    }
+
+                                                } else {
+                                                    modal_menuItem.lastupdatedtime_AvlDetails = "0";
+
+
+                                                }
+
+
+                                                if (json.has("menuitemkey")) {
+                                                    modal_menuItem.menuitemkey_AvlDetails = String.valueOf(json.get("menuitemkey"));
+                                                    if (String.valueOf(json.get("menuitemkey")).equals("")) {
+                                                        modal_menuItem.menuitemkey_AvlDetails = "0";
+
+                                                    } else if (String.valueOf(json.get("menuitemkey")).equals("\r")) {
+
+                                                        modal_menuItem.menuitemkey_AvlDetails = "0";
+
+                                                    }
+
+                                                } else {
+                                                    modal_menuItem.menuitemkey_AvlDetails = "0";
+
+
+                                                }
+
+
+                                                if (json.has("stockbalance")) {
+                                                    modal_menuItem.stockbalance_AvlDetails = String.valueOf(json.get("stockbalance"));
+                                                    if (String.valueOf(json.get("stockbalance")).equals("")) {
+                                                        modal_menuItem.stockbalance_AvlDetails = "0";
+
+                                                    } else if (String.valueOf(json.get("stockbalance")).equals("\r")) {
+
+                                                        modal_menuItem.stockbalance_AvlDetails = "0";
+
+                                                    }
+                                                } else {
+                                                    modal_menuItem.stockbalance_AvlDetails = "0";
+
+
+                                                }
+
+                                                if (json.has("stockincomingkey")) {
+                                                    modal_menuItem.stockincomingkey_AvlDetails = String.valueOf(json.get("stockincomingkey"));
+
+                                                } else {
+                                                    modal_menuItem.stockincomingkey_AvlDetails = "";
+
+
+                                                }
+                                                if (json.has("vendorkey")) {
+                                                    modal_menuItem.vendorkey_AvlDetails = String.valueOf(json.get("vendorkey"));
+
+                                                } else {
+                                                    modal_menuItem.vendorkey_AvlDetails = "";
+
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                    else{
+                                        menuItemkeyFromStockAvl = "";
+                                    }
+                                }
+                                catch (Exception e){
+                                    menuItemkeyFromStockAvl = "";
+                                    e.printStackTrace();
+                                }
+
+
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                Log.d(Constants.TAG, "e: " + e.getMessage());
+                                Log.d(Constants.TAG, "e: " + e.toString());
+
+                            }
+                            if(arrayLength - i1 ==1) {
+                                final SharedPreferences sharedPreferences = getSharedPreferences("MenuList", MODE_PRIVATE);
+
+                                Gson gson = new Gson();
+                                String json = gson.toJson(MenuItem);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString("MenuList", json);
+                                editor.apply();
+                                getMenuCategoryList();
+                            }
+
+                        }
+
+
+
+                    } catch (JSONException e) {
+                        Adjusting_Widgets_Visibility(false);
+
+                        e.printStackTrace();
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                }catch(Exception e){
+                    Adjusting_Widgets_Visibility(false);
+
+                    e.printStackTrace();
+                }
+
+
+
+
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(TAG, "Error: " + error.getMessage());
+                Log.d(TAG, "Error: " + error.toString());
+
+                if (error instanceof TimeoutError) {
+                    errorCode = "Timeout Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(MenuItemAvailabilityStatusReport.this,"Error in Getting  Menuitem stock Avl details  error code :  "+errorCode,Toast.LENGTH_LONG).show();
+                Adjusting_Widgets_Visibility(false);
+
+
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(50000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(MenuItemAvailabilityStatusReport.this).add(jsonObjectRequest);
+
+    }
     private void AddDatatoHashmap(List<Modal_SubCtgyList> subCtgyName_arrayList) {
 
         for(int i1 =0;i1<subCtgyName_arrayList.size();i1++){
@@ -297,7 +583,28 @@ public class MenuItemAvailabilityStatusReport extends AppCompatActivity {
                         try {
 
 
-                                String itemAvailabilityforcount = String.valueOf(menuItem_settings.getItemavailability()).toUpperCase();
+                                String itemAvailabilityforcount = String.valueOf(menuItem_settings.getItemavailability_AvlDetails()).toUpperCase();
+
+                            if(itemAvailabilityforcount.equals("") || itemAvailabilityforcount.equals("NIL") || itemAvailabilityforcount.equals("null") || itemAvailabilityforcount.equals(null) || itemAvailabilityforcount.equals("NULL")) {
+
+                                itemAvailabilityforcount = String.valueOf(menuItem_settings.getItemavailability()).toUpperCase();
+                            }
+                            else{
+                                String allowNegativeStock = String.valueOf(menuItem_settings.getAllownegativestock()).toUpperCase();
+                                String stockbalance = String.valueOf(menuItem_settings.getStockbalance_AvlDetails());
+                                if(allowNegativeStock.equals("FALSE")){
+                                    try{
+                                        double stockBalance_double = Double.parseDouble(stockbalance);
+                                        if(stockBalance_double<=0){
+                                            itemAvailabilityforcount ="FALSE";
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        itemAvailabilityforcount ="TRUE";
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
                                 total_no_of_item = total_no_of_item+1;
                                 if (itemAvailabilityforcount.equals("TRUE")) {
                                     total_no_of_item_Available = total_no_of_item_Available + 1;

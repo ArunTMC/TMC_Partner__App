@@ -37,6 +37,12 @@
     <string name="Weight_cant_be_empty">You Cant Leave weight of the Product Empty</string>
     <string name="CreditedOrdersIrrespectiveofDate">Showing Credit Orders Irrespective of Date</string>
     <string name="Showing_Tickets_That_Not_Closed_Yet">Showing Tickets thats not Closed Yet</string>
+    <string name="Grossweight_is_not_changed">Weight is Not Changed for any item ! Do you still need to change Status</string>
+    <string name="grossweightChangingInstruction"> Grossweight should be with in the above Range </string>
+    <string name="Error_in_updating_GrossWeight">Error in Updating Grossweight . Please try Again !!!!</string>
+    <string name="checkGrossweightCheckboxInstruction">Please check is Correct Grossweight Check box for all item</string>
+    <string name="PriceCannotbeEdited_When_EditingWeight">Please Finish Editing Weight Of this item first</string>
+    <string name="WeightCannotbeEdited_When_EditingPrice">Please Finish Editing Price Of this item first</string>
 
     <string name="ShowCreditedOrdersOnly">Show Credit Orders Only </string>
     <string name="PrintFailed_Instruction">Print Failed . Click Ok to Print Again</string>
@@ -74,6 +80,11 @@
     <string name="New_order_text">Place New Order</string>
     <string name="Settings_text">Settings </string>
     <string name="Select_an_address">Please Select Address to Place Order</string>
+    <string name="DeliveryDistance_is_empty">Deliver Distance is Empty </string>
+    <string name="Pincode_is_empty">Pincode is Empty </string>
+    <string name="addressLine1_is_empty">Address Line 1 is Empty.</string>
+    <string name="addressLine2_is_empty">Address Line 2 is Empty. </string>
+    <string name="AddressType_is_empty">Address Type is Empty </string>
 
     <string name="Cart_is_empty">Cart is Empty So Add the Items</string>
     <string name="Orders_weight_Cant_be_leave_unedited">Please Add Weight and click next button to all the Orders</string>
@@ -84,6 +95,8 @@
     <string name="Cant_place_order">Cannot Place Order while Bill amount is 0</string>
     <string name="TodaysOrderText">Todays Order </string>
     <string name="TomorrowsOrderText">Tomorrows Order</string>
+    <string name="Enter_the_customerName_text">Enter the Customer Name</string>
+
     <string name="Enter_the_mobile_no_text">Enter the Valid Mobile Number</string>
     <string name="SelectPaymentMode">Select Payment Mode to Place Order</string>
 
@@ -139,6 +152,9 @@
     //Manage Orders
     <string name="ExpressDelivery_Text">Express Delivery </string>
     <string name="Preorder_Text">Preorder </string>
+    <string name="APPExpressDelivery_Text">App Orders - Express Delivery </string>
+    <string name="APPPreorder_Text">App Orders - Preorder </string>
+    <string name="PhoneOrders">Phone Orders  </string>
 
     //New Order
     <string name="Menu_Item_category">Menu Item Category</string>
@@ -161,6 +177,10 @@
         <item>POSORDER</item>
 
         <item>PHONEORDER</item>
+    </string-array>
+
+    <string-array name="B2BOrderType">
+        <item>POSORDER</item>
 
 
     </string-array>
@@ -219,6 +239,8 @@
     <string name="RaisedTicketDetailsForRating">Raised Ticket Details For Rating</string>
 
     <string name="PosOrdersList">Pos Orders List </string>
+    <string name="PhoneOrdersList">Phone Orders List </string>
+
     <string name="WholeSaleOrdersList">WholeSale Orders List </string>
     <string name="CancelledOrdersList">Cancelled Orders List </string>
     <string name="ConsolidatedRatingDetails">Consolidated Rating Details Report </string>
@@ -253,10 +275,13 @@
     <string name="enter_the_points_user_needs_to_redeem"> Enter the Points User wants to Redeem :   </string>
     <string name="total_No_of_Points_user_redeemed_already">Total No.of Points User have already used : </string>
     <string name="Menu_Item_Availability_Status_Report">Menu Item Availability Status Report </string>
+    <string name="Record_Supplier_Vehicle_Arrival_time">Record Supplier Vehicle Arrival Time </string>
+    <string name="TimeWise_Supplier_Vehicle_Arrival_Report">Timewise Supplier Vehicle Arrival Report </string>
 
     <string name="Mobile_Number">Mobile :   </string>
     <string name="Consolidated_Sales_Report">Consolidated Sales Report </string>
     <string name="Pos_Sales_Report">POS Sales Report </string>
+    <string name="Phone_Sales_Report">PHONE Sales Report </string>
     <string name="App_Sales_Report">APP Sales Report </string>
     <string name="Replacement_Refund_Transaction_Report">Replacement Refund Transaction Report</string>
 
@@ -292,7 +317,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.5(7) </string>
+    <string name="Version_No">Version No : 1.9.6(9) </string>
     <string name="scanning">scanning for devices....</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>
@@ -301,4 +326,5 @@
     <string name="title_connecting">connecting...</string>
     <string name="title_connected_to">connected - </string>
     <string name="title_not_connected">not connected</string>
+    <string name="WeightCantBeLeftEditedWhenCheckout">Weight &amp; Price of the item you try to change is not changed yet ! Do you still want to Checkout.</string>
 </resources>

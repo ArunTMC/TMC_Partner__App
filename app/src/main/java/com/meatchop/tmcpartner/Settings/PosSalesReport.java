@@ -768,12 +768,35 @@ public class PosSalesReport extends AppCompatActivity {
 
                     }
                     try {
-                        itemPrice = String.valueOf(itemRow.getTmcprice());
+                        itemPrice = String.valueOf(Math.round(Double.parseDouble(String.valueOf(itemRow.getTmcprice()))));
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        itemPrice = "";
+                        try {
+                            itemPrice = String.valueOf(itemRow.getTmcprice());
+
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                            itemPrice = "";
+                        }
+
                     }
+
+
+                    try{
+                        if(!itemPrice.contains("Rs.")){
+                            itemPrice = "Rs."+itemPrice;
+                        }
+                        if(!itemPrice.contains(".00")){
+                            itemPrice = itemPrice + ".00";
+                        }
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
                     try {
                         itemName_weight = itemName + "-" + Quantity;
 
@@ -1038,7 +1061,7 @@ public class PosSalesReport extends AppCompatActivity {
 
             text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
         }
-
+/*
         if(phoneOrderpaymentModeArray.size()>0) {
             text_to_Print = text_to_Print + "[L] <b><font size='normal'> Phone Order Sales " + "</b>\n";
             text_to_Print = text_to_Print + "[L] <font size='normal'>----------------------------------------------" + " \n";
@@ -1133,6 +1156,8 @@ public class PosSalesReport extends AppCompatActivity {
             text_to_Print = text_to_Print + "[L] ----------------------------------------------" + " \n";
         }
 
+
+ */
         if(swiggyOrderpaymentModeArray.size()>0) {
             text_to_Print = text_to_Print + "[L] <font size='normal'> Swiggy Order Sales " + "\n";
             text_to_Print = text_to_Print + "[L] <font size='normal'> ----------------------------------------------" + " \n";
@@ -1748,6 +1773,7 @@ public class PosSalesReport extends AppCompatActivity {
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+/*
 
             for (int i = 0; i < phoneOrderpaymentModeArray.size(); i++) {
                 double payment_AmountDouble = 0;
@@ -1839,10 +1865,14 @@ public class PosSalesReport extends AppCompatActivity {
             }
 
 
+
+
             PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
             PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
+
+ */
 
 
 
@@ -2582,7 +2612,9 @@ public class PosSalesReport extends AppCompatActivity {
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    } else if (ordertype.equals(Constants.PhoneOrder)) {
+                                    }
+                                    /*
+                                    else if (ordertype.equals(Constants.PhoneOrder)) {
                                         try {
                                             if (json.has("coupondiscount")) {
 
@@ -2689,7 +2721,10 @@ public class PosSalesReport extends AppCompatActivity {
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                    } else if (ordertype.equals(Constants.SwiggyOrder)) {
+                                    }
+                                    */
+
+                                    else if (ordertype.equals(Constants.SwiggyOrder)) {
                                         try {
                                             if (json.has("coupondiscount")) {
 
@@ -3682,7 +3717,8 @@ public class PosSalesReport extends AppCompatActivity {
 
         CouponDiscount=0;
         mVolleyService = new VendorOrdersTableService(mResultCallback,PosSalesReport.this);
-        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_type + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=POSORDER";
+      //  String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=POSORDER";
+        String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingslotDate_vendorkey_MultipleOrdertype_ForPOS + "?slotdate="+FromDate+"&vendorkey="+vendorKey+"&ordertype=POSORDER";
         String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingslotDate_vendorkey + "?slotdate="+FromDate+"&vendorkey="+vendorKey;
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 
@@ -3892,7 +3928,7 @@ public class PosSalesReport extends AppCompatActivity {
                         }
 
 
-
+                    /*
                         try {
 
                             if ((ordertype.equals(Constants.PhoneOrder))) {
@@ -3978,6 +4014,8 @@ public class PosSalesReport extends AppCompatActivity {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+
+                     */
 
 
 
@@ -4738,7 +4776,7 @@ public class PosSalesReport extends AppCompatActivity {
                }
 
            }
-
+        /*
            for(String paymentmode :phoneOrderpaymentModeArray){
                Modal_OrderDetails modal_orderDetails = phoneOrderpaymentModeHashmap.get(paymentmode);
                Modal_OrderDetails Payment_Modewise_discount = phoneOrderpaymentMode_DiscountHashmap.get(paymentmode);
@@ -4778,6 +4816,8 @@ public class PosSalesReport extends AppCompatActivity {
            }
 
 
+
+         */
            for(String paymentmode :swiggyOrderpaymentModeArray){
                Modal_OrderDetails modal_orderDetails = swiggyOrderpaymentModeHashmap.get(paymentmode);
                Modal_OrderDetails Payment_Modewise_discount = swiggyOrderpaymentMode_DiscountHashmap.get(paymentmode);
@@ -5369,6 +5409,7 @@ public class PosSalesReport extends AppCompatActivity {
                                 paymentModeHashmap.put(paymentMode, modal_orderDetails);
                             }
                         }
+                        /*
                         if(ordertype.equals(Constants.PhoneOrder)){
                             if (phoneOrderpaymentModeArray.contains(paymentMode)) {
                                 boolean isAlreadyAvailabe = false;
@@ -5500,6 +5541,8 @@ public class PosSalesReport extends AppCompatActivity {
                             }
                         }
 
+
+                         */
 
                     if(ordertype.equals(Constants.SwiggyOrder)){
                         if (swiggyOrderpaymentModeArray.contains(paymentMode)) {
@@ -6598,6 +6641,7 @@ public class PosSalesReport extends AppCompatActivity {
             }
             layoutDocument.add(tablePaymentMode);
         }
+     /*
            if(phoneOrderpaymentModeArray.size()>0) {
                PdfPTable tablePaymentModetitle1 = new PdfPTable(1);
                tablePaymentModetitle1.setWidthPercentage(100);
@@ -6744,6 +6788,8 @@ public class PosSalesReport extends AppCompatActivity {
                layoutDocument.add(tablePaymentMode1);
            }
 
+
+      */
 
             if(swiggyOrderpaymentModeArray.size()>0) {
                 PdfPTable tablePaymentModetitle2 = new PdfPTable(1);

@@ -488,12 +488,5 @@
 
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/applaunchimage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            android:src="@mipmap/image_applaunch_screen" />
-
 
     </FrameLayout>

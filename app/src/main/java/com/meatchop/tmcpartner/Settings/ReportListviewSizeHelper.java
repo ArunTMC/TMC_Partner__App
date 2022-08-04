@@ -31,7 +31,7 @@ public class ReportListviewSizeHelper {
                 }
             }
             if (screenInches>Constants.default_mobileScreenSize){
-                totalHeight += listItem.getMeasuredHeight();
+                totalHeight += listItem.getMeasuredHeight()+10;
 
             }
 

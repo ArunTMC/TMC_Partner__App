@@ -1,17 +1,24 @@
 package com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,11 +34,19 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.meatchop.tmcpartner.Add_UpdateInventoryDetailEntries.Add_UpdateInventoryDetailsEntries_AsyncTask;
+import com.meatchop.tmcpartner.Add_UpdateInventoryDetailEntries.Add_UpdateInventoryDetailsEntries_Interface;
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_changeWeight_in_itemDesp;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
+
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.pos.printer.PrinterFunctions;
 
@@ -39,6 +54,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,13 +65,14 @@ import java.util.List;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
+import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
 
 public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
     Context mContext;
 
     String portName = "USB";
     int portSettings=0,totalGstAmount=0;
-    List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
+    public static List<Modal_ManageOrders_Pojo_Class> OrderdItems_desp;
     double new_total_amount,old_total_Amount=0,sub_total;
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0;
@@ -72,13 +89,28 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     String StoreLanLine = "PH No :4445568499";
     String printerType_sharedPreference = "";
     String printerStatus_sharedPreference = "";
+    String userStatus ="";
 
     BluetoothAdapter mBluetoothAdapter =null;
 
 
 
 
-    boolean orderdetailsnewschema = false;
+    boolean orderdetailsnewschema = false  , updateweightforonlineorders =false;
+
+    List<Modal_MenuItem>MenuItem = new ArrayList<>();
+
+    Dialog changeWeight_dialog;
+
+    LinearLayout new_Order_Linearlayout ;
+    LinearLayout confirming_order_Linearlayout ;
+    LinearLayout ready_Order_Linearlayout  ;
+    LinearLayout cancelled_Order_Linearlayout ;
+    int adapterPosition ;
+
+    Add_UpdateInventoryDetailsEntries_Interface mResultCallback_Add_UpdateInventoryEntriesInterface = null;
+
+
     Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
 
 
@@ -90,6 +122,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
        this.ordersList=ordersList;
       this.orderStatus=orderStatus;
 
+        getMenuItemArrayFromSharedPreferences();
 
     }
 
@@ -143,10 +176,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         final LinearLayout order_item_list_parentLayout =listViewItem.findViewById(R.id.order_item_list_parentLayout);
 
-        final LinearLayout new_Order_Linearlayout =listViewItem.findViewById(R.id.new_Order_Linearlayout);
-        final LinearLayout confirming_order_Linearlayout =listViewItem.findViewById(R.id.confirming_order_Linearlayout);
-        final LinearLayout ready_Order_Linearlayout =listViewItem.findViewById(R.id.ready_Order_Linearlayout);
-        final LinearLayout cancelled_Order_Linearlayout =listViewItem.findViewById(R.id.cancelled_Order_Linearlayout);
+         new_Order_Linearlayout =listViewItem.findViewById(R.id.new_Order_Linearlayout);
+         confirming_order_Linearlayout =listViewItem.findViewById(R.id.confirming_order_Linearlayout);
+         ready_Order_Linearlayout =listViewItem.findViewById(R.id.ready_Order_Linearlayout);
+         cancelled_Order_Linearlayout =listViewItem.findViewById(R.id.cancelled_Order_Linearlayout);
         final LinearLayout slotDate_linearLayout =listViewItem.findViewById(R.id.slotDate_linearLayout);
        // final LinearLayout slotTimeRange_linearLayout =listViewItem.findViewById(R.id.slotTimeRange_linearLayout);
 
@@ -176,10 +209,29 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         StoreLanLine = (shared.getString("VendorMobileNumber", ""));
         orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
         //orderdetailsnewschema = true;
+        updateweightforonlineorders = (shared.getBoolean("updateweightforonlineorders", false));
+
 
 
         final Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =ordersList.get(pos);
         //Log.i("Tag","Order Pos:   "+ Pos_ManageOrderFragment.sorted_OrdersList.get(pos));
+
+
+        try{
+            userStatus = modal_manageOrders_pojo_class.getUserstatus().toString();
+
+            if(userStatus.toUpperCase().equals(Constants.USERSTATUS_FLAGGED)){
+                order_item_list_parentLayout.setBackground(getDrawable(mContext,R.drawable.orange_border_button));
+
+            }
+            else{
+
+            }
+
+        }
+            catch ( Exception e ){
+            e.printStackTrace();
+        }
 
 
         if(orderStatus.equals(Constants.NEW_ORDER_STATUS)){
@@ -625,11 +677,11 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
                 //Log.i("Tag",""+changestatusto+OrderKey);
-
+                adapterPosition = pos;
                 ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
                 getStockOutGoingDetailsUsingOrderid(orderid);
-                Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
+               // Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
             }
         });
@@ -760,10 +812,10 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
               //  OrderdItems_desp.clear();
 
                 generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails,orderid, customerMobileNo);
-
+                adapterPosition = pos;
                 ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
-                Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
+              //  Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
             }
         });
@@ -802,10 +854,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.VISIBLE);
                 //Log.i("Tag",""+changestatusto+OrderKey);
-
+                adapterPosition = pos;
                 ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
-
-                Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
+             //   Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
             }
         });
@@ -919,16 +970,219 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 catch (Exception e){
                     e.printStackTrace();
                 }
-                new_Order_Linearlayout.setVisibility(View.GONE);
+
+                String orderType = "";
+
+                try{
+                    orderType = (String.format("%s", modal_manageOrders_pojo_class.getOrderType()));
+                    if(orderType.equals("")){
+                        orderType = (String.format("%s", modal_manageOrders_pojo_class.getOrdertype()));
+
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+           /*     new_Order_Linearlayout.setVisibility(View.GONE);
                 ready_Order_Linearlayout.setVisibility(View.VISIBLE);
                 confirming_order_Linearlayout.setVisibility(View.GONE);
                 cancelled_Order_Linearlayout.setVisibility(View.GONE);
                 modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
 
                 ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
-
-                Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
+                adapterPosition = pos;
+                //Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
                 notifyDataSetChanged();
+
+            */
+
+                if(updateweightforonlineorders){
+
+                    if(orderType.toUpperCase().equals(Constants.PhoneOrder)){
+                        adapterPosition = pos;
+                        ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+                        notifyDataSetChanged();
+                        modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+                    }
+                    else {
+
+                        try {
+
+
+                            JSONArray array = modal_manageOrders_pojo_class.getItemdesp();
+                            //Log.i("tag","array.length()"+ array.length());
+                            String b = array.toString();
+                            modal_manageOrders_pojo_class.setItemdesp_string(b);
+                            String itemDesp = "";
+                            String subCtgyKey = "";
+                            int pricePerKgItemCount = 0;
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject json = array.getJSONObject(i);
+                                String menuIdFromItemDesp = "";
+                                if (json.has("menuitemid")) {
+                                    menuIdFromItemDesp = json.getString("menuitemid");
+                                    for (int j = 0; j < MenuItem.size(); j++) {
+                                        String menuIdFromMenu = "", pricetypeforpos = "", inventoryDetails_String;
+                                        try {
+
+                                            menuIdFromMenu = MenuItem.get(j).getMenuItemId().toString();
+                                        } catch (Exception e) {
+                                            menuIdFromMenu = "";
+                                            e.printStackTrace();
+                                        }
+                                        if (menuIdFromItemDesp.equals(menuIdFromMenu)) {
+                                            try {
+
+                                                pricetypeforpos = MenuItem.get(j).getPricetypeforpos().toString();
+                                            } catch (Exception e) {
+                                                pricetypeforpos = "tmcpriceperkg";
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+
+                                                inventoryDetails_String = String.valueOf(MenuItem.get(j).getInventorydetails().toString());
+                                                if (!inventoryDetails_String.equals("nil") && !inventoryDetails_String.equals("")) {
+                                                    json.put("inventorydetailsstring", inventoryDetails_String);
+                                                    json.put("inventorydetails", new JSONArray(inventoryDetails_String));
+
+
+                                                } else {
+
+                                                    json.put("inventorydetailsstring", "");
+                                                    json.put("inventorydetails", new JSONArray());
+
+                                                }
+
+                                            } catch (Exception e) {
+                                                inventoryDetails_String = "";
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+
+                                                json.put("tmcctgykey", String.valueOf(MenuItem.get(j).getTmcctgykey().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+
+                                                json.put("stockavldetailskey", String.valueOf(MenuItem.get(j).getKey_AvlDetails().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+
+                                                json.put("stockbalance", String.valueOf(MenuItem.get(j).getStockbalance_AvlDetails().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+
+                                                json.put("receivedstock", String.valueOf(MenuItem.get(j).getReceivedstock_AvlDetails().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+
+                                                json.put("barcode", String.valueOf(MenuItem.get(j).getBarcode().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+
+                                                json.put("stockincomingkey", String.valueOf(MenuItem.get(j).getStockincomingkey_AvlDetails().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+
+                                                json.put("isitemAvailable", String.valueOf(MenuItem.get(j).getItemavailability_AvlDetails().toString()));
+
+                                            } catch (Exception e) {
+
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+
+                                                json.put("allownegativestock", String.valueOf(MenuItem.get(j).getAllownegativestock().toString()));
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+
+
+                                            if (pricetypeforpos.toString().toUpperCase().equals("TMCPRICEPERKG")) {
+                                                pricePerKgItemCount++;
+                                            }
+
+                                            json.put("pricetypeforpos", pricetypeforpos);
+
+                                        }
+
+
+                                    }
+                                    if (array.length() - i == 1) {
+                                        if (pricePerKgItemCount > 0) {
+                                            adapterPosition = pos;
+                                            openBottomSheetToChangeWeight(changestatusto, vendorkey, OrderKey, orderid, customerMobileNo, Currenttime, array, modal_manageOrders_pojo_class.getTokenno());
+
+                                        } else {
+                                            adapterPosition = pos;
+                                            ChangeStatusOftheOrder(changestatusto, vendorkey, OrderKey, orderid, customerMobileNo, Currenttime);
+                                            //  Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
+                                            notifyDataSetChanged();
+                                            modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+                                        }
+                                    }
+
+                                }
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+                }
+                else{
+                    adapterPosition = pos;
+                    ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+
+                    //Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
+                    notifyDataSetChanged();
+                    modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+
+                }
+
+
+
+
+
             }
         });
 
@@ -1190,7 +1444,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                         });
                             }
 
-                            //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
+                          /*  //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
                             Thread t = new Thread() {
                                 public void run() {
                                   //  printRecipt(selectedBillDetails);
@@ -1200,6 +1454,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                 }
                             };
                             t.start();
+
+                           */
                         } catch (Exception e) {
                             e.printStackTrace();
 
@@ -1208,7 +1464,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                             old_total_Amount = 0;
 
                         }
-                    } else {
+                    }
+                    else {
                         generatingTokenNo(vendorkey,orderDetailsKey,selectedBillDetails,orderid, customerMobileNo);
 
                     }
@@ -1333,7 +1590,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                         });
                             }
 
-                            //     pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
+                           /* //     pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedBillDetails);
                             Thread t = new Thread() {
                                 public void run() {
                                    // printRecipt(selectedBillDetails);
@@ -1343,6 +1600,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                 }
                             };
                             t.start();
+
+                            */
                         } catch (Exception e) {
                             e.printStackTrace();
 
@@ -1371,6 +1630,26 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         return  listViewItem ;
 
     }
+
+
+
+
+    private void getMenuItemArrayFromSharedPreferences() {
+        final SharedPreferences sharedPreferencesMenuitem = mContext.getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String json = sharedPreferencesMenuitem.getString("MenuList", "");
+        if (json.isEmpty()) {
+            Toast.makeText(mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
+        } else {
+            Type type = new TypeToken<List<Modal_MenuItem>>() {
+            }.getType();
+            MenuItem  = gson.fromJson(json, type);
+        }
+
+    }
+
+
 
     private void getStockOutGoingDetailsUsingOrderid(String orderid) {
 
@@ -1644,7 +1923,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                     }
 
 
-                                    //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedOrderr);
+                                   /* //pos_manageOrderFragment.printReciptUsingUSBPrinter(selectedOrderr);
                                     Thread t = new Thread() {
                                         public void run() {
                                             //printRecipt(selectedOrderr);
@@ -1654,6 +1933,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                         }
                                     };
                                     t.start();
+
+                                    */
                                 }
                                 catch(Exception e ){
                                     e.printStackTrace();
@@ -1829,36 +2110,45 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-                for(int i=0;i<pos_manageOrderFragment.ordersList.size();i++){
-                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.ordersList.get(i);
-                    String Orderdetailsorderid = modal_manageOrders_pojo_class.getOrderid();
-                    if(orderid.equals(Orderdetailsorderid)){
-                        try {
-                        //    String usermobile = modal_manageOrders_pojo_class.getUsermobile();
-                        //    String ordertype = modal_manageOrders_pojo_class.getOrderType().toUpperCase();
-                        //    if ((ordertype.equals(Constants.APPORDER)) && ((!tokenNo.equals("")) || (!tokenNo.equals("null")) || (tokenNo.length() > 0))) {
-                       //         SendTextMessagetoUserUsingApi(usermobile, tokenNo);
-                      //      }
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
+                try {
+                    for (int i = 0; i < Pos_ManageOrderFragment.ordersList.size(); i++) {
+                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = Pos_ManageOrderFragment.ordersList.get(i);
+                        String Orderdetailsorderid = modal_manageOrders_pojo_class.getOrderid();
+                        if (orderid.equals(Orderdetailsorderid)) {
+                            try {
+                                //    String usermobile = modal_manageOrders_pojo_class.getUsermobile();
+                                //    String ordertype = modal_manageOrders_pojo_class.getOrderType().toUpperCase();
+                                //    if ((ordertype.equals(Constants.APPORDER)) && ((!tokenNo.equals("")) || (!tokenNo.equals("null")) || (tokenNo.length() > 0))) {
+                                //         SendTextMessagetoUserUsingApi(usermobile, tokenNo);
+                                //      }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
-                        modal_manageOrders_pojo_class.setTokenno(tokenNo);
-                        pos_manageOrderFragment.showProgressBar(false);
-                        notifyDataSetChanged();
+                            modal_manageOrders_pojo_class.setTokenno(tokenNo);
+                            pos_manageOrderFragment.showProgressBar(false);
+                            notifyDataSetChanged();
 
+                        }
                     }
                 }
-                for(int i=0;i<pos_manageOrderFragment.sorted_OrdersList.size();i++){
-                    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= pos_manageOrderFragment.sorted_OrdersList.get(i);
-                    String Orderdetailsorderid = modal_manageOrders_pojo_class.getOrderid();
-                    if(orderid.equals(Orderdetailsorderid)){
-                        modal_manageOrders_pojo_class.setTokenno(tokenNo);
-                        pos_manageOrderFragment.showProgressBar(false);
-                        notifyDataSetChanged();
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                try {
+                    for (int i = 0; i < Pos_ManageOrderFragment.sorted_OrdersList.size(); i++) {
+                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = Pos_ManageOrderFragment.sorted_OrdersList.get(i);
+                        String Orderdetailsorderid = modal_manageOrders_pojo_class.getOrderid();
+                        if (orderid.equals(Orderdetailsorderid)) {
+                            modal_manageOrders_pojo_class.setTokenno(tokenNo);
+                            pos_manageOrderFragment.showProgressBar(false);
+                            notifyDataSetChanged();
 
+                        }
                     }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
                 }
 
                 //Log.d(Constants.TAG, "Responsewwwww: " + response);
@@ -2164,7 +2454,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
         double couponDiscount_double = 0;
         try {
-            if (OrderType.equals(Constants.APPORDER)) {
+            if (OrderType.equals(Constants.APPORDER) || OrderType.equals(Constants.PhoneOrder)) {
                 couponDiscount_double = Double.parseDouble(String.valueOf(manageOrders_pojo_class.getCoupondiscamount()));
 
             }
@@ -3094,7 +3384,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
         if((!CouponDiscount.equals("0.0"))&&(!CouponDiscount.equals("0"))&&(!CouponDiscount.equals("0.00"))&&(CouponDiscount!=(null))&&(!CouponDiscount.equals(""))) {
-            if(OrderType.equals(Constants.APPORDER)){
+            if(OrderType.equals(Constants.APPORDER)|| OrderType.equals(Constants.PhoneOrder)){
                 if (CouponDiscount.length() == 4) {
                     //20spaces
                     //NEW TOTAL =4
@@ -3376,7 +3666,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
 
-        if(OrderType.equals(Constants.APPORDER)) {
+        if(OrderType.equals(Constants.APPORDER) || OrderType.equals(Constants.PhoneOrder)) {
 
 
 
@@ -3509,6 +3799,946 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;
     }
+
+
+
+
+    private void openBottomSheetToChangeWeight(String changestatusto, String vendorkey, String orderKey, String orderid, String customerMobileNo, String currenttime, JSONArray jsonArray, String tokenno) {
+
+        changeWeight_dialog = new Dialog(mContext,android.R.style.Theme_Light_NoTitleBar_Fullscreen);
+        changeWeight_dialog.setContentView(R.layout.change_weight_for_ordereditems_bottomsheet);
+        changeWeight_dialog.setCanceledOnTouchOutside(false);
+        LinearLayout listviewchilditemLayout = changeWeight_dialog.findViewById(R.id.listviewchilditemLayout);
+        LinearLayout listviewParentLayout = changeWeight_dialog.findViewById(R.id.listviewParentLayout);
+        LinearLayout loadingpanelmaskt = changeWeight_dialog.findViewById(R.id.loadingpanelmaskt);
+        LinearLayout loadingPanel = changeWeight_dialog.findViewById(R.id.loadingPanel);
+        listviewParentLayout.setVisibility(View.VISIBLE);
+        listviewchilditemLayout.setVisibility(View.GONE);
+        loadingPanel.setVisibility(View.GONE);
+        loadingpanelmaskt.setVisibility(View.GONE);
+
+
+
+        ListView itemDesp_listview = changeWeight_dialog.findViewById(R.id.itemDesp_listview);
+        Button changeReadyForPickup = changeWeight_dialog.findViewById(R.id.changeReadyForPickup);
+        TextView tokenNo_textWidget = changeWeight_dialog.findViewById(R.id.tokenNo_textWidget);
+
+        tokenNo_textWidget.setText(tokenno);
+        try{
+
+            OrderdItems_desp.clear();
+            try {
+                for(int i=0; i < jsonArray.length(); i++) {
+                    JSONObject json = jsonArray.getJSONObject(i);
+                    JSONArray inventorydetails = new JSONArray();
+                    String quantityString = "",itemFinalWeight_String ="";
+                    double quantity_double =0,itemfinalWeight_double =0;
+                    String subCtgyKey ="",pricetypeforpos ="",grossweightingrams ="",menuitemid ="",inventorydetailsstring ="",itemName = "";
+                    Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+
+                    try {
+                        if(json.has("pricetypeforpos")) {
+                            pricetypeforpos = String.valueOf(json.get("pricetypeforpos"));
+                        }
+                        else {
+                            pricetypeforpos = " ";
+                        }
+
+                        manageOrders_pojo_class.pricetypeforpos = pricetypeforpos;
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    if (json.has("netweight")) {
+                        manageOrders_pojo_class.netweight = String.valueOf(json.get("netweight"));
+
+                    } else {
+                        manageOrders_pojo_class.netweight = "";
+
+                    }
+
+                    try {
+                        if (json.has("tmcsubctgykey")) {
+                            subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
+                        } else {
+                            subCtgyKey = " ";
+                        }
+
+                        manageOrders_pojo_class.tmcSubCtgyKey = subCtgyKey;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("menuitemid")) {
+                            menuitemid = String.valueOf(json.get("menuitemid"));
+                        } else {
+                            menuitemid = " ";
+                        }
+
+                        manageOrders_pojo_class.menuItemKey = menuitemid;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("receivedstock")) {
+                            manageOrders_pojo_class.receivedstock = String.valueOf(json.get("receivedstock"));
+                        } else {
+                            manageOrders_pojo_class.receivedstock = " ";
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if (json.has("barcode")) {
+                            manageOrders_pojo_class.barcode = String.valueOf(json.get("barcode"));
+                        } else {
+                            manageOrders_pojo_class.barcode = " ";
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        if (json.has("inventorydetailsstring")) {
+                            inventorydetailsstring = String.valueOf(json.get("inventorydetailsstring"));
+                        } else {
+                            inventorydetailsstring = " ";
+                        }
+
+                        manageOrders_pojo_class.inventorydetailsstring = inventorydetailsstring;
+                    } catch (Exception e) {
+                        manageOrders_pojo_class.inventorydetailsstring = "";
+                        e.printStackTrace();
+                    }
+
+
+
+                    try{
+                        manageOrders_pojo_class.tmcctgykey = String.valueOf(json.get("tmcctgykey"));
+
+
+                    }
+                    catch (Exception e){
+                        manageOrders_pojo_class.tmcctgykey  ="";
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        manageOrders_pojo_class.stockavldetailskey = String.valueOf(json.get("stockavldetailskey"));
+
+
+                    }
+                    catch (Exception e){
+                        manageOrders_pojo_class.stockavldetailskey ="";
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        manageOrders_pojo_class.stockbalance = String.valueOf(json.get("stockbalance"));
+
+
+                    }
+                    catch (Exception e){
+                        manageOrders_pojo_class.stockbalance  ="";
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        manageOrders_pojo_class.stockincomingkey = String.valueOf(json.get("stockincomingkey"));
+
+
+                    }
+                    catch (Exception e){
+                        manageOrders_pojo_class.stockincomingkey ="";
+                        e.printStackTrace();
+                    }
+
+
+
+                    try{
+                        manageOrders_pojo_class.isitemAvailable = String.valueOf(json.get("isitemAvailable"));
+
+
+                    }
+                    catch (Exception e){
+                        manageOrders_pojo_class.isitemAvailable ="";
+                        e.printStackTrace();
+                    }
+
+
+
+                    try{
+                        manageOrders_pojo_class.allownegativestock = String.valueOf(json.get("allownegativestock"));
+
+
+                    }
+                    catch (Exception e){
+                        manageOrders_pojo_class.isitemAvailable ="";
+                        e.printStackTrace();
+                    }
+
+
+
+
+
+
+
+                    try {
+                        if (json.has("inventorydetails")) {
+                            inventorydetails = (JSONArray) json.get("inventorydetails");
+                        } else {
+                            inventorydetails = new JSONArray();
+                        }
+
+                        manageOrders_pojo_class.inventorydetails = inventorydetails;
+                    } catch (Exception e) {
+                        manageOrders_pojo_class.inventorydetails =  new JSONArray();
+                        e.printStackTrace();
+                    }
+
+
+
+
+                    try {
+                        if (json.has("grossweightingrams")) {
+                            grossweightingrams = String.valueOf(json.get("grossweightingrams"));
+                        } else {
+                            grossweightingrams = " ";
+                            if (json.has("grossweight")) {
+                                grossweightingrams = String.valueOf(json.get("grossweightingrams"));
+
+                            } else {
+                                grossweightingrams = " ";
+                                grossweightingrams = " ";
+                                if (json.has("weightingrams")) {
+                                    grossweightingrams = String.valueOf(json.get("weightingrams"));
+
+                                } else {
+                                    grossweightingrams = " ";
+                                }
+                            }
+                        }
+                        try {
+
+                            grossweightingrams = grossweightingrams.replace("[^\\d.]", "");
+                        } catch (Exception e) {
+                            grossweightingrams = "0";
+                            e.printStackTrace();
+                        }
+                        manageOrders_pojo_class.grossweightingrams = grossweightingrams;
+                        //manageOrders_pojo_class.setItemFinalWeight(grossweightingrams);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (json.has("grossweight")) {
+                        manageOrders_pojo_class.grossweight = String.valueOf(json.get("grossweight"));
+
+                    } else {
+                        manageOrders_pojo_class.grossweight = grossweightingrams;
+                    }
+
+
+                    try{
+                        itemFinalWeight_String = grossweightingrams.replaceAll("[^\\d.]", "");
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        itemfinalWeight_double= Double.parseDouble(itemFinalWeight_String);
+                    }
+                    catch (Exception e){
+                        itemfinalWeight_double = 1;
+                        e.printStackTrace();
+                    }
+                    try {
+                        if (json.has("quantity")) {
+                            manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                            quantityString =  String.valueOf(json.get("quantity"));
+                        } else {
+                            manageOrders_pojo_class.quantity = "1";
+                            quantityString = "1";
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        quantity_double= Double.parseDouble(quantityString);
+                    }
+                    catch (Exception e){
+                        quantity_double  =1;
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        itemfinalWeight_double = itemfinalWeight_double *  quantity_double ;
+                    }
+                    catch (Exception e){
+                        itemfinalWeight_double  =1;
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        manageOrders_pojo_class.setItemFinalWeight(String.valueOf(itemfinalWeight_double));
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+                    if (json.has("cutname")) {
+                        manageOrders_pojo_class.cutname = String.valueOf(json.get("cutname"));
+
+                    } else {
+                        manageOrders_pojo_class.cutname = "";
+                    }
+
+                    if (subCtgyKey.equals("tmcsubctgy_16")) {
+                        //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                        manageOrders_pojo_class.itemName = "Grill House  " + String.valueOf(json.get("itemname"));
+                        itemName = "Grill House  " + String.valueOf(json.get("itemname"));
+                    } else if (subCtgyKey.equals("tmcsubctgy_15")) {
+                        // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                        manageOrders_pojo_class.itemName = "Ready to Cook " + String.valueOf(json.get("itemname"));
+                        itemName = "Ready to Cook " + String.valueOf(json.get("itemname"));
+                    } else {
+                        manageOrders_pojo_class.itemName = String.valueOf(json.get("itemname"));
+                        itemName = String.valueOf(json.get("itemname"));
+                    }
+                    manageOrders_pojo_class.ItemFinalPrice = String.valueOf(json.get("tmcprice"));
+                  //  manageOrders_pojo_class.quantity = String.valueOf(json.get("quantity"));
+                    manageOrders_pojo_class.GstAmount = String.valueOf(json.get("gstamount"));
+                    manageOrders_pojo_class.isCorrectGrossweight = true;
+                    manageOrders_pojo_class.isGrossweightEdited = false;
+
+
+
+                    if(pricetypeforpos.toString().toUpperCase().equals("TMCPRICE")) {
+
+
+                        if(inventorydetails.length()>0) {
+                            try {
+
+                                int jsonArrayIterator = 0;
+                                int jsonArrayCount = inventorydetails.length();
+                                for (; jsonArrayIterator < (jsonArrayCount); jsonArrayIterator++) {
+                                    try {
+                                        JSONObject json_InventoryDetails = inventorydetails.getJSONObject(jsonArrayIterator);
+
+
+
+                                        String menuItemKeyFromInventoryDetails = json_InventoryDetails.getString("menuitemkey");
+
+
+
+
+
+                                        for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < MenuItem.size(); iterator_menuitemStockAvlDetails++) {
+
+                                            Modal_MenuItem modal_menuItemInventoryDetailsItem = MenuItem.get(iterator_menuitemStockAvlDetails);
+
+                                            String menuItemKeyFromMenuAvlDetails = String.valueOf(modal_menuItemInventoryDetailsItem.getKey());
+
+                                            if (menuItemKeyFromInventoryDetails.equals(menuItemKeyFromMenuAvlDetails)) {
+                                                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class1 = new Modal_ManageOrders_Pojo_Class();
+
+
+                                                modal_manageOrders_pojo_class1.ischilditem = true;
+                                                modal_manageOrders_pojo_class1.parentItemName = itemName;
+
+
+                                                try {
+                                                    if (json_InventoryDetails.has("grossweightingrams")) {
+                                                        grossweightingrams = String.valueOf(json_InventoryDetails.get("grossweightingrams"));
+                                                    } else {
+                                                        grossweightingrams = " ";
+
+                                                    }
+                                                    try {
+
+                                                        grossweightingrams = grossweightingrams.replace("[^\\d.]", "");
+                                                    } catch (Exception e) {
+                                                        grossweightingrams = "0";
+                                                        e.printStackTrace();
+                                                    }
+                                                    modal_manageOrders_pojo_class1.grossweightingrams = grossweightingrams;
+                                               //     modal_manageOrders_pojo_class1.setItemFinalWeight(grossweightingrams);
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.grossweight = grossweightingrams;
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    itemFinalWeight_String = grossweightingrams.replaceAll("[^\\d.]", "");
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try{
+                                                    itemfinalWeight_double= Double.parseDouble(itemFinalWeight_String);
+                                                }
+                                                catch (Exception e){
+                                                    itemfinalWeight_double = 1;
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+                                                    if (json.has("quantity")) {
+                                                        modal_manageOrders_pojo_class1.quantity = String.valueOf(json.get("quantity"));
+                                                        quantityString =  String.valueOf(json.get("quantity"));
+                                                    } else {
+                                                        modal_manageOrders_pojo_class1.quantity = "1";
+                                                        quantityString = "1";
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    quantity_double= Double.parseDouble(quantityString);
+                                                }
+                                                catch (Exception e){
+                                                    quantity_double  =1;
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    itemfinalWeight_double = itemfinalWeight_double *  quantity_double ;
+                                                }
+                                                catch (Exception e){
+                                                    itemfinalWeight_double  =1;
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.setItemFinalWeight(String.valueOf(itemfinalWeight_double));
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try {
+                                                    if(json.has("pricetypeforpos")) {
+                                                        pricetypeforpos = String.valueOf(modal_menuItemInventoryDetailsItem.getPricetypeforpos());
+                                                    }
+                                                    else {
+                                                        pricetypeforpos = " ";
+                                                    }
+
+                                                    modal_manageOrders_pojo_class1.pricetypeforpos = pricetypeforpos;
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+
+                                                if (json.has("netweight")) {
+                                                    modal_manageOrders_pojo_class1.netweight = String.valueOf(modal_menuItemInventoryDetailsItem.getNetweight());
+
+                                                } else {
+                                                    modal_manageOrders_pojo_class1.netweight = "";
+
+                                                }
+
+                                                try {
+                                                    if (json.has("tmcsubctgykey")) {
+                                                        subCtgyKey = String.valueOf(modal_menuItemInventoryDetailsItem.getTmcsubctgykey());
+                                                    } else {
+                                                        subCtgyKey = " ";
+                                                    }
+
+                                                    modal_manageOrders_pojo_class1.tmcSubCtgyKey = subCtgyKey;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try {
+                                                    if (json.has("menuitemid")) {
+                                                        menuitemid = String.valueOf(modal_menuItemInventoryDetailsItem.getMenuItemId());
+                                                    } else {
+                                                        menuitemid = " ";
+                                                    }
+
+                                                    modal_manageOrders_pojo_class1.menuItemKey = menuitemid;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+                                                    if (json.has("receivedstock")) {
+                                                        modal_manageOrders_pojo_class1.receivedstock = String.valueOf(modal_menuItemInventoryDetailsItem.getReceivedstock_AvlDetails());
+                                                    } else {
+                                                        modal_manageOrders_pojo_class1.receivedstock = " ";
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+                                                    if (json.has("barcode")) {
+                                                        modal_manageOrders_pojo_class1.barcode = String.valueOf(modal_menuItemInventoryDetailsItem.getBarcode());
+                                                    } else {
+                                                        modal_manageOrders_pojo_class1.barcode = " ";
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.tmcctgykey = String.valueOf(modal_menuItemInventoryDetailsItem.getTmcctgykey());
+
+
+                                                }
+                                                catch (Exception e){
+                                                    modal_manageOrders_pojo_class1.tmcctgykey  ="";
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.stockavldetailskey = String.valueOf(modal_menuItemInventoryDetailsItem.getKey_AvlDetails());
+
+
+                                                }
+                                                catch (Exception e){
+                                                    modal_manageOrders_pojo_class1.stockavldetailskey ="";
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.stockbalance = String.valueOf(modal_menuItemInventoryDetailsItem.getStockbalance_AvlDetails());
+
+
+                                                }
+                                                catch (Exception e){
+                                                    modal_manageOrders_pojo_class1.stockbalance  ="";
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.stockincomingkey = String.valueOf(modal_menuItemInventoryDetailsItem.getStockincomingkey_AvlDetails());
+
+
+                                                }
+                                                catch (Exception e){
+                                                    modal_manageOrders_pojo_class1.stockincomingkey ="";
+                                                    e.printStackTrace();
+                                                }
+
+
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.isitemAvailable = String.valueOf(modal_menuItemInventoryDetailsItem.getItemavailability_AvlDetails());
+
+
+                                                }
+                                                catch (Exception e){
+                                                    modal_manageOrders_pojo_class1.isitemAvailable ="";
+                                                    e.printStackTrace();
+                                                }
+
+
+
+                                                try{
+                                                    modal_manageOrders_pojo_class1.allownegativestock = String.valueOf(modal_menuItemInventoryDetailsItem.getAllownegativestock());
+
+
+                                                }
+                                                catch (Exception e){
+                                                    modal_manageOrders_pojo_class1.isitemAvailable ="";
+                                                    e.printStackTrace();
+                                                }
+
+
+
+
+
+
+                                                modal_manageOrders_pojo_class1.ItemFinalPrice = String.valueOf(modal_menuItemInventoryDetailsItem.getTmcprice());
+                                            //    modal_manageOrders_pojo_class1.quantity = String.valueOf(json.get("quantity"));
+                                                modal_manageOrders_pojo_class1.GstAmount = String.valueOf(json.get("gstamount"));
+                                                modal_manageOrders_pojo_class1.isCorrectGrossweight = true;
+                                                modal_manageOrders_pojo_class1.isGrossweightEdited = false;
+
+                                                modal_manageOrders_pojo_class1.inventorydetailsstring ="";
+                                                modal_manageOrders_pojo_class1.inventorydetails = new JSONArray();
+
+
+
+
+
+
+                                                if (subCtgyKey.equals("tmcsubctgy_16")) {
+                                                    //  itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Grill House ) "), quantity);
+                                                    modal_manageOrders_pojo_class1.itemName = "Grill House  " + String.valueOf(modal_menuItemInventoryDetailsItem.getItemname());
+
+                                                } else if (subCtgyKey.equals("tmcsubctgy_15")) {
+                                                    // itemDesp = String.format("%s %s * %s", marinadeitemName + "  with ", itemName+(" ( Ready to Cook ) "), quantity);
+                                                    modal_manageOrders_pojo_class1.itemName = "Ready to Cook " + String.valueOf(modal_menuItemInventoryDetailsItem.getItemname());
+
+                                                } else {
+                                                    modal_manageOrders_pojo_class1.itemName = String.valueOf(modal_menuItemInventoryDetailsItem.getItemname());
+
+                                                }
+
+                                                OrderdItems_desp.add(modal_manageOrders_pojo_class1);
+
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        else{
+                            OrderdItems_desp.add(manageOrders_pojo_class);
+
+                        }
+
+
+                    }
+                    else{
+                        OrderdItems_desp.add(manageOrders_pojo_class);
+
+                    }
+
+
+
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Adapter_Mobile_changeWeight_in_itemDesp adapter_forOrderDetails_listview = new Adapter_Mobile_changeWeight_in_itemDesp(mContext, OrderdItems_desp,"AppOrdersList",pos_manageOrderFragment,true);
+        itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
+
+
+        changeReadyForPickup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                try{
+                    Date c = Calendar.getInstance().getTime();
+
+                    SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+                    String time  = day.format(c);
+                    System.out.println("button clicked time " + time);
+
+
+                    List<Modal_ManageOrders_Pojo_Class> orderdItems_desp_local = new ArrayList<>();
+                    orderdItems_desp_local.clear();
+                    changeWeight_dialog.hide();
+                    pos_manageOrderFragment.showProgressBar(true);
+                    for(int i =0; i<OrderdItems_desp.size(); i++){
+
+                        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = OrderdItems_desp.get(i);
+                        boolean isCorrectGrossweight = false , isGrossweightEdited = false ;
+                        String pricetypeforPOS ="",finalWeight = "", grossweight ="",quantity ="";
+                        double finalWeight_double =0, grossweight_double =0,quantity_double =0;
+                        try{
+                            isCorrectGrossweight = modal_manageOrders_pojo_class.isCorrectGrossweight();
+
+                        }
+                        catch (Exception e){
+                            isCorrectGrossweight = false;
+                            e.printStackTrace();
+                        }
+                        if(!isCorrectGrossweight){
+                            pos_manageOrderFragment.showProgressBar(false);
+                            changeWeight_dialog.show();
+                            AlertDialogClass.showDialog(pos_manageOrderFragment.getActivity(),R.string.checkGrossweightCheckboxInstruction);
+                            break;
+                        }
+                        try{
+                            isGrossweightEdited  = modal_manageOrders_pojo_class.isGrossweightEdited();
+                        }
+                        catch (Exception e){
+                            isGrossweightEdited = false ;
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            pricetypeforPOS = String.valueOf(modal_manageOrders_pojo_class.getPricetypeforpos().toLowerCase());
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            finalWeight    = String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight());
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            grossweight    = String.valueOf(modal_manageOrders_pojo_class.getGrossweightingrams());
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            quantity    = String.valueOf(modal_manageOrders_pojo_class.getQuantity());
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            grossweight = grossweight.replaceAll("[^\\d.]", "");
+
+                            if(!grossweight.equals("")) {
+                                grossweight_double = Double.parseDouble(grossweight);
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            quantity = quantity.replaceAll("[^\\d.]", "");
+
+                            if(!quantity.equals("")) {
+                                quantity_double = Double.parseDouble(quantity);
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                        try{
+
+                            grossweight_double = grossweight_double *quantity_double;
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            finalWeight = finalWeight.replaceAll("[^\\d.]", "");
+
+                            if(!finalWeight.equals("")) {
+
+                                finalWeight_double = Double.parseDouble(finalWeight);
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+
+                        try{
+                            if(pricetypeforPOS.toLowerCase().equals("tmcpriceperkg")) {
+                                if (isCorrectGrossweight) {
+                                    if (isGrossweightEdited) {
+                                        if (finalWeight_double != grossweight_double) {
+                                            //  Toast.makeText(mContext, modal_manageOrders_pojo_class.getItemName(), Toast.LENGTH_SHORT).show();
+                                            orderdItems_desp_local.add(modal_manageOrders_pojo_class);
+
+                                        } else {
+                                        }
+                                    } else {
+
+
+                                    }
+                                } else {
+                                    Toast.makeText(mContext, "Please select the Is Current Grossweight is correct check box ", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
+
+                        if(OrderdItems_desp.size() -i ==1) {
+                            if (orderdItems_desp_local.size() > 0) {
+                                CalculateStockBalanceAndAddStockBalaHistory_OutgngDetails(changestatusto, vendorkey, orderid, customerMobileNo, Currenttime, orderdItems_desp_local);
+
+                            }
+                            else{
+                                pos_manageOrderFragment.showProgressBar(false);
+                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.Grossweight_is_not_changed,
+                                        R.string.Yes_Text,R.string.No_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+
+                                                new_Order_Linearlayout.setVisibility(View.GONE);
+                                                ready_Order_Linearlayout.setVisibility(View.VISIBLE);
+                                                confirming_order_Linearlayout.setVisibility(View.GONE);
+                                                cancelled_Order_Linearlayout.setVisibility(View.GONE);
+                                                //mobile_manageOrders1.showProgressBar(false);
+                                                ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+
+                                                notifyDataSetChanged();
+                                                Toast.makeText(mContext, "Pls note Grossweight is not changed ", Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+                                                Toast.makeText(mContext, "Pls change grossweight and change status ", Toast.LENGTH_SHORT).show();
+
+                                            }
+                                        });
+
+                            }
+                        }
+
+
+
+
+
+
+
+                    }
+
+
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+            }
+        });
+
+
+
+        changeWeight_dialog.show();
+
+
+
+
+    }
+
+
+    private void CalculateStockBalanceAndAddStockBalaHistory_OutgngDetails(String changestatusto, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp) {
+        Date c = Calendar.getInstance().getTime();
+
+        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+        String time  = day.format(c);
+        System.out.println("CalculateStockBalanceAsync method  time " + time);
+
+
+        mResultCallback_Add_UpdateInventoryEntriesInterface = new Add_UpdateInventoryDetailsEntries_Interface(){
+
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                changeWeight_dialog.dismiss();
+                // Toast.makeText(mContext, "ddddsuccess  " +success, Toast.LENGTH_SHORT).show();
+                new_Order_Linearlayout.setVisibility(View.GONE);
+                ready_Order_Linearlayout.setVisibility(View.VISIBLE);
+                confirming_order_Linearlayout.setVisibility(View.GONE);
+                cancelled_Order_Linearlayout.setVisibility(View.GONE);
+
+                //mobile_manageOrders1.showProgressBar(false);
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+                    }
+                });
+
+                Date c = Calendar.getInstance().getTime();
+
+                SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+                String time  = day.format(c);
+                System.out.println("Success response method  time " + time);
+
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mContext, "error  " +error, Toast.LENGTH_SHORT).show();
+
+                        pos_manageOrderFragment.showProgressBar(false);
+                        AlertDialogClass.showDialog(pos_manageOrderFragment.getActivity(),R.string.Error_in_updating_GrossWeight);
+                    }
+                });
+
+                //  ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
+
+            }
+        };
+
+
+        Add_UpdateInventoryDetailsEntries_AsyncTask asyncTask=new Add_UpdateInventoryDetailsEntries_AsyncTask(mContext, mResultCallback_Add_UpdateInventoryEntriesInterface,vendorkey,orderid,customerMobileNo,currenttime,orderdItems_desp,MenuItem);
+        asyncTask.execute();
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
 
     private void ChangeStatusOftheOrder(String changestatusto, String vendorkey, String orderkey, String orderid, String customerMobileNo, String currenttime) {
         pos_manageOrderFragment.showProgressBar(true);
@@ -3670,13 +4900,32 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     if(orderid.equals(Orderid_trackingDetails)){
                         modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
                         if(changestatusto.equals(Constants.CONFIRMED_ORDER_STATUS)){
-                            modal_manageOrders_pojo_class.setOrderconfirmedtime(OrderKey);
+                            modal_manageOrders_pojo_class.setOrderconfirmedtime(currenttime);
 
                         }
                         if(changestatusto.equals(Constants.READY_FOR_PICKUP_ORDER_STATUS)){
-                            modal_manageOrders_pojo_class.setOrderreadytime(OrderKey);
+                            modal_manageOrders_pojo_class.setOrderreadytime(currenttime);
+                        }
+                        if(changestatusto.equals(Constants.DELIVERED_ORDER_STATUS)){
+                            modal_manageOrders_pojo_class.setOrderdeliveredtime(currenttime);
+                        }
+                        try{
+                            pos_manageOrderFragment.calculate_and_displayno_of_orders_statuswise();
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
                         }
 
+
+                        try{
+                            Pos_ManageOrderFragment.sorted_OrdersList.remove(adapterPosition);
+
+                        }
+                        catch (Exception e){
+                            pos_manageOrderFragment.displayorderDetailsinListview(pos_manageOrderFragment.orderStatus,pos_manageOrderFragment.ordersList, pos_manageOrderFragment.selected_OrderType);
+
+                            e.printStackTrace();
+                        }
                         notifyDataSetChanged();
                       /*  if(changestatusto.equals("CONFIRMED")){
                             Intent intent = new Intent(mContext,AssigningDeliveryPartner.class);

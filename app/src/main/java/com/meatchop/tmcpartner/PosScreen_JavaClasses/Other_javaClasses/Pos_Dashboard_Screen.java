@@ -7,21 +7,17 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 
 
 import android.util.Log;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -42,14 +38,11 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.meatchop.tmcpartner.Constants;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemStockAvlDetails;
-import com.meatchop.tmcpartner.Settings.ScreenSizeOfTheDevice;
 import com.meatchop.tmcpartner.Settings.SettingsFragment;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -63,7 +56,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
@@ -95,8 +87,8 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList=new ArrayList<>();
     boolean isMenuListSavedLocally = false;
 
-    boolean isinventorycheck = false;
-    boolean orderdetailsnewschema  = false;
+    boolean isinventorycheck = false ,isweighteditable = false;
+    boolean orderdetailsnewschema  = false , updateweightforonlineorders =false;
 
     @SuppressLint("NonConstantResourceId")
     @Override
@@ -206,11 +198,11 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
-                        //Log.d(Constants.TAG, "Response: " + response);
+                        ////Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONArray result  = response.getJSONArray("content");
-                            //Log.d(Constants.TAG, "Response: " + result);
+                            ////Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
                             //Log.d("Constants.TAG", "Response: " + arrayLength);
@@ -260,9 +252,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.toString());
+                                    ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.toString());
 
                                 }
 
@@ -277,9 +269,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
 
-                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "Error: " + error.toString());
+                ////Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
 
                 error.printStackTrace();
             }
@@ -319,12 +311,12 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
 
-                        //Log.d(Constants.TAG, "Response: " + response);
+                        ////Log.d(Constants.TAG, "Response: " + response);
                         try {
 
                             JSONObject resultobject  = response.getJSONObject("content");
                             JSONObject resultitem = resultobject.getJSONObject("Item");
-                            //Log.d(Constants.TAG, "Response: " + result);
+                            ////Log.d(Constants.TAG, "Response: " + result);
                             JSONArray result = new JSONArray();
                             result.put(resultitem);
                             int i1=0;
@@ -345,6 +337,18 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                     catch (Exception e){
 
                                         isinventorycheck =     false;
+
+
+                                        e.printStackTrace();
+                                    }
+
+                                    try{
+                                        isweighteditable =  Boolean.parseBoolean(String.valueOf(json.get("isweighteditable")));
+
+                                    }
+                                    catch (Exception e){
+
+                                        isweighteditable  =     false;
 
 
                                         e.printStackTrace();
@@ -378,16 +382,16 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
 
 
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos, orderdetailsnewschema);
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos, orderdetailsnewschema,isweighteditable, updateweightforonlineorders);
 
 
                                 } catch (JSONException e) {
 
                                     e.printStackTrace();
-                                    //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.getMessage());
-                                    //Log.d(Constants.TAG, "e: " + e.toString());
-                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema);
+                                    ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.toString());
+                                    saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema,isweighteditable, updateweightforonlineorders);
 
                                 }
 
@@ -395,7 +399,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema);
+                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema,isweighteditable, updateweightforonlineorders);
 
                         }
 
@@ -404,10 +408,10 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                 },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                //Log.d(Constants.TAG, "Error: " + error.toString());
-                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema);
+                ////Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
+                saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck, minimumscreensizeforpos, orderdetailsnewschema, isweighteditable, updateweightforonlineorders);
 
                 error.printStackTrace();
             }
@@ -439,7 +443,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
     }
 
-    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos, boolean orderdetailsnewschema) {
+    private void saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(boolean isinventorycheck, String minimumscreensizeforpos, boolean orderdetailsnewschema, boolean isweighteditable, boolean updateweightforonlineorderss) {
 
 
 
@@ -470,6 +474,11 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                 isinventorycheck
         );
 
+        myEdit.putBoolean(
+                "isweighteditable",
+                isweighteditable
+        );
+
         myEdit.putString(
                 "MinimumScreenSizeForPos",
                 minimumscreensizeforpos
@@ -484,6 +493,12 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         myEdit.putBoolean(
                 "orderdetailsnewschema_settings",
                 orderdetailsnewschema
+        );
+
+
+        myEdit.putBoolean(
+                "updateweightforonlineorders",
+                updateweightforonlineorders
         );
 
         myEdit.apply();
@@ -522,7 +537,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                     completemenuItemStockAvlDetails = new String(String.valueOf(response));
                     try {
                         JSONArray JArray = response.getJSONArray("content");
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
                         Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
@@ -539,7 +554,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.key = "";
-                                    Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                    //Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                                 }
@@ -550,7 +565,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.barcode = "";
-                                    Log.d(Constants.TAG, "There is no barcode for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no barcode for this Menu: " +Key );
 
 
                                 }
@@ -560,7 +575,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.itemavailability = "";
-                                    Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +Key );
 
 
                                 }
@@ -578,7 +593,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.lastupdatedtime = "0";
-                                    Log.d(Constants.TAG, "There is no lastupdatedtime for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no lastupdatedtime for this Menu: " +Key );
 
 
                                 }
@@ -598,7 +613,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.menuitemkey = "0";
-                                    Log.d(Constants.TAG, "There is no menuitemkey for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no menuitemkey for this Menu: " +Key );
 
 
                                 }
@@ -617,7 +632,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.stockbalance = "0";
-                                    Log.d(Constants.TAG, "There is no stockbalance for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no stockbalance for this Menu: " +Key );
 
 
                                 }
@@ -628,7 +643,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.stockincomingkey = "";
-                                    Log.d(Constants.TAG, "There is no stockincomingkey for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no stockincomingkey for this Menu: " +Key );
 
 
                                 }
@@ -638,7 +653,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 }
                                 else{
                                     modal_menuItemStockAvlDetails.vendorkey = "";
-                                    Log.d(Constants.TAG, "There is no vendorkey for this Menu: " +Key );
+                                    //Log.d(Constants.TAG, "There is no vendorkey for this Menu: " +Key );
 
 
                                 }
@@ -646,21 +661,21 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
                                 MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
 
-                                Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                                Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                Log.d(Constants.TAG, "e: " + e.getMessage());
-                                Log.d(Constants.TAG, "e: " + e.toString());
+                                //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                //Log.d(Constants.TAG, "e: " + e.getMessage());
+                                //Log.d(Constants.TAG, "e: " + e.toString());
 
                             }
 
 
                         }
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                     } catch (JSONException e) {
@@ -856,13 +871,13 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                         }
                         try {
 
-                            Log.d(Constants.TAG, " response: " + response);
+                            //Log.d(Constants.TAG, " response: " + response);
                             try {
                                 String jsonString =response.toString();
-                                Log.d(Constants.TAG, " response: onMobileAppData " + response);
+                                //Log.d(Constants.TAG, " response: onMobileAppData " + response);
                                 JSONObject jsonObject = new JSONObject(jsonString);
                                 JSONArray JArray  = jsonObject.getJSONArray("content");
-                                //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                                ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                                 int i1=0;
                                 int arrayLength = JArray.length();
                                 //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
@@ -875,18 +890,36 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                         try{
                                             orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
                                          ///  orderdetailsnewschema= true;
-                                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                               updateweightforonlineorders = (json.getBoolean("updateweightforonlineorders"));
+                                           // updateweightforonlineorders = false;
+                                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, isweighteditable , updateweightforonlineorders);
 
 
 
 
                                         }
                                         catch (Exception e){
-                                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema);
+                                          //  updateweightforonlineorders = false;
+
+                                            saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, isweighteditable, updateweightforonlineorders);
                                             e.printStackTrace();
                                         }
 
-                                        JSONArray array  = json.getJSONArray("redeemdata ");
+                                        JSONArray array = new JSONArray();
+                                        if(json.has("redeemdata")){
+                                            array  = json.getJSONArray("redeemdata");
+
+                                        }
+                                        else{
+                                            if(json.has("redeemdata ")){
+                                                array  = json.getJSONArray("redeemdata ");
+
+                                            }
+                                            else{
+                                                Toast.makeText(Pos_Dashboard_Screen.this,"There is no redeem data :  "+errorCode,Toast.LENGTH_LONG).show();
+
+                                            }
+                                        }
 
                                         for(int i=0; i < array.length(); i++) {
                                             JSONObject redeemdata_json = array.getJSONObject(i);
@@ -1110,7 +1143,7 @@ catch (Exception e){
                    JSONArray JArray = response.getJSONArray("content");
                    //completemenuItem = new String(String.valueOf(JArray));
 
-                   //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                   ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                    int i1 = 0;
                    int arrayLength = JArray.length();
                    //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
@@ -1143,7 +1176,7 @@ catch (Exception e){
                                    }
                                } else {
                                    showinPOS = true;
-                                   Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
+                                   //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
 
 
                                }
@@ -1159,7 +1192,7 @@ catch (Exception e){
                                    MenuItemKey = String.valueOf(json.get("key"));
                                } else {
                                    modal_menuItem.key = "";
-                                   //Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                   ////Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                                }
@@ -1168,7 +1201,7 @@ catch (Exception e){
                                modal_menuItem.menuItemId = String.valueOf(json.get("key"));
                            } else {
                                modal_menuItem.menuItemId = "";
-                               //Log.d(Constants.TAG, "There is no key for this Menu: " );
+                               ////Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                            }
@@ -1178,7 +1211,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.applieddiscountpercentage = "";
-                               //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1187,7 +1220,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.barcode = "";
-                               //Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1206,7 +1239,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.swiggyprice = "0";
-                               Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " + MenuItemKey);
+                               //Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " + MenuItemKey);
                            }
 
 
@@ -1226,7 +1259,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.bigbasketprice = "0";
-                               Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " + MenuItemKey);
+                               //Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " + MenuItemKey);
 
 
                            }
@@ -1246,7 +1279,7 @@ catch (Exception e){
                                }
                            } else {
                                modal_menuItem.dunzoprice = "0";
-                               Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " + MenuItemKey);
+                               //Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " + MenuItemKey);
 
 
                            }
@@ -1266,7 +1299,7 @@ catch (Exception e){
                                }
                            } else {
                                modal_menuItem.wholesaleprice = "0";
-                               Log.d(Constants.TAG, "There is no wholesaleprice for this Menu: " + MenuItemKey);
+                               //Log.d(Constants.TAG, "There is no wholesaleprice for this Menu: " + MenuItemKey);
 
 
                            }
@@ -1277,7 +1310,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.grossweightingrams = "";
-                               //Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1288,7 +1321,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.displayno = "";
-                               //Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1297,7 +1330,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.gstpercentage = "";
-                               //Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1306,7 +1339,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.itemavailability = "";
-                               //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1315,7 +1348,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.itemname = "";
-                               //Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1325,7 +1358,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.pricetypeforpos = "";
-                               //Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1336,7 +1369,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.itemuniquecode = "";
-                               //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1347,7 +1380,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.reportname = "";
-                               //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1357,7 +1390,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.menuboarddisplayname = "";
-                               //Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1367,7 +1400,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.showinmenuboard = "";
-                               //Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1376,7 +1409,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.grossweight = "";
-                               //Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1385,7 +1418,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.tmcctgykey = "";
-                               //Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1394,7 +1427,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.tmcprice = "";
-                               //Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1403,7 +1436,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.tmcpriceperkg = "";
-                               //Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1412,7 +1445,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.tmcsubctgykey = "";
-                               //Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
+                               ////Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
 
                            }
@@ -1422,7 +1455,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.key = "";
-                               //Log.d(Constants.TAG, "There is no key for this Menu: "  );
+                               ////Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
                            }
@@ -1433,7 +1466,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.netweight = "";
-                               //Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
+                               ////Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
 
                            }
@@ -1442,7 +1475,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.portionsize = "";
-                               //Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
+                               ////Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
 
 
                            }
@@ -1460,7 +1493,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.itemweightdetails = "nil";
-                               Log.d(Constants.TAG, "There is no key for this Menu: ");
+                               //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
                            }
@@ -1469,7 +1502,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.showinpos = "TRUE";
-                               Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
+                               //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
 
 
                            }
@@ -1479,7 +1512,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.showinapp = "TRUE";
-                               Log.d(Constants.TAG, "There is no showinapp for this Menu: " + MenuItemKey);
+                               //Log.d(Constants.TAG, "There is no showinapp for this Menu: " + MenuItemKey);
 
 
                            }
@@ -1495,7 +1528,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.itemcutdetails = "nil";
-                               Log.d(Constants.TAG, "There is no key for this Menu: ");
+                               //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
                            }
@@ -1513,7 +1546,7 @@ catch (Exception e){
 
                            } else {
                                modal_menuItem.inventorydetails = "nil";
-                               Log.d(Constants.TAG, "There is no inventorydetails for this Menu: ");
+                               //Log.d(Constants.TAG, "There is no inventorydetails for this Menu: ");
 
 
                            }
@@ -1553,14 +1586,14 @@ catch (Exception e){
                            }
                            MenuList.add(modal_menuItem);
 
-                           //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                           ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
                        }
 
                        } catch (JSONException e) {
                            e.printStackTrace();
-                           //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                           //Log.d(Constants.TAG, "e: " + e.getMessage());
-                           //Log.d(Constants.TAG, "e: " + e.toString());
+                           ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                           ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                           ////Log.d(Constants.TAG, "e: " + e.toString());
 
                        }
                        if(arrayLength - i1 ==1){
@@ -1582,7 +1615,7 @@ catch (Exception e){
 
                    }
 
-                   //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                   ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
                } catch (JSONException e) {
@@ -1732,7 +1765,7 @@ catch (Exception e){
 
 
 
-                        Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
                         Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
@@ -2023,7 +2056,7 @@ catch (Exception e){
            bottomNavigationView.setVisibility(View.VISIBLE);
            completemenuItem = json;
 
-               loadMyFragment(new Pos_ManageOrderFragment());
+           loadMyFragment(new Pos_ManageOrderFragment());
 
 
 
@@ -2093,7 +2126,7 @@ catch (Exception e){
 
                     try {
                         JSONArray JArray = response.getJSONArray("content");
-                        //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
                         //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
@@ -2110,7 +2143,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.key = "";
-                                    //Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                    ////Log.d(Constants.TAG, "There is no key for this Menu: " );
 
 
                                 }
@@ -2121,7 +2154,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.applieddiscountpercentage = "";
-                                    //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2131,7 +2164,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.barcode = "";
-                                    //Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2142,7 +2175,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.displayno = "";
-                                    //Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2152,7 +2185,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.gstpercentage = "";
-                                    //Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2162,7 +2195,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.itemavailability = "";
-                                    //Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2172,7 +2205,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.itemname = "";
-                                    //Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2184,7 +2217,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.pricetypeforpos = "";
-                                    //Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2196,7 +2229,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.itemuniquecode = "";
-                                    //Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2207,7 +2240,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.menuboarddisplayname = "";
-                                    //Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2218,7 +2251,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.showinmenuboard = "";
-                                    //Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2229,7 +2262,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.grossweight = "";
-                                    //Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2240,7 +2273,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.grossweightingrams = "";
-                                    //Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2252,7 +2285,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.netweight = "";
-                                    //Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
+                                    ////Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
 
                                 }    if(json.has("portionsize")){
@@ -2261,7 +2294,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.portionsize = "";
-                                    //Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
+                                    ////Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
 
 
                                 }
@@ -2274,7 +2307,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcctgykey = "";
-                                    //Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2284,7 +2317,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcprice = "";
-                                    //Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2294,7 +2327,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcpriceperkg = "";
-                                    //Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2304,7 +2337,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.tmcsubctgykey = "";
-                                    //Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
+                                    ////Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
 
                                 }
@@ -2315,7 +2348,7 @@ catch (Exception e){
                                 }
                                 else{
                                     modal_menuItem.menuItemId = "";
-                                    //Log.d(Constants.TAG, "There is no key for this Menu: "  );
+                                    ////Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
                                 }
@@ -2326,21 +2359,21 @@ catch (Exception e){
 
                                 MarinadeMenuList.add(modal_menuItem);
 
-                                //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MarinadeMenuList);
+                                ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MarinadeMenuList);
 
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                                //Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                                //Log.d(Constants.TAG, "e: " + e.getMessage());
-                                //Log.d(Constants.TAG, "e: " + e.toString());
+                                ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                ////Log.d(Constants.TAG, "e: " + e.toString());
 
                             }
 
 
                         }
 
-                        //Log.d(Constants.TAG, "convertingJsonStringintoArray MarinademenuListFull: " + MarinadeMenuList);
+                        ////Log.d(Constants.TAG, "convertingJsonStringintoArray MarinademenuListFull: " + MarinadeMenuList);
 
 
                     } catch (JSONException e) {

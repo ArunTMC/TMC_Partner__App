@@ -1,12 +1,38 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_Address {
-    String tagas,updatedtime,contactpersonmobileno="",addresstype= "", landmark="",pincode="",locationlong= "", vendorname="",userkey= "",locationlat="",key= "", deliverydistance="",vendorkey= "",addressline1="",addressline2="",contactpersonname="";
+    String displayno = "",deliveryCharge ="",tagas,updatedtime,contactpersonmobileno="",addresstype= "", landmark="",pincode="",locationlong= "", vendorname="",userkey= "",locationlat="",key= "", deliverydistance="",vendorkey= "",addressline1="",addressline2="",contactpersonname="";
     boolean isAddressSelected = false;
     boolean isNewAddress = false;
     boolean isAddressEdited = false;
 
+    public String getDisplayno() {
+        return displayno;
+    }
 
+    public void setDisplayno(String displayno) {
+        this.displayno = displayno;
+    }
+
+    public String getDeliveryCharge() {
+        return deliveryCharge;
+    }
+
+    public void setDeliveryCharge(String deliveryCharge) {
+        this.deliveryCharge = deliveryCharge;
+    }
+
+    public boolean isNewAddress() {
+        return isNewAddress;
+    }
+
+    public void setNewAddress(boolean newAddress) {
+        isNewAddress = newAddress;
+    }
+
+    public boolean isAddressEdited() {
+        return isAddressEdited;
+    }
 
     public boolean getisAddressEdited() {
         return isAddressEdited;

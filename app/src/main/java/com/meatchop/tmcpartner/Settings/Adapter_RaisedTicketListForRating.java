@@ -3,6 +3,7 @@ package com.meatchop.tmcpartner.Settings;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Filter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -101,6 +103,8 @@ public class Adapter_RaisedTicketListForRating extends ArrayAdapter<Modal_Raised
         final Button addDesp = listViewItem.findViewById(R.id.addDesp);
         final Button vieworderdetails = listViewItem.findViewById(R.id.vieworderdetails);
 
+        final ImageView callCustomerNumber = listViewItem.findViewById(R.id.callCustomerNumber);
+
         String description ="";
         ticketDescLayout.setVisibility(View.GONE);
         final Modal_RaisedTicketsRatingDetails modal_raisedTicketsRatingDetails =raisedTicketsRatingDetailsArray.get(position);
@@ -171,7 +175,15 @@ public class Adapter_RaisedTicketListForRating extends ArrayAdapter<Modal_Raised
         catch (Exception e){
             e.printStackTrace();
         }
+        callCustomerNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String mobileNumber = mobileno_text.getText().toString();
 
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + mobileNumber));// Initiates the Intent
+                mContext.startActivity(intent);
+            }
+        });
 
         vieworderdetails.setOnClickListener(new View.OnClickListener() {
             @Override

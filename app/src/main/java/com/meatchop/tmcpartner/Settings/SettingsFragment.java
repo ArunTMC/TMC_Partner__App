@@ -112,15 +112,15 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
     Switch autoRefreshingSwitch;
     LinearLayout replacement_refund_transaction_reportLayout,addDunzoOrders_Placing_layout,generateOrderItemDetailsLayout,consolidatedSalesReportWeekwise, login_as_another_vendor,
             changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
-    String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName;
+    String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName,vendorType;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout wholesale_orders_list,WholeSaleSalesReport,addWholeSaleOrders_placing_layout,mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout,MenuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
+    LinearLayout phone_sales_report,phone_orders_list,wholesale_orders_list,WholeSaleSalesReport,addWholeSaleOrders_placing_layout,mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout, menuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
 
     double screenInches;
-    List<String>allowedModules_array;
+    List<String>allowedModules_array = new ArrayList<>();
 
     List<String>printerType_ArrayList = new ArrayList<>();
 
@@ -251,7 +251,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         orderDetailsDump_report = view.findViewById(R.id.orderDetailsDump_report);
         cancelledOrdersLayout = view.findViewById(R.id.cancelledOrdersLayout);
         managemenuLayout = view.findViewById(R.id.managemenuLayout);
-        MenuTransactionDetailsLayout = view.findViewById(R.id.getMenuTransactionDetailsLayout);
+        menuTransactionDetailsLayout = view.findViewById(R.id.getMenuTransactionDetailsLayout);
         testlayout = view.findViewById(R.id.testlayout);
         plotOrdersLocation_layout = view.findViewById(R.id.plotOrdersLocation_layout);
         slotwiseAppOrderList = view.findViewById(R.id.slotwiseAppOrderList);
@@ -295,6 +295,11 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         replacement_refund_transaction_reportLayout = view.findViewById(R.id.replacement_refund_transaction_reportLayout);
         switch_fetch_orders_from_orderDetails  = view.findViewById(R.id.switch_fetch_orders_from_orderDetails);
         layout_fetch_orders_from_orderDetails  = view.findViewById(R.id.layout_fetch_orders_from_orderDetails);
+        phone_orders_list = view.findViewById(R.id.phone_orders_list);
+        phone_sales_report = view.findViewById(R.id.PhoneSaleSalesReport);
+
+
+
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
@@ -304,6 +309,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         UserPhoneNumber = (shared.getString("UserPhoneNumber", "+91"));
         vendorkey = shared.getString("VendorKey", "");
         vendorName = shared.getString("VendorName", "");
+        vendorType = shared.getString("VendorType", "");
         UserRole = shared.getString("userrole", "");
         isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
         orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema_settings", false));
@@ -356,7 +362,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
 
         }
-        getTokenNo(vendorkey);
+
         //  initializeCache();
 
         salesLinearLayout.setVisibility(GONE);
@@ -407,6 +413,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
             }
         });
+
 
 
         nonePrinterRadiobutton.setOnClickListener(new OnClickListener() {
@@ -537,120 +544,98 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
             dataAnalyticsLinearLayout.setVisibility(VISIBLE);
         }
 
+        if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)){
 
-        if (screenInches > Constants.default_mobileScreenSize) {
-            //if Pos
-            editPaymentModeOftheOrder.setVisibility(GONE);
+            changeDeliverySlotdetails.setVisibility(GONE);
+            changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+            changeMenuItemStatus.setVisibility(GONE);
+            changeMenuItemPrice_weight.setVisibility(GONE);
+            changeMenuItemVisibilityinTv.setVisibility(GONE);
+            menuItemAvailabiltyStatusReport.setVisibility(GONE);
+            menuTransactionDetailsLayout.setVisibility(GONE);
+            searchOrdersUsingMobileNumbers.setVisibility(GONE);
+            wholesale_orders_list.setVisibility(GONE);
+            slotwiseAppOrderList.setVisibility(GONE);
             plotOrdersLocation_layout.setVisibility(GONE);
-            delivered_orders_timewiseReport.setVisibility(View.GONE);
-            slotwiseAppOrderList.setVisibility(View.GONE);
-            mobilePrinterConnectLayout.setVisibility(VISIBLE);
-            dataAnalyticsLinearLayout.setVisibility(GONE);
-            add_refund_replace_order_layout.setVisibility(GONE);
-            replacement_refund_transaction_reportLayout.setVisibility(GONE);
-
-            printerParentLayout.setVisibility(GONE);
-            if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
-                connect_printer_button_widget.setVisibility(VISIBLE);
-
-            }
-            else{
-                connect_printer_button_widget.setVisibility(GONE);
-
-            }
-        } else {
-            //if Mobile
-            replacement_refund_transaction_reportLayout.setVisibility(VISIBLE);
+            orderRating_report.setVisibility(GONE);
+            manageRaisedTickets.setVisibility(GONE);
+            AppSalesReport.setVisibility(GONE);
+            WholeSaleSalesReport.setVisibility(GONE);
+            deliveryPartnerSettlementReport.setVisibility(GONE);
+            delivered_orders_timewiseReport.setVisibility(GONE);
+            resetTokenNoLayout.setVisibility(GONE);
             addWholeSaleOrders_placing_layout.setVisibility(GONE);
             addBigbasketOrders_placing_layout.setVisibility(GONE);
             addDunzoOrders_Placing_layout.setVisibility(GONE);
             swiggyOrderPlacing_layout.setVisibility(GONE);
             printerParentLayout.setVisibility(GONE);
-            connect_printer_button_widget.setVisibility(VISIBLE);
-            add_refund_replace_order_layout.setVisibility(VISIBLE);
-            if((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))){
-                editPaymentModeOftheOrder.setVisibility(VISIBLE);
+            phone_orders_list.setVisibility(GONE);
+            phone_sales_report.setVisibility(GONE);
 
-            }
-            else{
+        }
+        else {
+            getTokenNo(vendorkey);
+
+            if (screenInches > Constants.default_mobileScreenSize) {
+                //if Pos
                 editPaymentModeOftheOrder.setVisibility(GONE);
+                plotOrdersLocation_layout.setVisibility(GONE);
+                delivered_orders_timewiseReport.setVisibility(View.GONE);
+                slotwiseAppOrderList.setVisibility(View.GONE);
+                mobilePrinterConnectLayout.setVisibility(VISIBLE);
+                dataAnalyticsLinearLayout.setVisibility(GONE);
+                add_refund_replace_order_layout.setVisibility(GONE);
+                replacement_refund_transaction_reportLayout.setVisibility(GONE);
 
-            }
+                printerParentLayout.setVisibility(GONE);
+                if (printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)) {
+                    connect_printer_button_widget.setVisibility(VISIBLE);
 
-            if(UserRole.equals(Constants.DELIVERYMANAGER_ROLENAME)){
+                } else {
+                    connect_printer_button_widget.setVisibility(GONE);
+
+                }
+            } else {
+                //if Mobile
+                replacement_refund_transaction_reportLayout.setVisibility(VISIBLE);
+                addWholeSaleOrders_placing_layout.setVisibility(GONE);
+                addBigbasketOrders_placing_layout.setVisibility(GONE);
+                addDunzoOrders_Placing_layout.setVisibility(GONE);
+                swiggyOrderPlacing_layout.setVisibility(GONE);
+                printerParentLayout.setVisibility(GONE);
+                connect_printer_button_widget.setVisibility(VISIBLE);
+                add_refund_replace_order_layout.setVisibility(VISIBLE);
+                if ((UserRole.toUpperCase().toString().equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.toUpperCase().toString().equals(Constants.ADMIN_ROLENAME))) {
+                    editPaymentModeOftheOrder.setVisibility(VISIBLE);
+
+                } else {
+                    editPaymentModeOftheOrder.setVisibility(GONE);
+
+                }
+
+                if (UserRole.equals(Constants.DELIVERYMANAGER_ROLENAME)) {
                     salesLinearLayout.setVisibility(VISIBLE);
                     consolidatedSalesReport.setVisibility(GONE);
                     PosSalesReport.setVisibility(GONE);
                     AppSalesReport.setVisibility(GONE);
+                    phone_sales_report.setVisibility(GONE);
                     consolidatedSalesReportWeekwise.setVisibility(GONE);
                     delivered_orders_timewiseReport.setVisibility(VISIBLE);
 
 
+                }
             }
-        }
-
-
-
-            if (UserPhoneNumber.equals("+919597580128") || UserPhoneNumber.equals("+917010779096")) {
-                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
-                testlayout.setVisibility(VISIBLE);
-                changeMenuItemPrice_weight.setVisibility(VISIBLE);
-                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            if (!isinventorycheck) {
+                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
                 changeMenuItemStatus.setVisibility(VISIBLE);
-                generateUserDetailsButton.setVisibility(VISIBLE);
             } else {
-                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
-
-                testlayout.setVisibility(GONE);
-                changeMenuItemPrice_weight.setVisibility(GONE);
-        }
-
-
-        if(!isinventorycheck){
-            changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
-            changeMenuItemStatus.setVisibility(VISIBLE);
-        }
-        else{
-            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
-            changeMenuItemStatus.setVisibility(GONE);
-        }
-
-
-        //Ashwanth   918110884808
-        if ((UserPhoneNumber.equals("+918110884808")) || (UserPhoneNumber.equals("+919597580128")) ) {
-
-            viewordersLinearLayout.setVisibility(VISIBLE);
-
-
-        }
-        //Navaneedhan
-        //Vimal
-
-        if ((UserPhoneNumber.equals("+916383677365")) || (UserPhoneNumber.equals("+917010623119")) ) {
-            managemenuLayout.setVisibility(VISIBLE);
-            changeDeliverySlotdetails.setVisibility(VISIBLE);
-            changeMenuItemStatus.setVisibility(GONE);
-            if(!isinventorycheck){
-                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
-                changeMenuItemStatus.setVisibility(VISIBLE);
-            }
-            else{
                 changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
                 changeMenuItemStatus.setVisibility(GONE);
             }
-            changeMenuItemPrice.setVisibility(GONE);
-            changeMenuItemVisibilityinTv.setVisibility(GONE);
-            changeMenuItemPrice_weight.setVisibility(GONE);
-            MenuTransactionDetailsLayout.setVisibility(GONE);
-            deliveryPartnerSettlementReport.setVisibility(VISIBLE);
-
-            menuItemAvailabiltyStatusReport.setVisibility(GONE);
-            testlayout.setVisibility(GONE);
 
 
-
+            ShowOrHideUI_AccordingTo_UserPhoneNumber();
         }
-
 
         if (screenInches < Constants.default_mobileScreenSize) {
             bottomNavigationView = ((MobileScreen_Dashboard) requireActivity()).findViewById(R.id.bottomnav);
@@ -670,9 +655,25 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
                 }
             });
-        } else {
-            // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
         }
+
+
+
+
+        phone_sales_report.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, Phone_Sales_Report.class);
+                startActivity(intent);
+            }
+        });
+        phone_orders_list.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, Phone_Orders_List.class);
+                startActivity(intent);
+            }
+        });
 
         replacement_refund_transaction_reportLayout.setOnClickListener(new OnClickListener() {
             @Override
@@ -880,7 +881,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         });
 
 
-        MenuTransactionDetailsLayout.setOnClickListener(new OnClickListener() {
+        menuTransactionDetailsLayout.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, MenuItem_List_Settings.class);
@@ -1116,6 +1117,62 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
     }
 
+    private void ShowOrHideUI_AccordingTo_VendorType() {
+
+
+
+
+    }
+
+    private void ShowOrHideUI_AccordingTo_UserPhoneNumber() {
+
+        if (UserPhoneNumber.equals("+919597580128") || UserPhoneNumber.equals("+917010779096")) {
+            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            testlayout.setVisibility(GONE);
+            changeMenuItemPrice_weight.setVisibility(VISIBLE);
+            changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+            changeMenuItemStatus.setVisibility(VISIBLE);
+            generateUserDetailsButton.setVisibility(VISIBLE);
+        }
+
+
+
+        //Ashwanth   918110884808
+        if ((UserPhoneNumber.equals("+919597580128")) ) {
+
+            viewordersLinearLayout.setVisibility(VISIBLE);
+
+
+        }
+        //Navaneedhan
+        //Vimal
+
+        if ((UserPhoneNumber.equals("+916383677365")) || (UserPhoneNumber.equals("+917010623119")) ) {
+            managemenuLayout.setVisibility(VISIBLE);
+            changeDeliverySlotdetails.setVisibility(VISIBLE);
+            changeMenuItemStatus.setVisibility(GONE);
+            if(!isinventorycheck){
+                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+                changeMenuItemStatus.setVisibility(VISIBLE);
+            }
+            else{
+                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+                changeMenuItemStatus.setVisibility(GONE);
+            }
+            changeMenuItemPrice.setVisibility(GONE);
+            changeMenuItemVisibilityinTv.setVisibility(GONE);
+            changeMenuItemPrice_weight.setVisibility(GONE);
+            menuTransactionDetailsLayout.setVisibility(GONE);
+            deliveryPartnerSettlementReport.setVisibility(VISIBLE);
+
+            menuItemAvailabiltyStatusReport.setVisibility(GONE);
+            testlayout.setVisibility(GONE);
+
+
+
+        }
+
+    }
 
 
     @SuppressLint("NonConstantResourceId")

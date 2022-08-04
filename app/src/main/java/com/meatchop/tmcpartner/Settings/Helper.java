@@ -33,6 +33,10 @@ public class Helper {
             }
             if (screenInches>Constants.default_mobileScreenSize){
                 totalHeight += listItem.getMeasuredHeight();
+                if(totalHeight>100){
+                    totalHeight = totalHeight-50;
+
+                }
 
             }
 

@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/order_item_list_parentLayout"
     android:orientation="vertical"
     >
 
@@ -17,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:padding="10dp"
-
+            android:id="@+id/order_item_list_parentLayout"
             android:orientation="vertical">
 
 

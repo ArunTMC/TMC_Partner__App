@@ -439,6 +439,7 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                 modal_newOrderItems.setSubTotal_perItem("");
                 modal_newOrderItems.setTotal_of_subTotal_perItem("");
                 modal_newOrderItems.setTotalGstAmount("");
+                modal_newOrderItems.setisWeightEdittextClicked(false);
 
             }
             catch (Exception e){
