@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import okhttp3.WebSocket;
 
@@ -781,7 +782,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -801,12 +805,17 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -818,7 +827,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     }
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
-
+/*
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
         try {
             Date date = sdf.parse(todaysdate);
@@ -832,6 +841,40 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+
+ */
+        Date date = null;
+
+        SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+
+        formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+        try
+        {
+            date  = formatGMT.parse(todaysdate);
+        }
+        catch (ParseException e)
+        {
+            //log(Log.ERROR, "DB Insertion error", e.getMessage().toString());
+            //logException(e);
+            e.printStackTrace();
+        }
+
+        try{
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDate = day.format(date);
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
         return CurrentDate;
 
     }
@@ -839,16 +882,23 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     private String convertnewFormatDateintoOldFormat(String todaysdate) {
 
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-             SimpleDateFormat day = new SimpleDateFormat("EEE");
+             SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDay = day.format(date);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(date);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -5445,9 +5495,16 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         String next_day = "";
         //calander_view.setCurrentDayBackgroundColor(context.getResources().getColor(R.color.gray_color));
-        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("d MMM yyyy", Locale.getDefault());
+        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("d MMM yyyy", Locale.ENGLISH);
+        dateFormatForDisplaying.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String date_format = dateFormatForDisplaying.format(todaysDate);
-        SimpleDateFormat simpleDateformat = new SimpleDateFormat("E"); // the day of the week abbreviated
+        SimpleDateFormat simpleDateformat = new SimpleDateFormat("E",Locale.ENGLISH);
+        simpleDateformat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+        // the day of the week abbreviated
         final Calendar calendar = Calendar.getInstance();
         try {
             Date date = dateFormatForDisplaying.parse(date_format);
@@ -5476,7 +5533,8 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
             Date c1 = calendar.getTime();
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
 
 
@@ -5495,11 +5553,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
             Date c1 = calendar.getTime();
 
-            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
             String PreviousdayDay = previousday.format(c1);
 
 
-            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String PreviousdayDate = df1.format(c1);
             PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
             //System.out.println("todays Date  " + CurrentDate);
@@ -5513,7 +5578,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -5533,12 +5601,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-       SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+       SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  PreviousdayDate = df1.format(c1);
              String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -5551,7 +5625,9 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -5571,12 +5647,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -5594,20 +5676,29 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
         if(orderdetailsnewschema) {
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = day.format(c);
 
             return CurrentDate;
 
         }
         else{
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-        CurrentDay = day.format(c);
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDay = day.format(c);
 
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDate = df.format(c);
 
         CurrentDate = CurrentDay+", "+CurrentDate;
 
@@ -5623,7 +5714,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     private String getDatewithNameoftheDay() {
         Date c = Calendar.getInstance().getTime();
         if(orderdetailsnewschema) {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = df.format(c);
 
 
@@ -5632,11 +5726,17 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
             CurrentDay = day.format(c);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -5818,15 +5918,22 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -5867,7 +5974,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         //   Log.d(TAG, "slottime  "+slottime);
         if (slottime.contains("mins")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
@@ -5886,7 +5996,10 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
@@ -6087,7 +6200,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         showProgressBar(true);
         AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
 
-        SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
+       // SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
 
         String OrderPlacedtime = "";
         String Orderid = "";

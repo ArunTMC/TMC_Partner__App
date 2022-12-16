@@ -26,8 +26,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String, String, List<Modal_NewOrderItems>> {
 
@@ -46,6 +48,9 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
 
     Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
     Modal_Address selected_Address_modal = new Modal_Address();
+
+    String applieddiscountpercentage ="0",appMarkupPercentage = "0";
+
 
     public Add_CustomerOrder_TrackingTable_AsyncTask(Context mContext, Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface, List<String> cart_item_list, HashMap<String, Modal_NewOrderItems> cartItem_hashmap, String paymentMode, String discountAmount, String currenttime, String customermobileno, String ordertype, String vendorKey, String vendorName, long sTime, String finaltoPayAmountinmethod) {
 
@@ -295,11 +300,45 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
             else{
                 subCtgyKey = "";
             }
-
+            if(modal_newOrderItems.getApplieddiscountpercentage()!=null){
+                applieddiscountpercentage =   modal_newOrderItems.getApplieddiscountpercentage();
+                applieddiscountpercentage = applieddiscountpercentage.replaceAll("[^\\d. ]", "");
+            }
+            else{
+                applieddiscountpercentage = "0";
+            }
+            if(modal_newOrderItems.getAppmarkuppercentage()!=null){
+                appMarkupPercentage =   modal_newOrderItems.getAppmarkuppercentage();
+                appMarkupPercentage = appMarkupPercentage.replaceAll("[^\\d. ]", "");
+            }
+            else{
+                appMarkupPercentage = "0";
+            }
 
 
             JSONObject itemdespObject = new JSONObject();
             try {
+
+                try {
+                    if ((!applieddiscountpercentage.equals("0")) && (!applieddiscountpercentage.equals("")) && (!applieddiscountpercentage.equals("null")) && (!applieddiscountpercentage.equals(null))) {
+                        itemdespObject.put("applieddiscpercentage", applieddiscountpercentage);
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+                try {
+                    if(ordertype.toUpperCase().equals(Constants.PhoneOrder)) {
+                        if ((!appMarkupPercentage.equals("0")) && (!appMarkupPercentage.equals("")) && (!appMarkupPercentage.equals("null")) && (!appMarkupPercentage.equals(null))) {
+                            itemdespObject.put("appmarkuppercentage", appMarkupPercentage);
+                        }
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
                 itemdespObject.put("menuitemid", menuItemId);
                 itemdespObject.put("itemname", itemName);
                 itemdespObject.put("tmcprice", Double.parseDouble(price));
@@ -800,7 +839,8 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
 
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         String CurrentDate = day.format(c);
 
         return CurrentDate;

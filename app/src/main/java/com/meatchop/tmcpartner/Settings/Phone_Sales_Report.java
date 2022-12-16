@@ -92,9 +92,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
@@ -1645,7 +1647,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
     }
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
-
+/*
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
         try {
             Date date = sdf.parse(todaysdate);
@@ -1659,6 +1661,41 @@ public class Phone_Sales_Report extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+ */
+
+        Date date = null;
+
+        SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+
+        formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+        try
+        {
+            date  = formatGMT.parse(todaysdate);
+        }
+        catch (ParseException e)
+        {
+            //log(Log.ERROR, "DB Insertion error", e.getMessage().toString());
+            //logException(e);
+            e.printStackTrace();
+        }
+
+        try{
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDate = day.format(date);
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
         return CurrentDate;
 
     }
@@ -1795,6 +1832,17 @@ public class Phone_Sales_Report extends AppCompatActivity {
                         }
                     }
                 }, year, month, day);
+
+        Calendar c = Calendar.getInstance();
+        DatePicker datePicker = datepicker.getDatePicker();
+
+        c.add(Calendar.DATE, -30);
+        // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
+        Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
+        long oneMonthAhead = c.getTimeInMillis();
+        datePicker.setMinDate(oneMonthAhead);
+
+
         datepicker.show();
     }
 
@@ -3543,9 +3591,9 @@ public class Phone_Sales_Report extends AppCompatActivity {
                                 oldOrder_WeightInGrams="0";
                             }
                             double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                            int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                            int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                            int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                            int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
                             tmcprice = tmcprice + tmcprice_from_HashMap;
@@ -3593,9 +3641,9 @@ public class Phone_Sales_Report extends AppCompatActivity {
                                     oldOrder_WeightInGrams = "0";
                                 }
                                 double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                                int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                                int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                                int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                                int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                                 intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
                                 //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
@@ -3801,7 +3849,9 @@ public class Phone_Sales_Report extends AppCompatActivity {
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDate = df.format(c);
 
 
@@ -3852,7 +3902,10 @@ public class Phone_Sales_Report extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -3865,7 +3918,10 @@ public class Phone_Sales_Report extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -3873,10 +3929,17 @@ public class Phone_Sales_Report extends AppCompatActivity {
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         CurrentDate = df.format(c);
 
         CurrentDate = CurrentDay + ", " + CurrentDate;

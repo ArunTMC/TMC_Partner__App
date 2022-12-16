@@ -44,7 +44,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -237,7 +239,26 @@ public class ReplacementRefundListFragment extends Fragment {
                                     catch (Exception e){
                                          e.printStackTrace();
                                     }
+                                        try{
+                                            if (json.has("ordertype")) {
+                                                modal_replacementOrderDetails.ordertype = String.valueOf(json.get("ordertype"));
+                                                try{
+                                                    modal_replacementOrderDetails.setOrdertype((String.valueOf(json.get("ordertype"))));
+                                                }
+                                                catch (Exception e){
+                                                    modal_replacementOrderDetails.setOrdertype ("");
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                modal_replacementOrderDetails.ordertype = "";
+                                            }
 
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
 
 
                                     try{
@@ -518,7 +539,9 @@ public class ReplacementRefundListFragment extends Fragment {
             String time1 = orderplacedtime;
             //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             Date date = sdf.parse(time1);
             long time1long = date.getTime() / 1000;
             longvalue = String.valueOf(time1long);
@@ -529,7 +552,9 @@ public class ReplacementRefundListFragment extends Fragment {
                 String time1 = orderplacedtime;
                 //     Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 Date date = sdf.parse(time1);
                 long time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);
@@ -552,7 +577,9 @@ public class ReplacementRefundListFragment extends Fragment {
         //   Log.d(TAG, "slottime  "+slottime);
         if (slottime.contains("mins")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
@@ -571,7 +598,9 @@ public class ReplacementRefundListFragment extends Fragment {
                     e.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
@@ -627,10 +656,14 @@ public class ReplacementRefundListFragment extends Fragment {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String PreviousdayDay = previousday.format(c1);
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  PreviousdayDate = df1.format(c1);
         PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
 

@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -46,6 +47,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+
+
 public class testActivty extends AppCompatActivity {
     public TextView ponits_redeemed_text_widget,end_text_widget,error_text_widget,result_text_widget;
     public TextView ponits_redeemed_text_widgetnew,end_text_widgetnew,error_text_widgetnew,result_text_widgetnew;
@@ -81,6 +84,7 @@ public class testActivty extends AppCompatActivity {
     // Intent request codes
     private static final int REQUEST_CONNECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
+
 
     String mConnectedDeviceName ;
     @Override
@@ -226,14 +230,13 @@ public class testActivty extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+
               //  fetchOrderDetailsnewDumpusingmobileno("9597580128");
                 //fetchOrderDetailsnewDumpusingmobileno("pt_attr4_orderid_idx");
               //  fetchOrderDetailsfrompaymentOrderidwithIndex("Paymenttransactions_orderid_idx1");
 
-                fetchorderFromOrderdetailsorderidindex();
-
-                
-            /*
+               // fetchorderFromOrderdetailsorderidindex();
+                 /*
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put("mobileno", "+919597580128");
@@ -1049,6 +1052,7 @@ public class testActivty extends AppCompatActivity {
 
 
     }
+
 
     private void fetchorderFromOrderdetailsorderidindex() {
         //////dumpfirst

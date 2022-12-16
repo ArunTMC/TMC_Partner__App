@@ -92,9 +92,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
@@ -422,6 +424,20 @@ public class PosSalesReport extends AppCompatActivity {
                     SubCtgywiseTotalArray.clear();
                     tmcSubCtgykey.clear();
                     dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                     bigBasketOrderpaymentModeArray.clear();
                     bigBasketOrderpaymentMode_DiscountOrderid.clear();
                     bigBasketOrderpaymentModeHashmap.clear();
@@ -2199,7 +2215,7 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
-
+/*
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
         try {
             Date date = sdf.parse(todaysdate);
@@ -2213,6 +2229,41 @@ public class PosSalesReport extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+ */
+
+        Date date = null;
+
+        SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+
+        formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+        try
+        {
+            date  = formatGMT.parse(todaysdate);
+        }
+        catch (ParseException e)
+        {
+            //log(Log.ERROR, "DB Insertion error", e.getMessage().toString());
+            //logException(e);
+            e.printStackTrace();
+        }
+
+        try{
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDate = day.format(date);
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
         return CurrentDate;
 
     }
@@ -2339,6 +2390,21 @@ public class PosSalesReport extends AppCompatActivity {
                             SubCtgywiseTotalArray.clear();
                             tmcSubCtgykey.clear();
                             dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
+                            
+                            try {
+                                adapter.notifyDataSetChanged();
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
                             bigBasketOrderpaymentModeArray.clear();
                             bigBasketOrderpaymentMode_DiscountOrderid.clear();
                             bigBasketOrderpaymentModeHashmap.clear();
@@ -2367,6 +2433,19 @@ public class PosSalesReport extends AppCompatActivity {
                         }
                     }
                 }, year, month, day);
+
+
+        Calendar c = Calendar.getInstance();
+        DatePicker datePicker = datepicker.getDatePicker();
+
+        c.add(Calendar.DATE, -30);
+        // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
+        Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
+        long oneMonthAhead = c.getTimeInMillis();
+        datePicker.setMinDate(oneMonthAhead);
+
+
+
         datepicker.show();
     }
 
@@ -2400,6 +2479,13 @@ public class PosSalesReport extends AppCompatActivity {
         SubCtgywiseTotalArray.clear();
         tmcSubCtgykey.clear();
         dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
         bigBasketOrderpaymentModeArray.clear();
         bigBasketOrderpaymentMode_DiscountOrderid.clear();
         bigBasketOrderpaymentModeHashmap.clear();
@@ -2508,7 +2594,10 @@ public class PosSalesReport extends AppCompatActivity {
                                     if ((ordertype.equals(Constants.POSORDER))) {
                                         try {
                                             if (json.has("coupondiscount")) {
+                                                if(orderid.equals("1667973905971") ||orderid.equals("1667973751469") || orderid.equals("1667970907222") || orderid.equals("1667966865739") ){
+                                                    Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(json.get("ordertype")));
 
+                                                }
                                                 modal_orderDetails.coupondiscount = String.valueOf(json.get("coupondiscount"));
                                                 try {
                                                     String couponDiscount_string = String.valueOf(json.get("coupondiscount"));
@@ -3116,6 +3205,13 @@ public class PosSalesReport extends AppCompatActivity {
                                 bigBasketOrderpaymentModeHashmap.clear();
                                 bigBasketOrderpaymentMode_DiscountHashmap.clear();
                                 dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                                 ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
                                 adapter.notifyDataSetChanged();
                                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -3180,6 +3276,13 @@ public class PosSalesReport extends AppCompatActivity {
                     phoneOrderpaymentModeHashmap.clear();
                     paymentMode_DiscountHashmap.clear();
                     dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                     paymentMode_DiscountOrderid.clear();
                     phoneOrderpaymentMode_DiscountOrderid.clear();
                     phoneOrderpaymentMode_DiscountHashmap.clear();
@@ -3648,6 +3751,13 @@ public class PosSalesReport extends AppCompatActivity {
                     SubCtgywiseTotalArray.clear();
                     tmcSubCtgykey.clear();
                     dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                     bigBasketOrderpaymentModeArray.clear();
                     bigBasketOrderpaymentMode_DiscountOrderid.clear();
                     bigBasketOrderpaymentModeHashmap.clear();
@@ -3699,6 +3809,13 @@ public class PosSalesReport extends AppCompatActivity {
                 SubCtgywiseTotalArray.clear();
                 tmcSubCtgykey.clear();
                 dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                 bigBasketOrderpaymentModeArray.clear();
                 bigBasketOrderpaymentMode_DiscountOrderid.clear();
                 bigBasketOrderpaymentModeHashmap.clear();
@@ -3843,7 +3960,10 @@ public class PosSalesReport extends AppCompatActivity {
                                     try {
                                         if (couponDiscount.equals("")) {
                                             couponDiscount = "0";
+                                            if(orderid.equals("1667973905971") ||orderid.equals("1667973751469") || orderid.equals("1667970907222") || orderid.equals("1667966865739") ){
+                                                Log.d(Constants.TAG, "There is no PaymentMode: " + String.valueOf(""));
 
+                                            }
                                             double CouponDiscount_double = Double.parseDouble(couponDiscount);
                                             CouponDiscount = CouponDiscount + CouponDiscount_double;
 
@@ -4354,6 +4474,13 @@ public class PosSalesReport extends AppCompatActivity {
                             bigBasketOrderpaymentModeHashmap.clear();
                             bigBasketOrderpaymentMode_DiscountHashmap.clear();
                             dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
                             ReportListviewSizeHelper.getListViewSize(posSalesReport_Listview, screenInches);
                             adapter.notifyDataSetChanged();
                             addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
@@ -4379,6 +4506,13 @@ public class PosSalesReport extends AppCompatActivity {
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
       try {
           dataList.clear();
+                    try {
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    
 
 
           try {
@@ -5801,9 +5935,9 @@ public class PosSalesReport extends AppCompatActivity {
                                    oldOrder_WeightInGrams="0";
                                }
                                 double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                                int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                                int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                                int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                                int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                                 intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
                                 tmcprice = tmcprice + tmcprice_from_HashMap;
@@ -5851,9 +5985,9 @@ public class PosSalesReport extends AppCompatActivity {
                                          oldOrder_WeightInGrams = "0";
                                      }
                                      double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                                     int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                                     int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                                     int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                                     int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                                      intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
                                      //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
@@ -6081,7 +6215,10 @@ public class PosSalesReport extends AppCompatActivity {
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDate = df.format(c);
 
 
@@ -6089,7 +6226,9 @@ public class PosSalesReport extends AppCompatActivity {
     }
 
     private String convertNormalDateintoReplacementTransactionDetailsDate(String sDate, String Time) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -6111,12 +6250,14 @@ public class PosSalesReport extends AppCompatActivity {
 
         SimpleDateFormat df = new SimpleDateFormat();
         if(Time.equals("STARTTIME")) {
-            df = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
+            df = new SimpleDateFormat("yyyy-MM-dd 00:00:00",Locale.ENGLISH);
         }
         else{
-            df = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
+            df = new SimpleDateFormat("yyyy-MM-dd 23:59:59",Locale.ENGLISH);
 
         }
+
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
         String Date = df.format(c1);
         return Date;
@@ -6169,7 +6310,10 @@ public class PosSalesReport extends AppCompatActivity {
         System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 00:00:00",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -6179,10 +6323,12 @@ public class PosSalesReport extends AppCompatActivity {
     {
 
         Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd 23:59:59",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -6190,10 +6336,16 @@ public class PosSalesReport extends AppCompatActivity {
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         CurrentDate = df.format(c);
 
         CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -7146,7 +7298,7 @@ public class PosSalesReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(Objects.requireNonNull(modal_orderDetails).getCashOndeliverySales());
                     cash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(cash_amount);
+                    int intAmount = (int) Math.round(cash_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String gst_String = String.valueOf(modal_orderDetails.getGstamount());
                     double GST_array = Double.parseDouble(gst_String);
@@ -7163,7 +7315,7 @@ public class PosSalesReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
                     card_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(card_amount);
+                    int intAmount = (int) Math.round(card_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
 
@@ -7186,7 +7338,7 @@ public class PosSalesReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getUpiSales());
                     upi_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(upi_amount);
+                    int intAmount = (int) Math.round(upi_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
 

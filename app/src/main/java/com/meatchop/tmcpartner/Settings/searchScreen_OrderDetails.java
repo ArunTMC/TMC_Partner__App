@@ -425,7 +425,7 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         add_amount_ForBillDetails(OrderdItems_desp);
         adapter_forOrderDetails_listview = new Adapter_Mobile_orderDetails_itemDesp_listview1(searchScreen_OrderDetails.this, OrderdItems_desp);
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
-        Helper.getListViewSize(itemDesp_listview, screenInches);
+        Helper.getListViewSize(itemDesp_listview, screenInches,0);
 
     }
 
@@ -667,7 +667,7 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
             e.printStackTrace();
         }
         new_to_pay_Amount = new_to_pay_Amount-couponDiscount;
-        int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
         total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
         old_total_Amount=0;

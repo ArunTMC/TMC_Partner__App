@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
+import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderScreenFragment_mobile;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.R;
 
@@ -28,19 +30,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Adapter_AutoCompleteMenuItem_ReplacementScreen extends ArrayAdapter<Modal_NewOrderItems> {
-    String menulist;
+    String menulist,ordertype_Old="";
     private List<Modal_NewOrderItems> menuListFull=new ArrayList<>();
     private Context context;
     private Handler handler;
     int currentPosition;
+    AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen;
 
 
-    public Adapter_AutoCompleteMenuItem_ReplacementScreen(@NonNull Context context, @NonNull String menuList, int adapterPosition) {
+    public Adapter_AutoCompleteMenuItem_ReplacementScreen(@NonNull Context context, @NonNull String menuList, int adapterPosition, String ordertype_Oldd, AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen) {
         super(context, 0);
         this.menulist=menuList;
         convertMenuStringtoJson(menulist);
         this.currentPosition=adapterPosition;
         this.context=context;
+        this.addReplacement_refund_ordersScreen = addReplacement_refund_ordersScreen;
+        this.ordertype_Old= ordertype_Oldd;
     }
     @NonNull
     @Override
@@ -101,6 +106,7 @@ public class Adapter_AutoCompleteMenuItem_ReplacementScreen extends ArrayAdapter
                 //Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + menuuItem.getTmcprice());
 
                 Modal_NewOrderItems modal_newOrderItems = new Modal_NewOrderItems();
+          /*
                 if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcprice")){
                     modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
                     modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
@@ -118,6 +124,42 @@ public class Adapter_AutoCompleteMenuItem_ReplacementScreen extends ArrayAdapter
 
 
                 }
+
+           */
+                if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcprice")){
+                    if(ordertype_Old.toUpperCase().equals(Constants.APPORDER) || ordertype_Old.toUpperCase().equals(Constants.PhoneOrder)) {
+
+                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                    }
+                    else{
+                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                    }
+
+                }
+                if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
+
+                    if(ordertype_Old.toUpperCase().equals(Constants.APPORDER) || ordertype_Old.toUpperCase().equals(Constants.PhoneOrder)) {
+                        modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                        modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                    } else {
+                        modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                        modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                        modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                    }
+                }
+
+
+
+
                 try{
                     modal_newOrderItems.setDiscountpercentage(String.valueOf(menuuItem.getDiscountpercentage()));
 
@@ -248,6 +290,28 @@ public class Adapter_AutoCompleteMenuItem_ReplacementScreen extends ArrayAdapter
                     Toast.makeText(context,"Can't Get Menu Item ID at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                 }
+
+
+                try {
+                    modal_newOrderItems.setTmcpriceWithMarkupValue(String.valueOf(menuuItem.getTmcpriceWithMarkupValue()));
+
+                }
+                catch (Exception e){
+                    Toast.makeText(context,"Can't Get Menu Item TMC Price Markup Value at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+                try {
+                    modal_newOrderItems.setTmcpriceperkgWithMarkupValue(String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()));
+
+                }
+                catch (Exception e){
+                    Toast.makeText(context,"Can't Get Menu Item TMC PricePerKg Markup Value at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                }
+
+
+
                 try{
                     modal_newOrderItems.setItemname(String.valueOf(menuuItem.getItemname()));
 
@@ -985,6 +1049,36 @@ public class Adapter_AutoCompleteMenuItem_ReplacementScreen extends ArrayAdapter
                     }
                     catch (Exception e) {
                         newOrdersPojoClass.allownegativestock = "";
+
+                        e.printStackTrace();
+                    }
+                    try{
+                        if(json.has("tmcpriceWithMarkupValue")){
+                            newOrdersPojoClass.tmcpriceWithMarkupValue =String.valueOf(json.get("tmcpriceWithMarkupValue"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.tmcpriceWithMarkupValue = "";
+                        }
+                    }
+                    catch (Exception e) {
+                        newOrdersPojoClass.tmcpriceWithMarkupValue = "";
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
+                        if(json.has("tmcpriceperkgWithMarkupValue")){
+                            newOrdersPojoClass.tmcpriceperkgWithMarkupValue =String.valueOf(json.get("tmcpriceperkgWithMarkupValue"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.tmcpriceperkgWithMarkupValue = "";
+                        }
+                    }
+                    catch (Exception e) {
+                        newOrdersPojoClass.tmcpriceperkgWithMarkupValue = "";
 
                         e.printStackTrace();
                     }

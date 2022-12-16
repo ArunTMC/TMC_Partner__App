@@ -128,8 +128,9 @@ public class Adapter_Mobile_changeWeight_in_itemDesp extends ArrayAdapter<Modal_
 
         final LinearLayout tmcPrice_invenDetailsTextLayout = listViewItem.findViewById(R.id.tmcPrice_invenDetailsTextLayout);
         final TextView mainMenuItem_textWidget = listViewItem.findViewById(R.id.mainMenuItem_textWidget);
-
         final TextView grossweight_textWidget = listViewItem.findViewById(R.id.grossweight_textWidget);
+
+        final TextView maskingtextLayout = listViewItem.findViewById(R.id.maskingtextLayout);
         final TextView quantity_textWidget = listViewItem.findViewById(R.id.quantity_textWidget);
         final TextView cutName_textWidget = listViewItem.findViewById(R.id.cutName_textWidget);
         final LinearLayout cutnamae_layout = listViewItem.findViewById(R.id.cutnamae_layout);
@@ -146,18 +147,26 @@ public class Adapter_Mobile_changeWeight_in_itemDesp extends ArrayAdapter<Modal_
      //   netweightRange_textWidget.setText(String.valueOf(modal_manageOrders_pojo_class.getNetweight()));
         try{
             if(modal_manageOrders_pojo_class.getPricetypeforpos().toString().toLowerCase().equals("tmcpriceperkg") ) {
-                if (modal_manageOrders_pojo_class.getItemFinalWeight().toString().contains("null") || modal_manageOrders_pojo_class.getItemFinalWeight().toString().equals("") || modal_manageOrders_pojo_class.getItemFinalWeight().toString().equals("0")) {
+                if (modal_manageOrders_pojo_class.getItemFinalWeight().toString().contains("null") || modal_manageOrders_pojo_class.getItemFinalWeight().toString().equals("") || modal_manageOrders_pojo_class.getItemFinalWeight().toString().equals("0") || modal_manageOrders_pojo_class.getItemFinalWeight().toString().equals(null)) {
                   //  newGrossWeight_edittextWidget.setText(String.valueOf("1"));
                     currentGrossweight_textWidget .setText(String.valueOf("1"));
-                    layoutmask.setVisibility(View.VISIBLE);
+                    newGrossWeight_edittextWidget.setText(String.valueOf("-"));
+                    grossweight_textWidget.setText(String.valueOf("-"));
+                    currentGrossweight_textWidget.setText("-");
+
+
+                    maskingtextLayout.setVisibility(View.VISIBLE);
+                    newGrossWeight_edittextWidget.setVisibility(View.GONE);
+
                 } else {
 
                     //newGrossWeight_edittextWidget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight()));
                   //  currentGrossweight_textWidget.setText(String.valueOf(modal_manageOrders_pojo_caass.getItemFinalWeight()+"g"));
                   //  currentGrossweight_textWidget.setText(String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight()+"g"));
 
-                    layoutmask.setVisibility(View.GONE);
 
+                    maskingtextLayout.setVisibility(View.GONE);
+                    newGrossWeight_edittextWidget.setVisibility(View.VISIBLE);
                 }
 
                 try{
@@ -206,16 +215,24 @@ public class Adapter_Mobile_changeWeight_in_itemDesp extends ArrayAdapter<Modal_
 
             }
             else{
-                layoutmask.setVisibility(View.VISIBLE);
+                maskingtextLayout.setVisibility(View.VISIBLE);
+
                 newGrossWeight_edittextWidget.setText(String.valueOf("-"));
                 grossweight_textWidget.setText(String.valueOf("-"));
+                currentGrossweight_textWidget.setText("-");
+
+                newGrossWeight_edittextWidget.setVisibility(View.GONE);
 
             }
         }
         catch (Exception e){
             e.printStackTrace();
         }
+       /* if(ordersList.get(pos).getPricetypeforpos().toUpperCase().equals("TMCPRICE")) {
+            maskingtextLayout.setVisibility(View.VISIBLE);
+        }
 
+        */
         try{
                 if(modal_manageOrders_pojo_class.ischilditem){
                     tmcPrice_invenDetailsTextLayout.setVisibility(View.VISIBLE);
@@ -397,6 +414,13 @@ public class Adapter_Mobile_changeWeight_in_itemDesp extends ArrayAdapter<Modal_
             e.printStackTrace();
         }
 
+
+        maskingtextLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(mContext, "Can't Change weight Bcz its Unit Price Item ", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         layoutmask.setOnClickListener(new View.OnClickListener() {
             @Override

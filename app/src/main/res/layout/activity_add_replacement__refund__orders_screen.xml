@@ -557,6 +557,8 @@
                         android:paddingStart="10dp"
                         android:paddingEnd="10dp"
                         android:text=""
+                        android:focusedByDefault="false"
+
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textColorHint="@color/TMC_Hint_Color"
                         android:textSize="16sp" />

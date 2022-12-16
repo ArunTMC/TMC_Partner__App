@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.meatchop.tmcpartner.R;
 
+import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
+
 public class AlertDialogClass {
     String message ;
 
@@ -20,47 +22,59 @@ public class AlertDialogClass {
 
 
     public static void showDialog(Activity activity, String msg,int zero){
-        final Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.alert_dialog);
-
-        TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
-        text.setText(msg);
-
-        Button dialogButton = (Button) dialog.findViewById(R.id.btn_dialog);
-        dialogButton.setOnClickListener(new View.OnClickListener() {
+        runOnUiThread(new Runnable() {
             @Override
-            public void onClick(View v) {
-                dialog.dismiss();
+            public void run() {
+
+                final Dialog dialog = new Dialog(activity);
+
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setCancelable(false);
+                dialog.setContentView(R.layout.alert_dialog);
+
+                TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
+                text.setText(msg);
+
+                Button dialogButton = (Button) dialog.findViewById(R.id.btn_dialog);
+                dialogButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
             }
         });
-
-        dialog.show();
 
     }
 
 
 
     public static void showDialog(Activity activity, int msg){
-        final Dialog dialog = new Dialog(activity);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.alert_dialog);
-
-        TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
-        text.setText(msg);
-
-        Button dialogButton = (Button) dialog.findViewById(R.id.btn_dialog);
-        dialogButton.setOnClickListener(new View.OnClickListener() {
+        runOnUiThread(new Runnable() {
             @Override
-            public void onClick(View v) {
-                dialog.dismiss();
+            public void run() {
+
+                final Dialog dialog = new Dialog(activity);
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setCancelable(false);
+                dialog.setContentView(R.layout.alert_dialog);
+
+                TextView text = (TextView) dialog.findViewById(R.id.text_dialog);
+                text.setText(msg);
+
+                Button dialogButton = (Button) dialog.findViewById(R.id.btn_dialog);
+                dialogButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
             }
         });
-
-        dialog.show();
-
     }
 
 

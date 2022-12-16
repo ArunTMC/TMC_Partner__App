@@ -25,6 +25,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import static com.meatchop.tmcpartner.R.layout.replacement_refund_itemslist;
 
@@ -284,11 +286,14 @@ public class Adapter_Replacement_Refund_TransactionList extends ArrayAdapter<Mod
         String CurrentDate1 = "";
 
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             try {
                 Date date = sdf.parse(transactiontime);
 
-                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy");
+                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                 CurrentDate1 = day.format(date);
 
 
@@ -300,11 +305,14 @@ public class Adapter_Replacement_Refund_TransactionList extends ArrayAdapter<Mod
         } catch (Exception e) {
 
             try {
-                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
+                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ", Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 try {
                     Date date = sdff.parse(transactiontime);
 
-                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy");
+                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+                    day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                     CurrentDate1 = day.format(date);
 
                 } catch (Exception e1) {
@@ -313,11 +321,14 @@ public class Adapter_Replacement_Refund_TransactionList extends ArrayAdapter<Mod
             } catch (Exception e2) {
 
                 try {
-                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss" , Locale.ENGLISH);
+                    sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                     try {
                         Date date = sdff.parse(transactiontime);
 
-                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy");
+                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+                        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                         CurrentDate1 = day.format(date);
 
                     } catch (Exception e3) {

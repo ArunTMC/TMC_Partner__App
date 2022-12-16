@@ -62,7 +62,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
@@ -2401,11 +2403,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             public void onClick(View v) {
 
                 try{
-                    Date c = Calendar.getInstance().getTime();
-
-                    SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                    String time  = day.format(c);
-                    System.out.println("button clicked time " + time);
 
 
                     List<Modal_ManageOrders_Pojo_Class> orderdItems_desp_local = new ArrayList<>();
@@ -2532,11 +2529,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                                             orderdItems_desp_local.add(modal_manageOrders_pojo_class);
 
                                         } else {
-                                            System.out.println("Grossweight is equal " + time);
 
                                         }
                                     } else {
-                                        System.out.println("isGrossweightEdited in not edited " + time);
 
 
                                     }
@@ -2616,11 +2611,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
     private void CalculateStockBalanceAndAddStockBalaHistory_OutgngDetails(String changestatusto, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp) {
-        Date c = Calendar.getInstance().getTime();
-
-        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time  = day.format(c);
-        System.out.println("CalculateStockBalanceAsync method  time " + time);
 
 
         mResultCallback_Add_UpdateInventoryEntriesInterface = new Add_UpdateInventoryDetailsEntries_Interface(){
@@ -2641,11 +2631,6 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                     }
                 });
 
-                Date c = Calendar.getInstance().getTime();
-
-                SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                String time  = day.format(c);
-                System.out.println("Success response method  time " + time);
 
             }
 
@@ -3334,15 +3319,20 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         CurrentDate = df.format(c);
 
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;
@@ -3677,7 +3667,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
     private boolean CheckWeathertheOrderisPlacedLessThan3Mins(String orderPlacedTime) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(orderPlacedTime);
@@ -3697,21 +3690,26 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
 
 
         Date c1 = calendar.getTime();
-        SimpleDateFormat df1 = new SimpleDateFormat("EEE");
+        SimpleDateFormat df1 = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String predictedday = df1.format(c1);
 
 
 
-        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df2.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  predicteddate = df2.format(c1);
         String predicteddateandday = predictedday+", "+predicteddate;
 
 
-        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        df3.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  predictedtime = df3.format(c1);
         String predicteddateanddayandtime = predictedday+", "+predicteddate+" "+predictedtime;
 
-        Log.d(Constants.TAG, "log predicteddateanddayandtime : " + predicteddateanddayandtime);
 
         long predictedLongForDate = getLongValuefortheDate(predicteddateanddayandtime);
         String  currentTime = getDate_and_time();
@@ -3744,7 +3742,10 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
             String time1 = orderplacedtime;
             //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             Date date = sdf.parse(time1);
             time1long = date.getTime() / 1000;
             longvalue = String.valueOf(time1long);
@@ -3765,7 +3766,9 @@ public class Adapter_Mobile_SearchOrders_usingMobileNumber_ListView extends Arra
                 String time1 = orderplacedtime;
                 //     Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 Date date = sdf.parse(time1);
                 time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -106,389 +106,65 @@
 
 
     </LinearLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+
         android:layout_weight="1">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:id="@+id/listviewchilditemLayout"
-        android:padding="10dp"
-        android:visibility="visible">
+
         <LinearLayout
+            android:id="@+id/listviewchilditemLayout"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
             android:padding="10dp"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:visibility="gone"
-                android:id="@+id/tmcPrice_invenDetailsTextLayout"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/open_sans_bold"
-                    android:text="Main MenuItem : "
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textColor="@color/TMC_Black"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/mainMenuItem_textWidget"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:fontFamily="@font/open_sans_bold"
-                    android:text=" Tandoor  leg "
-                    android:gravity="left"
-                    android:layout_marginStart="15dp"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                    android:textColor="@color/TMC_Black"
-                    android:textSize="17sp" />
-
-            </LinearLayout>
-
-
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="15dp"
-
-                android:alpha=".6"
-                android:visibility="gone"
-                android:background="@drawable/verticalbroder" />
-
-
-        </LinearLayout>
-
-
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="6dp"
                 android:orientation="vertical"
                 android:padding="10dp">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="right"
-                    android:orientation="horizontal"
-                    android:visibility="visible">
-
-                    <TextView
-                        android:id="@+id/itemCount_textWidget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="20dp"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text=" 1 "
-                        android:textSize="22sp" />
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1">
-
-                        <CheckBox
-                            android:id="@+id/correctWeightCheckbox"
-                            android:layout_width="wrap_content"
-                            android:layout_height="30dp"
-                            android:text="Is Current Grossweight is Correct" />
-
-                        <LinearLayout
-                            android:id="@+id/correctWeightCheckboxLayout"
-                            android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            android:orientation="horizontal"></LinearLayout>
-
-
-                    </RelativeLayout>
-                </LinearLayout>
-
-
-                <LinearLayout
+                    android:id="@+id/tmcPrice_invenDetailsTextLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/itemName_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text="Item Name : "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="16sp"
-                        android:visibility="gone" />
-
-                    <TextView
-                        android:id="@+id/itemName_textWidget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text="Boneless"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Orange"
-                        android:textSize="16sp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/cutnamae_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.4"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Cut Name: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/cutName_textWidget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="3dp"
-                        android:layout_weight="2"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:gravity="left"
-                        android:text="With head"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text="Default Grossweight : "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="16sp"
-                        android:visibility="gone" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text=" 500g "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp"
-                        android:visibility="gone" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Range for new  Grossweight : "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/netweightRange_textWidget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:layout_marginStart="1dp"
-
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text=" 400g - 500g "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.7"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Grossweight: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal">
-                    <TextView
-                        android:id="@+id/grossweight_textWidget"
-                        android:layout_width="60dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:gravity="right"
-                        android:text=" 22500g "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-
-                    <TextView
-                        android:layout_width="20dp"
-                        android:layout_height="22dp"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text=" X "
-                        android:gravity="center"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/quantity_textWidget"
-
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:text="1 "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="16sp" />
-
-                </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Grossweight  *  Quantity: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/currentGrossweight_textWidget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:layout_weight="2"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:gravity="left"
-                        android:text="500g "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="20dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/newgrossweight_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Enter exact Grossweight"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                    <EditText
-                        android:id="@+id/newGrossWeight_edittextWidget"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_weight="1"
-                        android:background="@color/TMC_PaleOrange"
-                        android:digits="0123456789"
-                        android:fontFamily="@font/open_sans_bold"
-                        android:hint="Weight should be between the above range"
-                        android:imeOptions="actionDone"
-                        android:inputType="phone"
-                        android:paddingStart="10dp"
-                        android:text=""
-                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/TMC_Black"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginTop="10dp"
-                    android:gravity="right"
                     android:orientation="horizontal"
                     android:visibility="gone">
 
-                    <Button
-                        android:id="@+id/saveWeightDetails_button"
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="20dp"
-                        android:background="@drawable/orange_selected_button_background"
-                        android:padding="6dp"
-                        android:text="Save Weight Details "
-                        android:textAllCaps="false"
-                        android:textColor="@color/TMC_White"
-                        android:textSize="13sp" />
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:text="Main MenuItem : "
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textColor="@color/TMC_Black"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/mainMenuItem_textWidget"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:layout_weight="2"
+                        android:fontFamily="@font/open_sans_bold"
+                        android:gravity="left"
+                        android:text=" Tandoor  leg "
+                        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                        android:textColor="@color/TMC_Black"
+                        android:textSize="17sp" />
+
                 </LinearLayout>
+
 
                 <View
                     android:layout_width="match_parent"
@@ -499,26 +175,422 @@
                     android:background="@drawable/verticalbroder"
                     android:visibility="gone" />
 
+
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:orientation="horizontal"
+                        android:visibility="visible">
+
+                        <TextView
+                            android:id="@+id/itemCount_textWidget"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text=" 1 "
+                            android:textSize="22sp" />
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1">
+
+                            <CheckBox
+                                android:id="@+id/correctWeightCheckbox"
+                                android:layout_width="wrap_content"
+                                android:layout_height="30dp"
+                                android:text="Is Current Grossweight is Correct" />
+
+                            <LinearLayout
+                                android:id="@+id/correctWeightCheckboxLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:orientation="horizontal" />
+
+
+                        </RelativeLayout>
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/itemName_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Item Name : "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="16sp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/itemName_textWidget"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Boneless"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Orange"
+                            android:textSize="16sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/cutnamae_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="5"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Cut Name: "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/cutName_textWidget"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="3dp"
+                            android:layout_weight="2"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:gravity="left"
+                            android:text="I want whole chicken for grilling . asdfghjerty dfghjDon't cutinto pieces"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1.5"
+                        android:orientation="vertical">
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="Default Grossweight : "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="16sp"
+                            android:visibility="gone" />
+
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Range for new  Grossweight : "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Grossweight "
+                            android:layout_marginTop="10dp"
+
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.7"
+                            android:layout_marginTop="20dp"
+
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Grossweight  *  Quantity:"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="500g "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+                        <TextView
+                            android:id="@+id/netweightRange_textWidget"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:text="400g - 500g "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+                        <TextView
+                            android:id="@+id/currentGrossweight_textWidget"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:gravity="left"
+                            android:text="500g "
+                            android:layout_marginTop="10dp"
+
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginTop="10dp"
+
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/grossweight_textWidget"
+                                android:layout_width="60dp"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="22500g"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/TMC_Black"
+                                android:textSize="14sp" />
+
+
+                            <TextView
+                                android:layout_width="20dp"
+                                android:layout_height="22dp"
+                                android:layout_marginStart="5dp"
+                                android:layout_marginEnd="5dp"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+                                android:text=" X "
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/TMC_Black"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/quantity_textWidget"
+
+                                android:layout_width="50dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="1 "
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/TMC_Black"
+                                android:textSize="16sp" />
+
+                        </LinearLayout>
+
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone"
+                        android:orientation="horizontal">
+
+
+
+
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone"
+
+                        android:orientation="horizontal">
+
+
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone"
+
+                        android:orientation="horizontal">
+
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/newgrossweight_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:fontFamily="@font/open_sans_semibold"
+                            android:text="Enter exact Grossweight"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+
+                        <EditText
+                            android:id="@+id/newGrossWeight_edittextWidget"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_weight="1"
+                            android:background="@color/TMC_PaleOrange"
+                            android:digits="0123456789"
+                            android:fontFamily="@font/open_sans_bold"
+                            android:hint="Weight should be between the above range"
+                            android:imeOptions="actionDone"
+                            android:inputType="phone"
+                            android:paddingStart="10dp"
+                            android:text=""
+                            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                            android:textColor="@color/TMC_Black"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginTop="10dp"
+                        android:gravity="right"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <Button
+                            android:id="@+id/saveWeightDetails_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp"
+                            android:background="@drawable/orange_selected_button_background"
+                            android:padding="6dp"
+                            android:text="Save Weight Details "
+                            android:textAllCaps="false"
+                            android:textColor="@color/TMC_White"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="15dp"
+
+                        android:alpha=".6"
+                        android:background="@drawable/verticalbroder"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:text=""
+            android:id="@+id/maskingtextLayout"
+            android:visibility="gone"
+            android:alpha="0.6"
+            android:background="@color/TMC_Grey"
+            android:gravity="center"
+            />
 
         <LinearLayout
             android:id="@+id/layoutmask"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/TMC_Grey"
+            android:layout_height="wrap_content"
             android:alpha="0.6"
-            android:layout_centerInParent="true"
+            android:background="@color/TMC_Grey"
             android:orientation="vertical"
-            android:visibility="gone" />
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+
+
+            app:layout_constraintStart_toStartOf="parent" >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/loadingpanelmaskt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/TMC_proressbar_mask_Color"
-            android:alpha="0.85"
             android:layout_centerInParent="true"
+            android:alpha="0.85"
+            android:background="@color/TMC_proressbar_mask_Color"
             android:orientation="vertical"
             android:visibility="gone" />
 
@@ -526,25 +598,25 @@
             android:id="@+id/loadingPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
             android:orientation="vertical"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:gravity="center"
-            android:layout_centerInParent="true"
-            android:visibility="gone">
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.wang.avi.AVLoadingIndicatorView
                 android:id="@+id/loadinganim_layout"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:visibility="visible"
                 android:layout_gravity="center"
+                android:visibility="visible"
                 app:indicatorColor="@color/TMC_Orange"
                 app:indicatorName="BallPulseIndicator" />
         </LinearLayout>
 
 
     </RelativeLayout>
-</LinearLayout>
+</RelativeLayout>

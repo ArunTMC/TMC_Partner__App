@@ -61,7 +61,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
@@ -3881,15 +3883,18 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         CurrentDate = df.format(c);
 
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;
@@ -4554,12 +4559,6 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             public void onClick(View v) {
 
                 try{
-                    Date c = Calendar.getInstance().getTime();
-
-                    SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                    String time  = day.format(c);
-                    System.out.println("button clicked time " + time);
-
 
                     List<Modal_ManageOrders_Pojo_Class> orderdItems_desp_local = new ArrayList<>();
                     orderdItems_desp_local.clear();
@@ -4763,11 +4762,6 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
     private void CalculateStockBalanceAndAddStockBalaHistory_OutgngDetails(String changestatusto, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp) {
-        Date c = Calendar.getInstance().getTime();
-
-        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time  = day.format(c);
-        System.out.println("CalculateStockBalanceAsync method  time " + time);
 
 
         mResultCallback_Add_UpdateInventoryEntriesInterface = new Add_UpdateInventoryDetailsEntries_Interface(){
@@ -4788,11 +4782,6 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                     }
                 });
 
-                Date c = Calendar.getInstance().getTime();
-
-                SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                String time  = day.format(c);
-                System.out.println("Success response method  time " + time);
 
             }
 

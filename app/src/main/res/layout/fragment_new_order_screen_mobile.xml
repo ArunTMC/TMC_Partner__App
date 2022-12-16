@@ -150,12 +150,53 @@
 
 
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:paddingStart="6dp"
+        android:layout_weight="1"
+        android:id="@+id/orderMode_selectionLayout"
+        android:visibility="visible"
+        android:gravity="center"
+        android:paddingEnd="3dp"
+        android:layout_marginTop="114dp"
+        android:orientation="horizontal">
 
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@color/TMC_Orange"
+            android:textSize="13sp"
+
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:gravity="center"
+            android:fontFamily="@font/open_sans"
+            android:text="Select Order Type " />
+
+        <Spinner
+            android:id="@+id/orderTypeSpinner_newWidget"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="20dp"
+             />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/border_line"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_marginTop="115dp"
+        android:layout_marginTop="180dp"
 
         android:layout_marginBottom="5dp"
         android:layout_height="match_parent">

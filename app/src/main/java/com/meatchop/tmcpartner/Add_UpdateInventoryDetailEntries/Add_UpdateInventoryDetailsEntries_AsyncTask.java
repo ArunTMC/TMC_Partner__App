@@ -22,6 +22,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTableInterface;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
@@ -33,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,6 +53,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetails;
 
+
 public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<String, String, List<Modal_ManageOrders_Pojo_Class>> {
     Context mContext;
     Add_UpdateInventoryDetailsEntries_Interface mResultCallback_add_updateInventoryEntriesInterface =null;
@@ -62,21 +65,53 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
     List<Modal_ManageOrders_Pojo_Class> orderdItems_desp = new ArrayList<>();
     List<Modal_MenuItem> MenuItemArray = new ArrayList<>();
     List<String> menuitemkey_of_alreadyCalculatedStockBalanceWeight = new ArrayList<>();
-
+    boolean calledFromNewOrderScreen;
     List<Modal_ManageOrders_Pojo_Class> final_orderdItems_desp = new ArrayList<>();
 
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(7);
 
 
+
+
     public Add_UpdateInventoryDetailsEntries_AsyncTask(Context mContext, Add_UpdateInventoryDetailsEntries_Interface mResultCallback_add_updateInventoryEntriesInterface, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp, List<Modal_MenuItem> menuItem) {
-   this.mContext = mContext;
-   this.mResultCallback_add_updateInventoryEntriesInterface = mResultCallback_add_updateInventoryEntriesInterface;
+        this.mContext = mContext;
+        this.mResultCallback_add_updateInventoryEntriesInterface = mResultCallback_add_updateInventoryEntriesInterface;
         this.vendorkey = vendorkey;
         this.orderid = orderid;
         this.customerMobileNo = customerMobileNo;
         this.currenttime = currenttime;
         this.orderdItems_desp = orderdItems_desp;
-        this.MenuItemArray =menuItem;
+        this.calledFromNewOrderScreen = false;
+        getMenuItemArrayFromSharedPreferences();
+    }
+
+
+    public Add_UpdateInventoryDetailsEntries_AsyncTask(Context mContext, Add_UpdateInventoryDetailsEntries_Interface mResultCallback_add_updateInventoryEntriesInterface, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp,  boolean calledFromNewOrderScreen) {
+        this.mContext = mContext;
+        this.mResultCallback_add_updateInventoryEntriesInterface = mResultCallback_add_updateInventoryEntriesInterface;
+        this.vendorkey = vendorkey;
+        this.orderid = orderid;
+        this.customerMobileNo = customerMobileNo;
+        this.currenttime = currenttime;
+        this.orderdItems_desp = orderdItems_desp;
+        getMenuItemArrayFromSharedPreferences();
+        this.calledFromNewOrderScreen = true;
+
+    }
+
+    private void getMenuItemArrayFromSharedPreferences() {
+        final SharedPreferences sharedPreferencesMenuitem = mContext.getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String json = sharedPreferencesMenuitem.getString("MenuList", "");
+        if (json.isEmpty()) {
+            Toast.makeText(mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
+        } else {
+            Type type = new TypeToken<List<Modal_MenuItem>>() {
+            }.getType();
+            MenuItemArray  = gson.fromJson(json, type);
+        }
+
     }
 
 
@@ -87,12 +122,10 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
             Date c = Calendar.getInstance().getTime();
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-            String time  = day.format(c);
-            System.out.println("async  method starting time " + time);
-            CallStockOutgoing callStockOutgoing = new CallStockOutgoing(orderid);
-            executor.execute(callStockOutgoing);
-
+            if(!calledFromNewOrderScreen) {
+                CallStockOutgoing callStockOutgoing = new CallStockOutgoing(orderid);
+                executor.execute(callStockOutgoing);
+            }
             try{
                 for(int i =0; i<orderdItems_desp.size();i ++) {
                     JSONArray inventoryDetailsArray = new JSONArray();
@@ -715,10 +748,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
         }
 
 
-
-
-
-
         return null;
     }
 
@@ -728,9 +757,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time  = day.format(c);
-        System.out.println("processtheFinalArray method  time " + time);
 
 
 
@@ -868,14 +894,15 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                     e.printStackTrace();
                 }
 
+                if(!calledFromNewOrderScreen){
 
-                try {
+                    try {
 
-                    grossweightingrams_double = finalWeightDouble - grossweightingrams_double;
-                } catch (Exception e) {
-                    e.printStackTrace();
+                        grossweightingrams_double = finalWeightDouble - grossweightingrams_double;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-
 
               /*  double grossWeightWithQuantity_double = 0;
                 if (modal_manageOrders_pojo_class.getPricetypeforpos().toUpperCase().equals(Constants.TMCPRICE)) {
@@ -1063,15 +1090,15 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
+                                    if(!calledFromNewOrderScreen){
 
+                                        try {
 
-                                    try {
-
-                                        grossweightingrams_OrderedItemDesp_double = finalWeight_OrderedItemDespDouble - grossweightingrams_OrderedItemDesp_double;
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                                            grossweightingrams_OrderedItemDesp_double = finalWeight_OrderedItemDespDouble - grossweightingrams_OrderedItemDesp_double;
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
-
 
                                     /*double grossWeightWithQuantity_OrderedItemDesp_double = 0;
                                     if (modal_manageOrders_From_orderedItemDesp.getPricetypeforpos().toUpperCase().equals(Constants.TMCPRICE)) {
@@ -1108,9 +1135,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                             if (final_orderdItems_desp.size() - 1 == iterator) {
                                 Date c1 = Calendar.getInstance().getTime();
 
-                                SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                                String time1  = day1.format(c1);
-                                System.out.println("call task 1 class method  time " + time1);
 
 
 
@@ -1128,11 +1152,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                     else{
 
                         Date c1 = Calendar.getInstance().getTime();
-
-                        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                        String time1  = day1.format(c1);
-                        System.out.println("call task class 2 method  time " + time1);
-                        System.out.println("`Executing` stockIncomingKey_AvlDetails: 2 " + stockIncomingKey_AvlDetails);
 
 
                         CallStockOutgoing callStockOutgoing2 = new CallStockOutgoing(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, grossweightingrams_double, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
@@ -1163,13 +1182,7 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
 
     private void getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(String stockIncomingKey_avlDetails, String key_avlDetails, String menuItemKey_avlDetails, String receivedStock_AvlDetails, double currentBillingItemWeight_double, String itemName, String barcode, String orderid, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey, boolean isitemAvailable, boolean allowNegativeStock) {
-        Date c1 = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time1  = day1.format(c1);
-
-        System.out.println("`Executing` getStockItemOutGoingDetails  method  name " + itemName);
-        System.out.println("`Executing` getStockItemOutGoingDetails  stockIncomingKey_avlDetails " + stockIncomingKey_avlDetails);
 
         if(( currentBillingItemWeight_double!=0 ) && ((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" - ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil"))) ) {
            // System.out.println("Total Number of threads  Current thread: 1 : " + Thread.activeCount());
@@ -1234,22 +1247,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
 
                                     try {
-                                        //Log.d(TAG, " response: onMobileAppData " + response);
-
-                                        //Log.i(TAG, "getStock incoming name" + itemName);
-
-
-
-                                        Date c1 = Calendar.getInstance().getTime();
-
-                                        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                                        String time1  = day1.format(c1);
-                                        System.out.println("response from  getStockItemOutGoingDetails  itemname  " + itemName);
-
-                                        System.out.println("response from  getStockItemOutGoingDetail2s  method  time " + time1);
-
-
-
 
                                         JSONArray JArray = response.getJSONArray("content");
 
@@ -1596,12 +1593,8 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
        //     Toast.makeText(mContext, "No  Menu Item Stock  details for " + itemName, Toast.LENGTH_LONG).show();
             updatedStockBalanceCount++;
 
-             time1  = day1.format(c1);
-            System.out.println("else in `Executing` getStockItemOutGoingDetails  method  name " + itemName);
 
             if(final_orderdItems_desp.size() == updatedStockBalanceCount){
-                System.out.println("else in notifySuccess  updatedStockBalanceCount " + String.valueOf(updatedStockBalanceCount));
-                System.out.println("else in notifySuccess    final_orderdItems_desp " + final_orderdItems_desp);
 
                 awaitTerminationAfterShutdown(executor);
                     mResultCallback_add_updateInventoryEntriesInterface.notifySuccess("", "success");
@@ -1787,11 +1780,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
     }
 
     private void AddDataInStockBalanceTransactionHistory(double finalStockBalance_double, double stockBalanceBeforeMinusCurrentItem, String menuItemKey_avlDetails, String stockIncomingKey_avlDetails, String itemName, String barcode) {
-        Date c1 = Calendar.getInstance().getTime();
-
-        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time1  = day1.format(c1);
-        System.out.println("AddDataInStockBalance  method  time " + time1);
 
 
         JSONObject  jsonObject = new JSONObject();
@@ -1871,11 +1859,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
 
     private void UpdateStockBalanceinMenuItemStockAvlDetail(String key_avlDetails, double finalStockBalance_double, boolean changeItemAvailability, boolean isitemAvailable, String menuItemKey_avlDetails, String tmcSubCtgyKey, String itemName) {
-        Date c1 = Calendar.getInstance().getTime();
-
-        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time1  = day1.format(c1);
-        System.out.println("update stockAvlDetails  method  time " + time1);
 
 
         final String[] message = {""};
@@ -1927,7 +1910,7 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                                 modal_menuItemStockAvlDetails.setAllownegativestock(String.valueOf(false));
 
                                 uploadMenuAvailabilityStatusTranscationinDB(customerMobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorkey,currenttime,menuItemKey_avlDetails, message[0], "", false, "");
-                                savedMenuIteminSharedPrefrences(MenuItemArray,iterator_menuitemStockAvlDetails);
+                               // savedMenuIteminSharedPrefrences(MenuItemArray,iterator_menuitemStockAvlDetails);
 
                             }
 
@@ -2043,7 +2026,7 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                                         modal_menuItemStockAvlDetails.setStockbalance_AvlDetails(String.valueOf(finalStockBalance_double));
 
                                         uploadMenuAvailabilityStatusTranscationinDB(customerMobileNo,itemName,isitemAvailable,tmcSubCtgyKey,vendorkey,currenttime,menuItemKey_avlDetails, message[0], "", false, "");
-                                        savedMenuIteminSharedPrefrences(MenuItemArray,iterator_menuitemStockAvlDetails);
+                                       // savedMenuIteminSharedPrefrences(MenuItemArray,iterator_menuitemStockAvlDetails);
 
                                     }
 
@@ -2065,11 +2048,6 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
                     }
 
                     if(final_orderdItems_desp.size() == updatedStockBalanceCount){
-                        Date c1 = Calendar.getInstance().getTime();
-
-                        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                        String time1  = day1.format(c1);
-                        System.out.println("sending response from  update stockAvlDetails  method  time " + time1);
 
 
                         awaitTerminationAfterShutdown(executor);
@@ -2169,7 +2147,7 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
         threadPool.shutdown();
         try {
-            if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
+            if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
             //   System.out.println("Total Number of threads  Current thread: 44 : " + Thread.activeCount());
 
                 threadPool.shutdownNow();
@@ -2185,20 +2163,7 @@ public class Add_UpdateInventoryDetailsEntries_AsyncTask extends AsyncTask<Strin
 
 
 
-
-
-
-
-
-
     private void AddDataInStockOutGoingTable(double grossweightingrams_double, String orderid, String stockIncomingKey_avlDetails, String itemName, String barcode, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey) {
-
-        Date c1 = Calendar.getInstance().getTime();
-
-        SimpleDateFormat day1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time1  = day1.format(c1);
-        System.out.println("response from  addstock outgoing  method  time " + time1);
-
 
         String stockType = "";
         try{

@@ -126,12 +126,12 @@
             android:textColor="@color/TMC_White"
             android:layout_width="match_parent"
             android:layout_marginBottom="10dp"
-            android:visibility="gone"
+            android:visibility="visible"
             android:layout_marginTop="5dp"
             android:textSize="15sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Fetch Address List" />
+            android:text="Fetch Address Again" />
         <Button
             android:id="@+id/addNewAddress_button"
             android:layout_marginStart="15dp"

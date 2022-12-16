@@ -59,6 +59,7 @@ public class Adapter_TodaysDeliverySlots extends ArrayAdapter<Modal_DeliverySlot
         menuItemVisibilitySwitch.setText(String.valueOf(slottimeDuration));
         String  itemAvailability =String.valueOf(modal_manageOrders_pojo_class.getStatus()).toUpperCase();
 
+        changeDelivery_slot_availability_status.updateEntryINDB = false;
 
         if(itemAvailability.equals("ACTIVE")){
             menuItemVisibilitySwitch.setChecked(true);
@@ -73,11 +74,31 @@ public class Adapter_TodaysDeliverySlots extends ArrayAdapter<Modal_DeliverySlot
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
               if(b){
                   String deliverySlotKey = modal_manageOrders_pojo_class.getKey();
+
+                  changeDelivery_slot_availability_status.deliverySlotKey = deliverySlotKey;
+                  String slotStarttime =String.valueOf(modal_manageOrders_pojo_class.getSlotstarttime());
+                  String slotEndtime =String.valueOf(modal_manageOrders_pojo_class.getSlotendtime());
+                  String slottimeDuration = slotStarttime+"  -  "+slotEndtime;
+                  changeDelivery_slot_availability_status.deliverytime = slottimeDuration;
+                  changeDelivery_slot_availability_status.slotdatetype = modal_manageOrders_pojo_class.getSlotdatetype();
+                  changeDelivery_slot_availability_status.slotname = "PREORDER";
+
                   changeDelivery_slot_availability_status.changeStatusintheDeliverySlot(deliverySlotKey,"ACTIVE");
 
               }
               else{
                   String deliverySlotKey = modal_manageOrders_pojo_class.getKey();
+
+                  changeDelivery_slot_availability_status.deliverySlotKey = deliverySlotKey;
+                  String slotStarttime =String.valueOf(modal_manageOrders_pojo_class.getSlotstarttime());
+                  String slotEndtime =String.valueOf(modal_manageOrders_pojo_class.getSlotendtime());
+                  String slottimeDuration = slotStarttime+"  -  "+slotEndtime;
+                  changeDelivery_slot_availability_status.deliverytime = slottimeDuration;
+                  changeDelivery_slot_availability_status.slotdatetype = modal_manageOrders_pojo_class.getSlotdatetype();
+                  changeDelivery_slot_availability_status.slotname = "PREORDER";
+
+
+
                   changeDelivery_slot_availability_status.changeStatusintheDeliverySlot(deliverySlotKey,"INACTIVE");
 
               }

@@ -21,7 +21,15 @@ tools:context=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard">
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
+    <LinearLayout
+        android:id="@+id/loadingpanelmask_userAccess"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/TMC_proressbar_mask_Color"
+        android:alpha="0.85"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:visibility="gone" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomnav"

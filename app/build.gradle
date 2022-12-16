@@ -13,7 +13,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 31
         versionCode 2
-        versionName "1.9.6(9)"
+        versionName "1.9.9"
         ndk {
             abiFilters 'armeabi','armeabi-v7a', 'x86'
         }
@@ -23,7 +23,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+           // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -39,11 +40,18 @@ android {
             java {
                 srcDirs 'src\\main\\java', 'src\\main\\java\\com\\Mobile Screen Java classes', 'src\\main\\java\\com\\POS Screen Java classes', 'src\\main\\java\\com\\Pos_NewOrders', 'src\\main\\java\\com\\meatchopp.tmcpartner\\MobileScreen_JavaClasses\\MobileScreen_', 'src\\main\\java\\usbPrinter', 'src\\main\\java\\com\\usbPrinter'
             }
+            res {
+                srcDirs 'src\\main\\res', 'src\\main\\res\\values-sw600dp', 'src\\main\\res\\anim'
+            }
         }
     }
 }
 
+
+
 dependencies {
+    implementation 'com.google.android.gms:play-services-vision:20.1.3'
+
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
@@ -67,6 +75,7 @@ dependencies {
     implementation fileTree(dir: 'C:\\Users\\aruna\\AndroidStudioProjects\\TMCPartnerApp\\app\\src\\main', include: ['*.aar', '*.jar'], exclude: [])
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation  'com.google.code.gson:gson:2.2.4'
+
     testImplementation 'junit:junit:4.13.1'
     implementation'com.amazonaws:aws-android-sdk-mobile-client:2.16.13'
     implementation 'com.android.volley:volley:1.1.1'

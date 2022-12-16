@@ -4,16 +4,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -39,6 +43,7 @@ import com.meatchop.tmcpartner.TMCAlertDialogClass;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Pos_LoginScreen extends AppCompatActivity {
     private EditText pos_mobileNo_widget;
@@ -51,11 +56,25 @@ public class Pos_LoginScreen extends AppCompatActivity {
     private static final String TAG = "TAG";
     private String passCode, userMobileString, minimumScreenSizeForPos;
     double screenInches = Constants.default_mobileScreenSize ;
+    public enum WindowSizeClass { COMPACT, MEDIUM, EXPANDED }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
+
+        int orientation = this.getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Constants.default_mobileScreenSize = 6.6;
+            //Toast.makeText(this, "Portrait : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+
+        } else {
+            Constants.default_mobileScreenSize = 6.2;
+
+          //  Toast.makeText(this, "Landscape : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+        }
+        screenInches = Constants.default_mobileScreenSize ;
         try {
             ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
             screenInches = screenSizeOfTheDevice.getDisplaySize(Pos_LoginScreen.this);
@@ -651,6 +670,7 @@ public class Pos_LoginScreen extends AppCompatActivity {
 
                     @Override
                     public void onNo() {
+
 
                     }
                 });

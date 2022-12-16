@@ -43,6 +43,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTableInterface;
 import com.meatchop.tmcpartner.CustomerOrder_TrackingDetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Adapter_Mobile_AssignDeliveryPartner1;
@@ -51,6 +52,7 @@ import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_vendor;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.R;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
 import com.meatchop.tmcpartner.VendorOrder_TrackingDetails.VendorOrdersTableInterface;
@@ -60,7 +62,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,7 +74,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetails;
 
@@ -94,8 +100,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     public String customerLongitutde;
     public String paymentmode;
     public String paymentModeString;
-    public String payableAmount;
+    public String payableAmount , vendorkey ="" ;
     public String userkey,UserRole,UserPhoneNumber;
+    int payableAmountDouble = 0;
 
     public String tokenNo,customerMobileNo ="";
     public String deliverydistance;
@@ -108,6 +115,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     public String DeliveryPersonList;
     public String  deliveryCharges;
     double screenInches;
+
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
 
     LinearLayout showlocation,deliverypersonName_Layout,deliverypersonMobileNO_Layout,tokenNo_Layout,distanceInKm_layout,confirmedTimeLayout,
@@ -140,6 +148,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     private  ArrayAdapter vendorlist_aAdapter;
     Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
     Context mContext;
+    double totalamountUserHaveAsCredit = 0;
 
 
 
@@ -357,13 +366,18 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             }
         });
 
-        if((isFromEditOrders.equals("TRUE")) && (Edit_Or_CancelTheOrders.showcreditorderscheckbox.isChecked()) &&(!isordertrackingcalled)){
-        //    modal_manageOrders_pojo_class = getOrderTrackingDetailsAlso(modal_manageOrders_pojo_class,orderid);
-          //  Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in method" , Toast.LENGTH_LONG).show();
+        try {
+            if ((isFromEditOrders.equals("TRUE")) && (Edit_Or_CancelTheOrders.showcreditorderscheckbox.isChecked()) && (!isordertrackingcalled)) {
+                //    modal_manageOrders_pojo_class = getOrderTrackingDetailsAlso(modal_manageOrders_pojo_class,orderid);
+                //  Toast.makeText(Edit_Or_CancelOrder_OrderDetails_Screen.this, "in method" , Toast.LENGTH_LONG).show();
 
-            Adjusting_Widgets_Visibility(true);
-            FetchOrdersFromOrderTrackingDatabase(orderid,true,vendorKey);
+                Adjusting_Widgets_Visibility(true);
+                FetchOrdersFromOrderTrackingDatabase(orderid, true, vendorKey);
 
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
 
 
@@ -752,11 +766,17 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
                         }
                         else {
-                            if (changeAddresstoAnotherstore_Checkbox.isChecked()) {
-                                changeVendorDetailsInAddressTable(userAddressKey);
 
-                            } else {
+                            try {
+                                if (changeAddresstoAnotherstore_Checkbox.isChecked()) {
+                                    changeVendorDetailsInAddressTable(userAddressKey);
 
+                                } else {
+
+                                }
+                            }
+                            catch (Exception e ){
+                                e.printStackTrace();
                             }
                         }
 
@@ -4332,12 +4352,37 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     private void updateDatainLocalArray(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
 
 
+        try {
+            if (Edit_Or_CancelTheOrders.showcreditorderscheckbox.isChecked()) {
+                if (Edit_Or_CancelTheOrders.isSearchButtonClicked) {
+                    for (int i = 0; i < Edit_Or_CancelTheOrders.sorted_CreditedOrdersList.size(); i++) {
+                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.sorted_CreditedOrdersList.get(i);
+                        String orderkey = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                        if (orderkey.equals(orderid)) {
+                            modal_manageOrders_forOrderDetailList1.setOrderconfirmedtime(modal_manageOrders_pojo_class.getOrderconfirmedtime());
+                            modal_manageOrders_forOrderDetailList1.setOrderreadytime(modal_manageOrders_pojo_class.getOrderreadytime());
+                            modal_manageOrders_forOrderDetailList1.setOrderpickeduptime(modal_manageOrders_pojo_class.getOrderpickeduptime());
+
+                            modal_manageOrders_forOrderDetailList1.setOrderdeliveredtime(modal_manageOrders_pojo_class.getOrderdeliveredtime());
+
+                            modal_manageOrders_forOrderDetailList1.setKeyfromtrackingDetails(modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
+                            modal_manageOrders_forOrderDetailList1.setOrderstatus(modal_manageOrders_pojo_class.getOrderstatus());
+                            modal_manageOrders_forOrderDetailList1.setDeliverydistance(modal_manageOrders_pojo_class.getDeliverydistance());
+                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(modal_manageOrders_pojo_class.getOrderdeliveredtime());
+                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo());
+                            modal_manageOrders_forOrderDetailList1.setUseraddresslon(modal_manageOrders_pojo_class.getUseraddresslon());
+                            modal_manageOrders_forOrderDetailList1.setUseraddresslat(modal_manageOrders_pojo_class.getUseraddresslat());
+                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(modal_manageOrders_pojo_class.getDeliveryPartnerKey());
 
 
-        if(Edit_Or_CancelTheOrders.showcreditorderscheckbox.isChecked()){
-            if (Edit_Or_CancelTheOrders.isSearchButtonClicked) {
-                for (int i = 0; i < Edit_Or_CancelTheOrders.sorted_CreditedOrdersList.size(); i++) {
-                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.sorted_CreditedOrdersList.get(i);
+                            modal_manageOrders_forOrderDetailList1.setIsdataFetchedFromOrderTrackingDetails("TRUE");
+
+                        }
+                    }
+                }
+
+                for (int i = 0; i < Edit_Or_CancelTheOrders.CreditedordersList.size(); i++) {
+                    final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.CreditedordersList.get(i);
                     String orderkey = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
                     if (orderkey.equals(orderid)) {
                         modal_manageOrders_forOrderDetailList1.setOrderconfirmedtime(modal_manageOrders_pojo_class.getOrderconfirmedtime());
@@ -4345,8 +4390,6 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                         modal_manageOrders_forOrderDetailList1.setOrderpickeduptime(modal_manageOrders_pojo_class.getOrderpickeduptime());
 
                         modal_manageOrders_forOrderDetailList1.setOrderdeliveredtime(modal_manageOrders_pojo_class.getOrderdeliveredtime());
-
-                        modal_manageOrders_forOrderDetailList1.setKeyfromtrackingDetails(modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
                         modal_manageOrders_forOrderDetailList1.setOrderstatus(modal_manageOrders_pojo_class.getOrderstatus());
                         modal_manageOrders_forOrderDetailList1.setDeliverydistance(modal_manageOrders_pojo_class.getDeliverydistance());
                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(modal_manageOrders_pojo_class.getOrderdeliveredtime());
@@ -4354,39 +4397,17 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                         modal_manageOrders_forOrderDetailList1.setUseraddresslon(modal_manageOrders_pojo_class.getUseraddresslon());
                         modal_manageOrders_forOrderDetailList1.setUseraddresslat(modal_manageOrders_pojo_class.getUseraddresslat());
                         modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(modal_manageOrders_pojo_class.getDeliveryPartnerKey());
-
-
-
-                        modal_manageOrders_forOrderDetailList1.setIsdataFetchedFromOrderTrackingDetails("TRUE");
-
-                    }
-                }
-            }
-
-            for (int i = 0; i < Edit_Or_CancelTheOrders.CreditedordersList.size(); i++) {
-                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Edit_Or_CancelTheOrders.CreditedordersList.get(i);
-                String orderkey = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                if (orderkey.equals(orderid)) {
-                        modal_manageOrders_forOrderDetailList1.setOrderconfirmedtime(modal_manageOrders_pojo_class.getOrderconfirmedtime());
-                        modal_manageOrders_forOrderDetailList1.setOrderreadytime(modal_manageOrders_pojo_class.getOrderreadytime());
-                        modal_manageOrders_forOrderDetailList1.setOrderpickeduptime(modal_manageOrders_pojo_class.getOrderpickeduptime());
-
-                        modal_manageOrders_forOrderDetailList1.setOrderdeliveredtime(modal_manageOrders_pojo_class.getOrderdeliveredtime());
-                    modal_manageOrders_forOrderDetailList1.setOrderstatus(modal_manageOrders_pojo_class.getOrderstatus());
-                    modal_manageOrders_forOrderDetailList1.setDeliverydistance(modal_manageOrders_pojo_class.getDeliverydistance());
-                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(modal_manageOrders_pojo_class.getOrderdeliveredtime());
-                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(modal_manageOrders_pojo_class.getDeliveryPartnerMobileNo());
-                    modal_manageOrders_forOrderDetailList1.setUseraddresslon(modal_manageOrders_pojo_class.getUseraddresslon());
-                    modal_manageOrders_forOrderDetailList1.setUseraddresslat(modal_manageOrders_pojo_class.getUseraddresslat());
-                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(modal_manageOrders_pojo_class.getDeliveryPartnerKey());
                         modal_manageOrders_forOrderDetailList1.setKeyfromtrackingDetails(modal_manageOrders_pojo_class.getKeyfromtrackingDetails());
                         modal_manageOrders_forOrderDetailList1.setIsdataFetchedFromOrderTrackingDetails("TRUE");
 
 
+                    }
                 }
             }
         }
-
+        catch (Exception e){
+            e.printStackTrace();
+        }
         Edit_Or_CancelTheOrders.adapter_edit_or_cancelTheOrders.notifyDataSetChanged();
 
         setDatainUI();
@@ -4480,19 +4501,33 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             if(ordertype.equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder)) {
                 if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.equals(Constants.ADMIN_ROLENAME))) {
                     if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME))) {
-                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+918939189102")) || (UserPhoneNumber.equals("+918939887159")) ) {
+                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+918939189102")) || (UserPhoneNumber.equals("+918939887159")) )
+                        {
                             cancelOrder_button.setVisibility(View.VISIBLE);
-                        } else {
+                        }
+                        else {
                             cancelOrder_button.setVisibility(View.GONE);
 
                         }
-                    } else {
-                        cancelOrder_button.setVisibility(View.VISIBLE);
 
+                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128"))  )
+                        {
+                            changePaymentMode_button.setVisibility(View.VISIBLE);
+                        }
+                        else {
+                            changePaymentMode_button.setVisibility(View.GONE);
+
+                        }
+
+
+                    }
+                    else {
+                        cancelOrder_button.setVisibility(View.VISIBLE);
+                        changePaymentMode_button .setVisibility(View.VISIBLE);
                     }
                 } else {
                     cancelOrder_button.setVisibility(View.GONE);
-
+                    changePaymentMode_button .setVisibility(View.GONE);
                 }
             }
             else{
@@ -4745,7 +4780,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             add_amount_ForBillDetails(OrderdItems_desp);
             adapter_forOrderDetails_listview = new Adapter_Mobile_orderDetails_itemDesp_listview1(Edit_Or_CancelOrder_OrderDetails_Screen.this, OrderdItems_desp);
             itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
-            Helper.getListViewSize(itemDesp_listview, screenInches);
+            Helper.getListViewSize(itemDesp_listview, screenInches,0);
 
         }
         catch (Exception e){
@@ -5100,11 +5135,11 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
             }
             else if(paymentmode.equals(Constants.CREDIT)){
-                app_radioGroup.check(R.id.credit_pos);
+                pos_radioGroup.check(R.id.credit_pos);
 
             }
             else if(paymentmode.equals(Constants.PHONEPE)){
-                app_radioGroup.check(R.id.phonepe_phoneorder);
+                pos_radioGroup.check(R.id.phonepe_phoneorder);
 
             }
 
@@ -5207,9 +5242,15 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 AddNewEntryinPaymentTransaction("","","",modal_manageOrders_pojo_class.getUsermobile().toString() ,orderid,paymentModeString,"","SUCCESS",payableAmount,getDate_and_time(),userkey);
                 String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
                 String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
-                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                 vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                if(paymentModeString.toUpperCase().equals(Constants.CREDIT)){
+                    CheckCreditTransactionsForthisOrderid(customerMobileNo,orderid);
+                }
+                else{
+                    Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
 
-                Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                }
+                //Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
             }
         });
 
@@ -5505,7 +5546,6 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         JSONObject  jsonObject = new JSONObject();
         String Api_toUpdateinOrderDetailsUsingOrderid = "";
 
-
         if(orderdetailsnewschema){
             try {
                 jsonObject.put("orderid", orderid);
@@ -5608,6 +5648,93 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
         // Make the request
         Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+
+
+    }
+
+    private void CheckCreditTransactionsForthisOrderid(String customerMobileNo, String orderid) {
+        String  customerMobileNoo ="";
+        try {
+            customerMobileNoo = URLEncoder.encode(customerMobileNo, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetCreditOrdersTransactionDetailsUsingMobilenoWithOrderid +"?usermobileno="+customerMobileNoo+"&orderid="+orderid, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+
+                            //Log.d(Constants.TAG, " response: " + response);
+                            try {
+                                String jsonString = response.toString();
+                                JSONObject jsonObject = new JSONObject(jsonString);
+                                JSONArray JArray = jsonObject.getJSONArray("content");
+                                int i1 = 0;
+                                int arrayLength = JArray.length();
+
+                                if (arrayLength > 0){
+                                    Toast.makeText(mContext,"This Order have already added in their credit account", Toast.LENGTH_LONG).show();
+                                    Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+
+                                }
+                                else{
+                                    GetDatafromCreditOrderDetailsTable(orderid,getDate_and_time(),customerMobileNo);
+
+                                }
+                            } catch (Exception e) {
+
+                                Toast.makeText(mContext,"Can't get Credit Order Transaction Details", Toast.LENGTH_LONG).show();
+                                e.printStackTrace();
+                            }
+
+
+                        } catch (Exception e) {
+                            Toast.makeText(mContext,"Can't get Credit Order Transaction Details", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+
+                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
 
 
     }
@@ -5754,6 +5881,290 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
     }
 
+    private void GetDatafromCreditOrderDetailsTable( String sTime, String currenttime, String mobileno) {
+        totalamountUserHaveAsCredit = 0;
+        payableAmount = payableAmount.replaceAll("[^\\d.]", "");
+        try{
+            payableAmountDouble = Integer.parseInt(payableAmount);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            mobileno = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetCreditOrdersUsingMobilenoWithVendorkey +"?usermobileno="+mobileno+"&vendorkey="+vendorKey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+
+                            //Log.d(Constants.TAG, " response: " + response);
+                            try {
+                                String jsonString = response.toString();
+                                JSONObject jsonObject = new JSONObject(jsonString);
+                                JSONArray JArray = jsonObject.getJSONArray("content");
+                                int i1 = 0;
+                                int arrayLength = JArray.length();
+
+                                if (arrayLength > 0){
+                                    for (; i1 < (arrayLength); i1++) {
+
+                                        try {
+                                            JSONObject json = JArray.getJSONObject(i1);
+                                            try {
+                                                if (json.has("totalamountincredit")) {
+
+                                                    totalamountUserHaveAsCredit = Double.parseDouble(json.getString("totalamountincredit"));
+
+
+
+                                                } else {
+                                                    totalamountUserHaveAsCredit = 0;
+                                                    Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                totalamountUserHaveAsCredit = 0;
+                                            }
+
+
+                                        } catch (Exception e) {
+                                            Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                            totalamountUserHaveAsCredit = 0;
+                                            e.printStackTrace();
+                                        }
+                                        double newamountUserHaveAsCredit =0;
+                                        newamountUserHaveAsCredit = totalamountUserHaveAsCredit + payableAmountDouble;
+
+                                        AddOrUpdateDatainCreditOrderDetailsTable(newamountUserHaveAsCredit, orderid,customerMobileNo,currenttime,"ADD",payableAmountDouble);
+
+
+                                    }
+                                }
+                                else{
+                                    totalamountUserHaveAsCredit = 0;
+                                    AddOrUpdateDatainCreditOrderDetailsTable(payableAmountDouble, orderid,customerMobileNo,currenttime,"ADD",payableAmountDouble);
+
+                                }
+                            } catch (Exception e) {
+                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                totalamountUserHaveAsCredit =0;
+                                e.printStackTrace();
+                            }
+
+
+                        } catch (Exception e) {
+                            Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                            totalamountUserHaveAsCredit =0;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+
+                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Mobile");
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
+
+
+
+
+    private void AddOrUpdateDatainCreditOrderDetailsTable(double newamountUserHaveAsCredit, String orderid, String usermobileno, String orderplacedTime, String transactionType, double payableAmountDouble) {
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("lastupdatedtime", orderplacedTime);
+            jsonObject.put("totalamountincredit", Math.round(newamountUserHaveAsCredit));
+            jsonObject.put("vendorkey", vendorKey);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String  apiString = "";
+        if(transactionType.toUpperCase().equals("ADD")){
+            apiString = Constants. api_addCreditOrderDetailsTable;
+        }
+        else if(transactionType.toUpperCase().equals("UPDATE")){
+            apiString = Constants. api_UpdateCreditOrderDetailsTable;
+        }
+
+
+
+        ////Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, apiString,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+                    if (message.equals("success")) {
+                        Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                        addCreditOrdersTransactionDetails(orderid,usermobileno,vendorKey,totalamountUserHaveAsCredit,payableAmountDouble,newamountUserHaveAsCredit,orderplacedTime,transactionType);
+                    }
+                    else{
+                        Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                        Toast.makeText(mContext,"Can't add this Order to Credit Account ", Toast.LENGTH_LONG).show();
+
+                    }
+                } catch (JSONException e) {
+                    Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+
+                    Toast.makeText(mContext,"Can't add this Order to Credit Account ", Toast.LENGTH_LONG).show();
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                Toast.makeText(mContext,"Can't add this Order to Credit Account ", Toast.LENGTH_LONG).show();
+                Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void addCreditOrdersTransactionDetails(String orderid, String usermobileno, String vendorKey, double oldamountUserHaveAsCredit, double payableAmountDouble, double newamountUserHaveAsCredit, String orderplacedTime, String transactionType) {
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+
+            jsonObject.put("vendorkey", vendorKey);
+
+            jsonObject.put("usermobileno", usermobileno);
+            jsonObject.put("transactiontime", orderplacedTime);
+            jsonObject.put("transactiontype", Constants.CREDIT_AMOUNT_ADDED);
+            jsonObject.put("orderid", orderid);
+            jsonObject.put("oldamountincredit", oldamountUserHaveAsCredit);
+            jsonObject.put("transactionvalue", Math.round(payableAmountDouble));
+            jsonObject.put("newamountincredit",Math.round( newamountUserHaveAsCredit));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        ////Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_addCreditOrdersTransactionDetailsTable,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+
+                try {
+                    String message = response.getString("message");
+
+                    if (message.equals("success")) {
+
+                    }
+                    else{
+
+                    }
+                } catch (JSONException e) {
+
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                error.printStackTrace();
+            }
+        }) {
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        // Make the request
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+
+
+
+
+
+    }
+
 
 
 
@@ -5851,7 +6262,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
 
         total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
@@ -5900,16 +6311,23 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-       String CurrentDay = day.format(c);
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+
+        String CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDate = df.format(c);
 
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
-      String FormattedTime = dfTime.format(c);
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+        String FormattedTime = dfTime.format(c);
         String formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;
     }

@@ -36,7 +36,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class SupplierVehicleTime_AddRecord extends AppCompatActivity {
     TextView vendorNameTextWidget,date_selector;
@@ -297,12 +299,16 @@ public class SupplierVehicleTime_AddRecord extends AppCompatActivity {
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
         String  CurrentDate ="";
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = day.format(date);
 
 

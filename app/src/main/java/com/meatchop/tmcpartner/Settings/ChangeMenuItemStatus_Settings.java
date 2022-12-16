@@ -46,7 +46,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlotDetails;
@@ -1125,15 +1127,24 @@ for(int menuLoopcount = 0 ; menuLoopcount<MenuItem.size();menuLoopcount++) {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-      String  CurrentDay = day.format(c);
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String  CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDatee = df.format(c);
         String   CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String   FormattedTime = dfTime.format(c);
         String   formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;

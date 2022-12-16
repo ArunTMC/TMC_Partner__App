@@ -595,17 +595,20 @@
 
                     android:textAlignment="viewStart" />
             </LinearLayout>
-
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="6dp"
                 android:layout_weight="1"
+                android:visibility="visible"
+                android:paddingEnd="3dp"
+                android:layout_marginTop="5dp">
+
+                <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:id="@+id/orderMode_selectionLayout"
                 android:visibility="visible"
-
-                android:paddingEnd="3dp"
-                android:layout_marginTop="5dp"
                 android:orientation="vertical">
 
 
@@ -631,6 +634,19 @@
                     android:layout_marginTop="6dp"
                     android:textAlignment="viewStart" />
             </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:paddingStart="6dp"
+                android:layout_weight="1"
+                android:id="@+id/orderMode_overlapLayout"
+                android:visibility="gone"
+                android:background="@color/TMC_Grey"
+                android:alpha="0.85"
+                android:paddingEnd="3dp"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical"/>
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

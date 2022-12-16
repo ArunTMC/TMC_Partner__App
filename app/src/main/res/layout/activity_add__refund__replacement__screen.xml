@@ -178,7 +178,7 @@
             android:fontFamily="@font/open_sans"
             android:gravity="center_vertical"
             android:paddingStart="20dp"
-            android:text="# Contains orders placed with in 14 days based on mobile no and vendor :"
+            android:text="# Contains orders placed with in 30 days based on mobile no and vendor :"
             android:textColor="@color/TMC_Orange"
             android:textSize="11sp" />
 

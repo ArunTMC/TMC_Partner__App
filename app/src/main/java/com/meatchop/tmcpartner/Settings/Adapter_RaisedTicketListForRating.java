@@ -46,7 +46,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class Adapter_RaisedTicketListForRating extends ArrayAdapter<Modal_RaisedTicketsRatingDetails> {
     Context mContext;
@@ -424,15 +426,22 @@ public class Adapter_RaisedTicketListForRating extends ArrayAdapter<Modal_Raised
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
        String CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         String  CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String  FormattedTime = dfTime.format(c);
         String formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;

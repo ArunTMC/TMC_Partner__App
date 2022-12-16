@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/selectedItemName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="30dp"
+        android:fontFamily="@font/open_sans_bold"
+        android:text="Item Name"
+        android:textColor="@color/TMC_Orange"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/orderedquantitylabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/selectedItemName"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="19dp"
+        android:fontFamily="@font/open_sans_bold"
+        android:text="Ordered Quantity : "
+        android:textColor="@color/TMC_Black"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/orderedQuantityTextWidget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/selectedItemName"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginEnd="356dp"
+        android:layout_toEndOf="@+id/orderedquantitylabel"
+
+        android:fontFamily="@font/open_sans_bold"
+        android:text="3"
+        android:textColor="@color/TMC_Black"
+        android:textSize="16sp" />
+    <TextView
+        android:id="@+id/orderedItempricelabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/orderedquantitylabel"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="19dp"
+        android:fontFamily="@font/open_sans_bold"
+        android:text="Total Item Price : "
+        android:textColor="@color/TMC_Black"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/orderedItemPriceTextWidget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/orderedQuantityTextWidget"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="15dp"
+        android:layout_toEndOf="@+id/orderedquantitylabel"
+        android:fontFamily="@font/open_sans_bold"
+        android:text="3"
+        android:textColor="@color/TMC_Black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/spinnerLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/orderedItempricelabel"
+
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="13dp"
+        android:layout_marginTop="19dp"
+        android:text="  Choose Quantity From the Spinner :  "
+        android:textColor="@color/TMC_Black" />
+
+    <Spinner
+        android:id="@+id/quantitySelectingSpinner"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/spinnerLabel"
+        android:layout_alignParentStart="true"
+        android:textAlignment="center"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="10dp" />
+
+    <TextView
+        android:id="@+id/selecedItempricelabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/quantitySelectingSpinner"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="19dp"
+        android:fontFamily="@font/open_sans_bold"
+        android:text="Total Selected Item Price : "
+        android:textColor="@color/TMC_Black"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/selectedItemPriceTextWidget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/selecedItempricelabel"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="15dp"
+
+        android:fontFamily="@font/open_sans_bold"
+        android:text="3"
+        android:textColor="@color/TMC_Black"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="108dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/selectedItemPriceTextWidget"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/orange_non_selected_button_background"
+        android:text="Cancel"
+        android:textColor="@color/TMC_Black" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="108dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/selectedItemPriceTextWidget"
+        android:layout_marginStart="53dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="15dp"
+        android:layout_toEndOf="@+id/cancelButton"
+        android:background="@drawable/orange_selected_button_background"
+        android:text="Save "
+        android:textColor="@color/TMC_White" />
+
+</RelativeLayout>

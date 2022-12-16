@@ -63,7 +63,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
@@ -973,7 +975,10 @@ public class DatewiseRatingreport_FirstScreen extends AppCompatActivity {
         long MinDate = getMillisecondsFromDate(selectedStartDate);
 
         String todayDate = getDate_and_time();
-        SimpleDateFormat sdformat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat sdformat = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+        sdformat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try {
             d2 = sdformat.parse(todayDate);
 
@@ -3803,7 +3808,10 @@ showProgressBar(true);
 
     private String getTomorrowsDate(String datestring) {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(datestring);
@@ -3823,12 +3831,18 @@ showProgressBar(true);
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String  tomorrowdayDate = df1.format(c1);
         String tomorrowAsString = PreviousdayDay+", "+tomorrowdayDate;
         ////Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -3845,13 +3859,20 @@ showProgressBar(true);
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat dayname = new SimpleDateFormat("EEE");
+        SimpleDateFormat dayname = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        dayname.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String Currentday = dayname.format(c);
 
 
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDate = df.format(c);
         String date = Currentday+", "+CurrentDate;
 
@@ -3872,7 +3893,10 @@ showProgressBar(true);
 
 
         long milliseconds = calendarr.getTimeInMillis();
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try{
             //formatting the dateString to convert it into a Date
             Date date = sdf.parse(dateString);
@@ -3926,7 +3950,10 @@ showProgressBar(true);
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -3946,12 +3973,18 @@ showProgressBar(true);
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         ////Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -3965,7 +3998,10 @@ showProgressBar(true);
 
 
     private String getDatewithNameoftheseventhDayFromSelectedStartDate(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -3985,12 +4021,18 @@ showProgressBar(true);
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         ////Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -4057,7 +4099,10 @@ showProgressBar(true);
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay2(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -4077,12 +4122,19 @@ showProgressBar(true);
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         ////Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -4103,11 +4155,19 @@ showProgressBar(true);
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  PreviousdayDate = df1.format(c1);
         PreviousdayDate = PreviousdayDay+", "+PreviousdayDate;
         // System.out.println("todays Date  " + CurrentDate);
@@ -4120,12 +4180,20 @@ showProgressBar(true);
     private String getDatewithNameoftheDay() {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String CurrentDay = day.format(c);
 
 
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  CurrentDate = df.format(c);
 
         CurrentDate = CurrentDay+", "+CurrentDate;

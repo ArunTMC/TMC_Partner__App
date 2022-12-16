@@ -60,7 +60,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
     private ArrayAdapter mobile_spinner_aAdapter;
     private Button mobile_vendorDetails_verification_button;
     private  Boolean mobile_vendorLogin = false;
-    private  Boolean inventoryCheckBool = false;
+    private  Boolean inventoryCheckBool = false ,istestvendor = false;
 
     private Spinner mobile_vendor_selecting_spinner;
     private ArrayList<String> VendorName_arrayList;
@@ -207,7 +207,19 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
                                         vendortype = "";
                                         e.printStackTrace();
                                     }
-                                    if(!vendortype.toString().equals(Constants.Warehouse_VendorType)) {
+                                    try{
+                                        if(json.has("istestvendor")) {
+                                            istestvendor = (json.getBoolean("istestvendor"));
+                                        }
+                                        else{
+                                            istestvendor = false;
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        istestvendor = false;
+                                        e.printStackTrace();
+                                    }
+                                    if((!vendortype.toString().equals(Constants.Warehouse_VendorType)) ) {
                                         try {
                                             mobile_vendorNameString = String.valueOf(json.get("name"));
 

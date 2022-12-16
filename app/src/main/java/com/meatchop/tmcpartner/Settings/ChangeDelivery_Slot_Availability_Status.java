@@ -7,7 +7,6 @@ import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -31,13 +30,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
+import static com.meatchop.tmcpartner.Constants.api_AddDeliverySlotTransactions;
 import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlotDetails;
 import static com.meatchop.tmcpartner.Constants.api_GetDeliverySlots;
 import static com.meatchop.tmcpartner.Constants.api_Update_DeliverySlotDetails;
@@ -46,13 +51,14 @@ import static com.meatchop.tmcpartner.Constants.api_Update_DeliverySlots;
 public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch expressDeliveryAvailabiltySwitch;
-    String vendorkey,deliverySlotKey ,deliveryslotkeyfromSlotdetails;
+    String vendorkey,mobileno = "",deliverySlotKey, expressdeliverySlotKey ="",deliveryslotkeyfromSlotdetails ,deliverytime ="", slotname ="",slotdatetype ="",slotstatus ="",transactionstatus = "" , transactiontime ="";
     List<Modal_DeliverySlots>TodaysPreOrdersSlotList;
     List<Modal_DeliverySlots>TomorrowsPreOrdersSlotList;
     ListView todaysDeliverySlotListview,tomorrowsDeliverySlotListview;
     double screenInches;
     boolean isActiveinDeliverySlotDetails=false;
     boolean isActiveinDeliverySlots = false;
+    boolean updateEntryINDB = false;
     LinearLayout loadingPanel,loadingpanelmask;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +96,8 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
         }
         SharedPreferences shared = getApplicationContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorkey = (shared.getString("VendorKey", ""));
+        mobileno = (shared.getString("UserPhoneNumber", "+91"));
+
         TodaysPreOrdersSlotList = new ArrayList<>();
         TomorrowsPreOrdersSlotList = new ArrayList<>();
       //  checkforDeliverySlotDetails();
@@ -98,22 +106,6 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
 
 
-        expressDeliveryAvailabiltySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-
-                    //changeStatusintheDeliverySlotDetails("ACTIVE");
-                    changeStatusintheDeliverySlot(deliverySlotKey,"ACTIVE");
-                    //   changeStatusintheMobiledataDeliverySlot("");
-                } else {
-                  //  changeStatusintheDeliverySlotDetails("INACTIVE");
-                    changeStatusintheDeliverySlot(deliverySlotKey,"INACTIVE");
-                    // changeStatusintheMobiledataDeliverySlot("");
-
-
-                }
-            }
-        });
 
 
 
@@ -126,14 +118,48 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
     }
 
+
+
+    CompoundButton.OnCheckedChangeListener OnCheckedChangeListener =  new CompoundButton.OnCheckedChangeListener() {
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+
+                    //changeStatusintheDeliverySlotDetails("ACTIVE");
+
+
+                    deliverySlotKey = expressdeliverySlotKey;
+                    deliverytime = "120Mins";
+                    slotdatetype = "TODAY";
+                    slotname = "EXPRESS DELIVERY";
+                    slotstatus = "ACTIVE";
+
+                    changeStatusintheDeliverySlot(deliverySlotKey, "ACTIVE");
+                    //   changeStatusintheMobiledataDeliverySlot("");
+                } else {
+                    //  changeStatusintheDeliverySlotDetails("INACTIVE");
+
+                    deliverySlotKey = expressdeliverySlotKey;
+                    deliverytime = "120Mins";
+                    slotdatetype = "TODAY";
+                    slotname = "EXPRESS DELIVERY";
+                    slotstatus = "INACTIVE";
+                    changeStatusintheDeliverySlot(deliverySlotKey, "INACTIVE");
+                    // changeStatusintheMobiledataDeliverySlot("");
+
+
+
+            }
+        }
+    };
+
+
     void changeStatusintheDeliverySlot(String deliverySlotKeyy, String status) {
         showProgressBar(true);
         JSONObject  jsonObject = new JSONObject();
         try {
             jsonObject.put("key",deliverySlotKeyy);
             jsonObject.put("status", status);
-
-
+            slotstatus = status;
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -150,13 +176,21 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
                     String message =  response.getString("message");
                     if(message.equals("success")) {
                         //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
-                        showProgressBar(false);
+                     //   showProgressBar(false);
+
+                        AddEntryInDeliverySlotTransactions("success");
+                    }
+                    else{
+                   //    showProgressBar(false);
+                        AddEntryInDeliverySlotTransactions("failed");
+                        Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change  delivery slot status in Delivery slots",Toast.LENGTH_LONG).show();
+
                     }
 
-
                 } catch (JSONException e) {
+                    AddEntryInDeliverySlotTransactions("failed");
                     showProgressBar(false);
-                    Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change express delivery slot status in Delivery slots",Toast.LENGTH_LONG).show();
+                    Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change  delivery slot status in Delivery slots",Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
 
@@ -169,7 +203,94 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
                 //Log.d(Constants.TAG, "Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "Error: " + error.toString());
                 showProgressBar(false);
-                Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change express delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
+                AddEntryInDeliverySlotTransactions("failed");
+                Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to change  delivery slot status inDelivery slot details",Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+
+                return params;
+            }
+        };
+        RetryPolicy policy = new DefaultRetryPolicy(60000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        jsonObjectRequest.setRetryPolicy(policy);
+
+        // Make the request
+        Volley.newRequestQueue(ChangeDelivery_Slot_Availability_Status.this).add(jsonObjectRequest);
+
+
+
+
+
+    }
+
+    private void AddEntryInDeliverySlotTransactions(String Status) {
+
+        showProgressBar(true);
+        JSONObject  jsonObject = new JSONObject();
+        try {
+            jsonObject.put("slotkey",deliverySlotKey);
+            jsonObject.put("deliverytime", deliverytime);
+            jsonObject.put("slotname", slotname);
+            jsonObject.put("mobileno", mobileno);
+            jsonObject.put("slotdatetype", slotdatetype);
+            jsonObject.put("vendorkey", vendorkey);
+            jsonObject.put("slotstatus", slotstatus);
+            jsonObject.put("transactionstatus", Status);
+            jsonObject.put("transactiontime", getDatewithNameoftheDay());
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        //Log.d(Constants.TAG, "Request Payload: " + jsonObject);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, api_AddDeliverySlotTransactions,
+                jsonObject, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(@NonNull JSONObject response) {
+                updateEntryINDB = false;
+                try {
+
+                    String message =  response.getString("message");
+                    if(message.equals("success")) {
+                        //Log.d(Constants.TAG, "Express Slot has been succesfully turned Off: " );
+                        showProgressBar(false);
+
+
+                    }
+                    else{
+                        showProgressBar(false);
+                        Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to add  delivery slot transaction",Toast.LENGTH_LONG).show();
+
+                    }
+
+                } catch (JSONException e) {
+                    showProgressBar(false);
+                    Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to add  delivery slot transaction",Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                //Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                //Log.d(Constants.TAG, "Error: " + error.toString());
+                showProgressBar(false);
+                updateEntryINDB = false;
+
+                Toast.makeText(ChangeDelivery_Slot_Availability_Status.this,"Failed to add  delivery slot transaction",Toast.LENGTH_LONG).show();
 
                 error.printStackTrace();
             }
@@ -218,7 +339,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
                                 slotDateType =slotDateType.toUpperCase();
                                 slotName = slotName.toUpperCase();
                                 if(slotName.equals(Constants.EXPRESS_DELIVERY_SLOTNAME)){
-                                    deliverySlotKey= String.valueOf(json.get("key"));
+                                    expressdeliverySlotKey= String.valueOf(json.get("key"));
                                     String status =String.valueOf(json.get("status"));
                                     status = status.toUpperCase();
 
@@ -232,7 +353,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
                                     }
 
-
+                                    updateEntryINDB = false;
                                     if(isActiveinDeliverySlotDetails&&isActiveinDeliverySlots){
                                         expressDeliveryAvailabiltySwitch.setChecked(true);
                                     }
@@ -248,9 +369,12 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
                                     }
 
 
-
-
-
+                                    try {
+                                        expressDeliveryAvailabiltySwitch.setOnCheckedChangeListener(OnCheckedChangeListener);
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
 
 
 
@@ -281,7 +405,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
                                         Adapter_TodaysDeliverySlots adapter_todaysDeliverySlots = new Adapter_TodaysDeliverySlots(ChangeDelivery_Slot_Availability_Status.this, TodaysPreOrdersSlotList, ChangeDelivery_Slot_Availability_Status.this);
                                         todaysDeliverySlotListview.setAdapter(adapter_todaysDeliverySlots);
-                                        Helper.getListViewSize(todaysDeliverySlotListview, screenInches);
+                                        Helper.getListViewSize(todaysDeliverySlotListview, screenInches,0);
 
 
                                     }
@@ -316,7 +440,7 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
                                         }
                                         Adapter_TomorrowsDeliverySlots adapter_tomorrowsDeliverySlots = new Adapter_TomorrowsDeliverySlots(ChangeDelivery_Slot_Availability_Status.this, TomorrowsPreOrdersSlotList, ChangeDelivery_Slot_Availability_Status.this);
                                         tomorrowsDeliverySlotListview.setAdapter(adapter_tomorrowsDeliverySlots);
-                                        Helper.getListViewSize(tomorrowsDeliverySlotListview, screenInches);
+                                        Helper.getListViewSize(tomorrowsDeliverySlotListview, screenInches,0);
                                         showProgressBar(false);
 
                                     }
@@ -358,7 +482,12 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
                     showProgressBar(false);
 
-
+                    try {
+                        expressDeliveryAvailabiltySwitch.setOnCheckedChangeListener(OnCheckedChangeListener);
+                    }
+                    catch (Exception e1){
+                        e1.printStackTrace();
+                    }
 
                     TomorrowsPreOrdersSlotList.clear();
                     TodaysPreOrdersSlotList.clear();
@@ -393,7 +522,12 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
                 }
 
 
-
+                try {
+                    expressDeliveryAvailabiltySwitch.setOnCheckedChangeListener(OnCheckedChangeListener);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
 
 
             }
@@ -418,6 +552,32 @@ public class ChangeDelivery_Slot_Availability_Status extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+
+    private String getDatewithNameoftheDay() {
+
+
+        Calendar calendar = Calendar.getInstance();
+        Date c = calendar.getTime();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"  , Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+           String CurrentDate = df.format(c);
+
+            System.out.println("todays Date  " + CurrentDate);
+
+
+            return CurrentDate;
+
+
+    }
+
 
     private void changeStatusintheDeliverySlotDetails(String status) {
         showProgressBar(true);

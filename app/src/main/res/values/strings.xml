@@ -16,6 +16,7 @@
 
 
     ///Alertbox
+    <string name="UserMobileNo_DoesNot_HaveAccess">This Mobile number doesnot have permission to access TMC Partner App </string>
     <string name="Enter_Correct_No">Enter your Correct 10 digit Phone Number </string>
     <string name="OK_Text">OK </string>
     <string name="Cancel_Text">Cancel </string>
@@ -35,6 +36,8 @@
     <string name="Vendor_logoutInstruction">Are you sure you want to Logout from this Vendor </string>
     <string name="Cant_Refresh_OrderStatus_Instruction">Can`t Refresh !!! Please Refresh Again</string>
     <string name="Weight_cant_be_empty">You Cant Leave weight of the Product Empty</string>
+    <string name="Weight_cant_be_Zero">You Cant Leave weight of the Product Zero</string>
+
     <string name="CreditedOrdersIrrespectiveofDate">Showing Credit Orders Irrespective of Date</string>
     <string name="Showing_Tickets_That_Not_Closed_Yet">Showing Tickets thats not Closed Yet</string>
     <string name="Grossweight_is_not_changed">Weight is Not Changed for any item ! Do you still need to change Status</string>
@@ -43,7 +46,8 @@
     <string name="checkGrossweightCheckboxInstruction">Please check is Correct Grossweight Check box for all item</string>
     <string name="PriceCannotbeEdited_When_EditingWeight">Please Finish Editing Weight Of this item first</string>
     <string name="WeightCannotbeEdited_When_EditingPrice">Please Finish Editing Price Of this item first</string>
-
+    <string name="Price_cant_be_empty">Cant Leave Price of the Product Empty</string>
+    <string name="Price_cant_be_Zero">Cant Leave Price of the Product to Zero</string>
     <string name="ShowCreditedOrdersOnly">Show Credit Orders Only </string>
     <string name="PrintFailed_Instruction">Print Failed . Click Ok to Print Again</string>
 
@@ -217,8 +221,13 @@
 
     //Settings
     <string name="Auto_Refreshing">Turn On Auto Refreshing </string>
+    <string name="Delivery_Slot_Transaction"> Delivery Slot List For Transaction</string>
+    <string name="Delivery_Slot_TransactionDetails"> Delivery Slot Transaction Details</string>
     <string name="Change_Delivery_Slot_Details">Change Delivery Slot Availability Status</string>
     <string name="ExpressDelivery_slotDetails_Text">Express Delivery Slot Status </string>
+    <string name="ExpressDelivery_slotTransac_Text">Express Delivery Slot Transaction </string>
+    <string name="Todays_Preorder_slotTransac_Text">Todays Preorder Slot Transaction</string>
+    <string name="Tomorrows_Preorder_slotTransac_Text">Tomorrows Preorder Slot Transaction</string>
     <string name="Todays_Preorder_slotDetails_Text">Todays Preorder Slot Status</string>
     <string name="Tomorrows_Preorder_slotDetails_Text">Tomorrows Preorder Slot Status</string>
     <string name="No.of.ordersDelivered">Delivered Orders</string>
@@ -317,7 +326,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.6(9) </string>
+    <string name="Version_No">Version No : 1.9.9 </string>
     <string name="scanning">scanning for devices....</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

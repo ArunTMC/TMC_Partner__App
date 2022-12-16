@@ -61,7 +61,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     static  TextView mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
@@ -742,7 +744,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         add_amount_ForBillDetails(OrderdItems_desp);
         adapter_forOrderDetails_listview = new Adapter_Mobile_orderDetails_itemDesp_listview1(MobileScreen_OrderDetails1.this, OrderdItems_desp);
         itemDesp_listview.setAdapter(adapter_forOrderDetails_listview);
-        Helper.getListViewSize(itemDesp_listview, screenInches);
+        Helper.getListViewSize(itemDesp_listview, screenInches,0);
 
     }
 
@@ -2402,7 +2404,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
         total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
         old_total_Amount=0;
@@ -2441,7 +2443,9 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
 
     public  boolean CheckPaymentModeAccordingtoTime(String time,int time_toCalculate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         Date date = null;
         try {
             date = dateFormat.parse(time);
@@ -2461,30 +2465,32 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
 
 
         Date c1 = calendar.getTime();
-        SimpleDateFormat df1 = new SimpleDateFormat("EEE");
+        SimpleDateFormat df1 = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String predictedday = df1.format(c1);
 
 
 
-        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df2.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  predicteddate = df2.format(c1);
         String predicteddateandday = predictedday+", "+predicteddate;
 
 
-        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        df3.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  predictedtime = df3.format(c1);
         String predicteddateanddayandtime = predictedday+", "+predicteddate+" "+predictedtime;
 
-        Log.d(Constants.TAG, "log 1 predicteddateanddayandtime : " + predicteddateanddayandtime);
 
         long predictedLongForDate = Long.parseLong(getLongValuefortheDate(predicteddateanddayandtime));
         String  currentTime = getDate_and_time();
-        Log.d(Constants.TAG, "log 1 currentTime : " +currentTime);
 
         long currentTimeLong = Long.parseLong(getLongValuefortheDate(currentTime));
         if(currentTimeLong<=predictedLongForDate){//current time is lesser or equals order placed time +  hours
-            Log.d(Constants.TAG, "log 1 currentTimeLong : " +currentTimeLong);
-            Log.d(Constants.TAG, "log 1 predictedLongForDate : " +predictedLongForDate);
             String orderidtoFetchPaymentmode = (String.valueOf(modal_manageOrders_pojo_class.getOrderid()));
 
             showProgressBar(true);
@@ -2513,7 +2519,9 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
             String time1 = orderplacedtime;
             //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss" ,Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             Date date = sdf.parse(time1);
             long time1long = date.getTime() / 1000;
             longvalue = String.valueOf(time1long);
@@ -2534,7 +2542,9 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 String time1 = orderplacedtime;
                 //     Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 Date date = sdf.parse(time1);
                 long time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);
@@ -2557,15 +2567,22 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         String CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String FormattedTime = dfTime.format(c);
         String  formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;

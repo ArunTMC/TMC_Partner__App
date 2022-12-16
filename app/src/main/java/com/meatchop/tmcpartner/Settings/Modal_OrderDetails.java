@@ -749,5 +749,8 @@ public class Modal_OrderDetails implements Parcelable {
         dest.writeString(bigBasketSales);
         dest.writeString(CreditSales);
         dest.writeString(wholeSaleOrderSales);
+
+
+
     }
 }

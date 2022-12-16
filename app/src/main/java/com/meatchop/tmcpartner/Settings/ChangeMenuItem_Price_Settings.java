@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -42,20 +43,20 @@ import java.util.Map;
 
 public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     String wholeSalePrice,bigBasketPrice,dunzoPrice,swiggyPrice,pricetypeforPos,menuitemKey, itemUniqueCode, itemName, grossweight,grossweightingrams,portionsize,netweight,
-            appPrice, posPrice, appliedDiscountPercentage,finalweight,posPrice_pricePerKg,appPrice_PricePerKg;
+            appPrice, posPrice, appliedDiscountPercentage,finalweight,posPrice_pricePerKg,appPrice_PricePerKg , appMarkupPercentageString ;
 
     String MarinadeepricetypeforPos,MarinadeemenuitemKey, MarinadeeitemUniqueCode, MarinadeeitemName, Marinadeegrossweight,Marinadeegrossweightingrams,Marinadeeportionsize,Marinadeenetweight,
             MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage,Marinadeefinalweight;
-    
-    
+
+
     List<Modal_MenuItem_Settings> MenuItem = new ArrayList<>();
     LinearLayout loadingPanel, loadingpanelmask,tmcUnitPrice_layout,tmcpriceperkg_layout;
-    TextView wholeSale_price_label,bigBasket_price_label,dunzo_price_label,swiggy_price_label,TMCpriceperkg_app_price_label,TMCpriceperkg_appSelling_price_label,TMCpriceperkg_pos_price_label,TMCprice_pos_price_label,
-    TMCprice_selling_price_label,  TMCpriceperkg_posSelling_price_label,pricetype_ofItem_text_widget,itemUniqueCode_text_widget, itemName_text_widget, grossweight_text_widget, appPrice_text_widget, posPrice_text_widget,posPrice_text_widget_posLayout,appPrice_text_widget_appLayout;
-    EditText wholesale_selling_price_text_widget_wholesaleLayout,appliedDiscountPercentage_text_widget, selling_price_text_widget,pos_selling_price_text_widget_posLayout,app_selling_price_text_widget_appLayout,swiggy_selling_price_text_widget_swiggyLayout,dunzo_selling_price_text_widget_dunzoLayout,bigbasket_selling_price_text_widget_bigbasketLayout;
+    TextView appPrice_withoutMarkup_text_widget_appLayout,appPricePerKg_textview_widget_appLayout,wholeSale_price_label,bigBasket_price_label,dunzo_price_label,swiggy_price_label,TMCpriceperkg_app_price_label,TMCpriceperkg_appSelling_price_label,TMCpriceperkg_pos_price_label,TMCprice_pos_price_label,
+            TMCprice_selling_price_label,  TMCpriceperkg_posSelling_price_label,pricetype_ofItem_text_widget,itemUniqueCode_text_widget, itemName_text_widget, grossweight_text_widget, appPrice_text_widget, posPrice_text_widget,posPrice_text_widget_posLayout,appPrice_text_widget_appLayout;
+    EditText selling_price_common_edittext_widget,appMarkupPercentage_text_widget,wholesale_selling_price_text_widget_wholesaleLayout,appliedDiscountPercentage_text_widget, selling_price_text_widget,pos_selling_price_text_widget_posLayout,app_selling_price_text_widget_appLayout,swiggy_selling_price_text_widget_swiggyLayout,dunzo_selling_price_text_widget_dunzoLayout,bigbasket_selling_price_text_widget_bigbasketLayout;
     Button saveDetails,computeAppandPosPrice;
-    double sellingprice = 0,sellingprice_withoutDiscount = 0,  sellingPriceWithoutDiscount = 0, grossweightdouble = 0, posPricedouble = 0, appPricedouble = 0,posPricedouble__priceperKg =0,appPricedouble_priceperKg =0, appSellingPrice_priceperKg =0, posSellingPrice_priceperKg =0;
-    int discount_percentage =0;
+    double sellingprice = 0,sellingprice_withoutDiscount = 0,  sellingPriceWithoutDiscount = 0, grossweightdouble = 0, posPricedouble = 0, appPricedouble = 0,posPricedouble__priceperKg =0, appPricedouble_tmcprice =0, appSellingPrice_priceperKg =0, posSellingPrice_priceperKg =0;
+    int discount_percentage =0 ,appMarkupPercentageInt =0;
     double Marinadesellingprice = 0,Marinadesellingprice_withoutDiscount = 0,  MarinadesellingPriceWithoutDiscount = 0, Marinadegrossweightdouble = 0, MarinadeposPricedouble = 0, MarinadeappPricedouble = 0;
 
     public static List<Modal_MenuItem_Settings> marinadeMenuList=new ArrayList<>();
@@ -88,11 +89,15 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         bigbasket_selling_price_text_widget_bigbasketLayout  =findViewById(R.id.bigbasket_selling_price_text_widget_bigbasketLayout);
         wholesale_selling_price_text_widget_wholesaleLayout  =findViewById(R.id.wholesale_selling_price_text_widget_wholesaleLayout);
 
+        appPricePerKg_textview_widget_appLayout = findViewById(R.id.appPricePerKg_textview_widget_appLayout);
         pos_selling_price_text_widget_posLayout = findViewById(R.id.Pos_selling_price_text_widget_posLayout);
         app_selling_price_text_widget_appLayout = findViewById(R.id.app_selling_price_text_widget_appLayout);
         posPrice_text_widget_posLayout = findViewById(R.id.posPrice_text_widget_posLayout);
         appPrice_text_widget_appLayout = findViewById(R.id.appPrice_text_widget_appLayout);
-
+        selling_price_common_edittext_widget = findViewById(R.id.selling_price_common_edittext_widget);
+        appMarkupPercentage_text_widget = findViewById(R.id.appMarkupPercentage_text_widget);
+        selling_price_common_edittext_widget  = findViewById(R.id.selling_price_common_edittext_widget);
+        appPrice_withoutMarkup_text_widget_appLayout = findViewById(R.id.appPrice_withoutMarkup_text_widget_appLayout);
 
 
         TMCprice_selling_price_label =findViewById(R.id.TMCprice_selling_price_label);
@@ -104,7 +109,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         try {
             ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
             screenInches = screenSizeOfTheDevice.getDisplaySize(ChangeMenuItem_Price_Settings.this);
-          //  Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+            //  Toast.makeText(this, "ScreenSizeOfTheDevice : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -114,7 +119,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 double x = Math.pow(dm.widthPixels / dm.xdpi, 2);
                 double y = Math.pow(dm.heightPixels / dm.ydpi, 2);
                 screenInches = Math.sqrt(x + y);
-               // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
+                // Toast.makeText(this, "DisplayMetrics : "+String.valueOf(screenInches), Toast.LENGTH_SHORT).show();
 
             }
             catch (Exception e1){
@@ -186,7 +191,18 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 return false;
             }
         });
+        selling_price_common_edittext_widget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    //do what you want on the press of 'done'
+                    //  isPosPrice_PricePerKgChanged = true;
+                    //  isAppPrice_PricePerKgChanged = false;
+                    computeAppandPosPrice.performClick();
 
+                }
+                return false;
+            }
+        });
 
         pos_selling_price_text_widget_posLayout.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -219,16 +235,23 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isTMCPrice) {
-                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0)  {
+                    if (selling_price_common_edittext_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0)  {
+
+                        //   if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0)  {
                         if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
                             Adjusting_Widgets_Visibility(true);
                             try {
-                                sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
+
+                                //sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
+
+                                sellingprice = Double.parseDouble(selling_price_common_edittext_widget.getText().toString());
                                 if(sellingprice>0) {
                                     discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+                                    appMarkupPercentageInt = Integer.parseInt(appMarkupPercentage_text_widget.getText().toString());
+
                                     if (discount_percentage <= 100) {
                                         CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
-                                        CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                        CalculateAppPriceAndPosPrice(sellingprice, discount_percentage,appMarkupPercentageInt);
                                     } else {
                                         Toast.makeText(ChangeMenuItem_Price_Settings.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
 
@@ -261,101 +284,111 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
                 }
                 else {
-                    if (isPosPrice_PricePerKgChanged) {
-                        isPosPrice_PricePerKgChanged = false;
-                        if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
-                            if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
-                                Adjusting_Widgets_Visibility(true);
-                                try {
-                                    posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
-                                    if(posSellingPrice_priceperKg>0) {
-                                        discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
-                                        if (discount_percentage <= 100) {
-                                            CalculatePosPrice(posSellingPrice_priceperKg, discount_percentage);
+                    //if (isPosPrice_PricePerKgChanged) {
+                    isPosPrice_PricePerKgChanged = false;
+
+                    if (selling_price_common_edittext_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+
+                        // if (pos_selling_price_text_widget_posLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0  && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0 && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (posPrice_text_widget_posLayout.getText().toString().length() > 0) {
+                            Adjusting_Widgets_Visibility(true);
+                            try {
+                                posSellingPrice_priceperKg = Double.parseDouble(selling_price_common_edittext_widget.getText().toString());
+
+                                //  posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
+                                if(posSellingPrice_priceperKg>0) {
+                                    discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+
+                                    if (discount_percentage <= 100) {
+                                        CalculatePosPrice(posSellingPrice_priceperKg, discount_percentage);
 
 
-                                        } else {
-                                            Adjusting_Widgets_Visibility(false);
-
-                                            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
-
-                                        }
-
-                                    }
-                                    else {
+                                    } else {
                                         Adjusting_Widgets_Visibility(false);
 
-                                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "POS Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
 
                                     }
-                                } catch (Exception e) {
-                                    Adjusting_Widgets_Visibility(false);
-                                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "Can't Change the Price", Toast.LENGTH_SHORT).show();
 
-                                    e.printStackTrace();
                                 }
-                            }
-                            else {
+                                else {
+                                    Adjusting_Widgets_Visibility(false);
+
+                                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "POS Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
+                                }
+                            } catch (Exception e) {
                                 Adjusting_Widgets_Visibility(false);
+                                Toast.makeText(ChangeMenuItem_Price_Settings.this, "Can't Change the Price", Toast.LENGTH_SHORT).show();
 
-                                Toast.makeText(ChangeMenuItem_Price_Settings.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
+                                e.printStackTrace();
                             }
-
                         }
                         else {
                             Adjusting_Widgets_Visibility(false);
 
-                            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
                         }
+
                     }
-                    else if(isAppPrice_PricePerKgChanged){
-                        isAppPrice_PricePerKgChanged = false;
-                        if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
-                            if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
-                                try {
-                                    appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
-                                    if(appSellingPrice_priceperKg>0) {
-                                        Adjusting_Widgets_Visibility(true);
+                    else {
+                        Adjusting_Widgets_Visibility(false);
 
-                                        discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
-                                        if (discount_percentage <= 100) {
-                                            CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage);
-                                            CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
+                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                    }
+                    //  }
+                    //    else if(isAppPrice_PricePerKgChanged){
+                    isAppPrice_PricePerKgChanged = false;
+                    if (selling_price_common_edittext_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
 
-                                        } else {
-                                            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
-                                            Adjusting_Widgets_Visibility(false);
+                        //if (app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+                        if (appPrice_text_widget_appLayout.getText().toString().length() > 0) {
+                            try {
+                                appSellingPrice_priceperKg = Double.parseDouble(selling_price_common_edittext_widget.getText().toString());
+                                if(appSellingPrice_priceperKg>0) {
+                                    Adjusting_Widgets_Visibility(true);
 
-                                        }
-                                    }
-                                    else{
+                                    discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
+                                    appMarkupPercentageInt = Integer.parseInt(appMarkupPercentage_text_widget.getText().toString());
+
+                                    if (discount_percentage <= 100) {
+                                        CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage ,appMarkupPercentageInt);
+                                        CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage );
+
+                                    } else {
+                                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "Discount Percentage can't be greater than 100 %", Toast.LENGTH_SHORT).show();
                                         Adjusting_Widgets_Visibility(false);
 
-                                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "APP Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
-
                                     }
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "Can't Change the Price", Toast.LENGTH_SHORT).show();
-
+                                }
+                                else{
                                     Adjusting_Widgets_Visibility(false);
 
+                                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "APP Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
                                 }
-                            }
-                            else {
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(ChangeMenuItem_Price_Settings.this, "Can't Change the Price", Toast.LENGTH_SHORT).show();
+
                                 Adjusting_Widgets_Visibility(false);
 
-                                Toast.makeText(ChangeMenuItem_Price_Settings.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
                             }
-
                         }
                         else {
                             Adjusting_Widgets_Visibility(false);
 
-                            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Price Fields can't be empty", Toast.LENGTH_SHORT).show();
                         }
+
                     }
+                    else {
+                        Adjusting_Widgets_Visibility(false);
+
+                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "Mandatory Fields can't be empty", Toast.LENGTH_SHORT).show();
+                    }
+                    //  }
 
                 }
             }
@@ -364,18 +397,23 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (isTMCPrice) {
-                    if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+
+                    if (selling_price_common_edittext_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+
+                        //  if (selling_price_text_widget.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                         if (appPrice_text_widget.getText().length() > 0 && posPrice_text_widget.getText().toString().length() > 0) {
                             try {
-                                sellingprice = Double.parseDouble(selling_price_text_widget.getText().toString());
+                                sellingprice = Double.parseDouble(selling_price_common_edittext_widget.getText().toString());
                                 discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
                                 swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
                                 dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
                                 bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
                                 wholeSalePrice= String.valueOf(wholesale_selling_price_text_widget_wholesaleLayout.getText().toString());
-                                CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                appMarkupPercentageInt = Integer.parseInt(appMarkupPercentage_text_widget.getText().toString());
 
-                                CalculateAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                CalculateMarinadeeAppPriceAndPosPrice(sellingprice, discount_percentage);
+                                CalculateAppPriceAndPosPriceWihoutMarkupPrice(sellingprice, discount_percentage);
+                                // CalculateAppPriceAndPosPrice(sellingprice, discount_percentage, appMarkupPercentageInt);
                                 if(sellingprice>0) {
                                     ChangeMarinadeMenuItemPriceInDB(MarinadeemenuitemKey, MarinadeeappPrice, MarinadeeposPrice, MarinadeeappliedDiscountPercentage);
 
@@ -405,20 +443,29 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
                 }
                 else{
-                    if (pos_selling_price_text_widget_posLayout.getText().length() > 0 &&  app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+
+                    if (selling_price_common_edittext_widget.getText().length() > 0  && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
+
+                        // if (pos_selling_price_text_widget_posLayout.getText().length() > 0 &&  app_selling_price_text_widget_appLayout.getText().length() > 0 && appliedDiscountPercentage_text_widget.getText().length() > 0   && swiggy_selling_price_text_widget_swiggyLayout.getText().length() > 0  && wholesale_selling_price_text_widget_wholesaleLayout.getText().length() > 0 && dunzo_selling_price_text_widget_dunzoLayout.getText().length() > 0 && bigbasket_selling_price_text_widget_bigbasketLayout.getText().length() > 0) {
                         if (appPrice_text_widget_appLayout.getText().length() > 0 && posPrice_text_widget_posLayout.getText().toString().length() > 0) {
                             try {
-                                appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
-                                posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
+                                //  appSellingPrice_priceperKg = Double.parseDouble(app_selling_price_text_widget_appLayout.getText().toString());
+                                //posSellingPrice_priceperKg = Double.parseDouble(pos_selling_price_text_widget_posLayout.getText().toString());
+                                appSellingPrice_priceperKg = Double.parseDouble(selling_price_common_edittext_widget.getText().toString());
+                                posSellingPrice_priceperKg = Double.parseDouble(selling_price_common_edittext_widget.getText().toString());
+
                                 discount_percentage = Integer.parseInt(appliedDiscountPercentage_text_widget.getText().toString());
                                 swiggyPrice = String.valueOf(swiggy_selling_price_text_widget_swiggyLayout.getText().toString());
                                 dunzoPrice = String.valueOf(dunzo_selling_price_text_widget_dunzoLayout.getText().toString());
                                 bigBasketPrice = String.valueOf(bigbasket_selling_price_text_widget_bigbasketLayout.getText().toString());
                                 wholeSalePrice= String.valueOf(wholesale_selling_price_text_widget_wholesaleLayout.getText().toString());
+                                appMarkupPercentageInt = Integer.parseInt(appMarkupPercentage_text_widget.getText().toString());
 
                                 CalculateMarinadeeAppPriceAndPosPrice(appSellingPrice_priceperKg, discount_percentage);
 
-                                CalculateAppPrice(appSellingPrice_priceperKg, discount_percentage);
+                                CalculateAppPriceWithOutAppMarkupPrice_forUpdate(appSellingPrice_priceperKg, discount_percentage);
+
+
                                 CalculatePosPrice(posSellingPrice_priceperKg, discount_percentage);
                                 if(appSellingPrice_priceperKg>0) {
                                     if (posSellingPrice_priceperKg > 0) {
@@ -435,10 +482,10 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                                     }
                                 }
                                 else{
-                                Adjusting_Widgets_Visibility(false);
+                                    Adjusting_Widgets_Visibility(false);
 
-                                Toast.makeText(ChangeMenuItem_Price_Settings.this, "APP Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
-                            }
+                                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "APP Selling Price  can't be Zero", Toast.LENGTH_SHORT).show();
+                                }
 
                             } catch (Exception e) {
                                 Adjusting_Widgets_Visibility(false);
@@ -460,6 +507,92 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             }
         });
 
+
+
+
+
+    }
+
+    private void CalculateAppPriceWithOutAppMarkupPrice_forUpdate(double app_sellingprice, int discount_percentage) {
+
+        if(app_sellingprice>0) {
+            Adjusting_Widgets_Visibility(true);
+
+            double sellingPrice_withoutDiscount = 0;
+            double discountAmount = 0 ;
+            int weightindouble = 0;
+            int appPriceint = 0 , sellingPriceInt =0 ;
+
+            try {
+                discountAmount = (discount_percentage * app_sellingprice) / 100;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                sellingPrice_withoutDiscount = app_sellingprice - discountAmount;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+
+
+
+            try {
+                if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
+                    weightindouble = Integer.parseInt(finalweight);
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                if (pricetypeforPos.equals(Constants.TMCPRICEPERKG)) {
+
+                    if (weightindouble != 0) {
+                        appPricedouble_tmcprice = (sellingPrice_withoutDiscount * weightindouble) / 1000;
+
+                    }
+                    else {
+                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "weight Can't be Zero", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                else{
+                    appPricedouble_tmcprice  = sellingPrice_withoutDiscount;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                appPriceint = (int) Math.round(appPricedouble_tmcprice);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                appPrice_PricePerKg = (String.valueOf(appPriceint));
+                appliedDiscountPercentage = (String.valueOf(discount_percentage));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
+        else{
+
+
+            Toast.makeText(ChangeMenuItem_Price_Settings.this, "App Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
+        }
+
+        Adjusting_Widgets_Visibility(false);
 
 
 
@@ -525,7 +658,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         */
 
             try {
-                posPriceint = (int) Math.ceil(posPricedouble__priceperKg);
+                posPriceint = (int) Math.round(posPricedouble__priceperKg);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -557,26 +690,58 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     }
 
 
-    private void CalculateAppPrice(double app_sellingprice, int discount_percentage) {
+    private void CalculateAppPrice(double app_sellingprice, int discount_percentage, int appMarkupPercentageInt) {
         if(app_sellingprice>0) {
             Adjusting_Widgets_Visibility(true);
 
-            double sellingPrice_withoutDiscount = 0;
-            double discountAmount = 0;
+            double sellingPrice_withoutDiscount = 0, tmcpricewithoutdiscount =0;
+            double discountAmount = 0 , appMarkupPercentagePrice =0;
             int weightindouble = 0;
-            int appPriceint = 0;
+            int appPriceint = 0 , sellingPriceInt =0 ;
 
+
+            //    Log.d("123456  - ", " app_sellingprice  "+app_sellingprice);
+
+
+
+            //  Log.d("123456  - ", " discount_percentage   "+discount_percentage);
             try {
                 discountAmount = (discount_percentage * app_sellingprice) / 100;
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             try {
                 sellingPrice_withoutDiscount = app_sellingprice - discountAmount;
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            try{
+                tmcpricewithoutdiscount = (sellingPrice_withoutDiscount);
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try {
+                appMarkupPercentagePrice = (appMarkupPercentageInt * sellingPrice_withoutDiscount) / 100;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                sellingPrice_withoutDiscount = sellingPrice_withoutDiscount + appMarkupPercentagePrice;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+
+
+
             try {
                 if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
                     weightindouble = Integer.parseInt(finalweight);
@@ -590,7 +755,15 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 if (pricetypeforPos.equals(Constants.TMCPRICEPERKG)) {
 
                     if (weightindouble != 0) {
-                        appPricedouble_priceperKg = (sellingPrice_withoutDiscount * weightindouble) / 1000;
+                        appPricedouble_tmcprice = (sellingPrice_withoutDiscount * weightindouble) / 1000;
+                        try{
+                            tmcpricewithoutdiscount = ((tmcpricewithoutdiscount * weightindouble) / 1000);
+                            appPrice_withoutMarkup_text_widget_appLayout.setText(String.valueOf((int) Math.round(tmcpricewithoutdiscount)));
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
 
                         // appPricedouble_priceperKg = sellingPrice_withoutDiscount;
 
@@ -603,26 +776,21 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             }
 
 
-       /*\ try{
-            if (pricetypeforPos.equals(Constants.TMCPRICE)) {
-                appPricedouble = sellingPrice_withoutDiscount;
-                posPricedouble = sellingPrice_withoutDiscount;
-
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
-        */
 
             try {
-                appPriceint = (int) Math.ceil(appPricedouble_priceperKg);
+                appPriceint = (int) Math.round(appPricedouble_tmcprice);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            Log.d("123456  - ", " appPricedouble_priceperKg 1  "+ appPricedouble_tmcprice);
 
+            try {
+                sellingPriceInt = (int) Math.round(sellingPrice_withoutDiscount);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             try {
                 appPrice_PricePerKg = (String.valueOf(appPriceint));
                 appliedDiscountPercentage = (String.valueOf(discount_percentage));
@@ -632,7 +800,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
             try {
                 appPrice_text_widget_appLayout.setText(String.valueOf(appPriceint));
-
+                appPricePerKg_textview_widget_appLayout .setText(String.valueOf(sellingPriceInt));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -650,74 +818,74 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
     }
     private void CalculateMarinadeeAppPriceAndPosPrice(double sellingprice, int discount_percentage) {
-            double sellingPrice_withoutDiscount = 0;
-            double discountAmount = 0;
-            int weightindouble = 0;
-            int posPriceint = 0;
-            int appPriceint = 0;
+        double sellingPrice_withoutDiscount = 0;
+        double discountAmount = 0;
+        int weightindouble = 0;
+        int posPriceint = 0;
+        int appPriceint = 0;
 
-            try {
-                discountAmount = (discount_percentage * sellingprice) / 100;
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            discountAmount = (discount_percentage * sellingprice) / 100;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            sellingPrice_withoutDiscount = sellingprice - discountAmount;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (Marinadeefinalweight.matches("[0-9]+") && (Marinadeefinalweight.length() > 0)) {
+                weightindouble = Integer.parseInt(Marinadeefinalweight);
+
             }
-            try {
-                sellingPrice_withoutDiscount = sellingprice - discountAmount;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                if (Marinadeefinalweight.matches("[0-9]+") && (Marinadeefinalweight.length() > 0)) {
-                    weightindouble = Integer.parseInt(Marinadeefinalweight);
+        try {
+            if (MarinadeepricetypeforPos.equals(Constants.TMCPRICEPERKG)) {
 
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                if (weightindouble != 0) {
 
-            try {
-                if (MarinadeepricetypeforPos.equals(Constants.TMCPRICEPERKG)) {
-
-                    if (weightindouble != 0) {
-
-                        MarinadeappPricedouble = (sellingPrice_withoutDiscount * weightindouble) / 1000;
-                        MarinadeposPricedouble = sellingPrice_withoutDiscount;
-
-                    } else {
-                        Toast.makeText(ChangeMenuItem_Price_Settings.this, "weight Can't be Zero", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            try {
-                if (MarinadeepricetypeforPos.equals(Constants.TMCPRICE)) {
-                    MarinadeappPricedouble = sellingPrice_withoutDiscount;
+                    MarinadeappPricedouble = (sellingPrice_withoutDiscount * weightindouble) / 1000;
                     MarinadeposPricedouble = sellingPrice_withoutDiscount;
 
+                } else {
+                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "weight Can't be Zero", Toast.LENGTH_SHORT).show();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            try {
-                appPriceint = (int) Math.ceil(MarinadeappPricedouble);
-                posPriceint = (int) Math.ceil(MarinadeposPricedouble);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            if (MarinadeepricetypeforPos.equals(Constants.TMCPRICE)) {
+                MarinadeappPricedouble = sellingPrice_withoutDiscount;
+                MarinadeposPricedouble = sellingPrice_withoutDiscount;
+
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            try {
-                MarinadeeappPrice = (String.valueOf(appPriceint));
-                MarinadeeposPrice = (String.valueOf(posPriceint));
-                MarinadeeappliedDiscountPercentage = (String.valueOf(discount_percentage));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            appPriceint = (int) Math.round(MarinadeappPricedouble);
+            posPriceint = (int) Math.round(MarinadeposPricedouble);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            MarinadeeappPrice = (String.valueOf(appPriceint));
+            MarinadeeposPrice = (String.valueOf(posPriceint));
+            MarinadeeappliedDiscountPercentage = (String.valueOf(discount_percentage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
 
@@ -728,40 +896,40 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     }
 
 
-
-
-    private void CalculateAppPriceAndPosPrice(double sellingprice, int discount_percentage) {
+    private void CalculateAppPriceAndPosPriceWihoutMarkupPrice(double sellingprice, int discount_percentage) {
         if(sellingprice>0) {
             Adjusting_Widgets_Visibility(true);
 
-            double sellingPrice_withoutDiscount=0;
-        double discountAmount = 0;
-        int weightindouble =0;
-        int posPriceint =0;
-        int appPriceint = 0;
+            double sellingPrice_withoutDiscount=0 , appMarkupPercentagePrice =0 ;
+            double discountAmount = 0;
+            int weightindouble =0;
+            int posPriceint =0;
+            int appPriceint = 0;
 
-        try {
-            discountAmount = (discount_percentage * sellingprice) / 100;
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        try {
-            sellingPrice_withoutDiscount   =  sellingprice -discountAmount;
-
-        }
-        catch ( Exception e){
-            e.printStackTrace();
-        }
-        try{
-            if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
-                weightindouble = Integer.parseInt(finalweight);
+            try {
+                discountAmount = (discount_percentage * sellingprice) / 100;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                sellingPrice_withoutDiscount   =  sellingprice -discountAmount;
 
             }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+            catch ( Exception e){
+                e.printStackTrace();
+            }
+
+
+            try{
+                if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
+                    weightindouble = Integer.parseInt(finalweight);
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
       /*  try{
             if (pricetypeforPos.equals(Constants.TMCPRICEPERKG)) {
@@ -781,44 +949,170 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
         }
 
        */
-        try{
-            if (pricetypeforPos.equals(Constants.TMCPRICE)) {
-                appPricedouble = sellingPrice_withoutDiscount;
-                posPricedouble = sellingPrice_withoutDiscount;
+            try{
+                if (pricetypeforPos.equals(Constants.TMCPRICE)) {
+                    appPricedouble = sellingPrice_withoutDiscount;
+                    posPricedouble = sellingPrice_withoutDiscount;
 
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try{
+                appPriceint = (int) Math.round(appPricedouble);
+                posPriceint = (int) Math.round(posPricedouble);
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try{
+                appPrice = (String.valueOf(appPriceint));
+                posPrice =  (String.valueOf(posPriceint));
+                appliedDiscountPercentage = (String.valueOf(discount_percentage));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+        }
+        else{
+
+
+            Toast.makeText(ChangeMenuItem_Price_Settings.this, "Selling Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
+        }
+
+        Adjusting_Widgets_Visibility(false);
+
+
+
+
+    }
+
+
+    private void CalculateAppPriceAndPosPrice(double sellingprice, int discount_percentage, int appMarkupPercentageInt) {
+        if(sellingprice>0) {
+            Adjusting_Widgets_Visibility(true);
+
+            double sellingPrice_withoutDiscount=0 , appMarkupPercentagePrice =0 ,sellingPrice_withoutDiscount_MarkupPrice =0;
+            double discountAmount = 0,tmcpricewithoutdiscount=0;
+            int weightindouble =0;
+            int posPriceint =0;
+            int appPriceint = 0;
+
+            try {
+                discountAmount = (discount_percentage * sellingprice) / 100;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                sellingPrice_withoutDiscount   =  sellingprice -discountAmount;
+
+            }
+            catch ( Exception e){
+                e.printStackTrace();
+            }
+            try{
+                tmcpricewithoutdiscount = sellingPrice_withoutDiscount;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try {
+                appMarkupPercentagePrice = (appMarkupPercentageInt * sellingPrice_withoutDiscount) / 100;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.d("123456  - ", " appMarkupPercentagePrice  "+appMarkupPercentagePrice);
+
+            try {
+                sellingPrice_withoutDiscount_MarkupPrice = sellingPrice_withoutDiscount + appMarkupPercentagePrice;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            try{
+                if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
+                    weightindouble = Integer.parseInt(finalweight);
+                    try{
+                        tmcpricewithoutdiscount = ((tmcpricewithoutdiscount * weightindouble) / 1000);
+                        appPrice_withoutMarkup_text_widget_appLayout.setText(String.valueOf((int) Math.round(tmcpricewithoutdiscount)));
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+      /*  try{
+            if (pricetypeforPos.equals(Constants.TMCPRICEPERKG)) {
+
+                if (weightindouble != 0) {
+
+                    appPricedouble = (sellingPrice_withoutDiscount * weightindouble) / 1000;
+                    posPricedouble = sellingPrice_withoutDiscount;
+
+                } else {
+                    Toast.makeText(ChangeMenuItem_Price_Settings.this, "weight Can't be Zero", Toast.LENGTH_SHORT).show();
+                }
             }
         }
         catch (Exception e){
             e.printStackTrace();
         }
 
-        try{
-            appPriceint = (int) Math.ceil(appPricedouble);
-            posPriceint = (int) Math.ceil(posPricedouble);
+       */
+            try{
+                if (pricetypeforPos.equals(Constants.TMCPRICE)) {
+                    appPricedouble = sellingPrice_withoutDiscount_MarkupPrice;
+                    posPricedouble = sellingPrice_withoutDiscount;
 
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
-        try{
-            appPrice = (String.valueOf(appPriceint));
-            posPrice =  (String.valueOf(posPriceint));
-            appliedDiscountPercentage = (String.valueOf(discount_percentage));
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+            try{
+                appPriceint = (int) Math.round(appPricedouble);
+                posPriceint = (int) Math.round(posPricedouble);
 
-        try{
-            appPrice_text_widget.setText(String.valueOf(appPriceint));
-            posPrice_text_widget.setText(String.valueOf(posPriceint));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
+            try{
+                appPrice = (String.valueOf(appPriceint));
+                posPrice =  (String.valueOf(posPriceint));
+                appliedDiscountPercentage = (String.valueOf(discount_percentage));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+            try{
+                appPrice_text_widget.setText(String.valueOf(appPriceint));
+                posPrice_text_widget.setText(String.valueOf(posPriceint));
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
         }
         else{
 
@@ -848,7 +1142,14 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
             jsonObject.put("dunzoprice", dunzoPrice);
             jsonObject.put("bigbasketprice", bigBasketPrice);
             jsonObject.put("wholesaleprice", wholeSalePrice);
+            try {
+                jsonObject.put("appmarkuppercentage", appMarkupPercentageInt);
+            }
+            catch (Exception e){
+                jsonObject.put("appmarkuppercentage", 0);
 
+                e.printStackTrace();
+            }
             jsonObject.put("applieddiscountpercentage", appliedDiscountPercentage);
 
 
@@ -994,6 +1295,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                 modal_menuItemSettings.setDunzoprice(dunzoPrice);
                 modal_menuItemSettings.setBigbasketprice(bigBasketPrice);
                 modal_menuItemSettings.setWholesaleprice(wholeSalePrice);
+                modal_menuItemSettings.setAppmarkuppercentage(String.valueOf(appMarkupPercentageInt));
 
 
                 try{
@@ -1023,7 +1325,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
                 savedMenuIteminSharedPrefrences(MenuItem);
-               // finish();
+                // finish();
 
             }
 
@@ -1076,7 +1378,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
     }
 
 
-   private void getMarinadeeMenuItemArrayFromSharedPreferences() {
+    private void getMarinadeeMenuItemArrayFromSharedPreferences() {
         final SharedPreferences sharedPreferencesMenuitem = getApplicationContext().getSharedPreferences("MarinadeMenuList", MODE_PRIVATE);
 
         Gson gson = new Gson();
@@ -1118,7 +1420,16 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
                     try{
                         appPrice = String.valueOf(modal_menuItemSettings.getTmcprice());
-                        appPrice_PricePerKg =  String.valueOf(modal_menuItemSettings.getTmcprice());
+                        //  appPrice_PricePerKg =  String.valueOf(modal_menuItemSettings.getTmcprice());
+                        appPrice_withoutMarkup_text_widget_appLayout.setText(String.valueOf(appPrice));
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try{
+                        appMarkupPercentageString =  String.valueOf(modal_menuItemSettings.getAppmarkuppercentage());
+                        appMarkupPercentageInt = Integer.parseInt(appMarkupPercentageString);
 
                     }
                     catch (Exception e){
@@ -1234,12 +1545,36 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     try{
                         if(pricetypeforPos.equals(Constants.TMCPRICE)){
                             sellingprice = CalculateSellingPrice(appPrice, appliedDiscountPercentage);
+                            appPrice = CalculateAppPriceWithMarkupPrice(appPrice,appliedDiscountPercentage,appMarkupPercentageInt);
                             isTMCPrice =true;
 
                         }
                         if(pricetypeforPos.equals(Constants.TMCPRICEPERKG)){
-                            appSellingPrice_priceperKg = CalculateSellingPriceforTMCPricePerKgforApp(finalweight,appPrice, appliedDiscountPercentage);
+                            //appSellingPrice_priceperKg = CalculateSellingPriceforTMCPricePerKgforApp(finalweight,appPrice, appliedDiscountPercentage);
+                            //  posSellingPrice_priceperKg = CalculateSellingPriceforTMCPricePerKgforPOS(posPrice, appliedDiscountPercentage);
+                            sellingprice = CalculateSellingPrice(posPrice, appliedDiscountPercentage);
                             posSellingPrice_priceperKg = CalculateSellingPriceforTMCPricePerKgforPOS(posPrice, appliedDiscountPercentage);
+                            appSellingPrice_priceperKg = CalculateTMCPricePerKgforAppWithDiscountAppMarkupPrice(posPrice, appliedDiscountPercentage,appMarkupPercentageString);
+                            int weightindouble =0;
+
+                            try{
+                                if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
+                                    weightindouble = Integer.parseInt(finalweight);
+
+                                }
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+                            try{
+
+                                appPrice = String.valueOf((int) Math.round((appSellingPrice_priceperKg / 1000) * weightindouble));
+                            }
+                            catch(Exception e){
+                                e.printStackTrace();
+                            }
 
                             isTMCPrice =false;
                         }
@@ -1252,6 +1587,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
 
+
                     itemUniqueCode_text_widget.setText(itemUniqueCode);
                     itemName_text_widget.setText(itemName);
                     appPrice_text_widget.setText(appPrice);
@@ -1260,14 +1596,16 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
                     swiggy_selling_price_text_widget_swiggyLayout.setText(swiggyPrice);
                     dunzo_selling_price_text_widget_dunzoLayout.setText(dunzoPrice);
-                     bigbasket_selling_price_text_widget_bigbasketLayout.setText(bigBasketPrice);
+                    bigbasket_selling_price_text_widget_bigbasketLayout.setText(bigBasketPrice);
                     appliedDiscountPercentage_text_widget.setText(appliedDiscountPercentage);
-                    appPrice_text_widget_appLayout.setText(appPrice_PricePerKg);
+                    appPrice_text_widget_appLayout.setText(appPrice);
+
+
                     posPrice_text_widget_posLayout.setText(posPrice_pricePerKg);
-
-
+                    selling_price_common_edittext_widget.setText(posPrice_pricePerKg);
+                    appMarkupPercentage_text_widget .setText(appMarkupPercentageString);
                     try{
-                        finalsellingprice = (int) Math.ceil(sellingprice);
+                        finalsellingprice = (int) Math.round(sellingprice);
                     }
                     catch (Exception e){
                         finalsellingprice=00;
@@ -1276,7 +1614,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
                     try{
-                        finalAppSellingPrice = (int) Math.ceil(appSellingPrice_priceperKg);
+                        finalAppSellingPrice = (int) Math.round(appSellingPrice_priceperKg);
                     }
                     catch (Exception e){
                         finalAppSellingPrice=00;
@@ -1285,7 +1623,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
                     try{
-                        finalPosSellingPrice = (int) Math.ceil(posSellingPrice_priceperKg);
+                        finalPosSellingPrice = (int) Math.round(posSellingPrice_priceperKg);
                     }
                     catch (Exception e){
                         finalPosSellingPrice=00;
@@ -1293,8 +1631,9 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     }
 
 
-
+                    selling_price_common_edittext_widget .setText(String.valueOf(finalsellingprice));
                     selling_price_text_widget.setText(String.valueOf(finalsellingprice));
+                    appPricePerKg_textview_widget_appLayout .setText(String.valueOf(finalAppSellingPrice));
                     app_selling_price_text_widget_appLayout.setText(String.valueOf(finalAppSellingPrice));
                     pos_selling_price_text_widget_posLayout.setText(String.valueOf(finalPosSellingPrice));
                     //Log.d(Constants.TAG, "displaying_menuItems: " + String.valueOf(modal_menuItemSettings.getItemname()));
@@ -1311,6 +1650,143 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
     }
 
+    private String CalculateAppPriceWithMarkupPrice(String appPrice, String appliedDiscountPercentage, int appMarkupPercentageInt) {
+        double appPrice_double = 0;            int appPriceint = 0;
+
+        try {
+            appPrice_double = Double.parseDouble(appPrice);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        if(appPrice_double>0) {
+
+
+            double  appMarkupPercentagePrice =0 ,appPriceWith_MarkupPrice =0;
+
+
+            try {
+                appMarkupPercentagePrice = (appMarkupPercentageInt * appPrice_double) / 100;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                appPriceWith_MarkupPrice = appPrice_double + appMarkupPercentagePrice;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+
+            try{
+                if (pricetypeforPos.equals(Constants.TMCPRICE)) {
+                    appPricedouble = appPriceWith_MarkupPrice;
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try{
+                appPriceint = (int) Math.round(appPricedouble);
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+        }
+        else{
+
+
+            Toast.makeText(ChangeMenuItem_Price_Settings.this, "TMC Price Can't be Zero", Toast.LENGTH_SHORT).show();
+
+        }
+
+
+
+        return  String.valueOf(appPriceint);
+
+    }
+
+    private double CalculateTMCPricePerKgforAppWithDiscountAppMarkupPrice( String price_String, String appliedDiscountPercentage_String, String appMarkupPercentageString) {
+
+        double price = 0;
+        double discount = 0 , appMarkupPrice =0 , appMarkupPricePercentage =0;
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        try{
+            price = Double.parseDouble(price_String);
+
+        }
+        catch(Exception  e){
+            e.printStackTrace();
+        }
+
+
+
+
+        try{
+            appMarkupPricePercentage = Double.parseDouble(appMarkupPercentageString);
+
+        }
+        catch(Exception  e){
+            e.printStackTrace();
+        }
+
+        try {
+            appMarkupPrice = (appMarkupPricePercentage * price) / 100;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        try {
+            price = price + appMarkupPrice ;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+
+       /* try {
+            discount = (discount * price) / 100;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            price = price - discount ;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        */
+
+
+        try{
+            price = Double.parseDouble(decimalFormat.format(price));
+
+        }
+        catch(Exception  e){
+            e.printStackTrace();
+        }
+
+
+
+
+        return price;
+
+    }
 
 
     private void getMarinadeeItemDetailsUsingUniqueCode(String itemUniqueCode) {
@@ -1318,7 +1794,7 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
         for(int i =0 ;i<marinadeMenuList.size();i++){
             Modal_MenuItem_Settings modal_menuItemSettings = marinadeMenuList.get(i);
-             MarinadeeitemUniqueCode = modal_menuItemSettings.getItemuniquecode();   
+            MarinadeeitemUniqueCode = modal_menuItemSettings.getItemuniquecode();
             if(itemUniqueCode.equals(MarinadeeitemUniqueCode)){
                 try {
 
@@ -1435,15 +1911,15 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-            
+
             }
         }
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
     }
     private String CalculateWeightoftheMarinadeeItem() {
         String weight="";
@@ -1473,40 +1949,40 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
         return weight;
     }
-   
+
 
     private String CalculateWeightoftheItem() {
-    String weight="";
-    try {
-        if ((!grossweightingrams.equals("")) && (!grossweightingrams.equals("0")) && (!grossweightingrams.equals(null)) && (!grossweightingrams.equals("null"))) {
-            grossweightingrams = grossweightingrams.replaceAll("[^\\d.]", "");
+        String weight="";
+        try {
+            if ((!grossweightingrams.equals("")) && (!grossweightingrams.equals("0")) && (!grossweightingrams.equals(null)) && (!grossweightingrams.equals("null"))) {
+                grossweightingrams = grossweightingrams.replaceAll("[^\\d.]", "");
 
-            weight = grossweightingrams;
-        } else {
-            if ((!grossweight.equals("")) && (!grossweight.equals("0")) && (!grossweight.equals(null)) && (!grossweight.equals("null"))) {
-                grossweight = grossweight.replaceAll("[^\\d.]", "");
-
-                weight = grossweight;
+                weight = grossweightingrams;
             } else {
-                if ((!portionsize.equals("")) && (!portionsize.equals("0")) && (!portionsize.equals(null)) && (!portionsize.equals("null"))) {
-                    weight = portionsize;
+                if ((!grossweight.equals("")) && (!grossweight.equals("0")) && (!grossweight.equals(null)) && (!grossweight.equals("null"))) {
+                    grossweight = grossweight.replaceAll("[^\\d.]", "");
+
+                    weight = grossweight;
                 } else {
-                    if ((!netweight.equals("")) && (!netweight.equals("0")) && (!netweight.equals(null)) && (!netweight.equals("null"))) {
-                        weight = netweight+" (Netwt)";
-                    }
-                    else {
-                        weight = "      There is no weight ";
+                    if ((!portionsize.equals("")) && (!portionsize.equals("0")) && (!portionsize.equals(null)) && (!portionsize.equals("null"))) {
+                        weight = portionsize;
+                    } else {
+                        if ((!netweight.equals("")) && (!netweight.equals("0")) && (!netweight.equals(null)) && (!netweight.equals("null"))) {
+                            weight = netweight+" (Netwt)";
+                        }
+                        else {
+                            weight = "      There is no weight ";
+                        }
                     }
                 }
             }
         }
-    }
-    catch (Exception e){
-        e.printStackTrace();
-    }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         grossweight_text_widget.setText(weight);
 
-    return weight;
+        return weight;
     }
 
 
@@ -1558,19 +2034,19 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
     private double CalculateSellingPriceforTMCPricePerKgforApp(String finalweight, String appPrice_String, String appliedDiscountPercentage_String) {
-   double app_SellingPrice = 0;
+        double app_SellingPrice = 0;
 
-   double appPrice =0;
-    int weightindouble =0;
-   double discount = 0;
+        double appPrice =0;
+        int weightindouble =0;
+        double discount = 0;
         DecimalFormat decimalFormat = new DecimalFormat("0.00");
-       try{
-           appPrice = Double.parseDouble(appPrice_String);
+        try{
+            appPrice = Double.parseDouble(appPrice_String);
 
-       }
-       catch(Exception  e){
-           e.printStackTrace();
-       }
+        }
+        catch(Exception  e){
+            e.printStackTrace();
+        }
         try{
             if (finalweight.matches("[0-9]+") && (finalweight.length() > 0)) {
                 weightindouble = Integer.parseInt(finalweight);
@@ -1621,19 +2097,19 @@ public class ChangeMenuItem_Price_Settings extends AppCompatActivity {
 
 
 
-return app_SellingPrice;
+        return app_SellingPrice;
 
 
     }
 
-   private double CalculateSellingPrice(String tmcPrice, String appliedDiscountPercentage) {
+    private double CalculateSellingPrice(String tmcPrice, String appliedDiscountPercentage) {
         double sellingPrice = 0;
         double tmcprice = 0;
         double discount = 0;
 
 
         try {
-             tmcprice = Double.parseDouble(tmcPrice);
+            tmcprice = Double.parseDouble(tmcPrice);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -1707,7 +2183,7 @@ return app_SellingPrice;
                     try {
                         appPrice = appPrice_text_widget.getText().toString();
                         double appPrice_double = Double.parseDouble(appPrice);
-                        int appprice_int = (int) Math.ceil(appPrice_double);
+                        int appprice_int = (int) Math.round(appPrice_double);
                         appPrice = String.valueOf(appprice_int);
 
                     }
@@ -1719,7 +2195,7 @@ return app_SellingPrice;
                     try {
                         posPrice = posPrice_text_widget.getText().toString();
                         double posPrice_double = Double.parseDouble(posPrice);
-                        int posPriceint = (int) Math.ceil(posPrice_double);
+                        int posPriceint = (int) Math.round(posPrice_double);
                         posPrice = String.valueOf(posPriceint);
                     }
                     catch (Exception e){

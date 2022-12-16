@@ -70,8 +70,10 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class WholeSaleOrdersList extends AppCompatActivity {
     TextView fetchData,appOrdersCount_textwidget,dateSelector_text, orderinstruction,  nameofFacility_Textview;
@@ -1191,7 +1193,10 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
 
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -1211,12 +1216,17 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -1229,12 +1239,18 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = day.format(date);
 
 
@@ -1252,16 +1268,24 @@ public class WholeSaleOrdersList extends AppCompatActivity {
     private String convertnewFormatDateintoOldFormat(String todaysdate) {
 
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String CurrentDay = day.format(date);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(date);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -1352,7 +1376,9 @@ public class WholeSaleOrdersList extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         if(orderdetailsnewschema) {
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = day.format(c);
 
             return CurrentDate;
@@ -1361,11 +1387,17 @@ public class WholeSaleOrdersList extends AppCompatActivity {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDay = day.format(c);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -4066,7 +4098,7 @@ public class WholeSaleOrdersList extends AppCompatActivity {
 
         AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
 
-        SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
+      //  SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
 
         String OrderPlacedtime = "";
         String Orderid = "";

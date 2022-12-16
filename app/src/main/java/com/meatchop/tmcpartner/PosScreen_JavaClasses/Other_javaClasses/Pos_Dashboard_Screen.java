@@ -37,7 +37,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Pos_ManageOrderFragment;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
@@ -53,6 +55,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,14 +77,14 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     public static String completeMarinademenuItem="",completemenuItemStockAvlDetails="";
     List<Modal_MenuItemStockAvlDetails> MenuItemStockAvlDetails=new ArrayList<>();
 
-    LinearLayout loadingPanel,loadingpanelmask;
+    LinearLayout loadingPanel,loadingpanelmask,loadingpanelmask_userAccess;
     int gettingMenuItemRetryCount = 5;
     String vendorkey;
     String vendorType ="";
     String MenuItemKey,UserRole;
     List<Modal_MenuItem> MarinadeMenuList=new ArrayList<>();
     String errorCode = "0",minimumscreensizeforpos ="",defaultprintertype ="";
-    Dialog dialog ;
+    Dialog dialog  , doNotHavePermisson_Dialog;
     Button restartAgain;
     TextView title;
     List<Modal_MenuItem> MenuList=new ArrayList<>();
@@ -106,11 +110,14 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         minimumscreensizeforpos = String.valueOf(Constants.default_mobileScreenSize);
         bottomNavigationView = findViewById(R.id.bottomnav);
         dialog = new Dialog(Pos_Dashboard_Screen.this);
-
+        doNotHavePermisson_Dialog = new Dialog(Pos_Dashboard_Screen.this);
         dialog.setContentView(R.layout.print_again);
+        doNotHavePermisson_Dialog .setContentView(R.layout.print_again);
         dialog.setTitle("Poor Internet Connection . Please Try Again !!!! ");
         dialog.setCanceledOnTouchOutside(false);
+        doNotHavePermisson_Dialog.setCanceledOnTouchOutside(false);
         dialog.setCancelable(false);
+        doNotHavePermisson_Dialog.setCancelable(false);
 
 
         restartAgain = (Button) dialog.findViewById(R.id.printAgain);
@@ -118,6 +125,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
+        loadingpanelmask_userAccess = findViewById(R.id.loadingpanelmask_userAccess);
+
+
         bottomNavigationView.setOnNavigationItemSelectedListener(Pos_Dashboard_Screen.this);
         Adjusting_Widgets_Visibility();
         checkForInternetConnectionAndGetMenuItemAndMobileAppData();
@@ -136,8 +146,11 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     private void checkForInternetConnectionAndGetMenuItemAndMobileAppData() {
         try {
             if (isConnected()) {
-                getDatafromVendorTable(vendorkey);
+                doNotHavePermisson_Dialog.cancel();
 
+                checkForAccessPermissionInDataBase();
+
+                getDatafromVendorTable(vendorkey);
                 //Toast.makeText(getApplicationContext(), "Internet Connected", Toast.LENGTH_SHORT).show();
                 completemenuItem = getMenuItemusingStoreId(vendorkey);
                 if(vendorType.equals(Constants.WholeSales_VendorType)) {
@@ -149,6 +162,8 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
 
             } else {
+                doNotHavePermisson_Dialog.cancel();
+
                 Toast.makeText(getApplicationContext(), "No Internet Connection", Toast.LENGTH_SHORT).show();
 
                 runOnUiThread(new Runnable() {
@@ -192,6 +207,178 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
     }
 
+    private void checkForAccessPermissionInDataBase() {
+
+        SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        String mobileno = (shared.getString("UserPhoneNumber", "+91"));
+
+        String UserMobileNumberEncoded  = "";
+        try {
+            UserMobileNumberEncoded = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_checkUserhaveForPartnerApp+"?mobileno="+UserMobileNumberEncoded,null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        ////Log.d(Constants.TAG, "Response: " + response);
+                        try {
+
+                            JSONArray result  = response.getJSONArray("content");
+                            ////Log.d(Constants.TAG, "Response: " + result);
+                            int i1=0;
+                            int arrayLength = result.length();
+                            ////Log.d(TAG, "Response: " + arrayLength);
+                            boolean isUserhaveAccess = false;
+
+                            if(arrayLength>0){
+                            for(;i1<=(arrayLength-1);i1++) {
+                                try {
+                                    JSONObject json = result.getJSONObject(i1);
+                                    try {
+
+                                        if (json.has("appname")) {
+                                            if (String.valueOf(json.getString("appname")).toUpperCase().equals(Constants.AppName_in_AppUserAccess)) {
+                                                isUserhaveAccess = true;
+                                            }
+                                        } else {
+                                            isUserhaveAccess = false;
+                                        }
+
+                                    } catch (Exception e) {
+                                        isUserhaveAccess = false;
+                                        e.printStackTrace();
+                                    }
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                    ////Log.d(Constants.TAG, "e: " + e.toString());
+
+                                }
+
+
+                            }
+
+                        }
+                        else
+                        {
+                                isUserhaveAccess = false;
+
+                        }
+
+
+                        if(isUserhaveAccess){
+                            loadingpanelmask_userAccess.setVisibility(View.GONE);
+
+                        }
+                        else{
+                            showAccessRejectedDialog();
+
+                        }
+
+
+                        } catch (JSONException e) {
+                            showAccessRejectedDialog();
+
+                            e.printStackTrace();
+                        }
+                    }
+
+                },new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                ////Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
+                showAccessRejectedDialog();
+
+                error.printStackTrace();
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Store");
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+
+
+    }
+    private void showAccessRejectedDialog() {
+        loadingpanelmask_userAccess.setVisibility(View.VISIBLE);
+
+
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(doNotHavePermisson_Dialog.isShowing()){
+
+                    }
+                    else {
+                        title.setText(" This Mobile number doesnot have permission to access TMC Partner App !! ");
+                        restartAgain.setText("ok");
+
+                        restartAgain.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                doNotHavePermisson_Dialog.cancel();
+
+                                checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+                            }
+                        });
+
+
+                        doNotHavePermisson_Dialog.show();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+     /*   new TMCAlertDialogClass(Pos_Dashboard_Screen.this, R.string.app_name, R.string.UserMobileNo_DoesNot_HaveAccess,
+                R.string.OK_Text, R.string.Empty_Text,
+                new TMCAlertDialogClass.AlertListener() {
+                    @Override
+                    public void onYes() {
+                        showAccessRejectedDialog();
+
+
+                    }
+
+                    @Override
+                    public void onNo() {
+
+                    }
+                });
+
+      */
+
+    }
     private void getWholeSalesOrderCustomersList() {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofWholeSaleCustomers,null,
@@ -205,7 +392,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                             ////Log.d(Constants.TAG, "Response: " + result);
                             int i1=0;
                             int arrayLength = result.length();
-                            //Log.d("Constants.TAG", "Response: " + arrayLength);
+                            ////Log.d(TAG, "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -321,7 +508,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                             result.put(resultitem);
                             int i1=0;
                             int arrayLength = result.length();
-                            //Log.d("Constants.TAG", "Response: " + arrayLength);
+                            ////Log.d(TAG, "Response: " + arrayLength);
 
 
                             for(;i1<=(arrayLength-1);i1++) {
@@ -357,7 +544,6 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
                                     try{
                                         minimumscreensizeforpos =  String.valueOf(json.get("minimumscreensizeforpos"));
-
                                     }
                                     catch (Exception e){
 
@@ -507,7 +693,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     }
 
     private String  getMenuItemStockAvlDetails() {
-        Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
+        //Log.d(TAG, "starting:getfullMenuItemStockavldetailsUsingStoreID ");
         completemenuItemStockAvlDetails="";
         MenuItemStockAvlDetails.clear();
         SharedPreferences preferences =getSharedPreferences("MenuItemStockAvlDetails",Context.MODE_PRIVATE);
@@ -530,9 +716,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                     e.printStackTrace();
                 }
                 try{
-                    Log.d(TAG, "starting:onResponse ");
+                    //Log.d(TAG, "starting:onResponse ");
 
-                    Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                    //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                     completemenuItemStockAvlDetails = new String(String.valueOf(response));
                     try {
@@ -540,7 +726,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                         //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                       // //Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
 
                         String Key="";
                         for (; i1 < (arrayLength); i1++) {
@@ -685,7 +871,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
                     saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
-                    Log.d(TAG, "sending :Response "+completemenuItem);
+                    //Log.d(TAG, "sending :Response "+completemenuItem);
 
 
 
@@ -693,7 +879,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
 
 
-                    Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+                    //Log.d(TAG, "MenuItems: " + completemenuItem.toString());
 
 
 
@@ -880,7 +1066,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                 ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                                 int i1=0;
                                 int arrayLength = JArray.length();
-                                //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                                ////Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                                 for(;i1<(arrayLength);i1++) {
@@ -891,7 +1077,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                             orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
                                          ///  orderdetailsnewschema= true;
                                                updateweightforonlineorders = (json.getBoolean("updateweightforonlineorders"));
-                                           // updateweightforonlineorders = false;
+                                            //updateweightforonlineorders = true;
                                             saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema, isweighteditable , updateweightforonlineorders);
 
 
@@ -926,9 +1112,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                             String maxpointsinaday = redeemdata_json.getString("maxpointsinaday");
                                             String minordervalueforredeem = redeemdata_json.getString("minordervalueforredeem");
                                             String pointsfor100rs = redeemdata_json.getString("pointsfor100rs");
-                                            Log.d("Constants.TAG", "maxpointsinaday Response: " + maxpointsinaday);
-                                            Log.d("Constants.TAG", "minordervalueforredeem Response: " + minordervalueforredeem);
-                                            Log.d("Constants.TAG", "pointsfor100rs Response: " + pointsfor100rs);
+                                            //Log.d(TAG, "maxpointsinaday Response: " + maxpointsinaday);
+                                            //Log.d(TAG, "minordervalueforredeem Response: " + minordervalueforredeem);
+                                            //Log.d(TAG, "pointsfor100rs Response: " + pointsfor100rs);
                                             saveredeemDetailsinSharePreferences(maxpointsinaday,minordervalueforredeem,pointsfor100rs);
 
                                         }
@@ -950,11 +1136,11 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                             String deliverymanager_role = parrtnerappacessdetails_data_json.getString("deliverymanager");
                                             String reportsviewer_role = parrtnerappacessdetails_data_json.getString("reportsviewer");
                                             String storemanager_role = parrtnerappacessdetails_data_json.getString("storemanager");
-                                            Log.d("Constants.TAG", "admin_role Response: " + admin_role);
-                                            Log.d("Constants.TAG", "cashier_role Response: " + cashier_role);
-                                            Log.d("Constants.TAG", "deliverymanager_role Response: " + deliverymanager_role);
-                                            Log.d("Constants.TAG", "reportsviewer_role Response: " + reportsviewer_role);
-                                            Log.d("Constants.TAG", "storemanager_role Response: " + storemanager_role);
+                                            //Log.d(TAG, "admin_role Response: " + admin_role);
+                                            //Log.d(TAG, "cashier_role Response: " + cashier_role);
+                                            //Log.d(TAG, "deliverymanager_role Response: " + deliverymanager_role);
+                                            //Log.d(TAG, "reportsviewer_role Response: " + reportsviewer_role);
+                                            //Log.d(TAG, "storemanager_role Response: " + storemanager_role);
 
                                             savepartnerappacessdetailsinSharePreferences(admin_role,cashier_role,deliverymanager_role,reportsviewer_role,storemanager_role);
                                             //   AlertDialogClass.showDialog(MobileScreen_Dashboard.this, Constants.Order_Value_should_be_above+" "+minordervalueforredeem+" rs",0);
@@ -1110,7 +1296,7 @@ catch (Exception e){
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         editor.apply();
-        //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+        ////Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems+"?storeid="+vendorkey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
@@ -1131,11 +1317,11 @@ catch (Exception e){
                catch (Exception e){
                    e.printStackTrace();
                }
-               //Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
+               ////Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
 
-               //Log.d(TAG, "starting:onResponse ");
+               ////Log.d(TAG, "starting:onResponse ");
 
-               //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+               ////Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                try {
                  //     completemenuItem = new String(String.valueOf(response));
@@ -1146,7 +1332,7 @@ catch (Exception e){
                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                    int i1 = 0;
                    int arrayLength = JArray.length();
-                   //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                   ////Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                    for (; i1 < (arrayLength); i1++) {
@@ -1206,11 +1392,28 @@ catch (Exception e){
 
                            }
 
+                           try {
+                               if (json.has("appmarkuppercentage")) {
+                                   modal_menuItem.appmarkuppercentage = String.valueOf(json.get("appmarkuppercentage"));
+                               } else {
+                                   modal_menuItem.appmarkuppercentage = "0";
+                                  // Toast.makeText(getApplicationContext(),"There is no appmarkuppercentage entry on dashboard",Toast.LENGTH_LONG).show();
+                                   Log.d(Constants.TAG, "There is no appmarkuppercentage for this Menu: " +MenuItemKey );
+
+
+                               }
+                           }
+                           catch (Exception e){
+                               modal_menuItem.appmarkuppercentage = "0";
+                               Toast.makeText(getApplicationContext(),"Error in getting appmarkuppercentage entry on dashboard",Toast.LENGTH_LONG).show();
+
+                               e.printStackTrace();
+                           }
                            if (json.has("applieddiscountpercentage")) {
                                modal_menuItem.applieddiscountpercentage = String.valueOf(json.get("applieddiscountpercentage"));
 
                            } else {
-                               modal_menuItem.applieddiscountpercentage = "";
+                               modal_menuItem.applieddiscountpercentage = "0";
                                ////Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
@@ -1516,6 +1719,114 @@ catch (Exception e){
 
 
                            }
+
+
+                              ////// for TMCPrice
+                                   try{
+                                       double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+                                       try {
+                                           if (json.has("tmcprice")) {
+                                               tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
+
+                                           } else {
+                                               tmcprice_double = 0;
+                                               Toast.makeText(getApplicationContext(),"There is no tmcprice entry on dashboard",Toast.LENGTH_LONG).show();
+
+                                               ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                           }
+                                       }
+                                       catch (Exception e){
+                                           e.printStackTrace();
+                                           Toast.makeText(getApplicationContext(),"Error in getting tmcprice entry on dashboard",Toast.LENGTH_LONG).show();
+                                           tmcprice_double =0;
+                                       }
+                                       if(json.has("appmarkuppercentage")){
+                                           int markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
+
+                                            try{
+                                                appMarkupPercn_value  = (markupPercentageInt * tmcprice_double )/100;
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+
+                                           try{
+                                               tmcpriceWithAppMarkupValue  = appMarkupPercn_value + tmcprice_double;
+                                           }
+                                           catch (Exception e){
+                                               e.printStackTrace();
+                                           }
+                                            modal_menuItem.tmcpriceWithMarkupValue = String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceWithAppMarkupValue))));
+                                       }
+                                       else{
+                                           modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
+
+                                       }
+                                   }
+                                   catch (Exception e){
+                                       Toast.makeText(getApplicationContext(),"Error in calculating tmcpriceWithMarkupValue entry on dashboard",Toast.LENGTH_LONG).show();
+                                       modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(String.valueOf(json.get("tmcprice")));
+
+                                       e.printStackTrace();
+                                   }
+                               ////// for TMCPrice PerKG
+
+                               try{
+                                       double tmcpriceperkg_double =0 ,  tmcpriceperkgWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+                                       try {
+                                           if (json.has("tmcpriceperkg")) {
+                                               tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
+
+                                           } else {
+                                               tmcpriceperkg_double = 0;
+                                               Toast.makeText(getApplicationContext(),"There is no tmcprice entry on dashboard",Toast.LENGTH_LONG).show();
+
+                                               ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                           }
+                                       }
+                                       catch (Exception e){
+                                           e.printStackTrace();
+                                           Toast.makeText(getApplicationContext(),"Error in getting tmcpriceperkg_double entry on dashboard",Toast.LENGTH_LONG).show();
+
+                                           tmcpriceperkg_double =0;
+                                       }
+                                       if(json.has("appmarkuppercentage")){
+                                           int markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
+
+                                           try{
+                                               appMarkupPercn_value  = (markupPercentageInt * tmcpriceperkg_double  )/100;
+                                           }
+                                           catch (Exception e){
+                                               e.printStackTrace();
+                                           }
+
+
+                                           try{
+                                               tmcpriceperkgWithAppMarkupValue  = appMarkupPercn_value + tmcpriceperkg_double;
+                                           }
+                                           catch (Exception e){
+                                               e.printStackTrace();
+                                           }
+                                           modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue))));
+                                       }
+                                       else{
+                                           modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+
+                                       }
+                                   }
+                                   catch (Exception e){
+                                       Toast.makeText(getApplicationContext(),"Error in calculating tmcpriceperkgWithMarkupValue entry on dashboard",Toast.LENGTH_LONG).show();
+                                       modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(String.valueOf(json.get("tmcpriceperkg")));
+
+                                       e.printStackTrace();
+                                   }
+
+
+
+
+
+
                            if (json.has("itemcutdetails")) {
                                try {
                                    modal_menuItem.itemcutdetails = String.valueOf(json.get("itemcutdetails"));
@@ -1624,10 +1935,10 @@ catch (Exception e){
                //saveMenuIteminSharedPreference(MenuList);
 
 
-               //Log.d(TAG, "sending :Response " + completemenuItem);
+               ////Log.d(TAG, "sending :Response " + completemenuItem);
 
 
-               //Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+               ////Log.d(TAG, "MenuItems: " + completemenuItem.toString());
            }
            catch (Exception e){
                e.printStackTrace();
@@ -1643,13 +1954,13 @@ catch (Exception e){
                 if (gettingMenuItemRetryCount>0){
                     gettingMenuItemRetryCount = gettingMenuItemRetryCount-1;
                //     getMenuItemusingStoreId();
-                    //Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
+                    Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
 
 
                 }
-                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(TAG, "Error: " + error.getMessage());
-                //Log.d(TAG, "Error: " + error.toString());
+                Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(TAG, "Error: " + error.getMessage());
+                Log.d(TAG, "Error: " + error.toString());
                 Log.d("RVA", "error:" + error);
                 completemenuItem="";
                 MenuList.clear();
@@ -1768,7 +2079,7 @@ catch (Exception e){
                         //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                       // //Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
 
                         for (; i1 < (arrayLength); i1++) {
 
@@ -2103,7 +2414,7 @@ catch (Exception e){
 
 
     private String getMarinadeMenuItemusingStoreId(String vendorKey) {
-        //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+        ////Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
         completeMarinademenuItem="";
         MarinadeMenuList.clear();
         SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
@@ -2115,21 +2426,21 @@ catch (Exception e){
             @Override
             public void onResponse(@NonNull JSONObject response) {
                 try{
-                    //Log.d(TAG, "starting:onResponse ");
+                    ////Log.d(TAG, "starting:onResponse ");
                     completeMarinademenuItem="";
                     MarinadeMenuList.clear();
                     SharedPreferences preferences =getSharedPreferences("MarinadeMenuList",Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.clear();
                     editor.apply();
-                    //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                    ////Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
                     try {
                         JSONArray JArray = response.getJSONArray("content");
                         ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                         int i1 = 0;
                         int arrayLength = JArray.length();
-                        //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+                        ////Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
 
 
                         for (; i1 < (arrayLength); i1++) {
@@ -2153,7 +2464,7 @@ catch (Exception e){
 
                                 }
                                 else{
-                                    modal_menuItem.applieddiscountpercentage = "";
+                                    modal_menuItem.applieddiscountpercentage = "0";
                                     ////Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
@@ -2398,9 +2709,9 @@ catch (Exception e){
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                //Log.d(TAG, "Error: " + error.getLocalizedMessage());
-                //Log.d(TAG, "Error: " + error.getMessage());
-                //Log.d(TAG, "Error: " + error.toString());
+                Log.d(TAG, "Error: " + error.getLocalizedMessage());
+                Log.d(TAG, "Error: " + error.getMessage());
+                Log.d(TAG, "Error: " + error.toString());
               //  Toast.makeText(Pos_Dashboard_Screen.this,"Error in Getting Marinade Menu Item ",Toast.LENGTH_LONG).show();
                 Log.d("RVA", "error:" + error);
                 completeMarinademenuItem="";

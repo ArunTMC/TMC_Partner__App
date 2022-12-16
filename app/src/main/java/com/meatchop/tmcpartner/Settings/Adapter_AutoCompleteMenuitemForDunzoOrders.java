@@ -155,417 +155,376 @@ public class Adapter_AutoCompleteMenuitemForDunzoOrders extends ArrayAdapter<Mod
                 //Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + menuuItem.getTmcprice());
 
                 Modal_NewOrderItems modal_newOrderItems = new Modal_NewOrderItems();
-                if (String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
-
-                    modal_newOrderItems.istmcpriceperkgitemedited = "FALSE";
+                if (Double.parseDouble(menuuItem.getDunzoprice()) <= 0) {
+                    Toast.makeText(context, "Please Add Dunzo Price value for this item before billing it ", Toast.LENGTH_SHORT).show();
                 }
-                else{
-                    modal_newOrderItems.istmcpriceperkgitemedited = "TRUE";
+                else {
+                    if (String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
 
-                }
-                //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
-                //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
-                modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoprice()))));
-                modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoprice()))));
-                //    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
-                modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
+                        modal_newOrderItems.istmcpriceperkgitemedited = "FALSE";
+                    } else {
+                        modal_newOrderItems.istmcpriceperkgitemedited = "TRUE";
+
+                    }
+                    //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
+                    //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
+                    modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoprice()))));
+                    modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getDunzoprice()))));
+                    //    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+                    modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
 
 
+                    if (String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
+                        int priceperKg = Integer.parseInt(String.valueOf(menuuItem.getDunzoprice()));
+                        String weight_string = String.valueOf(menuuItem.getGrossweight());
+                        weight_string = weight_string.replaceAll("[^\\d.]", "");
 
-                if (String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
-                    int priceperKg = Integer.parseInt(String.valueOf(menuuItem.getDunzoprice()));
-                    String weight_string =String.valueOf(menuuItem.getGrossweight());
-                    weight_string =weight_string .replaceAll("[^\\d.]", "");
+                        int weight = Integer.parseInt(weight_string);
+                        if (weight < 1000) {
+                            item_total = (priceperKg * weight);
+                            //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
 
-                    int weight = Integer.parseInt(weight_string);
-                    if (weight < 1000) {
-                        item_total = (priceperKg * weight);
-                        //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
+                            //Log.e("TAG", "adapter 9 item_total weight" + weight);
 
-                        //Log.e("TAG", "adapter 9 item_total weight" + weight);
+                            //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
 
-                        //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
+                            item_total = item_total / 1000;
+                            //Log.e("TAG", "adapter 9 item_total " + item_total);
 
-                        item_total = item_total / 1000;
-                        //Log.e("TAG", "adapter 9 item_total " + item_total);
+                            //Log.e("TAg", "weight2" + weight);
+                            item_total = Double.parseDouble(decimalFormat.format(item_total));
 
-                        //Log.e("TAg", "weight2" + weight);
-                        item_total = Double.parseDouble(decimalFormat.format(item_total));
+                            item_total = 0;
+                            modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(item_total)));
+                            modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(item_total)));
+                            // modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
 
-                        item_total =0;
-                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(item_total)));
-                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(item_total)));
-                        // modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
-                        modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
+                            //Log.e("TAg", "weight item_total" + item_total);
 
-                        //Log.e("TAg", "weight item_total" + item_total);
 
+                        }
+
+                        if (weight == 1000) {
+
+
+                            priceperKg = 0;
+                            priceperKg = Integer.parseInt(menuuItem.getDunzoprice());
+
+                            modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(priceperKg)));
+                            modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(priceperKg)));
+                            // modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
+
+
+                        }
+
+                        if (weight > 1000) {
+                            priceperKg = Integer.parseInt(menuuItem.getDunzoprice());
+
+                            int itemquantity = weight - 1000;
+
+                            item_total = (priceperKg * itemquantity) / 1000;
+                            item_total = Double.parseDouble(decimalFormat.format(item_total));
+
+
+                            double total = priceperKg + item_total;
+                            total = Double.parseDouble(decimalFormat.format((total)));
+                            total = 0.0;
+                            modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(total)));
+                            modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(total)));
+                            //   modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
+
+
+                        }
 
 
                     }
 
-                    if (weight == 1000) {
 
+                    try {
+                        modal_newOrderItems.setDiscountpercentage(String.valueOf(menuuItem.getDiscountpercentage()));
 
-                        priceperKg=0;
-                        priceperKg = Integer.parseInt(menuuItem.getDunzoprice());
-
-                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(priceperKg)));
-                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(priceperKg)));
-                        // modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
-                        modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
-
-
-                    }
-
-                    if (weight > 1000) {
-                        priceperKg = Integer.parseInt(menuuItem.getDunzoprice());
-
-                        int itemquantity = weight - 1000;
-
-                        item_total = (priceperKg * itemquantity) / 1000;
-                        item_total = Double.parseDouble(decimalFormat.format(item_total));
-
-
-
-                        double total = priceperKg + item_total;
-                        total = Double.parseDouble(decimalFormat.format((total)));
-                        total =0.0;
-                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(total)));
-                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(total)));
-                        //   modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
-                        modal_newOrderItems.setItemFinalWeight(String.valueOf(""));
-
-
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Discout Percentage at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+                        modal_newOrderItems.setDiscountpercentage("0");
                     }
 
 
-                }
+                    try {
+                        if (menuuItem.getTmcsubctgykey().equals("")) {
+                            modal_newOrderItems.setTmcsubctgykey("0");
 
-
-                try{
-                    modal_newOrderItems.setDiscountpercentage(String.valueOf(menuuItem.getDiscountpercentage()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu Discout Percentage at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-                    modal_newOrderItems.setDiscountpercentage("0");
-                }
-
-
-
-                try{
-                    if(menuuItem.getTmcsubctgykey().equals("")){
-                        modal_newOrderItems.setTmcsubctgykey("0");
+                        } else {
+                            modal_newOrderItems.setTmcsubctgykey(String.valueOf(((menuuItem.getTmcsubctgykey()))));
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu TMC SubCtgyKey at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
 
                     }
-                    else {
-                        modal_newOrderItems.setTmcsubctgykey(String.valueOf(((menuuItem.getTmcsubctgykey()))));
+                    try {
+                        modal_newOrderItems.setMenuItemId(String.valueOf(menuuItem.getMenuItemId()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item ID at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
                     }
+                    try {
+                        modal_newOrderItems.setItemname(String.valueOf(menuuItem.getItemname()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item Name at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+                    try {
+                        modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkg()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item PriceperKg at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcprice()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item TMCPrice at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setGstpercentage(String.valueOf(menuuItem.getGstpercentage()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item GSTPercentage at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setPortionsize(String.valueOf(menuuItem.getPortionsize()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item Portion size at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setSwiggyprice(String.valueOf(menuuItem.getSwiggyAmount()));
+
+                    } catch (Exception e) {
+                        //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setBigbasketprice(String.valueOf(menuuItem.getBigbasketAmount()));
+
+                    } catch (Exception e) {
+                        //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+                    try {
+                        modal_newOrderItems.setDunzoprice(String.valueOf(menuuItem.getDunzoprice()));
+
+                    } catch (Exception e) {
+                        //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setGrossweight(String.valueOf(menuuItem.getGrossweight()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item Gross Weight at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setPricetypeforpos(String.valueOf(menuuItem.getPricetypeforpos()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item Pricetype for Pos at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setItemuniquecode(String.valueOf(menuuItem.getItemuniquecode()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item UniqueCode  at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setNetweight(String.valueOf(menuuItem.getNetweight()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu NetWeight  at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setTmcctgykey(String.valueOf(menuuItem.getTmcctgykey()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item ctgykey at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setItemcutdetails(String.valueOf(menuuItem.getItemcutdetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item CutDetails  at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setItemweightdetails(String.valueOf(menuuItem.getItemweightdetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item Weight  at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setInventorydetails(String.valueOf(menuuItem.getInventorydetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Item inventorydetails  at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setBarcode_AvlDetails(String.valueOf(menuuItem.getBarcode_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu Barcode AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+                    try {
+                        modal_newOrderItems.setItemavailability(String.valueOf(menuuItem.getItemavailability()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setItemavailability_AvlDetails(String.valueOf(menuuItem.getItemavailability_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setKey_AvlDetails(String.valueOf(menuuItem.getKey_AvlDetails()));
+
+                    } catch (Exception e) {
+                        modal_newOrderItems.setKey_AvlDetails("nil");
+                        Toast.makeText(context, "Can't Get Menu Key AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setLastupdatedtime_AvlDetails(String.valueOf(menuuItem.getLastupdatedtime_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu LastupdatedTime AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setMenuitemkey_AvlDetails(String.valueOf(menuuItem.getMenuitemkey_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu MenuItem AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setReceivedstock_AvlDetails(String.valueOf(menuuItem.getReceivedstock_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu ReceivedStock AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setStockbalance_AvlDetails(String.valueOf(menuuItem.getStockbalance_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu stockBalance AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setStockincomingkey_AvlDetails(String.valueOf(menuuItem.getStockincomingkey_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu stock incoming AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setVendorkey_AvlDetails(String.valueOf(menuuItem.getVendorkey_AvlDetails()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu vendorkey AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setAllownegativestock(String.valueOf(menuuItem.getAllownegativestock()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu allownegativestock at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+                    try {
+                        modal_newOrderItems.setKey(String.valueOf(menuuItem.getKey()));
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Get Menu key AvlDetails at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    try {
+                        modal_newOrderItems.setQuantity("1");
+                        modal_newOrderItems.setSubTotal_perItem("");
+                        modal_newOrderItems.setTotal_of_subTotal_perItem("");
+                        modal_newOrderItems.setTotalGstAmount("");
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Can't Set Menu Item details at AutoComplete Menu Adapter ", Toast.LENGTH_LONG).show();
+
+                    }
+                    addItemIntheCart(modal_newOrderItems, modal_newOrderItems.getItemFinalWeight(), modal_newOrderItems.getItemuniquecode());
+                    //   int last_index =  (AddDunzoOrders.cart_Item_List.size()-1);
+                    //  AddDunzoOrders.cart_Item_List.set(last_index,modal_newOrderItems);
+                    //    AddDunzoOrders.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                    //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 2 " + menuuItem.getTmcpriceperkg());
+                    //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 2 " +  menuuItem.getPricePerItem());
+
+
+                    sendHandlerMessage("dismissdropdown");
                 }
-                catch(Exception e){
-                    Toast.makeText(context,"Can't Get Menu TMC SubCtgyKey at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-                try{
-                    modal_newOrderItems.setMenuItemId(String.valueOf(menuuItem.getMenuItemId()));
-
-                }
-                catch(Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item ID at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-                try{
-                    modal_newOrderItems.setItemname(String.valueOf(menuuItem.getItemname()));
-
-                }
-                catch(Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item Name at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-                try {
-                    modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkg()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item PriceperKg at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcprice()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item TMCPrice at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setGstpercentage(String.valueOf(menuuItem.getGstpercentage()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item GSTPercentage at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setPortionsize(String.valueOf(menuuItem.getPortionsize()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item Portion size at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setSwiggyprice(String.valueOf(menuuItem.getSwiggyAmount()));
-
-                }
-                catch (Exception e){
-                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try {
-                    modal_newOrderItems.setBigbasketprice(String.valueOf(menuuItem.getBigbasketAmount()));
-
-                }
-                catch (Exception e){
-                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-                try {
-                    modal_newOrderItems.setDunzoprice(String.valueOf(menuuItem.getDunzoprice()));
-
-                }
-                catch (Exception e){
-                    //    Toast.makeText(context,"Can't Get Menu Item Swiggy Price at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try {
-                    modal_newOrderItems.setGrossweight(String.valueOf(menuuItem.getGrossweight()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item Gross Weight at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setPricetypeforpos(String.valueOf(menuuItem.getPricetypeforpos()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item Pricetype for Pos at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try {
-                    modal_newOrderItems.setItemuniquecode(String.valueOf(menuuItem.getItemuniquecode()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item UniqueCode  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setNetweight(String.valueOf(menuuItem.getNetweight()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu NetWeight  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try{
-                    modal_newOrderItems.setTmcctgykey(String.valueOf(menuuItem.getTmcctgykey()));
-
-                }
-                catch(Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item ctgykey at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try {
-                    modal_newOrderItems.setItemcutdetails(String.valueOf(menuuItem.getItemcutdetails()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item CutDetails  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setItemweightdetails(String.valueOf(menuuItem.getItemweightdetails()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item Weight  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try {
-                    modal_newOrderItems.setInventorydetails(String.valueOf(menuuItem.getInventorydetails()));
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Get Menu Item inventorydetails  at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-
-                try{
-                    modal_newOrderItems.setBarcode_AvlDetails(String.valueOf(menuuItem.getBarcode_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu Barcode AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-                try{
-                    modal_newOrderItems.setItemavailability(String.valueOf(menuuItem.getItemavailability()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try{
-                    modal_newOrderItems.setItemavailability_AvlDetails(String.valueOf(menuuItem.getItemavailability_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu ItemAvailability AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try{
-                    modal_newOrderItems.setKey_AvlDetails(String.valueOf(menuuItem.getKey_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    modal_newOrderItems.setKey_AvlDetails("nil");
-                    Toast.makeText(context,"Can't Get Menu Key AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try{
-                    modal_newOrderItems.setLastupdatedtime_AvlDetails(String.valueOf(menuuItem.getLastupdatedtime_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu LastupdatedTime AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try{
-                    modal_newOrderItems.setMenuitemkey_AvlDetails(String.valueOf(menuuItem.getMenuitemkey_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu MenuItem AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-
-                try{
-                    modal_newOrderItems.setReceivedstock_AvlDetails(String.valueOf(menuuItem.getReceivedstock_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu ReceivedStock AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-
-                try{
-                    modal_newOrderItems.setStockbalance_AvlDetails(String.valueOf(menuuItem.getStockbalance_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu stockBalance AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try{
-                    modal_newOrderItems.setStockincomingkey_AvlDetails(String.valueOf(menuuItem.getStockincomingkey_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu stock incoming AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-                try{
-                    modal_newOrderItems.setVendorkey_AvlDetails(String.valueOf(menuuItem.getVendorkey_AvlDetails()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu vendorkey AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-
-                try{
-                    modal_newOrderItems.setAllownegativestock(String.valueOf(menuuItem.getAllownegativestock()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu allownegativestock at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-                try{
-                    modal_newOrderItems.setKey(String.valueOf(menuuItem.getKey()));
-
-                }
-                catch(Exception e ){
-                    Toast.makeText(context,"Can't Get Menu key AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-
-
-
-
-
-                try {
-                    modal_newOrderItems.setQuantity("1");
-                    modal_newOrderItems.setSubTotal_perItem("");
-                    modal_newOrderItems.setTotal_of_subTotal_perItem("");
-                    modal_newOrderItems.setTotalGstAmount("");
-
-                }
-                catch (Exception e){
-                    Toast.makeText(context,"Can't Set Menu Item details at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
-
-                }
-                addItemIntheCart(modal_newOrderItems,modal_newOrderItems.getItemFinalWeight(),modal_newOrderItems.getItemuniquecode());
-                //   int last_index =  (AddDunzoOrders.cart_Item_List.size()-1);
-                //  AddDunzoOrders.cart_Item_List.set(last_index,modal_newOrderItems);
-                //    AddDunzoOrders.adapter_cartItem_recyclerview.notifyDataSetChanged();
-                //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 2 " + menuuItem.getTmcpriceperkg());
-                //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 2 " +  menuuItem.getPricePerItem());
-
-
-                sendHandlerMessage("dismissdropdown");
-
             }
 
         });

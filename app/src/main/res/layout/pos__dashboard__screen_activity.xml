@@ -13,6 +13,15 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
         <LinearLayout
+            android:id="@+id/loadingpanelmask_userAccess"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/TMC_ProgressBar_Color"
+            android:alpha="0.95"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:visibility="gone" />
+        <LinearLayout
             android:id="@+id/loadingpanelmask"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

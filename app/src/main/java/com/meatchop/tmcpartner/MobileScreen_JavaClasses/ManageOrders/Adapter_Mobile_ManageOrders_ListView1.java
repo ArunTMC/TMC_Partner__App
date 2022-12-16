@@ -65,8 +65,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.USER_SERVICE;
@@ -131,7 +133,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
         //orderdetailsnewschema = true;
         updateweightforonlineorders = (shared.getBoolean("updateweightforonlineorders", false));
-
         final TextView orderid_text_widget = listViewItem.findViewById(R.id.orderid_text_widget);
 
         final CardView cardLayout =listViewItem.findViewById(R.id.cardLayout);
@@ -1567,6 +1568,12 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                                             if (pricetypeforpos.toString().toUpperCase().equals("TMCPRICEPERKG")) {
                                                 pricePerKgItemCount++;
                                             }
+                                            else{
+                                                if((!inventoryDetails_String.equals("nil") && !inventoryDetails_String.equals(""))){
+                                                    pricePerKgItemCount++;
+
+                                                }
+                                            }
 
                                             json.put("pricetypeforpos", pricetypeforpos);
 
@@ -2432,10 +2439,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 try{
                     Date c = Calendar.getInstance().getTime();
 
-                    SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                    String time  = day.format(c);
-                    System.out.println("button clicked time " + time);
-
 
                     List<Modal_ManageOrders_Pojo_Class> orderdItems_desp_local = new ArrayList<>();
                     orderdItems_desp_local.clear();
@@ -2645,9 +2648,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
     private void CalculateStockBalanceAndAddStockBalaHistory_OutgngDetails(String changestatusto, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp) {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-        String time  = day.format(c);
-        System.out.println("CalculateStockBalanceAsync method  time " + time);
 
 
         mResultCallback_Add_UpdateInventoryEntriesInterface = new Add_UpdateInventoryDetailsEntries_Interface(){
@@ -2670,9 +2670,6 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
 
                 Date c = Calendar.getInstance().getTime();
 
-                SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
-                String time  = day.format(c);
-                System.out.println("Success response method  time " + time);
 
             }
 
@@ -2695,7 +2692,7 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
         };
 
 
-        Add_UpdateInventoryDetailsEntries_AsyncTask asyncTask=new Add_UpdateInventoryDetailsEntries_AsyncTask(mContext, mResultCallback_Add_UpdateInventoryEntriesInterface,vendorkey,orderid,customerMobileNo,currenttime,orderdItems_desp,mobile_manageOrders1.MenuItem);
+        Add_UpdateInventoryDetailsEntries_AsyncTask asyncTask=new  Add_UpdateInventoryDetailsEntries_AsyncTask(mContext, mResultCallback_Add_UpdateInventoryEntriesInterface,vendorkey,orderid,customerMobileNo,currenttime,orderdItems_desp,mobile_manageOrders1.MenuItem);
         asyncTask.execute();
 
 
@@ -3314,17 +3311,23 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
     {
 
         Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy" ,Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDate = df.format(c);
 
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;

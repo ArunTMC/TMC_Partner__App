@@ -82,6 +82,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import okhttp3.OkHttpClient;
 import okhttp3.WebSocket;
@@ -200,8 +201,8 @@ public class Mobile_ManageOrders1 extends Fragment {
         //Log.i("SocketConnection","t   ");
 
 
-            OkHttpClient client = new OkHttpClient();
-            okhttp3.Request request = new okhttp3.Request.Builder().url(SERVER_PATH).addHeader("VendorKey",vendorKey).build();
+           // OkHttpClient client = new OkHttpClient();
+          //  okhttp3.Request request = new okhttp3.Request.Builder().url(SERVER_PATH).addHeader("VendorKey",vendorKey).build();
             //Log.i("SocketConnection","  "+request.toString());
          //   webSocket = client.newWebSocket(request, new SocketListener());
             //Log.i("SocketConnection","  "+webSocket.queueSize());
@@ -1742,16 +1743,22 @@ public class Mobile_ManageOrders1 extends Fragment {
         System.out.println("nextDate " + todaysDate);
 
         String next_day = "";
-        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        //dateFormatForDisplaying.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         if (orderdetailsnewschema) {
 
-            dateFormatForDisplaying = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            dateFormatForDisplaying = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
 
         } else {
-             dateFormatForDisplaying = new SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault());
+             dateFormatForDisplaying = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
 
         }
+        dateFormatForDisplaying.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         //calander_view.setCurrentDayBackgroundColor(context.getResources().getColor(R.color.gray_color));
         String date_format = dateFormatForDisplaying.format(todaysDate);
         final Calendar calendar = Calendar.getInstance();
@@ -1793,17 +1800,23 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
         if(orderdetailsnewschema){
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd" ,Locale.ENGLISH) ;
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
             String PreviousdayDate = df.format(c1);
             return PreviousdayDate;
 
         }
         else {
-            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             String PreviousdayDay = previousday.format(c1);
 
-            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy", Locale.ENGLISH);
+            df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             String PreviousdayDate = df1.format(c1);
+
             PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
 
 
@@ -1814,16 +1827,22 @@ public class Mobile_ManageOrders1 extends Fragment {
     private String convertnewFormatDateintoOldFormat(String todaysdate) {
 
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDay = day.format(date);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(date);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -1846,7 +1865,9 @@ public class Mobile_ManageOrders1 extends Fragment {
         Date c = calendar.getTime();
 
         if(orderdetailsnewschema){
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(c);
             return CurrentDate;
 
@@ -1854,16 +1875,20 @@ public class Mobile_ManageOrders1 extends Fragment {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDay = day.format(c);
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
 
 
-            System.out.println("todays Date  " + CurrentDate);
 
 
             return CurrentDate;
@@ -1879,16 +1904,19 @@ public class Mobile_ManageOrders1 extends Fragment {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
         if(orderdetailsnewschema){
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(c);
             return CurrentDate;
 
         }
         else {
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(c);
 
-            System.out.println("Current  " + CurrentDate);
 
 
             return CurrentDate;
@@ -2526,7 +2554,9 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
     public  boolean CheckWeathertheOrderisPlacedLessThan3Mins(String orderPlacedTime) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         Date date = null;
         try {
             date = dateFormat.parse(orderPlacedTime);
@@ -2538,7 +2568,6 @@ public class Mobile_ManageOrders1 extends Fragment {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 
-        Log.d(Constants.TAG, "log orderPlacedTime : " + orderPlacedTime);
 
 
         calendar.add(Calendar.MINUTE, 3);
@@ -2546,30 +2575,35 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
         Date c1 = calendar.getTime();
-        SimpleDateFormat df1 = new SimpleDateFormat("EEE");
+        SimpleDateFormat df1 = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String predictedday = df1.format(c1);
 
 
 
-        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df2 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df2.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String  predicteddate = df2.format(c1);
         String predicteddateandday = predictedday+", "+predicteddate;
 
 
-        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat df3 = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        df3.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  predictedtime = df3.format(c1);
         String predicteddateanddayandtime = predictedday+", "+predicteddate+" "+predictedtime;
 
-        Log.d(Constants.TAG, "log predicteddateanddayandtime : " + predicteddateanddayandtime);
 
         long predictedLongForDate = Long.parseLong(getLongValuefortheDate(predicteddateanddayandtime));
         String  currentTime = getDate_and_time();
-        Log.d(Constants.TAG, "log currentTime : " +currentTime);
 
         long currentTimeLong = Long.parseLong(getLongValuefortheDate(currentTime));
         if(currentTimeLong>=predictedLongForDate){//current time is greater or equals order placed time + 3 minutes
-            Log.d(Constants.TAG, "log currentTimeLong : " +currentTimeLong);
-            Log.d(Constants.TAG, "log predictedLongForDate : " +predictedLongForDate);
 
             return false;
 
@@ -5205,7 +5239,9 @@ public class Mobile_ManageOrders1 extends Fragment {
             String time1 = orderplacedtime;
             //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             Date date = sdf.parse(time1);
             long time1long = date.getTime() / 1000;
             longvalue = String.valueOf(time1long);
@@ -5226,7 +5262,9 @@ public class Mobile_ManageOrders1 extends Fragment {
                 String time1 = orderplacedtime;
                 //     Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy",Locale.ENGLISH);
+
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                 Date date = sdf.parse(time1);
                 long time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);
@@ -5249,15 +5287,21 @@ public class Mobile_ManageOrders1 extends Fragment {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -5274,7 +5318,9 @@ public class Mobile_ManageOrders1 extends Fragment {
         //   Log.d(TAG, "slottime  "+slottime);
         if (slottime.contains("mins")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
@@ -5293,7 +5339,9 @@ public class Mobile_ManageOrders1 extends Fragment {
                     e.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
@@ -5302,7 +5350,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                 result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
                 System.out.println("Time here 90 mins" + result);
 
-                result = result.replaceAll("GMT[+]05:30", "");
+                result = result.replaceAll("IST[+]05:30", "");
 
                 //  System.out.println("Time here "+result);
             } catch (ParseException e) {

@@ -33,17 +33,16 @@ import static com.meatchop.tmcpartner.Constants.TAG;
 
 public class Adapter_AutoCompleteMenuItem extends ArrayAdapter<Modal_NewOrderItems> {
     String menulist;
-    private  List<Modal_NewOrderItems> menuListFull=new ArrayList<>();
+  //  private  List<Modal_NewOrderItems> menuListFull=new ArrayList<>();
     private  Context context;
-      List<Modal_NewOrderItems> completemenuItem=new ArrayList<>();
-
+    List<Modal_NewOrderItems> completemenuItem=new ArrayList<>();
     private Handler handler;
     int currentPosition;
 public Adapter_AutoCompleteMenuItem(@NonNull Context context, @NonNull String menuList, int adapterPosition, List<Modal_NewOrderItems> completemenuItem) {
         super(context, 0);
         this.menulist=menuList;
         this.completemenuItem= completemenuItem;
-        convertMenuStringtoJson(menulist);
+        //convertMenuStringtoJson(menulist);
         this.currentPosition=adapterPosition;
         this.context=context;
         }
@@ -106,28 +105,12 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
             //Log.d("TAG", "itemInCart in Adapter menuItem gstpercentage" + menuuItem.getTmcprice());
 
             Modal_NewOrderItems modal_newOrderItems = new Modal_NewOrderItems();
-            if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcprice")){
-                modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
-                modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
-                modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
-
-            }
-            if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
-                modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
-                modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
-                modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
-
-                //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
-                //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
-
-
-
-            }
             try{
-                modal_newOrderItems.setDiscountpercentage(String.valueOf(menuuItem.getDiscountpercentage()));
+                modal_newOrderItems.setApplieddiscountpercentage(String.valueOf(menuuItem.getApplieddiscountpercentage()));
 
             }
             catch(Exception e ){
+                modal_newOrderItems.setApplieddiscountpercentage("0");
                 Toast.makeText(context,"Can't Get Menu Discout Percentage at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
             }
@@ -171,8 +154,30 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                 Toast.makeText(context,"Can't Get Menu Item Name at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
             }
+
+
+
             try {
-                modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkg()));
+
+                if(NewOrders_MenuItem_Fragment.isPhoneOrderSelected) {
+                    if((!String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()).equals("0")) && (!String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()).equals("0.00"))  && (!String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()).equals("0.0"))  && (!String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()).equals(""))){
+                        modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()));
+                    }
+                    else{
+                        String tmcPriceperKgWithMarkup_calcNow = CalculateTmcPricePerKgValueWithMarkup(modal_newOrderItems);
+                        modal_newOrderItems.setTmcpriceperkg(String.valueOf(tmcPriceperKgWithMarkup_calcNow));
+                        menuuItem.setTmcpriceperkgWithMarkupValue(String.valueOf(tmcPriceperKgWithMarkup_calcNow));
+
+
+                    }
+
+
+                }
+                else{
+                    modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkg()));
+
+                }
+
 
             }
             catch (Exception e){
@@ -181,11 +186,99 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
             }
 
             try {
-                modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcprice()));
+                if(NewOrders_MenuItem_Fragment.isPhoneOrderSelected) {
+
+                    if((!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0")) && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0.00"))  && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0.0")) && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals(""))) {
+                        modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcpriceWithMarkupValue()));
+                    }
+                    else{
+                        String tmcPriceWithMarkup_calcNow = CalculateTmcPriceValueWithMarkup(modal_newOrderItems);
+                        modal_newOrderItems.setTmcprice(String.valueOf(tmcPriceWithMarkup_calcNow));
+                        menuuItem .setTmcpriceWithMarkupValue(String.valueOf(tmcPriceWithMarkup_calcNow));
+                    }
+
+
+
+                }
+                else{
+                    modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcprice()));
+
+                }
 
             }
             catch (Exception e){
                 Toast.makeText(context,"Can't Get Menu Item TMCPrice at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+            }
+
+
+
+            if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcprice")){
+                if(NewOrders_MenuItem_Fragment.isPhoneOrderSelected) {
+                    if((!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0")) && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0.00"))  && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0.0")) && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals(""))) {
+                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                    }
+                    else{
+                        String tmcPriceWithMarkup_calcNow = CalculateTmcPriceValueWithMarkup(modal_newOrderItems);
+                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(tmcPriceWithMarkup_calcNow));
+                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(tmcPriceWithMarkup_calcNow));
+                        menuuItem .setTmcpriceWithMarkupValue(String.valueOf(tmcPriceWithMarkup_calcNow));
+                    }
+
+                    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                }
+                else{
+                    modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                    modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                }
+
+            }
+            if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
+
+                if(NewOrders_MenuItem_Fragment.isPhoneOrderSelected) {
+
+                    if((!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0")) && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0.00"))  && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals("0.0")) && (!String.valueOf(menuuItem.getTmcpriceWithMarkupValue()).equals(""))) {
+                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                    }
+                    else{
+                        String tmcPriceWithMarkup_calcNow = CalculateTmcPriceValueWithMarkup(modal_newOrderItems);
+                        modal_newOrderItems.itemFinalPrice =  ( String.valueOf(tmcPriceWithMarkup_calcNow));
+                        modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(tmcPriceWithMarkup_calcNow));
+                        menuuItem .setTmcpriceWithMarkupValue(String.valueOf(tmcPriceWithMarkup_calcNow));
+                    }
+
+                    //modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                  //  modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                }
+                else{
+                    modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                    modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                    modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                }
+
+
+
+                //Log.d("TAG", "itemInCart in Adapter menuItem getTmcpriceperkg 1 " + menuuItem.getTmcpriceperkg());
+                //Log.d("TAG", "itemInCart in Adapter menuItem getItemFinalPrice 1 " +  menuuItem.getPricePerItem());
+
+
+
+            }
+
+            try {
+                modal_newOrderItems.setAppmarkuppercentage(String.valueOf(menuuItem.getAppmarkuppercentage()));
+
+            }
+            catch (Exception e){
+                Toast.makeText(context,"Can't Get Menu Item AppMarkupPercentage at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
             }
 
@@ -370,6 +463,14 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                 Toast.makeText(context,"Can't Get Menu stock incoming AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
             }
+            try{
+                modal_newOrderItems.setStockincomingkey(String.valueOf(menuuItem.getStockincomingkey_AvlDetails()));
+
+            }
+            catch(Exception e ){
+                Toast.makeText(context,"Can't Get Menu stock incoming AvlDetails at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+            }
 
 
             try{
@@ -462,6 +563,107 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
     return convertView;
         }
+    private String CalculateTmcPriceValueWithMarkup(Modal_NewOrderItems modal_newOrderItems) {
+        String  tmcpriceWithAppMarkupValueString = "0";
+        try{
+            double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+
+            try {
+
+                tmcprice_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getTmcprice()));
+
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                Toast.makeText(context,"The tmcprice_double Zero in CalculateTmcPriceValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+
+                tmcprice_double =0;
+            }
+            int markupPercentageInt = Integer.parseInt(String.valueOf(modal_newOrderItems.getAppmarkuppercentage()));
+
+            try{
+                appMarkupPercn_value  = (markupPercentageInt * tmcprice_double )/100;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            try{
+                tmcpriceWithAppMarkupValue  = appMarkupPercn_value + tmcprice_double;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                tmcpriceWithAppMarkupValueString = (String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceWithAppMarkupValue)))));
+            }
+            catch (Exception e){
+                tmcpriceWithAppMarkupValueString = String.valueOf(tmcpriceWithAppMarkupValue);
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            tmcpriceWithAppMarkupValueString = String.valueOf(modal_newOrderItems.getTmcprice());
+            Toast.makeText(context,"There is an error in CalculateTmcPriceValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+
+            e.printStackTrace();
+        }
+        return tmcpriceWithAppMarkupValueString;
+
+    }
+
+    private String CalculateTmcPricePerKgValueWithMarkup(Modal_NewOrderItems modal_newOrderItems) {
+        String tmcpriceperkgWithAppMarkupValueString ="0";
+        try{
+            double tmcpriceperkg_double =0 ,  tmcpriceperkgWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+
+            try {
+
+                tmcpriceperkg_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getTmcpriceperkg()));
+
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                Toast.makeText(context,"The tmcpriceperkg_double Zero in CalculateTmcPricePerKgValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+
+                tmcpriceperkg_double =0;
+            }
+
+            int markupPercentageInt = Integer.parseInt(String.valueOf(modal_newOrderItems.getAppmarkuppercentage()));
+
+            try{
+                appMarkupPercn_value  = (markupPercentageInt * tmcpriceperkg_double  )/100;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            try{
+                tmcpriceperkgWithAppMarkupValue  = appMarkupPercn_value + tmcpriceperkg_double;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                tmcpriceperkgWithAppMarkupValueString = String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue))));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+        catch (Exception e){
+            Toast.makeText(context,"There is an error in CalculateTmcPricePerKgValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+            tmcpriceperkgWithAppMarkupValueString = String.valueOf(modal_newOrderItems.getTmcpriceperkg());
+
+            e.printStackTrace();
+        }
+        return  tmcpriceperkgWithAppMarkupValueString;
+    }
 
 
 
@@ -481,9 +683,10 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
             modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(finalprice)));
             modal_newOrderItems.setQuantity(String.valueOf(quantity));
             NewOrders_MenuItem_Fragment.cartItem_hashmap.put(itemUniquecode,modal_newOrderItems);
+            Adapter_CartItem_Recyclerview.itemInCart.put(itemUniquecode,modal_newOrderItems);
             if(checkforBarcodeInCart("empty")) {
                 NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
-
+                Adapter_CartItem_Recyclerview.itemInCart.remove("empty");
                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
             }
 
@@ -494,10 +697,13 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                 NewOrders_MenuItem_Fragment.cart_Item_List.remove("empty");
 
                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove("empty");
+                Adapter_CartItem_Recyclerview.itemInCart.remove("empty");
+
             }
 
             NewOrders_MenuItem_Fragment.cart_Item_List.add(itemUniquecode);
             NewOrders_MenuItem_Fragment.cartItem_hashmap.put(itemUniquecode,newItem_newOrdersPojoClass);
+            Adapter_CartItem_Recyclerview.itemInCart.put(itemUniquecode,newItem_newOrdersPojoClass);
 
         }
         NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
@@ -754,6 +960,22 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
 
                     try{
+                        if(json.has("appmarkuppercentage")){
+                            newOrdersPojoClass.appmarkuppercentage =String.valueOf(json.get("appmarkuppercentage"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.appmarkuppercentage = "0";
+                        }
+                    }
+                    catch (Exception e) {
+                        newOrdersPojoClass.appmarkuppercentage = "0";
+
+                        e.printStackTrace();
+                    }
+
+
+                    try{
                         if(json.has("key")){
                             newOrdersPojoClass.menuItemId =String.valueOf(json.get("key"));
 
@@ -999,12 +1221,12 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
                     }
 
 
-                    newOrdersPojoClass.discountpercentage ="0";
+                    //newOrdersPojoClass.discountpercentage ="0";
 
 
 
                     //Log.d(TAG, "itemname of addMenuListAdaptertoListView: " + newOrdersPojoClass.portionsize);
-                    menuListFull.add(newOrdersPojoClass);
+                  //  menuListFull.add(newOrdersPojoClass);
 
                     //Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + menuListFull);
 

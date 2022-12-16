@@ -2,8 +2,12 @@ package com.meatchop.tmcpartner;
 
 public class Constants {
 
-    public static double default_mobileScreenSize  = 6.3;
+    public static double default_mobileScreenSize  = 6.6;
+
+    public static final String AppName_in_AppUserAccess ="TMCPARTNERAPP";
     public static final String Enter_the_mobile_no_text ="Enter the Mobile Number";
+    public static final String UserMobileNo_DoesNot_HaveAccess ="This Mobile number doesnot have permission to access TMC Partner App";
+
     public static final String Order_Value_should_be_above  ="Order Value Should Be Above : ";
     public static final String PointusercanRedeemtoday  ="Can't redeem more than users limit per day";
     public static final String FirstApplyRedeemPoints_Instruction  ="You have to First Apply Redeem Points ";
@@ -132,6 +136,7 @@ public class Constants {
     //API"S
 
 
+    public static final String api_checkUserhaveForPartnerApp = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/appuseraccessusingmobileno";
 
     public static final String api_getListofSubCtgy = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=SubCategory";
     public static final String api_getListofWholeSaleCustomers = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getallwholesalecustomerdetails";
@@ -140,7 +145,7 @@ public class Constants {
     public static final String api_verifyVendorPassword ="https://9z1mg6qh3a.execute-api.ap-south-1.amazonaws.com/stage/resource";
     public static final String api_updateUserDetails ="https://pyyt2a49ed.execute-api.ap-south-1.amazonaws.com/Dev/resource";
     public static final String api_getListofMenuItems ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/menuforstore";
-    public static final String api_getListofUsersForCreatedTime = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/userfordate?createdtime=";
+    public static final String api_getListofUsersForCreatedTime = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/tmcuserforcreateddate?fromcreateddate=";
 
 
 
@@ -151,9 +156,13 @@ public class Constants {
     public static final String api_GetReplacementTransactionDetailsForTransactionTimeVendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/replacementtransactiondetailsfortransactiontimewithvendorkey";
 
 
+
     public static final String api_GetMenuCategory = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list";
     public static final String api_GetDeliverySlotDetails = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/slotdetailsforstore";
     public static final String api_GetDeliverySlotSlabDetails = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/deliveryslabdetailsforvendorkey?storeid=";
+    public static final String api_GetDeliverySlotTransactions = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/deliveryslotstransactionsfordateslotkeyvendorkey";
+    public static final String api_AddDeliverySlotTransactions = "https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/deliveryslotstransaction";
+
 
     public static final String api_GetTrackingOrderDetailsforSlotDate_Vendorkey_forReport ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsforslotdate";
     public static final String api_GetTrackingOrderDetailsforSlotDate_Vendorkey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/trackorderdetailsforslotdatenew";
@@ -266,6 +275,7 @@ public class Constants {
     public static final String api_GetVendorUsingUserKey= "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/key?tablename=Vendor&key=";
     public static final String api_GetCreditOrdersUsingMobilenoWithVendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/creditorderdetailsformobilenowithvendorkey";
     public static final String api_GetCreditOrdersTransactionDetailsUsingMobilenoWithVendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/creditordertransactiondetailsformobilenowithvendorkey";
+    public static final String api_GetCreditOrdersTransactionDetailsUsingMobilenoWithOrderid = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/creditorderstransactiondetailsformobilenoorderid";
 
 
     public static final String api_getUserDetailsWithMobileNo ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/userformobileno";
@@ -356,6 +366,11 @@ public class Constants {
     //CustomerTrackingOrderDetials API's :
     public static final String api_AddCustomerTrackingOrderDetails ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/customerordertrackingdetails";
     public static final String api_UpdateCustomerTrackingOrderDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/customerordertrackingdetails";
+  /// Testing
+     public static final String api_GetTestDataFromElasticache= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/elasticacheredistestfunction";
+     public static final String api_GetTestDataFromWriteRedisFromDynamoDB = "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/writeredisfromdynamodb?vendorkey=";
 
+    public static final String api_GetTestDataFromElasticache2= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/elasticachetestfunction2?vendorkey=";
+    public static final String api_GetTestDataForPOSMobileApp= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/resource";
 
 }

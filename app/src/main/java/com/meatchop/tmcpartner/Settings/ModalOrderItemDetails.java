@@ -2,7 +2,16 @@ package com.meatchop.tmcpartner.Settings;
 
 public class ModalOrderItemDetails {
     String orderplacedtimeinLong,applieddiscountpercentage,cutname,cutprice,discountamount,grossweightingrams,gstamount,itemname,key,marinadeitemdetails,netweight,orderid,orderplacedtime,portionsize,quantity,slotdate,slotname,
-            tmcprice,tmcsubctgykey,vendorkey,vendorname,totalTmcPrice="";
+            tmcprice,tmcsubctgykey,vendorkey,vendorname,totalTmcPrice="",orderidBasedTotalPrice="";
+
+
+    public String getOrderidBasedTotalPrice() {
+        return orderidBasedTotalPrice;
+    }
+
+    public void setOrderidBasedTotalPrice(String orderidBasedTotalPrice) {
+        this.orderidBasedTotalPrice = orderidBasedTotalPrice;
+    }
 
     public String getTotalTmcPrice() {
         return totalTmcPrice;

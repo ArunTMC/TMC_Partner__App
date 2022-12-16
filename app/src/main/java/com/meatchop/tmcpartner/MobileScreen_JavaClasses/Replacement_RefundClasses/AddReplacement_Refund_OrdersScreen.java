@@ -71,8 +71,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetails;
@@ -86,7 +88,7 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     double new_taxes_and_charges_Amount,old_taxes_and_charges_Amount=0;
     double new_to_pay_Amount,old_to_pay_Amount=0,totalAmounttopay=0;
     int new_totalAmount_withGst,new_totalAmount_withoutGst=0,newGst=0;
-    String finaltoPayAmount="",discountAmount="0",oldOrderOrderid = "0";
+    String finaltoPayAmount="",discountAmount="0",oldOrderOrderid = "0",ordertype_Old ="";
     String FormattedTime,CurrentDate,formattedDate,CurrentDay;
     String vendorKey="",usermobileNo ="",orderPlacedDate ="",vendorName ="";;
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
@@ -220,6 +222,8 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
         mContext = AddReplacement_Refund_OrdersScreen.this;
        // orderdetailsnewschema = true;
+
+        refundAmt_editwidget.clearFocus();
         try{
             turnoffProgressBarAndResetArray();
 
@@ -301,7 +305,13 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
             oldOrderOrderid = "";
             e.printStackTrace();
         }
-
+        try{
+            ordertype_Old = String.valueOf(modal_replacementOrderDetails.getOrdertype());
+        }
+        catch (Exception e){
+            oldOrderOrderid = "";
+            e.printStackTrace();
+        }
 
 
         try{
@@ -590,7 +600,14 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         else {
             add_amount_ForBillDetails();
         }
-         adapterPlaceNewReplacementOrder = new Adapter_Place_New_ReplacementOrder_Mobile(AddReplacement_Refund_OrdersScreen.this,cartItem_hashmap, MenuItems, AddReplacement_Refund_OrdersScreen.this,"AddReplacement");
+        try{
+            ordertype_Old = String.valueOf(modal_replacementOrderDetails.getOrdertype());
+        }
+        catch (Exception e){
+            ordertype_Old = "";
+            e.printStackTrace();
+        }
+         adapterPlaceNewReplacementOrder = new Adapter_Place_New_ReplacementOrder_Mobile(AddReplacement_Refund_OrdersScreen.this,cartItem_hashmap, MenuItems, AddReplacement_Refund_OrdersScreen.this,"AddReplacement",ordertype_Old);
         adapterPlaceNewReplacementOrder.setHandler(newHandler());
         newOrders_recyclerView.setLayoutManager(new LinearLayoutManager(AddReplacement_Refund_OrdersScreen.this));
         int sizeofCart =  cartItem_hashmap.size();
@@ -5401,17 +5418,22 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     {
 
         Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -5420,10 +5442,11 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
     {
 
         Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -5698,7 +5721,9 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         if(orderdetailsnewschema) {
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = day.format(c);
 
             return CurrentDate;
@@ -5707,17 +5732,20 @@ public class AddReplacement_Refund_OrdersScreen extends AppCompatActivity {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDay = day.format(c);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
 
             //CurrentDate = CurrentDay+", "+CurrentDate;
-            System.out.println("todays Date  " + CurrentDate);
 
 
             return CurrentDate;

@@ -43,7 +43,15 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
+
+
+
+
+
+
 
 public class Add_Replacement_Refund_Screen extends AppCompatActivity {
     Button fetchOrders_buttonWidget;
@@ -1023,8 +1031,14 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
             }
         };
          mVolleyService = new VendorOrdersTableService(mResultCallback,Add_Replacement_Refund_Screen.this);
+
+       // String orderDetailsURL = Constants.api_GetTestDataFromElasticache + "?fromslotdate=2022-05-23"+"&vendorkey="+vendorKey+"&toslotdate=2022-05-23"+"&usermobileno=+919698137713";
+    //    String orderTrackingDetailsURL = Constants.api_GetTestDataFromWriteRedisFromDynamoDB + "?fromslotdate=2022-05-23"+"&vendorkey="+vendorKey+"&toslotdate=2022-05-23"+"&usermobileno="+userMobileNo;
+
+
+
         String orderDetailsURL = Constants.api_GetVendorOrderDetailsUsingFromToSlotDate_vendorkey_mobileno + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate+"&usermobileno="+userMobileNo;
-        String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingFromToSlotDate_vendorkey_mobileno + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate+"&usermobileno="+userMobileNo;
+       String orderTrackingDetailsURL = Constants.api_GetVendorTrackingDetailsUsingFromToSlotDate_vendorkey_mobileno + "?fromslotdate="+FromDate+"&vendorkey="+vendorKey+"&toslotdate="+ToDate+"&usermobileno="+userMobileNo;
         mVolleyService.getVendorOrderDetails(orderDetailsURL,orderTrackingDetailsURL);
 
     }
@@ -1038,7 +1052,9 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
             String time1 = orderplacedtime;
             //   //Log.d(TAG, "time1long  "+orderplacedtime);
 
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             Date date = sdf.parse(time1);
             long time1long = date.getTime() / 1000;
             longvalue = String.valueOf(time1long);
@@ -1049,7 +1065,10 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                 String time1 = orderplacedtime;
                 //     //Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 Date date = sdf.parse(time1);
                 long time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);
@@ -1072,7 +1091,8 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
         //   //Log.d(TAG, "slottime  "+slottime);
         if (slottime.contains("mins")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
@@ -1091,7 +1111,8 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
@@ -1146,7 +1167,9 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
         Date c = calendar.getTime();
 
         if(orderdetailsnewschema){
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
            String CurrentDate = df.format(c);
             return CurrentDate;
 
@@ -1154,10 +1177,15 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             String CurrentDay = day.format(c);
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -1178,14 +1206,17 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
 
 
-        calendar.add(Calendar.DATE,-19);
+        calendar.add(Calendar.DATE,-30);
 
 
 
         Date c1 = calendar.getTime();
         if(orderdetailsnewschema) {
 
-            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String PreviousdayDate = df1.format(c1);
 
 
@@ -1193,10 +1224,15 @@ public class Add_Replacement_Refund_Screen extends AppCompatActivity {
 
         }
         else {
-            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String PreviousdayDay = previousday.format(c1);
 
-            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+            df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             String PreviousdayDate = df1.format(c1);
             PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
 

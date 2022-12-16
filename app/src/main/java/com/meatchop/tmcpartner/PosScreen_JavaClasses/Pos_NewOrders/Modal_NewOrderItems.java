@@ -3,14 +3,45 @@ package com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders;
 import java.io.Serializable;
 
 public class Modal_NewOrderItems extends Throwable implements Serializable {
-   public String itemweightdetails,itemcutdetails,allownegativestock,barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
+   public String appmarkuppercentage="0",tmcpriceWithMarkupValue,tmcpriceperkgWithMarkupValue,itemweightdetails,itemcutdetails,allownegativestock,barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
     inventorydetails, stockincomingkey,istmcpriceperkgitemedited,dunzoAmount,bigbasketAmount,swiggyAmount,savedAmount,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,keyforHashmap,itemPrice_quantityBased,quantity,gstAmount,total_amount_without_Gst,subTotal_perItem,itemFinalWeight, pricePerItem,itemFinalPrice,itemname,displayname,vendorname,displayno, grossweight,pricetypeforpos
             ,tmcsubctgykey,gstpercentage,tmcctgykey,itemuniquecode,tmcprice,categoryname,totalGstAmount,total_pricePerItem,total_of_subTotal_perItem,barcode,
-            selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage,itemavailability,portionsize,menuItemId;
+            selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage="0",itemavailability,portionsize,menuItemId;
     public String editTextValue,bigbasketprice,swiggyprice,dunzoprice,wholesaleprice;
 
-    boolean isWeightEdited = false,isWeightEdittextClicked =false , isPriceEdited = false;
+    boolean isWeightEdited = false,isWeightEdittextClicked =false , isPriceEdited = false , isLastEntry = false;
 
+    public String getAppmarkuppercentage() {
+        return appmarkuppercentage;
+    }
+
+    public void setAppmarkuppercentage(String appmarkuppercentage) {
+        this.appmarkuppercentage = appmarkuppercentage;
+    }
+
+    public String getTmcpriceWithMarkupValue() {
+        return tmcpriceWithMarkupValue;
+    }
+
+    public void setTmcpriceWithMarkupValue(String tmcpriceWithMarkupValue) {
+        this.tmcpriceWithMarkupValue = tmcpriceWithMarkupValue;
+    }
+
+    public String getTmcpriceperkgWithMarkupValue() {
+        return tmcpriceperkgWithMarkupValue;
+    }
+
+    public void setTmcpriceperkgWithMarkupValue(String tmcpriceperkgWithMarkupValue) {
+        this.tmcpriceperkgWithMarkupValue = tmcpriceperkgWithMarkupValue;
+    }
+
+    public boolean isLastEntry() {
+        return isLastEntry;
+    }
+
+    public void setLastEntry(boolean lastEntry) {
+        isLastEntry = lastEntry;
+    }
 
     public boolean getisPriceEdited() {
         return isPriceEdited;

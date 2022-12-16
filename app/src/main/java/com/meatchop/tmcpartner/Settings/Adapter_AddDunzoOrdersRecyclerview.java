@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
@@ -598,7 +599,8 @@ public class Adapter_AddDunzoOrdersRecyclerview extends RecyclerView.Adapter<Ada
         EditText itemWeight_edittextwidget,barcode_widget;
 
         ImageView minus_to_remove_item_widget;
-        LinearLayout removeItem_fromCart_widget, addNewItem_layout,parentLayout;
+        LinearLayout removeItem_fromCart_widget, addNewItem_layout;
+        ConstraintLayout parentLayout;
         boolean isTMCproduct = false;
         boolean isIndiaGateBasmatiRiceproduct = false;
 

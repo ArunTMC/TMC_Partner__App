@@ -95,7 +95,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -110,6 +112,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import okhttp3.WebSocket;
 
@@ -207,7 +210,8 @@ public class Pos_Orders_List extends AppCompatActivity {
     String printerStatus= "",defaultPrinterType ="";;
 
     List<Modal_MenuItem_Settings>MenuItem = new ArrayList<>();
-
+    double totalamountUserHaveAsCredit =0;
+    int creditAmountDetailsThreadCall_count =0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -318,7 +322,7 @@ public class Pos_Orders_List extends AppCompatActivity {
         //    PreviousDateString = getDatewithNameofthePreviousDay();
 
             isSearchButtonClicked = false;
-            orderStatus = "TODAYS" + Constants.PREORDER_SLOTNAME;
+            orderStatus = "";
             ordersList.clear();
             sorted_OrdersList.clear();
             array_of_orderId.clear();
@@ -1326,6 +1330,8 @@ public class Pos_Orders_List extends AppCompatActivity {
                     modal_manageOrders_forOrderDetailList1.orderreadytime = modal_manageOrders_forOrderDetailList.getOrderreadytime();
                     modal_manageOrders_forOrderDetailList1.orderpickeduptime = modal_manageOrders_forOrderDetailList.getOrderpickeduptime();
                     modal_manageOrders_forOrderDetailList1.orderdeliveredtime = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime();
+                    modal_manageOrders_forOrderDetailList1.orderdeliveredtime_in_long = modal_manageOrders_forOrderDetailList.getOrderdeliveredtime_in_long();
+
                     try {
                         modal_manageOrders_forOrderDetailList1.intTokenNo = Integer.parseInt(modal_manageOrders_forOrderDetailList.getTokenno());
                     } catch (Exception e) {
@@ -1350,7 +1356,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                     if (orderStatus.equals(Constants.DELIVERED_ORDER_STATUS)) {
                         Collections.sort(sorted_OrdersList, new Comparator<Modal_ManageOrders_Pojo_Class>() {
                             public int compare(final Modal_ManageOrders_Pojo_Class object1, final Modal_ManageOrders_Pojo_Class object2) {
-                                return object2.getOrderdeliveredtime().compareTo(object1.getOrderdeliveredtime());
+                                return object2.getOrderdeliveredtime_in_long().compareTo(object1.getOrderdeliveredtime_in_long());
                             }
                         });
                     }
@@ -1608,7 +1614,7 @@ public class Pos_Orders_List extends AppCompatActivity {
 
         AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
 
-        SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
+     //   SimpleDateFormat format = new SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss");
 
         String OrderPlacedtime = "";
         String Orderid = "";
@@ -2593,9 +2599,15 @@ public class Pos_Orders_List extends AppCompatActivity {
 
         String next_day = "";
         //calander_view.setCurrentDayBackgroundColor(context.getResources().getColor(R.color.gray_color));
-        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("d MMM yyyy", Locale.getDefault());
+        SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("d MMM yyyy", Locale.ENGLISH);
+        dateFormatForDisplaying.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String date_format = dateFormatForDisplaying.format(todaysDate);
-        SimpleDateFormat simpleDateformat = new SimpleDateFormat("E"); // the day of the week abbreviated
+        SimpleDateFormat simpleDateformat = new SimpleDateFormat("E",Locale.ENGLISH);
+        simpleDateformat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+        // the day of the week abbreviated
         final Calendar calendar = Calendar.getInstance();
         try {
             Date date = dateFormatForDisplaying.parse(date_format);
@@ -2626,7 +2638,9 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
             Date c1 = calendar.getTime();
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
 
 
 
@@ -2645,11 +2659,17 @@ public class Pos_Orders_List extends AppCompatActivity {
 
             Date c1 = calendar.getTime();
 
-            SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+            SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String PreviousdayDay = previousday.format(c1);
 
 
-            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             String PreviousdayDate = df1.format(c1);
             PreviousdayDate = PreviousdayDay + ", " + PreviousdayDate;
             //System.out.println("todays Date  " + CurrentDate);
@@ -2664,7 +2684,10 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
     private String getDatewithNameofthePreviousDayfromSelectedDay(String sDate) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -2684,12 +2707,17 @@ public class Pos_Orders_List extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -2703,7 +2731,11 @@ public class Pos_Orders_List extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         if(orderdetailsnewschema) {
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
             CurrentDate = day.format(c);
 
             return CurrentDate;
@@ -2712,11 +2744,17 @@ public class Pos_Orders_List extends AppCompatActivity {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDay = day.format(c);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -2734,7 +2772,10 @@ public class Pos_Orders_List extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
 
         if(orderdetailsnewschema) {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = df.format(c);
 
 
@@ -2743,11 +2784,18 @@ public class Pos_Orders_List extends AppCompatActivity {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDay = day.format(c);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -2911,7 +2959,10 @@ public class Pos_Orders_List extends AppCompatActivity {
 
 
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy",Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         Date date = null;
         try {
             date = dateFormat.parse(sDate);
@@ -2931,12 +2982,20 @@ public class Pos_Orders_List extends AppCompatActivity {
 
         Date c1 = calendar.getTime();
 
-        SimpleDateFormat previousday = new SimpleDateFormat("EEE");
+        SimpleDateFormat previousday = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        previousday.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String PreviousdayDay = previousday.format(c1);
 
 
 
-        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df1 = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df1.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String  PreviousdayDate = df1.format(c1);
         String yesterdayAsString = PreviousdayDay+", "+PreviousdayDate;
         //Log.d(Constants.TAG, "getOrderDetailsUsingApi yesterdayAsString: " + PreviousdayDate);
@@ -2948,7 +3007,7 @@ public class Pos_Orders_List extends AppCompatActivity {
     }
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
-
+/*
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
         try {
             Date date = sdf.parse(todaysdate);
@@ -2962,6 +3021,41 @@ public class Pos_Orders_List extends AppCompatActivity {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+ */
+
+        Date date = null;
+
+        SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+
+        formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+        try
+        {
+            date  = formatGMT.parse(todaysdate);
+        }
+        catch (ParseException e)
+        {
+            //log(Log.ERROR, "DB Insertion error", e.getMessage().toString());
+            //logException(e);
+            e.printStackTrace();
+        }
+
+        try{
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDate = day.format(date);
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
         return CurrentDate;
 
     }
@@ -2970,16 +3064,25 @@ public class Pos_Orders_List extends AppCompatActivity {
     private String convertnewFormatDateintoOldFormat(String todaysdate) {
 
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDay = day.format(date);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = df.format(date);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
@@ -3012,7 +3115,7 @@ public class Pos_Orders_List extends AppCompatActivity {
                 }
                 mobile_jsonString = String.valueOf(jsonObject);
                 ordersList = orderslist_fromResponse;
-                displayorderDetailsinListview(orderStatus,ordersList, slottypefromSpinner);
+                displayorderDetailsinListview("DELIVERED",ordersList, slottypefromSpinner);
 
                 //convertingJsonStringintoArray(orderStatus,mobile_jsonString);
             }
@@ -5230,15 +5333,26 @@ public class Pos_Orders_List extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDatee = df.format(c);
         CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String FormattedTime = dfTime.format(c);
         String formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -5248,7 +5362,17 @@ public class Pos_Orders_List extends AppCompatActivity {
     public void printBill(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
 
         if(defaultPrinterType.equals(Constants.PDF_PrinterType)) {
-            GeneratePDF(modal_manageOrders_pojo_class);
+            if(modal_manageOrders_pojo_class.getPaymentmode().toUpperCase().equals(Constants.CREDIT)){
+
+                GetDatafromCreditOrderDetailsTable(modal_manageOrders_pojo_class);
+            }
+            if(totalamountUserHaveAsCredit<=0) {
+                runthreadForCreditTransaction_and_GeneratePDF(modal_manageOrders_pojo_class);
+            }
+            else{
+                GeneratePDF(modal_manageOrders_pojo_class);
+
+            }
 
         }
         else{
@@ -5256,6 +5380,151 @@ public class Pos_Orders_List extends AppCompatActivity {
         }
     }
 
+    private void runthreadForCreditTransaction_and_GeneratePDF(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(creditAmountDetailsThreadCall_count==3) {
+                        GeneratePDF(modal_manageOrders_pojo_class);
+
+                    }
+                    else {
+                        if (totalamountUserHaveAsCredit > 0) {
+                            GeneratePDF(modal_manageOrders_pojo_class);
+                        } else {
+                            try {
+                                Thread.sleep(10000);
+                                creditAmountDetailsThreadCall_count ++;
+                                runthreadForCreditTransaction_and_GeneratePDF(modal_manageOrders_pojo_class);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void GetDatafromCreditOrderDetailsTable(Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class) {
+        totalamountUserHaveAsCredit = 0;
+        String mobileno = modal_manageOrders_pojo_class.getUsermobile();
+
+        try {
+            mobileno = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetCreditOrdersUsingMobilenoWithVendorkey +"?usermobileno="+mobileno+"&vendorkey="+vendorKey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+
+                            Log.d(Constants.TAG, " response: " + response);
+                            try {
+                                String jsonString = response.toString();
+                                JSONObject jsonObject = new JSONObject(jsonString);
+                                JSONArray JArray = jsonObject.getJSONArray("content");
+                                int i1 = 0;
+                                int arrayLength = JArray.length();
+                                if (arrayLength > 0){
+
+
+                                    for (; i1 < (arrayLength); i1++) {
+
+                                        try {
+                                            JSONObject json = JArray.getJSONObject(i1);
+                                            try {
+                                                if (json.has("totalamountincredit")) {
+                                                    totalamountUserHaveAsCredit = Double.parseDouble(json.getString("totalamountincredit"));
+                                                } else {
+                                                    totalamountUserHaveAsCredit = 0;
+                                                    Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                totalamountUserHaveAsCredit = 0;
+                                            }
+
+
+
+                                        } catch (Exception e) {
+                                            Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                            totalamountUserHaveAsCredit = 0;
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                                else{
+                                    totalamountUserHaveAsCredit = 0;
+
+                                }
+                            } catch (Exception e) {
+                                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                                totalamountUserHaveAsCredit =0;
+                                e.printStackTrace();
+                            }
+
+
+                        } catch (Exception e) {
+                            showProgressBar(false);
+                            Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+                            totalamountUserHaveAsCredit =0;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+
+                Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Mobile");
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+
+
+
+    }
 
     private void AskForStoragePermission() {
 
@@ -6258,11 +6527,11 @@ public class Pos_Orders_List extends AppCompatActivity {
             phraseEmptycell1.setBorder(Rectangle.NO_BORDER);
             phraseEmptycell1.setPaddingLeft(10);
             phraseEmptycell1.setBorderWidthBottom(01);
-            phraseEmptycell1.setPaddingBottom(10);
+            phraseEmptycell1.setPaddingBottom(5);
             phrasebody2_table.addCell(phraseEmptycell1);
 
 
-            Phrase phraseOrderType = new Phrase( "Order Type :  "+ordertype, normalFont);
+          /*  Phrase phraseOrderType = new Phrase( "Order Type :  "+ordertype, normalFont);
             PdfPCell orderTypecell = new PdfPCell(new Phrase(phraseOrderType));
             orderTypecell.setBorder(Rectangle.NO_BORDER);
             orderTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -6273,6 +6542,8 @@ public class Pos_Orders_List extends AppCompatActivity {
             orderTypecell.setPaddingTop(10);
             phrasebody2_table.addCell(orderTypecell);
 
+
+           */
 
             Phrase phrasePaymentMode = new Phrase( "Payment Mode : "+ payment_mode, normalFont);
             PdfPCell paymentModecell = new PdfPCell(new Phrase(phrasePaymentMode));
@@ -6303,8 +6574,47 @@ public class Pos_Orders_List extends AppCompatActivity {
             usernamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             usernamecell.setPaddingLeft(10);
             usernamecell.setPaddingRight(20);
-            usernamecell.setPaddingBottom(30);
+            usernamecell.setPaddingBottom(10);
             phrasebody2_table.addCell(usernamecell);
+
+
+            double newamountUserHaveAsCredit =0; double finaltoPayAmountinmethod_double = 0;
+            try{
+                finaltoPayAmountinmethod = finaltoPayAmountinmethod.replaceAll("[^\\d.]", "");
+                finaltoPayAmountinmethod_double = Double.parseDouble(finaltoPayAmountinmethod);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                newamountUserHaveAsCredit =   totalamountUserHaveAsCredit - finaltoPayAmountinmethod_double;
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            Phrase phraseoldCreditAmount = new Phrase( "Amount in Credit before this bill : Rs. "+ String.valueOf(newamountUserHaveAsCredit), normalFont);
+            PdfPCell oldcreditAmtcell = new PdfPCell(new Phrase(phraseoldCreditAmount));
+            oldcreditAmtcell.setBorder(Rectangle.NO_BORDER);
+            oldcreditAmtcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            oldcreditAmtcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            oldcreditAmtcell.setPaddingLeft(10);
+            oldcreditAmtcell.setPaddingRight(20);
+            oldcreditAmtcell.setPaddingBottom(10);
+            phrasebody2_table.addCell(oldcreditAmtcell);
+
+            Phrase phrasenewCreditAmount = new Phrase( "Amount in Credit after this bill  : Rs. "+ String.valueOf(totalamountUserHaveAsCredit), normalFont);
+            PdfPCell newCreditAmountcell = new PdfPCell(new Phrase(phrasenewCreditAmount));
+            newCreditAmountcell.setBorder(Rectangle.NO_BORDER);
+            newCreditAmountcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            newCreditAmountcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            newCreditAmountcell.setPaddingLeft(10);
+            newCreditAmountcell.setPaddingRight(20);
+            newCreditAmountcell.setPaddingBottom(30);
+            phrasebody2_table.addCell(newCreditAmountcell);
+
 
 
 

@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
+import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.R;
 
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewOrderItems> {
     String menulist;
@@ -119,7 +121,7 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                     }
                     try{
-                        modal_newOrderItems.setDiscountpercentage(String.valueOf(menuuItem.getDiscountpercentage()));
+                        modal_newOrderItems.setApplieddiscountpercentage(String.valueOf(menuuItem.getApplieddiscountpercentage()));
 
                     }
                     catch(Exception e ){
@@ -144,7 +146,43 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                         }
                         else {
-                            modal_newOrderItems.setBarcode(String.valueOf(((menuuItem.getBarcode()))));
+                            if (String.valueOf(menuuItem.getPricetypeforpos()).toUpperCase().equals(Constants.TMCPRICEPERKG)) {
+                                int grossweight_int =0;
+                                try {
+                                    String grossweight = menuuItem.getGrossweight().toString();
+                                    grossweight = grossweight.replaceAll("[^\\d.]", "");
+                                    grossweight_int = Integer.parseInt(grossweight);
+                                }
+                                catch (Exception e){
+                                    grossweight_int =0;
+                                    e.printStackTrace();
+                                }
+                                if(grossweight_int!=0) {
+                                    if (String.valueOf(grossweight_int).length() == 2) {
+                                        modal_newOrderItems.setBarcode(String.valueOf(menuuItem.getBarcode()) + "000"+String.valueOf(grossweight_int) );
+
+                                    } else if (String.valueOf(grossweight_int).length() == 3) {
+                                        modal_newOrderItems.setBarcode(String.valueOf(menuuItem.getBarcode()) + "00"+String.valueOf(grossweight_int) );
+
+
+                                    } else if (String.valueOf(grossweight_int).length() == 4) {
+                                        modal_newOrderItems.setBarcode(String.valueOf(menuuItem.getBarcode()) + "0"+String.valueOf(grossweight_int) );
+
+
+                                    } else if (String.valueOf(grossweight_int).length() == 5) {
+                                        modal_newOrderItems.setBarcode(String.valueOf(menuuItem.getBarcode()) + String.valueOf(grossweight_int) );
+
+
+                                    }
+                                }
+                                else{
+                                    modal_newOrderItems.setBarcode(String.valueOf(((menuuItem.getBarcode()))));
+
+                                }
+
+                            } else {
+                                modal_newOrderItems.setBarcode(String.valueOf(((menuuItem.getBarcode()))));
+                            }
                         }
                     }
                     catch(Exception e){
@@ -428,8 +466,82 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                     }
 
 
+                    try {
+
+                        if(NewOrderScreenFragment_mobile.isPhoneOrderSelected) {
+                            modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkgWithMarkupValue()));
+
+                        }
+                        else{
+                            modal_newOrderItems.setTmcpriceperkg(String.valueOf(menuuItem.getTmcpriceperkg()));
+
+                        }
+
+
+                    }
+                    catch (Exception e){
+                        Toast.makeText(context,"Can't Get Menu Item PriceperKg at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
 
                     try {
+                        if(NewOrderScreenFragment_mobile.isPhoneOrderSelected) {
+                            modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcpriceWithMarkupValue()));
+
+                        }
+                        else{
+                            modal_newOrderItems.setTmcprice(String.valueOf(menuuItem.getTmcprice()));
+
+                        }
+
+                    }
+                    catch (Exception e){
+                        Toast.makeText(context,"Can't Get Menu Item TMCPrice at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcprice")){
+                        if(NewOrderScreenFragment_mobile.isPhoneOrderSelected) {
+
+                            modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                            modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                        }
+                        else{
+                            modal_newOrderItems.itemFinalPrice =  ( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                            modal_newOrderItems.itemPrice_quantityBased=( String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                        }
+
+                    }
+                    if(String.valueOf(menuuItem.getPricetypeforpos()).equals("tmcpriceperkg")) {
+
+                        if (NewOrderScreenFragment_mobile.isPhoneOrderSelected) {
+                            modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                            modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcpriceWithMarkupValue()))));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                        } else {
+                            modal_newOrderItems.itemFinalPrice = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                            modal_newOrderItems.itemPrice_quantityBased = (String.valueOf(decimalFormat.format(Double.parseDouble(menuuItem.getTmcprice()))));
+                            modal_newOrderItems.setItemFinalWeight(String.valueOf(menuuItem.getGrossweight()));
+
+                        }
+                    }
+                    try {
+                        modal_newOrderItems.setAppmarkuppercentage(String.valueOf(menuuItem.getAppmarkuppercentage()));
+
+                    }
+                    catch (Exception e){
+                        Toast.makeText(context,"Can't Get Menu Item GSTPercentage at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                        try {
                         modal_newOrderItems.setQuantity("1");
                         modal_newOrderItems.setSubTotal_perItem("");
                         modal_newOrderItems.setTotal_of_subTotal_perItem("");
@@ -440,7 +552,7 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                         Toast.makeText(context,"Can't Set Menu Item details at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
 
                     }
-                    addItemIntheCart(modal_newOrderItems,modal_newOrderItems.getItemFinalWeight(),modal_newOrderItems.getItemuniquecode());
+                    addItemIntheCart(modal_newOrderItems,modal_newOrderItems.getItemFinalWeight(),modal_newOrderItems.getBarcode());
                     //   int last_index =  (NewOrderScreenFragment_mobile.cart_Item_List.size()-1);
                     //  NewOrderScreenFragment_mobile.cart_Item_List.set(last_index,modal_newOrderItems);
                     //    NewOrderScreenFragment_mobile.adapter_cartItem_recyclerview.notifyDataSetChanged();
@@ -458,14 +570,14 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
 
 
-        private void addItemIntheCart(Modal_NewOrderItems newItem_newOrdersPojoClass, String itemWeight,String itemUniquecode) {
+        private void addItemIntheCart(Modal_NewOrderItems newItem_newOrdersPojoClass, String itemWeight,String barcode) {
             //     //Log.e(TAG, "Got barcode addItemIntheCart"+isdataFetched);
             DecimalFormat decimalFormat = new DecimalFormat("0.00");
             boolean IsItemAlreadyAddedinCart ;
-            IsItemAlreadyAddedinCart = checkforBarcodeInCart(itemUniquecode);
+            IsItemAlreadyAddedinCart = checkforBarcodeInCart(barcode);
             if(IsItemAlreadyAddedinCart){
-                Modal_NewOrderItems modal_newOrderItems = NewOrderScreenFragment_mobile.cartItem_hashmap.get(itemUniquecode);
-                int quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                Modal_NewOrderItems modal_newOrderItems = NewOrderScreenFragment_mobile.cartItem_hashmap.get(barcode);
+                int quantity = Integer.parseInt(Objects.requireNonNull(modal_newOrderItems).getQuantity());
                 quantity = quantity + 1;
 
                 double itemPrice_quantityBased = Double.parseDouble(modal_newOrderItems.getItemPrice_quantityBased());
@@ -473,7 +585,7 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                 modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(finalprice)));
                 modal_newOrderItems.setQuantity(String.valueOf(quantity));
-                NewOrderScreenFragment_mobile.cartItem_hashmap.put(itemUniquecode,modal_newOrderItems);
+                NewOrderScreenFragment_mobile.cartItem_hashmap.put(barcode,modal_newOrderItems);
                 if(checkforBarcodeInCart("empty")) {
                     NewOrderScreenFragment_mobile.cart_Item_List.remove("empty");
 
@@ -489,8 +601,8 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                     NewOrderScreenFragment_mobile.cartItem_hashmap.remove("empty");
                 }
 
-                NewOrderScreenFragment_mobile.cart_Item_List.add(itemUniquecode);
-                NewOrderScreenFragment_mobile.cartItem_hashmap.put(itemUniquecode,newItem_newOrdersPojoClass);
+                NewOrderScreenFragment_mobile.cart_Item_List.add(barcode);
+                NewOrderScreenFragment_mobile.cartItem_hashmap.put(barcode,newItem_newOrdersPojoClass);
 
             }
           //  NewOrderScreenFragment_mobile.adapterNewOrderScreenFragmentMobile.notifyDataSetChanged();
@@ -583,6 +695,71 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
 
                             e.printStackTrace();
                         }
+
+
+                        try{
+                            if(json.has("applieddiscountpercentage")){
+                                newOrdersPojoClass.applieddiscountpercentage =String.valueOf(json.get("applieddiscountpercentage"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.applieddiscountpercentage = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.applieddiscountpercentage = "0";
+
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            if(json.has("appmarkuppercentage")){
+                                newOrdersPojoClass.appmarkuppercentage =String.valueOf(json.get("appmarkuppercentage"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.appmarkuppercentage = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.appmarkuppercentage = "0";
+
+                            e.printStackTrace();
+                        }
+
+
+                        try{
+                            if(json.has("tmcpriceperkgWithMarkupValue")){
+                                newOrdersPojoClass.tmcpriceperkgWithMarkupValue =String.valueOf(json.get("tmcpriceperkgWithMarkupValue"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.tmcpriceperkgWithMarkupValue = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.tmcpriceperkgWithMarkupValue = "0";
+
+                            e.printStackTrace();
+                        }
+
+                        try{
+                            if(json.has("tmcpriceWithMarkupValue")){
+                                newOrdersPojoClass.tmcpriceWithMarkupValue =String.valueOf(json.get("tmcpriceWithMarkupValue"));
+
+                            }
+                            else{
+                                newOrdersPojoClass.tmcpriceWithMarkupValue = "0";
+                            }
+                        }
+                        catch (Exception e) {
+                            newOrdersPojoClass.tmcpriceWithMarkupValue = "0";
+
+                            e.printStackTrace();
+                        }
+
+
+
 
                         try{
                             if(json.has("grossweight")){
@@ -990,7 +1167,7 @@ public class Adapter_AutoCompleteMenuItem_mobile extends ArrayAdapter<Modal_NewO
                         }
 
 
-                        newOrdersPojoClass.discountpercentage ="0";
+                        //newOrdersPojoClass.discountpercentage ="0";
 
 
 

@@ -1,5 +1,4 @@
 package com.meatchop.tmcpartner.Settings;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
@@ -8,7 +7,7 @@ import android.widget.ListView;
 import com.meatchop.tmcpartner.Constants;
 
 public class Helper {
-    public static void getListViewSize(ListView myListView, double screenInches) {
+    public static void getListViewSize(ListView myListView, double screenInches, int extraSizeBasedOnListview) {
         ListAdapter myListAdapter=myListView.getAdapter();
 
         if (myListAdapter==null) {
@@ -34,7 +33,7 @@ public class Helper {
             if (screenInches>Constants.default_mobileScreenSize){
                 totalHeight += listItem.getMeasuredHeight();
                 if(totalHeight>100){
-                    totalHeight = totalHeight-50;
+                    totalHeight = totalHeight+2;
 
                 }
 
@@ -44,7 +43,7 @@ public class Helper {
         }
         //setting listview item in adapter
         ViewGroup.LayoutParams params=myListView.getLayoutParams();
-        params.height=totalHeight + (myListView.getDividerHeight() * (myListAdapter.getCount() - 1));
+        params.height=extraSizeBasedOnListview + totalHeight + (myListView.getDividerHeight() * (myListAdapter.getCount()));
         myListView.setLayoutParams(params);
         // print height of adapter on log
     }

@@ -73,8 +73,10 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
@@ -2097,11 +2099,17 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
         String CurrentDate1 = "";
 
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             try {
                 Date date = sdf.parse(transactiontime);
 
-                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 CurrentDate1 = day.format(date);
 
 
@@ -2113,11 +2121,16 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
         } catch (Exception e) {
 
             try {
-                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 try {
                     Date date = sdff.parse(transactiontime);
 
-                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                    day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                     CurrentDate1 = day.format(date);
 
                 } catch (Exception e1) {
@@ -2126,11 +2139,15 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
             } catch (Exception e2) {
 
                 try {
-                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd");
+                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+                    sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                     try {
                         Date date = sdff.parse(transactiontime);
 
-                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                         CurrentDate1 = day.format(date);
 
                     } catch (Exception e3) {
@@ -2150,7 +2167,7 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
 
     }
 
-
+/*
         private String changeOldDatetoNewFormat(String todaysdate) {
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
         String CurrentDate1 ="";
@@ -2166,6 +2183,88 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
             e.printStackTrace();
         }
         return CurrentDate1;
+    }
+
+ */
+    private String changeOldDatetoNewFormat(String todaysdate) {
+/*
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        try {
+            Date date = sdf.parse(todaysdate);
+
+
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            CurrentDate = day.format(date);
+
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+ */
+        String CurrentDate1 = "";
+
+        try {
+            Date date = null;
+
+            SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+
+            formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+            try {
+                date = formatGMT.parse(todaysdate);
+            } catch (ParseException e) {
+                //log(Log.ERROR, "DB Insertion error", e.getMessage().toString());
+                //logException(e);
+                e.printStackTrace();
+            }
+
+            try {
+
+                SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+                CurrentDate1 = day.format(date);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e) {
+            Date date = null;
+
+            SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMMM yyyy", Locale.ENGLISH);
+
+            formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+            try {
+                date = formatGMT.parse(todaysdate);
+            } catch (ParseException e2) {
+                //log(Log.ERROR, "DB Insertion error", e.getMessage().toString());
+                //logException(e);
+                e2.printStackTrace();
+            }
+
+            try {
+
+                SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+                CurrentDate1 = day.format(date);
+
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+
+        return CurrentDate1;
+
     }
 
 
@@ -2221,6 +2320,18 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
                         }
                     }
                 }, year, month, day);
+
+
+        Calendar c = Calendar.getInstance();
+        DatePicker datePicker = datepicker.getDatePicker();
+
+        c.set(2022,8,17);
+        // Toast.makeText(getApplicationContext(), Calendar.DATE, Toast.LENGTH_LONG).show();
+        Log.d(Constants.TAG, "Calendar.DATE " + String.valueOf(Calendar.DATE));
+        long oneMonthAhead = c.getTimeInMillis();
+        datePicker.setMinDate(oneMonthAhead);
+
+
         datepicker.show();
 
     }
@@ -2686,11 +2797,16 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
         String CurrentDate1 = "";
 
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             try {
                 Date date = sdf.parse(transactiontime);
 
-                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 CurrentDate1 = day.format(date);
 
 
@@ -2702,11 +2818,17 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
         } catch (Exception e) {
 
             try {
-                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 try {
                     Date date = sdff.parse(transactiontime);
 
-                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                    day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                     CurrentDate1 = day.format(date);
 
                 } catch (Exception e1) {
@@ -2715,11 +2837,15 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
             } catch (Exception e2) {
 
                 try {
-                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd");
+                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+                    sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                     try {
                         Date date = sdff.parse(transactiontime);
 
-                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                         CurrentDate1 = day.format(date);
 
                     } catch (Exception e3) {
@@ -2829,15 +2955,14 @@ public class Replacement_Refund_Transaction_Report extends AppCompatActivity {
     private String getDatewithNameoftheDay() {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-       String CurrentDay = day.format(c);
+
+        SimpleDateFormat formatGMT = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+
+        formatGMT.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
 
+        CurrentDate = formatGMT.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-        CurrentDate = df.format(c);
-
-        CurrentDate = CurrentDay+", "+CurrentDate;
 
 
         //CurrentDate = CurrentDay+", "+CurrentDate;

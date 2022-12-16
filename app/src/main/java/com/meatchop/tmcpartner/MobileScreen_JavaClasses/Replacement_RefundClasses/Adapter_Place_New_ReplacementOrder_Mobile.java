@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.Adapter_AutoCompleteMenuItem_mobile;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.R;
@@ -37,13 +38,13 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
     private Context context;
     private String pricetype_of_pos;
     Adapter_AutoCompleteMenuItem_ReplacementScreen adapter;
-    String Menulist;
+    String Menulist,ordertype_Old="";
     public static HashMap<String, Modal_NewOrderItems> itemInCart_Hashmap = new HashMap();
     private Handler handler;
     String fromActivity="";
     AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen;
    
-    public Adapter_Place_New_ReplacementOrder_Mobile(Context mContext, HashMap<String, Modal_NewOrderItems> itemInCart_hashmap, String menuItems, AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen, String fromActivity) {
+    public Adapter_Place_New_ReplacementOrder_Mobile(Context mContext, HashMap<String, Modal_NewOrderItems> itemInCart_hashmap, String menuItems, AddReplacement_Refund_OrdersScreen addReplacement_refund_ordersScreen, String fromActivity, String ordertype_Oldd) {
 
         this.addReplacement_refund_ordersScreen = addReplacement_refund_ordersScreen;
         this.context = mContext;
@@ -51,7 +52,7 @@ public class Adapter_Place_New_ReplacementOrder_Mobile extends RecyclerView.Adap
         this.itemInCart_Hashmap = itemInCart_hashmap;
         this.fromActivity = fromActivity;
         this.Menulist = menuItems;
-
+        this.ordertype_Old= ordertype_Oldd;
     }
 
     @NotNull
@@ -210,7 +211,17 @@ try{
                     Modal_NewOrderItems newItem_newOrdersPojoClass = (Objects.requireNonNull(AddReplacement_Refund_OrdersScreen.cartItem_hashmap.get(barcode)));
                     String pricetypeforpos = newItem_newOrdersPojoClass.getPricetypeforpos().toString();
 
-                    int priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
+                    int priceperKg = 0;
+                    try {
+                        if (ordertype_Old.toUpperCase().equals(Constants.APPORDER) || ordertype_Old.toUpperCase().equals(Constants.PhoneOrder)) {
+                            priceperKg = (int) Math.round(Double.parseDouble(decimalFormat.format(Double.parseDouble(newItem_newOrdersPojoClass.getTmcpriceperkgWithMarkupValue()))));
+                        } else {
+                            priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     String itemWeight = holder.mobile_itemWeight_widget.getText().toString();
                     itemWeight =itemWeight .replaceAll("[^\\d.]", "");
                     addReplacement_refund_ordersScreen.isanyProducthaveZeroAsweight=false;
@@ -250,81 +261,84 @@ try{
                                 });
                         return false;
                     }
+                    try {
+                        if (pricetypeforpos.equals("tmcpriceperkg")) {
 
-                    if (pricetypeforpos.equals("tmcpriceperkg")) {
+                            if (weight < 1000) {
+                                item_total = (priceperKg * weight);
+                                //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
 
-                        if (weight < 1000) {
-                            item_total = (priceperKg * weight);
-                            //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
+                                //Log.e("TAG", "adapter 9 item_total weight" + weight);
 
-                            //Log.e("TAG", "adapter 9 item_total weight" + weight);
+                                //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
 
-                            //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
+                                item_total = item_total / 1000;
+                                //Log.e("TAG", "adapter 9 item_total " + item_total);
 
-                            item_total = item_total / 1000;
-                            //Log.e("TAG", "adapter 9 item_total " + item_total);
-
-                            //Log.e("TAg", "weight2" + weight);
-                            item_total = Double.parseDouble(decimalFormat.format(item_total));
+                                //Log.e("TAg", "weight2" + weight);
+                                item_total = Double.parseDouble(decimalFormat.format(item_total));
 
 
-                            newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(item_total)) + ".00");
-                            newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(item_total));
-                            newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
-                            newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
+                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(item_total)) + ".00");
+                                newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(item_total));
+                                newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
+                                newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
 
-                            //Log.e("TAg", "weight item_total" + item_total);
+                                //Log.e("TAg", "weight item_total" + item_total);
 
-                            //itemPrice_Widget.setText(String.valueOf(item_total));
+                                //itemPrice_Widget.setText(String.valueOf(item_total));
 
-                            addReplacement_refund_ordersScreen.CallAdapter();
+                                addReplacement_refund_ordersScreen.CallAdapter();
+                            }
+
+                            if (weight == 1000) {
+                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(priceperKg) + ".00");
+                                newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(priceperKg));
+                                newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
+                                newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
+
+                                //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+
+
+                                addReplacement_refund_ordersScreen.CallAdapter();
+                            }
+
+                            if (weight > 1000) {
+                                priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
+
+                                //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+
+                                //Log.e("TAg", "weight3" + weight);
+
+                                int itemquantity = weight - 1000;
+                                //Log.e("TAg", "weight itemquantity" + itemquantity);
+
+                                item_total = (priceperKg * itemquantity) / 1000;
+                                item_total = Double.parseDouble(decimalFormat.format(item_total));
+
+
+                                //Log.e("TAg", "weight item_total" + item_total);
+
+                                double total = priceperKg + item_total;
+                                total = Double.parseDouble(decimalFormat.format((total)));
+
+
+                                newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(total)) + ".00");
+                                newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(total));
+                                newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
+                                //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                                newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
+
+                                // holder.mobile_itemWeight_widget.setText(String.valueOf(total));
+                                addReplacement_refund_ordersScreen.CallAdapter();
+                            }
+
+
                         }
-
-                        if (weight == 1000) {
-                            newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(priceperKg) + ".00");
-                            newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(priceperKg));
-                            newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
-                            newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
-
-                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-
-
-                            addReplacement_refund_ordersScreen.CallAdapter();
-                        }
-
-                        if (weight > 1000) {
-                            priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
-
-                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-
-                            //Log.e("TAg", "weight3" + weight);
-
-                            int itemquantity = weight - 1000;
-                            //Log.e("TAg", "weight itemquantity" + itemquantity);
-
-                            item_total = (priceperKg * itemquantity) / 1000;
-                            item_total = Double.parseDouble(decimalFormat.format(item_total));
-
-
-                            //Log.e("TAg", "weight item_total" + item_total);
-
-                            double total = priceperKg + item_total;
-                            total = Double.parseDouble(decimalFormat.format((total)));
-
-
-                            newItem_newOrdersPojoClass.setItemFinalPrice(String.valueOf(Math.round(total)) + ".00");
-                            newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(total));
-                            newItem_newOrdersPojoClass.setItemFinalWeight(String.valueOf(weight) + "g");
-                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
-
-                            // holder.mobile_itemWeight_widget.setText(String.valueOf(total));
-                            addReplacement_refund_ordersScreen.CallAdapter();
-                        }
-
-
                     }
-
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
 
                   /*  }
 
@@ -336,7 +350,7 @@ try{
 
                    */
 
-
+                    holder.mobile_itemWeight_widget.clearFocus();
                 }
                 return false;
             }
@@ -577,7 +591,7 @@ try{
 
         AutoCompleteTextView mobile_autoComplete_widget;
 
-        LinearLayout mobile_tmcUnitprice_weightAdd_layout, mobile_tmcUnitprice_weightMinus_layout;
+        LinearLayout barcodescannerLayout,mobile_tmcUnitprice_weightAdd_layout, mobile_tmcUnitprice_weightMinus_layout;
 
 
         TextView mobile_itemIndex,mobile_barcode_widget, mobile_itemQuantity_widget;
@@ -586,7 +600,7 @@ try{
 
         EditText mobile_itemWeight_widget;
 
-        ImageView mobile_delete_to_remove_item_widget;
+        ImageView mobile_delete_to_remove_item_widget,barcodescannerIcon;
         LinearLayout mobile_removeItem_fromCart_widget, mobile_addNewItem_layout,parentLayout;
         boolean isTMCproduct = false;
 
@@ -603,8 +617,12 @@ try{
             this.mobile_tmcUnitprice_weightAdd_layout = itemView.findViewById(R.id.mobile_tmcUnitprice_weightAdd_layout);
             this.mobile_tmcUnitprice_weightMinus_layout = itemView.findViewById(R.id.mobile_tmcUnitprice_weightMinus_layout);
             this.mobile_itemIndex = itemView.findViewById(R.id.mobile_itemIndex);
+            this.barcodescannerLayout = itemView.findViewById(R.id.barcodescannerLayout);
+            this.barcodescannerLayout.setVisibility(View.GONE);
 
-            adapter = new Adapter_AutoCompleteMenuItem_ReplacementScreen(context, Menulist,getPosition());
+
+
+            adapter = new Adapter_AutoCompleteMenuItem_ReplacementScreen(context, Menulist,getPosition(),ordertype_Old,addReplacement_refund_ordersScreen);
             adapter.setHandler(newHandler());
 
 

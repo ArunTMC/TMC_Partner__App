@@ -21,6 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meatchop.tmcpartner.AlertDialogClass;
@@ -30,6 +32,7 @@ import com.meatchop.tmcpartner.R;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +60,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
         this.newOrders_menuItem_fragment = newOrders_menuItem_fragment;
         this.context = context;
         this.completemenuItem = completemenuItem;
-        this.itemInCart = itemInCart;
+
 
         this.Menulist = menuItems;
         SharedPreferences shared = context.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
@@ -100,7 +103,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
         holder.itemIndex.setText(String.valueOf(position + 1));
 
-         if (position == (itemInCart.size() - 1)) {
+         if (position == (NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1)) {
             holder.addNewItem_layout.setVisibility(View.VISIBLE);
             holder.barcode_widget.setFocusable(true);
              holder.barcode_widget.requestFocus();
@@ -113,6 +116,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
         holder.autoComplete_widget.setSelection(length);
         //Log.e("TAG", "position" + position);
         Modal_NewOrderItems recylerviewPojoClass = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(NewOrders_MenuItem_Fragment.cart_Item_List.get(position));
+        recylerviewPojoClass.setLastEntry(false);
         if (recylerviewPojoClass.getPricetypeforpos().toLowerCase().equals("tmcpriceperkg")) {
 
             if (isWeightCanBeEdited) {
@@ -179,7 +183,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         holder.itemWeight_edittextwidget.setText("");
                     //    holder. itemWeight_edittextwidget.addTextChangedListener(holder.emptyWeightEditTextListener);
 
-                    } else {
+                    }
+                    else {
 
 
 
@@ -233,8 +238,11 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                    }
                                }
                                else{
-                                   holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
-                                   holder.itemWeight_edittextwidget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
+                                   String grossWeightingramsString = String.valueOf(recylerviewPojoClass.getGrossweight());
+                                 //  String weightinKGString = convertGramsToKilograms(grossWeightingramsString);
+
+                                   holder.itemWeight_widget.setText(String.valueOf(grossWeightingramsString) );
+                                   holder.itemWeight_edittextwidget.setText(String.valueOf(grossWeightingramsString));
 
                                }
 
@@ -295,9 +303,22 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             }
 
                             taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
-                            holder.itemWeight_edittextwidget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
+                            if (isWeightCanBeEdited) {
 
-                            holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
+                                String grossWeightingramsString = String.valueOf(recylerviewPojoClass.getItemFinalWeight());
+                                String weightinKGString = convertGramsToKilograms(grossWeightingramsString);
+
+
+                                holder.itemWeight_edittextwidget.setText(String.valueOf(weightinKGString) + "Kg");
+
+                                holder.itemWeight_widget.setText(String.valueOf(weightinKGString) + "Kg");
+                            }
+                            else{
+                                holder.itemWeight_edittextwidget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()) );
+
+                                holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()) );
+
+                            }
                             holder.itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
 
                        //     holder. itemWeight_edittextwidget.addTextChangedListener(holder.WeightEditTextListener);
@@ -310,9 +331,9 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                     }
-        
 
-                    holder.addNewItem_layout.setOnClickListener(new View.OnClickListener() {
+
+        holder.addNewItem_layout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             if (!holder.autoComplete_widget.getText().toString().equals("") && (!holder.itemWeight_widget.getText().toString().equals("") && (!holder.itemWeight_edittextwidget.getText().toString().equals("")) || !holder.itemQuantity_widget.getText().toString().equals(""))) {
@@ -320,9 +341,11 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                                 newOrders_menuItem_fragment.createEmptyRowInListView("empty");
+                               // Log.i("TAG", "itemCart : " + itemInCart.size());
+                                holder.addNewItem_layout.setVisibility(View.GONE);
+                               // onNewDataArrived(itemInCart);
 
-                                newOrders_menuItem_fragment.CallAdapter();
-
+                                   newOrders_menuItem_fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
                                 if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
                                     newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
 
@@ -344,7 +367,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     });
 
 
-                    holder.removeItem_fromCart_widget.setOnClickListener(new View.OnClickListener() {
+        holder.removeItem_fromCart_widget.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             //Log.e(TAG, "Item" + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
@@ -375,14 +398,19 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             } else {
                                 //Log.i("TAG", "KEY: " + barcode);
 
-
+                                try {
+                                   // NewOrders_MenuItem_Fragment.cartItem_hashmap.get(NewOrders_MenuItem_Fragment.cart_Item_List.get(position-1)).setLastEntry(true);
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
                                 NewOrders_MenuItem_Fragment.cartItem_hashmap.remove(barcode);
                                 NewOrders_MenuItem_Fragment.cart_Item_List.remove(barcode);
-
                                 newOrders_menuItem_fragment.add_amount_ForBillDetails();
-                                newOrders_menuItem_fragment.CallAdapter();
 
-                              //  NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                                 newOrders_menuItem_fragment.CallAdapter();
+
+                                //NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
                                 //Log.e(TAG, "Item_deleted  " + String.valueOf(NewOrders_MenuItem_Fragment.cartItem_hashmap.size() - 1));
 
 
@@ -401,10 +429,12 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         }
                     });
 
+
+
                     //Log.e(TAG, "Auto menu in cart adapter 1 : " + Menulist);
 
 
-                    holder.tmcUnitprice_weightAdd_layout.setOnClickListener(new View.OnClickListener() {
+        holder.tmcUnitprice_weightAdd_layout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
 
@@ -448,7 +478,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     });
 
 
-                    holder.tmcUnitprice_weightMinus_layout.setOnClickListener(new View.OnClickListener() {
+        holder.tmcUnitprice_weightMinus_layout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             if(! holder.itemQuantity_widget.getText().toString().equals("")&& !holder.itemPrice_Widget.getText().toString().equals(""))
@@ -539,7 +569,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
 
-                    holder.edit_weight_layout.setOnClickListener(new View.OnClickListener() {
+        holder.edit_weight_layout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
@@ -615,62 +645,97 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
         holder.itemprice_edittextwidget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
-                    //do what you want on the press of 'done'
+                try {
+                    if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                        //do what you want on the press of 'done'
 
-                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    Objects.requireNonNull(imm).hideSoftInputFromWindow(holder.itemprice_edittextwidget.getWindowToken(), 0);
+                        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        Objects.requireNonNull(imm).hideSoftInputFromWindow(holder.itemprice_edittextwidget.getWindowToken(), 0);
 
-                    String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
+                        String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
 
-                    Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-                    String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
-                    modal_newOrderItems.setisPriceEdited(false);
-
-
-                    if(pricetypeforpos.equals("tmcpriceperkg")){
-
-                        String price_string = holder.itemprice_edittextwidget.getText().toString();
-                        holder.itemPrice_Widget.setText(String.valueOf(price_string));
-                        holder.itemQuantity_widget.setText(String.valueOf("1"));
-
-                        price_string =price_string .replaceAll("[^\\d.]", "");
-                        int priceperKg = Integer.parseInt(modal_newOrderItems.getTmcpriceperkg());
-                        double priceDouble = Double.parseDouble(price_string);
-
-                        int price = (int) (priceDouble);
-                        item_weight = (1000.0 / priceperKg);
-
-                        item_weight = item_weight * price;
-                        int item_weight_int = (int) Math.round(item_weight);
+                        Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
+                        String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
 
 
-                        modal_newOrderItems.setItemFinalPrice(String.valueOf(price) );
-                        modal_newOrderItems.setQuantity(String.valueOf("1") );
-                        modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(price) );
+                        if (pricetypeforpos.equals("tmcpriceperkg")) {
 
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(item_weight_int) + "g" );
-                            modal_newOrderItems.setGrossweight((String.valueOf(item_weight_int) ) + "g");
-                            holder.itemWeight_widget.setText(String.valueOf(item_weight_int) + "g" );
-                             holder.itemWeight_edittextwidget.setText(String.valueOf(item_weight_int) + "g" );
+                            String price_string = holder.itemprice_edittextwidget.getText().toString();
+                            holder.itemPrice_Widget.setText(String.valueOf(price_string));
+                            holder.itemQuantity_widget.setText(String.valueOf("1"));
 
-                            //Log.e("TAg", "weight item_total" + item_total);
+                            price_string = price_string.replaceAll("[^\\d.]", "");
 
-                            //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
+                            if (price_string.equals("")) {
+                                AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.Price_cant_be_empty);
 
-                            NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                            }
+                            else {
+                                double priceDouble = Double.parseDouble(price_string);
+                                if (priceDouble == 0) {
+                                    AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.Price_cant_be_Zero);
+
+                                } else {
+                                modal_newOrderItems.setisPriceEdited(false);
+
+                                double priceperKg = Double.parseDouble(modal_newOrderItems.getTmcpriceperkg());
+
+                                int price = (int) (priceDouble);
+                                item_weight = (1000.0 / priceperKg);
+
+                                item_weight = item_weight * price;
+                                int item_weight_int = (int) Math.round(item_weight);
+
+
+                                modal_newOrderItems.setItemFinalPrice(String.valueOf(price));
+                                modal_newOrderItems.setQuantity(String.valueOf("1"));
+                                modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(price));
+
+                                modal_newOrderItems.setItemFinalWeight(String.valueOf(item_weight_int) + "g");
+                                modal_newOrderItems.setGrossweight((String.valueOf(item_weight_int)) + "g");
+
+                                    if (isWeightCanBeEdited) {
+
+                                        String grossWeightingramsString = String.valueOf(item_weight_int);
+                                        String weightinKGString = convertGramsToKilograms(grossWeightingramsString);
+                                        holder.itemWeight_widget.setText(String.valueOf(weightinKGString) + "Kg");
+                                        holder.itemWeight_edittextwidget.setText(String.valueOf(weightinKGString) + "Kg");
+
+                                    }
+                                    else{
+                                        holder.itemWeight_widget.setText(String.valueOf(item_weight_int) + "");
+                                        holder.itemWeight_edittextwidget.setText(String.valueOf(item_weight_int) + "");
+
+                                    }
+
+
+                                holder.itemPrice_Widget.setText(decimalFormat.format(price));
+                                holder.itemprice_edittextwidget.setText(decimalFormat.format(price));
+
+                                holder.itemPrice_Widget.setVisibility(View.VISIBLE);
+                                holder.itemprice_edittextwidget.setVisibility(View.GONE);
+                                newOrders_menuItem_fragment.add_amount_ForBillDetails();
+
+                                //Log.e("TAg", "weight item_total" + item_total);
+
+                                //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
+
+                                NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                                // onNewDataArrived(itemInCart) ;
+                            }
+                            }
+
+                        }
+                        // notifyDataSetChanged();
 
 
                     }
-                    notifyDataSetChanged();
-
-
-
-
-
-
+                }
+                catch (Exception e){
+                    e.printStackTrace();
                 }
                 return false;
+
             }
         });
 
@@ -679,175 +744,238 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
         holder.itemWeight_edittextwidget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
-                    //do what you want on the press of 'done'
+                try {
 
-                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    Objects.requireNonNull(imm).hideSoftInputFromWindow(holder.itemWeight_edittextwidget.getWindowToken(), 0);
+                    if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                        //do what you want on the press of 'done'
 
-                    String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
+                        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        Objects.requireNonNull(imm).hideSoftInputFromWindow(holder.itemWeight_edittextwidget.getWindowToken(), 0);
 
-                    Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-                    String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
-                    modal_newOrderItems.setisWeightEdited(false);
-                    modal_newOrderItems.setisWeightEdittextClicked(false);
+                        String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
 
-
-                    if(pricetypeforpos.equals("tmcpriceperkg")){
-
-                        String weight_string = holder.itemWeight_edittextwidget.getText().toString();
-                        holder.itemWeight_widget.setText(String.valueOf(weight_string));
-
-                        weight_string =weight_string .replaceAll("[^\\d.]", "");
-                        modal_newOrderItems.setIstmcpriceperkgitemedited("TRUE");
-                        int priceperKg = Integer.parseInt(modal_newOrderItems.getTmcpriceperkg());
-
-                        int weight = Integer.parseInt(weight_string);
-                        if (weight < 1000) {
-                            item_total = (priceperKg * weight);
-                            //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
-
-                            //Log.e("TAG", "adapter 9 item_total weight" + weight);
-
-                            //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
-
-                            item_total = item_total / 1000;
-                            //Log.e("TAG", "adapter 9 item_total " + item_total);
-
-                            //Log.e("TAg", "weight2" + weight);
-                            item_total = Double.parseDouble(decimalFormat.format(item_total));
+                        Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
+                        String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
 
 
-                            int quantity = 0;
-                            try {
-                                quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                        if (pricetypeforpos.equals("tmcpriceperkg")) {
+
+                            String weight_string = holder.itemWeight_edittextwidget.getText().toString();
+
+                            weight_string = weight_string.replaceAll("[^\\d.]", "");
+
+                            if (weight_string.equals("")) {
+                                AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.Weight_cant_be_empty);
+
+                            } else {
+                                double weight = Double.parseDouble(weight_string);
+                                int weight_in_Int =0;
+
+                                if (isWeightCanBeEdited) {
+                                    String grossWeightinKilogramsString = String.valueOf(weight);
+                                    String weightinGramsString = convertKiloGramsTograms(grossWeightinKilogramsString);
+                                    weight = Double.parseDouble(weightinGramsString);
+
+                                }
+
+
+
+                                if (weight == 0) {
+                                    AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.Weight_cant_be_Zero);
+
+                                } else {
+                                modal_newOrderItems.setisWeightEdited(false);
+                                modal_newOrderItems.setisWeightEdittextClicked(false);
+                                modal_newOrderItems.setIstmcpriceperkgitemedited("TRUE");
+
+                                double priceperKg = Double.parseDouble(modal_newOrderItems.getTmcpriceperkg());
+                                double itemtotalwithQuantity = 0;
+
+                                if (weight < 1000) {
+                                    item_total = (priceperKg * weight);
+                                    //Log.e("TAG", "adapter 9 item_total price_per_kg" + priceperKg);
+
+                                    //Log.e("TAG", "adapter 9 item_total weight" + weight);
+
+                                    //Log.e("TAG", "adapter 9 item_total " + priceperKg * weight);
+
+                                    item_total = item_total / 1000;
+                                    //Log.e("TAG", "adapter 9 item_total " + item_total);
+
+                                    //Log.e("TAg", "weight2" + weight);
+                                    item_total = Double.parseDouble(decimalFormat.format(item_total));
+
+
+                                    int quantity = 0;
+                                    try {
+                                        quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        quantity = 1;
+                                    }
+                                    itemtotalwithQuantity = 0;
+                                    try {
+
+                                        itemtotalwithQuantity = item_total * quantity;
+                                        modal_newOrderItems.setItemFinalPrice(String.valueOf(itemtotalwithQuantity));
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        modal_newOrderItems.setItemFinalPrice(String.valueOf(item_total));
+                                        modal_newOrderItems.setQuantity(String.valueOf(1));
+
+                                    }
+                                    modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(item_total));
+                                    weight_in_Int = (int) (weight);
+                                    modal_newOrderItems.setItemFinalWeight(String.valueOf(weight_in_Int) + "g");
+                                    modal_newOrderItems.setGrossweight((String.valueOf(weight_in_Int)) + "g");
+                                    if (isWeightCanBeEdited) {
+
+                                        String grossWeightingramsString = String.valueOf(weight);
+                                        String weightinKGString = convertGramsToKilograms(grossWeightingramsString);
+
+
+                                        holder.itemWeight_widget.setText(String.valueOf(weightinKGString) + "Kg");
+                                    }
+                                    else{
+                                        holder.itemWeight_widget.setText(String.valueOf(weight_in_Int) );
+
+                                    }
+                                    //Log.e("TAg", "weight item_total" + item_total);
+
+                                    //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
+
+
+                                }
+
+                                if (weight == 1000) {
+                                    int quantity = 0;
+                                    try {
+                                        quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        quantity = 1;
+                                    }
+                                    itemtotalwithQuantity = 0;
+                                    try {
+
+                                        itemtotalwithQuantity = priceperKg * quantity;
+                                        modal_newOrderItems.setItemFinalPrice(String.valueOf(itemtotalwithQuantity));
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        modal_newOrderItems.setItemFinalPrice(String.valueOf(priceperKg));
+                                        modal_newOrderItems.setQuantity(String.valueOf(1));
+
+                                    }
+                                    modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(priceperKg));
+                                    weight_in_Int = (int) (weight);
+                                    modal_newOrderItems.setItemFinalWeight(String.valueOf(weight_in_Int) + "g");
+                                    modal_newOrderItems.setGrossweight((String.valueOf(weight_in_Int)) + "g");
+
+                                    if (isWeightCanBeEdited) {
+
+                                        String grossWeightingramsString = String.valueOf(weight);
+                                        String weightinKGString = convertGramsToKilograms(grossWeightingramsString);
+                                        holder.itemWeight_widget.setText(String.valueOf(weightinKGString) + "Kg");
+                                    }
+                                    else{
+                                        holder.itemWeight_widget.setText(String.valueOf(weight_in_Int) + "");
+
+                                    }
+                                    //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+
+
+                                }
+
+                                if (weight > 1000) {
+                                    priceperKg = Double.parseDouble(modal_newOrderItems.getTmcpriceperkg());
+
+                                    //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+
+                                    //Log.e("TAg", "weight3" + weight);
+
+                                    double itemquantity = weight - 1000;
+                                    //Log.e("TAg", "weight itemquantity" + itemquantity);
+
+                                    item_total = (priceperKg * itemquantity) / 1000;
+                                    item_total = Double.parseDouble(decimalFormat.format(item_total));
+
+
+                                    //Log.e("TAg", "weight item_total" + item_total);
+
+                                    double total = priceperKg + item_total;
+                                    total = Double.parseDouble(decimalFormat.format((total)));
+
+
+                                    int quantity = 0;
+                                    try {
+                                        quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        quantity = 1;
+                                    }
+                                    itemtotalwithQuantity = 0;
+                                    try {
+
+                                        itemtotalwithQuantity = total * quantity;
+                                        modal_newOrderItems.setItemFinalPrice(String.valueOf(itemtotalwithQuantity));
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        modal_newOrderItems.setItemFinalPrice(String.valueOf(total));
+                                        modal_newOrderItems.setQuantity(String.valueOf(1));
+
+                                    }
+                                    modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(total));
+                                    weight_in_Int = (int) (weight);
+
+                                    modal_newOrderItems.setItemFinalWeight(String.valueOf(weight_in_Int) + "g");
+                                    //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
+                                    modal_newOrderItems.setGrossweight((String.valueOf(weight_in_Int)) + "g");
+
+
+                                    if (isWeightCanBeEdited) {
+
+                                        String grossWeightingramsString = String.valueOf(weight);
+                                        String weightinKGString = convertGramsToKilograms(grossWeightingramsString);
+                                        holder.itemWeight_widget.setText(String.valueOf(weightinKGString) + "Kg");
+                                    }
+                                    else{
+                                        holder.itemWeight_widget.setText(String.valueOf(weight_in_Int) + "");
+
+                                    }
+
+                                    //  holder.itemWeight_edittextwidget.setText(String.valueOf(total));
+
+                                }
+
+
+                                holder.itemWeight_widget.setVisibility(View.VISIBLE);
+                                holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+
+                                holder.itemPrice_Widget.setText(decimalFormat.format(itemtotalwithQuantity));
+                                holder.itemprice_edittextwidget.setText(decimalFormat.format(itemtotalwithQuantity));
+
+                                newOrders_menuItem_fragment.add_amount_ForBillDetails();
+
+                                NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+
+
                             }
-                            catch (Exception e){
-                                e.printStackTrace();
-                                quantity = 1;
-                            }
-                            double itemtotalwithQuantity  =0;
-                            try {
-
-                                itemtotalwithQuantity = item_total * quantity;
-                                modal_newOrderItems.setItemFinalPrice(String.valueOf(itemtotalwithQuantity));
-
-                            }
-                            catch (Exception e ){
-                                e.printStackTrace();
-                                modal_newOrderItems.setItemFinalPrice(String.valueOf(item_total));
-                                modal_newOrderItems.setQuantity(String.valueOf(1));
-
-                            }
-                            modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(item_total));
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g" );
-                            modal_newOrderItems.setGrossweight((String.valueOf(weight) ) + "g");
-                            holder.itemWeight_widget.setText(String.valueOf(weight) + "g" );
-
-                            //Log.e("TAg", "weight item_total" + item_total);
-
-                            //   holder.itemWeight_edittextwidget.setText(String.valueOf(item_total));
-
-                            NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
-
+                        }
+                            // onNewDataArrived(itemInCart);
                         }
 
-                        if (weight == 1000) {
-                            int quantity = 0;
-                            try {
-                                quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                                quantity = 1;
-                            }
-                            double itemtotalwithQuantity  =0;
-                            try {
 
-                                itemtotalwithQuantity = priceperKg * quantity;
-                                modal_newOrderItems.setItemFinalPrice(String.valueOf(itemtotalwithQuantity));
-
-                            }
-                            catch (Exception e ){
-                                e.printStackTrace();
-                                modal_newOrderItems.setItemFinalPrice(String.valueOf(priceperKg));
-                                modal_newOrderItems.setQuantity(String.valueOf(1));
-
-                            }
-                            modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(priceperKg));
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g");
-                            modal_newOrderItems.setGrossweight((String.valueOf(weight)) + "g");
-                            holder.itemWeight_widget.setText(String.valueOf(weight) + "g" );
-
-                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-
-
-                            NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
-
-                        }
-
-                        if (weight > 1000) {
-                            priceperKg = Integer.parseInt(modal_newOrderItems.getTmcpriceperkg());
-
-                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-
-                            //Log.e("TAg", "weight3" + weight);
-
-                            int itemquantity = weight - 1000;
-                            //Log.e("TAg", "weight itemquantity" + itemquantity);
-
-                            item_total = (priceperKg * itemquantity) / 1000;
-                            item_total = Double.parseDouble(decimalFormat.format(item_total));
-
-
-                            //Log.e("TAg", "weight item_total" + item_total);
-
-                            double total = priceperKg + item_total;
-                            total = Double.parseDouble(decimalFormat.format((total)));
-
-
-                            int quantity = 0;
-                            try {
-                                quantity = Integer.parseInt(modal_newOrderItems.getQuantity());
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                                quantity = 1;
-                            }
-                            double itemtotalwithQuantity  =0;
-                            try {
-
-                                itemtotalwithQuantity = total * quantity;
-                                modal_newOrderItems.setItemFinalPrice(String.valueOf(itemtotalwithQuantity));
-
-                            }
-                            catch (Exception e ){
-                                e.printStackTrace();
-                                modal_newOrderItems.setItemFinalPrice(String.valueOf(total));
-                                modal_newOrderItems.setQuantity(String.valueOf(1));
-
-                            }
-                            modal_newOrderItems.setItemPrice_quantityBased(String.valueOf(total));
-                            modal_newOrderItems.setItemFinalWeight(String.valueOf(weight) + "g");
-                            //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
-                            modal_newOrderItems.setGrossweight((String.valueOf(weight)) + "g");
-                            holder.itemWeight_widget.setText(String.valueOf(weight) + "g" );
-
-                            //  holder.itemWeight_edittextwidget.setText(String.valueOf(total));
-                            NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
-
-                        }
 
                     }
-                    notifyDataSetChanged();
-
-
-
-
-
-
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
                 return false;
+
             }
         });
 
@@ -857,10 +985,83 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
     }
 
+    private String convertKiloGramsTograms(String grossWeightinKilogramsString) {
+        String weightinGramsString = "";
+
+        try {
+            grossWeightinKilogramsString = grossWeightinKilogramsString.replaceAll("[^\\d.]", "");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        double grossweightInKiloGramDouble = 0;
+        try{
+            grossweightInKiloGramDouble = Double.parseDouble(grossWeightinKilogramsString);
+        }
+        catch (Exception e){
+            grossweightInKiloGramDouble = 0;
+            e.printStackTrace();
+        }
+        if(grossweightInKiloGramDouble >0 ) {
+            try {
+                double temp = grossweightInKiloGramDouble * 1000;
+                // double rf = Math.round((temp * 10.0) / 10.0);
+                weightinGramsString = String.valueOf(temp);
+            }
+            catch (Exception e){
+                weightinGramsString = grossWeightinKilogramsString;
+
+                e.printStackTrace();
+            }
+
+        }
+        else{
+            weightinGramsString = grossWeightinKilogramsString;
+        }
+        return  weightinGramsString;
+    }
+
+    private String convertGramsToKilograms(String grossWeightingramsString) {
+        String weightinKGString = "";
+
+        try {
+            grossWeightingramsString = grossWeightingramsString.replaceAll("[^\\d.]", "");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        float grossweightInGramDouble = 0;
+        try{
+            grossweightInGramDouble = Float.parseFloat(grossWeightingramsString);
+        }
+        catch (Exception e){
+            grossweightInGramDouble = 0;
+            e.printStackTrace();
+        }
+        if(grossweightInGramDouble >0 ) {
+            try {
+                float temp = grossweightInGramDouble / 1000;
+                // double rf = Math.round((temp * 10.0) / 10.0);
+                weightinKGString = String.valueOf(temp);
+            }
+            catch (Exception e){
+                weightinKGString = grossWeightingramsString;
+
+                e.printStackTrace();
+            }
+
+        }
+        else{
+            weightinKGString = grossWeightingramsString;
+        }
+        return  weightinKGString;
+    }
+
 
     @Override
     public int getItemCount() {
-        return itemInCart.size();
+        return NewOrders_MenuItem_Fragment.cartItem_hashmap.size();
+
     }
 
 
@@ -880,8 +1081,9 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
         ImageView minus_to_remove_item_widget;
-        LinearLayout removeItem_fromCart_widget, addNewItem_layout,parentLayout,edit_price_layout;
+        LinearLayout removeItem_fromCart_widget, addNewItem_layout,edit_price_layout;
         boolean isTMCproduct = false;
+        ConstraintLayout parentLayout;
         boolean isIndiaGateBasmatiRiceproduct = false;
 
         private EditTextListener EditTextListener = new EditTextListener();
@@ -910,7 +1112,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
             this.parentLayout = itemView.findViewById(R.id.parentLayout);
             this.edit_weight_layout = itemView.findViewById(R.id.edit_weight_layout);
 
-
+            itemInCart.putAll(NewOrders_MenuItem_Fragment.cartItem_hashmap);
 
 
              adapter = new Adapter_AutoCompleteMenuItem(context, Menulist,getPosition(),completemenuItem);
@@ -1000,7 +1202,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         if (isTMCproduct) {
                             if (barcode_widget.getText().toString().length() == 14) {
 
-                                //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                               // Log.e("TAG", "Got barcode " + barcode_widget.getText().length());
 
                                 String Barcode = barcode_widget.getText().toString();
                                 getMenuItemUsingBarCode(Barcode);
@@ -1022,7 +1224,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         else {
                             //if (barcode_widget.getText().toString().length() == 13) {
 
-                                //Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
+                               // Log.e(TAG, "Got barcode " + barcode_widget.getText().length());
 
                                 String Barcode = barcode_widget.getText().toString();
 
@@ -1099,7 +1301,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
             if(!isTMCproduct){
 
-                //Log.e(TAG, " barcode  1   " + barcode);
+               // Log.e(TAG, " barcode  1   " + barcode);
 
                 for (int i = 0; i < NewOrders_MenuItem_Fragment.completemenuItem.size(); i++) {
                     String itemWeight="";
@@ -1114,8 +1316,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.itemname = modal_newOrderItems.getItemname();
                             newItem_newOrdersPojoClass.grossweight = modal_newOrderItems.getGrossweight();
                             newItem_newOrdersPojoClass.netweight = modal_newOrderItems.getNetweight();
-                            newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
-                            newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
+                           // newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
+                           // newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
                             newItem_newOrdersPojoClass.menuItemId = (modal_newOrderItems.getMenuItemId());
 
                             newItem_newOrdersPojoClass.barcode = (modal_newOrderItems.getBarcode());
@@ -1161,7 +1363,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                             try{
-                                newItem_newOrdersPojoClass.swiggyprice = (modal_newOrderItems.getTmcpriceperkg());
+                                newItem_newOrdersPojoClass.swiggyprice = (modal_newOrderItems.getSwiggyprice());
 
 
                             }
@@ -1175,9 +1377,36 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             newItem_newOrdersPojoClass.barcode =String.valueOf(modal_newOrderItems.getBarcode());
                             newItem_newOrdersPojoClass.tmcctgykey =String.valueOf(modal_newOrderItems.getTmcctgykey());
 
+                            try {
+                                if (modal_newOrderItems.getApplieddiscountpercentage().equals("")) {
+                                    newItem_newOrdersPojoClass.applieddiscountpercentage = (String.valueOf("0"));
 
+                                } else {
+                                    newItem_newOrdersPojoClass.applieddiscountpercentage = (String.valueOf(modal_newOrderItems.getApplieddiscountpercentage()));
+                                }
+                            }
+                            catch (Exception e){
+                                newItem_newOrdersPojoClass.applieddiscountpercentage = (String.valueOf("0"));
 
-                            newItem_newOrdersPojoClass.discountpercentage = (String.valueOf(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getDiscountpercentage()))));
+                                e.printStackTrace();
+                            }
+                            try {
+                                if (modal_newOrderItems.getAppmarkuppercentage().equals("")) {
+                                    newItem_newOrdersPojoClass.appmarkuppercentage = (String.valueOf("0"));
+                                    Toast.makeText(context, "There is no appmarkuppercentage entry on Recycler", Toast.LENGTH_LONG).show();
+
+                                } else {
+                                    newItem_newOrdersPojoClass.appmarkuppercentage = (String.valueOf(modal_newOrderItems.getAppmarkuppercentage()));
+
+                                }
+                            }
+                            catch (Exception e){
+                                newItem_newOrdersPojoClass.appmarkuppercentage = (String.valueOf("0"));
+                                Toast.makeText(context, "Error in getting appmarkuppercentage entry on Recycler", Toast.LENGTH_LONG).show();
+
+                                e.printStackTrace();
+                            }
+
                             try {
                                 if (modal_newOrderItems.getTmcsubctgykey().equals("")) {
                                     newItem_newOrdersPojoClass.tmcsubctgykey="0";
@@ -1189,9 +1418,50 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             catch (Exception e){
                                 e.printStackTrace();
                             }
-                            newItem_newOrdersPojoClass.itemFinalPrice = (String.valueOf(((modal_newOrderItems.getTmcprice()))));
-                            newItem_newOrdersPojoClass.itemPrice_quantityBased = (String.valueOf(((modal_newOrderItems.getTmcprice()))));
-                            newItem_newOrdersPojoClass.quantity = "1";
+
+                            if(NewOrders_MenuItem_Fragment.isPhoneOrderSelected){
+
+                                if ((!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals("0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals("0.00")) && (!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals("0.0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals(""))){
+                                    newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkgWithMarkupValue();
+
+                                }
+                                else{
+                                    String tmcPriceperKgWithMarkup_calcNow = CalculateTmcPricePerKgValueWithMarkup(modal_newOrderItems);
+                                    newItem_newOrdersPojoClass.tmcpriceperkg = String.valueOf(tmcPriceperKgWithMarkup_calcNow);
+                                    modal_newOrderItems.setTmcpriceperkgWithMarkupValue(String.valueOf(tmcPriceperKgWithMarkup_calcNow));
+                                }
+
+
+                               // newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkgWithMarkupValue();
+                                if((!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("0.00"))  && (!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("0.0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("")))
+                                {
+                                    newItem_newOrdersPojoClass.tmcprice = String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue());
+                                    newItem_newOrdersPojoClass.itemFinalPrice = (String.valueOf(((modal_newOrderItems.getTmcpriceWithMarkupValue()))));
+                                    newItem_newOrdersPojoClass.itemPrice_quantityBased = (String.valueOf(((modal_newOrderItems.getTmcpriceWithMarkupValue()))));
+
+
+
+                                }
+                                else{
+                                    String tmcPriceWithMarkup_calcNow = CalculateTmcPriceValueWithMarkup(modal_newOrderItems);
+                                    newItem_newOrdersPojoClass.tmcprice = String.valueOf(tmcPriceWithMarkup_calcNow);
+                                    newItem_newOrdersPojoClass.itemFinalPrice = (String.valueOf(((tmcPriceWithMarkup_calcNow))));
+                                    newItem_newOrdersPojoClass.itemPrice_quantityBased = (String.valueOf((tmcPriceWithMarkup_calcNow)));
+                                    modal_newOrderItems.setTmcpriceWithMarkupValue(String.valueOf(tmcPriceWithMarkup_calcNow));
+                                }
+
+                            }
+                            else{
+                                newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
+                                newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
+                                newItem_newOrdersPojoClass.itemFinalPrice = (String.valueOf(((modal_newOrderItems.getTmcprice()))));
+                                newItem_newOrdersPojoClass.itemPrice_quantityBased = (String.valueOf(((modal_newOrderItems.getTmcprice()))));
+
+
+                            }
+
+
+                             newItem_newOrdersPojoClass.quantity = "1";
                             newItem_newOrdersPojoClass.subTotal_perItem = "";
                             newItem_newOrdersPojoClass.total_of_subTotal_perItem = "";
                             newItem_newOrdersPojoClass.totalGstAmount = "";
@@ -1249,18 +1519,20 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                         }
                         catch (Exception e ){
+                            e.printStackTrace();
                             Toast.makeText(context,"Error in get MenuItem using Barcode ",Toast.LENGTH_LONG).show();
 
                         }
                     }
 
 
-                }}
+                }
+            }
             else{
                 //Log.e(TAG, " barcode  2" + barcode);
 
             if (barcode.length() == 14) {
-                //Log.e(TAG, " barcode  3" + barcode);
+               // Log.e(TAG, " barcode  3" + barcode);
                 try{
                 String itemuniquecode = barcode.substring(0, 9);
                 String itemWeight = barcode.substring(9, 14);
@@ -1275,9 +1547,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                         Modal_NewOrderItems newItem_newOrdersPojoClass = new Modal_NewOrderItems();
                         newItem_newOrdersPojoClass.itemname = modal_newOrderItems.getItemname();
-                        newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
                         newItem_newOrdersPojoClass.netweight = modal_newOrderItems.getNetweight();
-                        newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
                         newItem_newOrdersPojoClass.gstpercentage = modal_newOrderItems.getGstpercentage();
                         newItem_newOrdersPojoClass.portionsize = modal_newOrderItems.getPortionsize();
                         newItem_newOrdersPojoClass.pricetypeforpos = modal_newOrderItems.getPricetypeforpos();
@@ -1308,7 +1578,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                         try{
-                            newItem_newOrdersPojoClass.swiggyprice = (modal_newOrderItems.getTmcpriceperkg());
+                            newItem_newOrdersPojoClass.swiggyprice = (modal_newOrderItems.getSwiggyprice());
 
 
                         }
@@ -1335,8 +1605,39 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
 
-                        newItem_newOrdersPojoClass.discountpercentage =  ( String.valueOf(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getDiscountpercentage()))));
-                       String tmcsubctgykey = (String.valueOf(((modal_newOrderItems.getTmcsubctgykey()))));
+                        try {
+                            if (modal_newOrderItems.getApplieddiscountpercentage().equals("")) {
+                                newItem_newOrdersPojoClass.applieddiscountpercentage = (String.valueOf("0"));
+
+                            } else {
+                                newItem_newOrdersPojoClass.applieddiscountpercentage = (String.valueOf(modal_newOrderItems.getApplieddiscountpercentage()));
+                            }
+                        }
+                        catch (Exception e){
+
+                            newItem_newOrdersPojoClass.applieddiscountpercentage = (String.valueOf("0"));
+
+
+                            e.printStackTrace();
+                        }
+                        try {
+                            if (modal_newOrderItems.getAppmarkuppercentage().equals("")) {
+                                newItem_newOrdersPojoClass.appmarkuppercentage = (String.valueOf("0"));
+                                Toast.makeText(context, "There is no appmarkuppercentage entry on Recycler 2 ", Toast.LENGTH_LONG).show();
+
+                            } else {
+                                newItem_newOrdersPojoClass.appmarkuppercentage = (String.valueOf(modal_newOrderItems.getAppmarkuppercentage()));
+                            }
+                        }
+                        catch (Exception e){
+                            newItem_newOrdersPojoClass.appmarkuppercentage = (String.valueOf("0"));
+                            Toast.makeText(context, "Error in getting appmarkuppercentage entry on Recycler 2 ", Toast.LENGTH_LONG).show();
+
+                            e.printStackTrace();
+                        }
+
+
+                        String tmcsubctgykey = (String.valueOf(((modal_newOrderItems.getTmcsubctgykey()))));
                         try {
                             if (modal_newOrderItems.getTmcsubctgykey().equals("")) {
                                 newItem_newOrdersPojoClass.tmcsubctgykey = ("0");
@@ -1356,10 +1657,53 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         newItem_newOrdersPojoClass.itemcutdetails = (String.valueOf(((modal_newOrderItems.getItemcutdetails()))));
                         newItem_newOrdersPojoClass.inventorydetails = (String.valueOf(((modal_newOrderItems.getInventorydetails()))));
 
+                        if(newOrders_menuItem_fragment.isPhoneOrderSelected) {
 
+
+                            if ((!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals("0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals("0.00")) && (!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals("0.0"))  && (!String.valueOf(modal_newOrderItems.getTmcpriceperkgWithMarkupValue()).equals(""))){
+                                newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkgWithMarkupValue();
+
+                            }
+                            else{
+                                String tmcPriceperKgWithMarkup_calcNow = CalculateTmcPricePerKgValueWithMarkup(modal_newOrderItems);
+                                newItem_newOrdersPojoClass.tmcpriceperkg = String.valueOf(tmcPriceperKgWithMarkup_calcNow);
+                                modal_newOrderItems.setTmcpriceperkgWithMarkupValue(String.valueOf(tmcPriceperKgWithMarkup_calcNow));
+                            }
+
+
+                            if ((!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("0.00")) && (!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals("0.0")) && (!String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()).equals(""))){
+                                newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcpriceWithMarkupValue();
+
+                            }
+                            else{
+                                String tmcPriceWithMarkup_calcNow = CalculateTmcPriceValueWithMarkup(modal_newOrderItems);
+                                newItem_newOrdersPojoClass.tmcprice = String.valueOf(tmcPriceWithMarkup_calcNow);
+                                modal_newOrderItems.setTmcpriceWithMarkupValue(String.valueOf(tmcPriceWithMarkup_calcNow));
+
+                            }
+
+
+
+
+                        }
+                        else{
+                            newItem_newOrdersPojoClass.tmcpriceperkg = modal_newOrderItems.getTmcpriceperkg();
+                            newItem_newOrdersPojoClass.tmcprice = modal_newOrderItems.getTmcprice();
+
+                        }
 
                         if (String.valueOf(modal_newOrderItems.getPricetypeforpos()).equals("tmcpriceperkg")) {
-                            int priceperKg = Integer.parseInt(modal_newOrderItems.getTmcpriceperkg());
+                            double priceperKg =0;
+
+                            if(newOrders_menuItem_fragment.isPhoneOrderSelected){
+                                priceperKg =  Double.parseDouble(modal_newOrderItems.getTmcpriceperkgWithMarkupValue());
+
+                            }
+                            else{
+                                priceperKg = Double.parseDouble(modal_newOrderItems.getTmcpriceperkg());
+
+                            }
+
 
                             int weight = Integer.parseInt(itemWeight);
                             if (weight < 1000) {
@@ -1386,7 +1730,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                                 itemPrice_Widget.setText(String.valueOf(item_total));
 
-                                NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                                //onNewDataArrived(itemInCart);
+                                 NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
                             }
 
@@ -1399,13 +1744,23 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
 
-                                NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                               // onNewDataArrived(itemInCart);
+
+                                  NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
                             }
 
                             if (weight > 1000) {
-                                 priceperKg = Integer.parseInt(modal_newOrderItems.getTmcpriceperkg());
+                                 priceperKg =0;
 
+                                if(newOrders_menuItem_fragment.isPhoneOrderSelected){
+                                    priceperKg = Double.parseDouble(modal_newOrderItems.getTmcpriceperkgWithMarkupValue());
+
+                                }
+                                else{
+                                    priceperKg = Double.parseDouble(modal_newOrderItems.getTmcpriceperkg());
+
+                                }
                                 //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
                                 //Log.e("TAg", "weight3" + weight);
@@ -1430,7 +1785,9 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 newItem_newOrdersPojoClass.setGrossweight((String.valueOf(weight) + "g"));
 
                                 itemPrice_Widget.setText(String.valueOf(total));
-                                NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                              //  onNewDataArrived(itemInCart);
+
+                                  NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
                             }
 
@@ -1439,10 +1796,24 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                         if (String.valueOf(modal_newOrderItems.getPricetypeforpos()).equals("tmcprice")) {
-                            newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(modal_newOrderItems.getTmcprice()));
 
-                            newItem_newOrdersPojoClass.setItemFinalPrice(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getTmcprice())));
-                          /*
+
+
+                            if(newOrders_menuItem_fragment.isPhoneOrderSelected){
+                                newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(modal_newOrderItems.getTmcpriceWithMarkupValue()));
+
+                                newItem_newOrdersPojoClass.setItemFinalPrice(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getTmcpriceWithMarkupValue())));
+
+                            }
+                            else{
+                                newItem_newOrdersPojoClass.setItemPrice_quantityBased(String.valueOf(modal_newOrderItems.getTmcprice()));
+
+                                newItem_newOrdersPojoClass.setItemFinalPrice(decimalFormat.format(Double.parseDouble(modal_newOrderItems.getTmcprice())));
+
+                            }
+
+
+                              /*
                             if (modal_newOrderItems.getGrossweight().equals("") && modal_newOrderItems.getNetweight().equals("")) {
                                 //Log.e(Constants.TAG, "getPortionsize " + (String.format(" %s", modal_newOrderItems.getPortionsize())));
                                 newItem_newOrdersPojoClass.itemFinalWeight = (modal_newOrderItems.getPortionsize());
@@ -1521,6 +1892,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                 }
                 }
                 catch (Exception e ){
+                    e.printStackTrace();
                     Toast.makeText(context,"Error in get MenuItem using TMC Barcode",Toast.LENGTH_LONG).show();
 
                 }
@@ -1589,7 +1961,8 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                     }
                     Modal_NewOrderItems m = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-                    NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                   // onNewDataArrived(itemInCart);
+                     NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
                 }
 
@@ -1631,7 +2004,9 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                         NewOrders_MenuItem_Fragment.cartItem_hashmap.put(itemUniquecode, newItem_newOrdersPojoClass);
 
                     }
-                    NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                  // onNewDataArrived(itemInCart);
+
+                   NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
 
                 }
             }
@@ -1679,10 +2054,117 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
     }
 
+    private String CalculateTmcPricePerKgValueWithMarkup(Modal_NewOrderItems modal_newOrderItems) {
+        String tmcpriceperkgWithAppMarkupValueString ="0";
+        try{
+            double tmcpriceperkg_double =0 ,  tmcpriceperkgWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+
+            try {
+
+                tmcpriceperkg_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getTmcpriceperkg()));
+
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                Toast.makeText(context,"The tmcpriceperkg_double Zero in CalculateTmcPricePerKgValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+
+                tmcpriceperkg_double =0;
+            }
+
+            int markupPercentageInt = Integer.parseInt(String.valueOf(modal_newOrderItems.getAppmarkuppercentage()));
+
+            try{
+                appMarkupPercn_value  = (markupPercentageInt * tmcpriceperkg_double  )/100;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            try{
+                tmcpriceperkgWithAppMarkupValue  = appMarkupPercn_value + tmcpriceperkg_double;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                tmcpriceperkgWithAppMarkupValueString = String.valueOf( Double.parseDouble(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue))));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(context,"There is an error in CalculateTmcPricePerKgValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+            tmcpriceperkgWithAppMarkupValueString = String.valueOf(modal_newOrderItems.getTmcpriceperkg());
+
+        }
+        return  tmcpriceperkgWithAppMarkupValueString;
+    }
+
+    private String CalculateTmcPriceValueWithMarkup(Modal_NewOrderItems modal_newOrderItems) {
+        String  tmcpriceWithAppMarkupValueString = "0";
+        try{
+            double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+
+            try {
+
+                tmcprice_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getTmcprice()));
+
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                tmcprice_double =0;
+                Toast.makeText(context,"The tmcprice_double Zero in CalculateTmcPriceValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+
+            }
+            int markupPercentageInt = Integer.parseInt(String.valueOf(modal_newOrderItems.getAppmarkuppercentage()));
+
+            try{
+                appMarkupPercn_value  = (markupPercentageInt * tmcprice_double )/100;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+            try{
+                tmcpriceWithAppMarkupValue  = appMarkupPercn_value + tmcprice_double;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                tmcpriceWithAppMarkupValueString = (String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceWithAppMarkupValue)))));
+            }
+            catch (Exception e){
+                tmcpriceWithAppMarkupValueString = String.valueOf(tmcpriceWithAppMarkupValue);
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            Toast.makeText(context,"There is an error in CalculateTmcPriceValueWithMarkup AutoComplete",Toast.LENGTH_LONG).show();
+            tmcpriceWithAppMarkupValueString = String.valueOf(modal_newOrderItems.getTmcprice());
+
+            e.printStackTrace();
+        }
+        return tmcpriceWithAppMarkupValueString;
+
+    }
+
     @Override
     public long getItemId(int position) {
         return super.getItemId(position);
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
 
     private boolean checkforBarcodeInCart(String barcode) {
         String search = barcode;
@@ -1693,6 +2175,37 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
         return false;
     }
 
+
+
+
+     void onNewDataArrived(HashMap<String, Modal_NewOrderItems> cartItem_hashmap_old) {
+        try{
+
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+         HashMap<String, Modal_NewOrderItems> cartItem_hashmap_new = NewOrders_MenuItem_Fragment.cartItem_hashmap;
+
+
+         List<String> cart_Item_List_new =  new ArrayList<>(cartItem_hashmap_new.keySet());
+        List<String> cart_Item_List_old =  new ArrayList<>(cartItem_hashmap_old.keySet());
+
+         final DiffUtilCallBack diffCallback = new DiffUtilCallBack(cartItem_hashmap_old, cart_Item_List_new,cartItem_hashmap_new,cart_Item_List_old);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+
+        itemInCart.clear();
+        itemInCart.putAll(cartItem_hashmap_new);
+
+        diffResult.dispatchUpdatesTo(this);
+
+
+         int last_index=NewOrders_MenuItem_Fragment.cartItem_hashmap.size()-1;
+         newOrders_menuItem_fragment.recyclerView.scrollToPosition(last_index);
+
+
+
+     }
 
 }
 

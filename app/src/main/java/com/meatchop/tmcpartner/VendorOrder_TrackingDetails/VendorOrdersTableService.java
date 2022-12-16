@@ -33,7 +33,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -1348,7 +1350,10 @@ public class VendorOrdersTableService   {
                 String time1 = orderplacedtime;
                 //   Log.d(TAG, "time1long  "+orderplacedtime);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 Date date = sdf.parse(time1);
                 long time1long = date.getTime() / 1000;
                 longvalue = String.valueOf(time1long);
@@ -1358,7 +1363,10 @@ public class VendorOrdersTableService   {
                 try {
                     String time1 = orderplacedtime;
 
-                    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy");
+                    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy",Locale.ENGLISH);
+                    sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                     Date date = sdf.parse(time1);
                     long time1long = date.getTime() / 1000;
                     longvalue = String.valueOf(time1long);
@@ -1373,17 +1381,24 @@ public class VendorOrdersTableService   {
     private String convertnewFormatDateintoOldFormat(String todaysdate) {
 
         String CurrentDate ="";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
-           String CurrentDay = day.format(date);
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+            String CurrentDay = day.format(date);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
-             CurrentDate = df.format(date);
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+            CurrentDate = df.format(date);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
 
@@ -1402,7 +1417,9 @@ public class VendorOrdersTableService   {
         //   Log.d(TAG, "slottime  "+slottime);
         if (slottime.contains("mins")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
@@ -1421,7 +1438,10 @@ public class VendorOrdersTableService   {
                     e.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
@@ -1429,7 +1449,9 @@ public class VendorOrdersTableService   {
                 result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
 
             } catch (ParseException e) {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
 
                 final Date date;
                 try {
@@ -1451,8 +1473,10 @@ public class VendorOrdersTableService   {
                     e1.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
-                String placedtime = String.valueOf(sdff.format(calendar.getTime()));
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                    sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+                    String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
 

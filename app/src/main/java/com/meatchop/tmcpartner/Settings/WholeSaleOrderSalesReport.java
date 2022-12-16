@@ -87,9 +87,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
@@ -499,12 +501,18 @@ public class WholeSaleOrderSalesReport extends AppCompatActivity {
 
     private String convertOldFormatDateintoNewFormat(String todaysdate) {
 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         try {
             Date date = sdf.parse(todaysdate);
 
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
             CurrentDate = day.format(date);
 
 
@@ -1787,9 +1795,9 @@ public class WholeSaleOrderSalesReport extends AppCompatActivity {
                                 oldOrder_WeightInGrams="0";
                             }
                             double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                            int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                            int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                            int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                            int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
                             tmcprice = tmcprice + tmcprice_from_HashMap;
@@ -1837,9 +1845,9 @@ public class WholeSaleOrderSalesReport extends AppCompatActivity {
                                     oldOrder_WeightInGrams = "0";
                                 }
                                 double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                                int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                                int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                                int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                                int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                                 intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
                                 //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
@@ -3414,10 +3422,16 @@ public class WholeSaleOrderSalesReport extends AppCompatActivity {
     private String getDate() {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         CurrentDate = df.format(c);
 
         CurrentDate = CurrentDay + ", " + CurrentDate;

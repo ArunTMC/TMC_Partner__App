@@ -1,7 +1,16 @@
 package com.meatchop.tmcpartner.Settings;
 
 public class Modal_DeliverySlots {
-    String slotdatetype,key,status,slotstarttime,slotendtime;
+    String slotdatetype,key,status,slotstarttime,slotendtime,slotname ;
+
+
+    public String getSlotname() {
+        return slotname;
+    }
+
+    public void setSlotname(String slotname) {
+        this.slotname = slotname;
+    }
 
     public String getSlotdatetype() {
         return slotdatetype;

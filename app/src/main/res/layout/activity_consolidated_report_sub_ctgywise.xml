@@ -274,7 +274,7 @@
                 android:layout_width="match_parent"
                 android:scrollIndicators="none"
                 android:scrollbars="none"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:isScrollContainer="true"
                 android:id="@+id/scrollView"
                 android:layout_height="match_parent">
@@ -604,6 +604,9 @@
                             android:background="@drawable/border_line" />
 
 
+
+
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="30dp"
@@ -641,6 +644,37 @@
 
 
                             <TextView
+                                android:id="@+id/totalAppSales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0000.00"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="20dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="Product Sales "
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+                            <TextView
                                 android:id="@+id/appSales"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -649,8 +683,39 @@
                                 android:gravity="right"
                                 android:text="0000.00"
                                 android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="15sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="20dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="Delivery Markup Amount"
+                                android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
+
+                            <TextView
+                                android:id="@+id/totalApp_MarkupAmount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0000.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="15sp" />
 
                         </LinearLayout>
 
@@ -717,6 +782,7 @@
 
 
                         </LinearLayout>
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="30dp"
@@ -730,7 +796,42 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="4.SWIGGY SALES"
+                                android:text="4.CREDIT ORDER SALES "
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                            <TextView
+                                android:id="@+id/creditSales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                        </LinearLayout>
+
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:gravity="center_vertical"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="5.SWIGGY SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -762,7 +863,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="5.WHOLESALE ORDER SALES"
+                                android:text="6.WHOLESALE ORDER SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -798,7 +899,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="6.DUNZO SALES"
+                                android:text="7.DUNZO SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -831,7 +932,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="7.BIGBASKET SALES"
+                                android:text="8.BIGBASKET SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 

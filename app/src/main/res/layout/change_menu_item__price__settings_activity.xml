@@ -53,165 +53,211 @@
                     android:layout_height="match_parent">
                     <LinearLayout
                         android:layout_width="match_parent"
-
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_weight="1"
-
                             android:layout_height="wrap_content"
-                            android:orientation="vertical">
-                            <TextView
+                            android:orientation="horizontal">
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Item Uniquecode :- " />
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Price Type of Item :- " />
-
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="70dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Item Name :- " />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Weight in Gms/Portion size(for app)  :- " />
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="20dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Applied Discount Percentage :-  (  in % ) " />
-
-
-
-
-
-
-
-
-
-
-                        </LinearLayout>
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_weight="1"
-
-                            android:layout_height="match_parent"
-                            android:orientation="vertical">
-                            <TextView
-                                android:id="@+id/itemUniqueCode_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="45dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="8dp"
-                                android:gravity="center_vertical|center"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:paddingEnd="25dp"
-
-                                android:text="1204" />
-
-                            <TextView
-                                android:id="@+id/pricetype_ofItem_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="8dp"
-                                android:gravity="center_vertical|center"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:paddingEnd="25dp"
-
-                                android:text="" />
-
-
-                            <TextView
-                                android:id="@+id/itemName_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="70dp"
-                                android:layout_marginTop="8dp"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:gravity="center_vertical|center"
-                                android:paddingEnd="25dp"
-                                android:text="Chicken Curry Cut"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-
-                                android:textSize="16sp" />
-
-                            <TextView
-                                android:id="@+id/grossweight_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical|center"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:paddingEnd="25dp"
-
-                                android:text="500 grams " />
-
-                            <EditText
-                                android:id="@+id/appliedDiscountPercentage_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="52dp"
-                                android:layout_marginTop="22dp"
-                                android:background="@color/TMC_PaleOrange"
-                                android:digits="0123456789"
-                                android:focusedByDefault="false"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:gravity="center_vertical|center"
-                                android:imeOptions="actionNext"
-                                android:inputType="phone"
-                                android:paddingEnd="25dp"
-                                android:text="20  "
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp" />
-
-
-
-
-
-                            <Button
-                                android:id="@+id/computeAppandPosPrice"
-                                android:layout_width="match_parent"
+                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:text="compute App and PosPrice"
-                                android:visibility="gone" />
+                                android:orientation="vertical">
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Item Uniquecode :- " />
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:layout_marginTop="10dp"
+
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Price Type of Item :- " />
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="70dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Item Name :-  " />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Weight in Gms/Portion size(for app)  :- " />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:layout_marginTop="20dp"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="center_vertical"
+                                    android:text="Applied Discount Percentage :-  (  in % ) "
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp" />
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="center_vertical"
+                                    android:text="App Markup Percentage :-  (  in % ) "
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp" />
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:layout_marginTop="20dp"
+
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Selling Price ( Price Per Kg ) :-   " />
+
+
+                            </LinearLayout>
+
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:id="@+id/itemUniqueCode_text_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="45dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:layout_marginTop="8dp"
+                                    android:gravity="center_vertical|center"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:paddingEnd="25dp"
+
+                                    android:text="1204" />
+
+                                <TextView
+                                    android:id="@+id/pricetype_ofItem_text_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:layout_marginTop="8dp"
+                                    android:gravity="center_vertical|center"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:paddingEnd="25dp"
+
+                                    android:text="" />
+
+
+                                <TextView
+                                    android:id="@+id/itemName_text_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="70dp"
+                                    android:layout_marginTop="8dp"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="center_vertical|center"
+                                    android:paddingEnd="25dp"
+                                    android:text="Chicken Curry Cut"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:id="@+id/grossweight_text_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp"
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical|center"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:paddingEnd="25dp"
+
+                                    android:text="500 grams " />
+
+                                <EditText
+                                    android:id="@+id/appliedDiscountPercentage_text_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="52dp"
+                                    android:layout_marginTop="22dp"
+                                    android:background="@color/TMC_PaleOrange"
+                                    android:digits="0123456789"
+                                    android:focusedByDefault="false"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="center_vertical|center"
+                                    android:imeOptions="actionNext"
+                                    android:inputType="phone"
+                                    android:paddingEnd="25dp"
+                                    android:text="20"
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp" />
+
+                                <EditText
+                                    android:id="@+id/appMarkupPercentage_text_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="52dp"
+                                    android:layout_marginTop="18dp"
+                                    android:background="@color/TMC_PaleOrange"
+                                    android:digits="0123456789"
+                                    android:focusedByDefault="false"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="center_vertical|center"
+                                    android:imeOptions="actionNext"
+                                    android:inputType="phone"
+                                    android:paddingEnd="25dp"
+                                    android:text=""
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp" />
+
+
+                                <EditText
+                                    android:id="@+id/selling_price_common_edittext_widget"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:layout_marginTop="15dp"
+                                    android:layout_weight="1"
+                                    android:background="@color/TMC_PaleOrange"
+                                    android:digits="0123456789"
+                                    android:focusedByDefault="false"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:gravity="center_vertical|center"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="phone"
+                                    android:paddingEnd="25dp"
+                                    android:text="  "
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+
+                                    android:textSize="16sp" />
+
+                                <Button
+                                    android:id="@+id/computeAppandPosPrice"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="compute App and PosPrice"
+                                    android:visibility="gone" />
 
 
 
@@ -223,195 +269,41 @@
 
 
 
+                            </LinearLayout>
                         </LinearLayout>
-                    </LinearLayout>
-
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:visibility="gone"
-                        android:id="@+id/tmcUnitPrice_layout"
-
-                        android:orientation="vertical">
 
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="60dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:layout_weight="1"
-                                android:gravity="center_vertical"
-                                android:id="@+id/TMCprice_selling_price_label"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Selling Price  ( Price Per Kg ):-   " />
+                            android:visibility="visible"
+                            android:id="@+id/tmcUnitPrice_layout"
 
-
-                            <EditText
-                                android:id="@+id/selling_price_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:layout_marginTop="10dp"
-                                android:background="@color/TMC_PaleOrange"
-                                android:digits="0123456789"
-                                android:focusedByDefault="false"
-                                android:layout_weight="1"
-
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:gravity="center_vertical|center"
-                                android:imeOptions="actionDone"
-                                android:inputType="phone"
-                                android:paddingEnd="25dp"
-                                android:text="2000  "
-                                android:textColor="@color/TMC_Primary_Text_Color"
-
-                                android:textSize="16sp" />
-
-
-                        </LinearLayout>
-
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="70dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:digits="0123456789"
-                                android:layout_weight="1"
-                                android:id="@+id/TMCprice_pos_price_label"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="POS Price (  Price Per Kg )  :-   " />
-
-
-                            <TextView
-                                android:id="@+id/posPrice_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="70dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:paddingEnd="25dp"
-                                android:digits="0123456789"
-                                android:inputType="phone"
-                                android:layout_weight="1"
-
-                                android:gravity="center_vertical|center"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:focusedByDefault="false"
-
-                                android:text="1000  " />
-
-                        </LinearLayout>
-
-
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="60dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_weight="1"
-                                android:id="@+id/TMCprice_app_price_label"
-
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="App Price (TMC Price)  :-   " />
-                            <TextView
-                                android:id="@+id/appPrice_text_widget"
-                                android:layout_width="match_parent"
-                                android:layout_height="60dp"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp"
-                                android:layout_marginTop="10dp"
-                                android:focusedByDefault="false"
-                                android:digits="0123456789"
-                                android:paddingEnd="25dp"
-                                android:inputType="phone"
-                                android:layout_weight="1"
-
-                                android:gravity="center_vertical|center"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="500  " />
-
-
-                        </LinearLayout>
-
-
-
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tmcpriceperkg_layout"
-
-                        android:orientation="vertical">
-
-
-
-
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/pos_price_layout"
                             android:orientation="vertical">
-
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Orange"
-                                android:textSize="18sp"
-                                android:layout_weight="1"
-
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_bold_italic"
-                                android:text="POS PRICE  : " />
 
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:visibility="gone"
                                 android:orientation="horizontal">
-
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="60dp"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp"
-                                    android:id="@+id/TMCpriceperkg_posSelling_price_label"
-
+                                    android:layout_marginTop="10dp"
                                     android:layout_weight="1"
                                     android:gravity="center_vertical"
+                                    android:id="@+id/TMCprice_selling_price_label"
                                     android:fontFamily="@font/open_sans_semibold"
-                                    android:text="POS Selling Price ( Price Per Kg ) :-   " />
+                                    android:text="Selling Price  ( Price Per Kg ):-   " />
 
 
                                 <EditText
-                                    android:id="@+id/Pos_selling_price_text_widget_posLayout"
+                                    android:id="@+id/selling_price_text_widget"
                                     android:layout_width="match_parent"
-                                    android:layout_height="60dp"
+                                    android:layout_height="50dp"
                                     android:layout_marginTop="10dp"
                                     android:background="@color/TMC_PaleOrange"
                                     android:digits="0123456789"
@@ -423,7 +315,7 @@
                                     android:imeOptions="actionDone"
                                     android:inputType="phone"
                                     android:paddingEnd="25dp"
-                                    android:text="  "
+                                    android:text="2000  "
                                     android:textColor="@color/TMC_Primary_Text_Color"
 
                                     android:textSize="16sp" />
@@ -441,101 +333,35 @@
                                     android:layout_height="70dp"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp"
+                                    android:layout_marginTop="10dp"
                                     android:digits="0123456789"
                                     android:layout_weight="1"
-                                    android:id="@+id/TMCpriceperkg_pos_price_label"
-
+                                    android:id="@+id/TMCprice_pos_price_label"
                                     android:gravity="center_vertical"
                                     android:fontFamily="@font/open_sans_semibold"
-                                    android:text="POS Price ( Price Per Kg )  :-   " />
+                                    android:text="POS Price (  Price Per Kg )  :-   " />
 
 
                                 <TextView
-                                    android:id="@+id/posPrice_text_widget_posLayout"
+                                    android:id="@+id/posPrice_text_widget"
                                     android:layout_width="match_parent"
-                                    android:layout_height="70dp"
+                                    android:layout_height="match_parent"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp"
                                     android:layout_marginTop="10dp"
                                     android:paddingEnd="25dp"
                                     android:digits="0123456789"
                                     android:inputType="phone"
-                                    android:layout_weight="1"
+                                    android:layout_weight="1.5"
 
                                     android:gravity="center_vertical|center"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:focusedByDefault="false"
 
-                                    android:text="  " />
+                                    android:text="1000  " />
 
                             </LinearLayout>
 
-
-
-
-                        </LinearLayout>
-
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/app_price_layout"
-                            android:orientation="vertical">
-
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Orange"
-                                android:textSize="18sp"
-                                android:layout_weight="1"
-
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_bold_italic"
-                                android:text="APP PRICE  : " />
-
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="60dp"
-                                    android:textColor="@color/TMC_Primary_Text_Color"
-                                    android:textSize="16sp"
-                                    android:layout_weight="1"
-                                    android:gravity="center_vertical"
-                                    android:id="@+id/TMCpriceperkg_appSelling_price_label"
-
-                                    android:fontFamily="@font/open_sans_semibold"
-                                    android:text="APP Selling Price ( Price Per Kg ) :-   " />
-
-
-                                <EditText
-                                    android:id="@+id/app_selling_price_text_widget_appLayout"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="60dp"
-                                    android:layout_marginTop="10dp"
-                                    android:background="@color/TMC_PaleOrange"
-                                    android:digits="0123456789"
-                                    android:focusedByDefault="false"
-                                    android:layout_weight="1"
-
-                                    android:fontFamily="@font/open_sans_semibold"
-                                    android:gravity="center_vertical|center"
-                                    android:imeOptions="actionDone"
-                                    android:inputType="phone"
-                                    android:paddingEnd="25dp"
-                                    android:text="  "
-                                    android:textColor="@color/TMC_Primary_Text_Color"
-
-                                    android:textSize="16sp" />
-
-
-                            </LinearLayout>
 
 
                             <LinearLayout
@@ -544,22 +370,23 @@
                                 android:orientation="horizontal">
 
 
+
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="60dp"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp"
                                     android:layout_weight="1"
-                                    android:id="@+id/TMCpriceperkg_app_price_label"
+                                    android:id="@+id/TMCprice_app_price_label"
 
                                     android:layout_marginTop="10dp"
                                     android:gravity="center_vertical"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:text="App Price (TMC Price)  :-   " />
                                 <TextView
-                                    android:id="@+id/appPrice_text_widget_appLayout"
+                                    android:id="@+id/appPrice_text_widget"
                                     android:layout_width="match_parent"
-                                    android:layout_height="60dp"
+                                    android:layout_height="match_parent"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp"
                                     android:layout_marginTop="10dp"
@@ -567,18 +394,290 @@
                                     android:digits="0123456789"
                                     android:paddingEnd="25dp"
                                     android:inputType="phone"
-                                    android:layout_weight="1"
+                                    android:layout_weight="1.5"
 
                                     android:gravity="center_vertical|center"
                                     android:fontFamily="@font/open_sans_semibold"
-                                    android:text="  " />
+                                    android:text="500  " />
+
+
+                            </LinearLayout>
+
+
+
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tmcpriceperkg_layout"
+
+                            android:orientation="vertical">
+
+
+
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/pos_price_layout"
+                                android:orientation="vertical">
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="18sp"
+                                    android:layout_weight="1"
+
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_bold_italic"
+                                    android:text="POS PRICE  : " />
+
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:visibility="gone"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="60dp"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:id="@+id/TMCpriceperkg_posSelling_price_label"
+
+                                        android:layout_weight="1"
+                                        android:gravity="center_vertical"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:text="POS Selling Price ( Price Per Kg ) :-   " />
+
+
+                                    <EditText
+                                        android:id="@+id/Pos_selling_price_text_widget_posLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="60dp"
+                                        android:layout_marginTop="10dp"
+                                        android:background="@color/TMC_PaleOrange"
+                                        android:digits="0123456789"
+                                        android:focusedByDefault="false"
+                                        android:layout_weight="1"
+
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:gravity="center_vertical|center"
+                                        android:imeOptions="actionDone"
+                                        android:inputType="phone"
+                                        android:paddingEnd="25dp"
+                                        android:text="  "
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+
+                                        android:textSize="16sp" />
+
+
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:digits="0123456789"
+                                        android:layout_weight="1"
+                                        android:id="@+id/TMCpriceperkg_pos_price_label"
+
+                                        android:gravity="center_vertical"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:text="POS Price ( Price Per Kg )  :-   " />
+
+
+                                    <TextView
+                                        android:id="@+id/posPrice_text_widget_posLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:layout_marginTop="10dp"
+                                        android:paddingEnd="25dp"
+                                        android:digits="0123456789"
+                                        android:inputType="phone"
+                                        android:layout_weight="1.5"
+
+                                        android:gravity="center_vertical|center"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:focusedByDefault="false"
+
+                                        android:text=" 55 " />
+
+                                </LinearLayout>
+
 
 
 
                             </LinearLayout>
 
 
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/app_price_layout"
+                                android:orientation="vertical">
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="18sp"
+                                    android:layout_weight="1"
+
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_bold_italic"
+                                    android:text="APP PRICE  : " />
+
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:layout_weight="1"
+                                        android:gravity="center_vertical"
+                                        android:id="@+id/TMCpriceperkg_appSelling_price_label"
+
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:text="APP Selling Price ( Price Per Kg with markup ) :-   " />
+
+
+                                    <EditText
+                                        android:id="@+id/app_selling_price_text_widget_appLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="10dp"
+                                        android:background="@color/TMC_PaleOrange"
+                                        android:digits="0123456789"
+                                        android:focusedByDefault="false"
+                                        android:layout_weight="1"
+
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:gravity="center_vertical|center"
+                                        android:imeOptions="actionDone"
+                                        android:inputType="phone"
+                                        android:paddingEnd="25dp"
+                                        android:text="  "
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:visibility="gone"
+                                        android:textSize="16sp" />
+                                    <TextView
+                                        android:id="@+id/appPricePerKg_textview_widget_appLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:focusedByDefault="false"
+                                        android:digits="0123456789"
+                                        android:paddingEnd="25dp"
+                                        android:inputType="phone"
+                                        android:layout_weight="1.5"
+
+                                        android:gravity="center_vertical|center"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:text="  " />
+
+
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:layout_weight="1"
+                                        android:id="@+id/TMCpriceperkg_app_price_label"
+                                        android:layout_marginTop="10dp"
+                                        android:gravity="center_vertical"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:text="App Price (With Markup)  :-   " />
+                                    <TextView
+                                        android:id="@+id/appPrice_text_widget_appLayout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:textColor="@color/TMC_Primary_Text_Color"
+                                        android:textSize="16sp"
+                                        android:layout_marginTop="10dp"
+                                        android:focusedByDefault="false"
+                                        android:digits="0123456789"
+                                        android:paddingEnd="25dp"
+                                        android:inputType="phone"
+                                        android:layout_weight="1.5"
+
+                                        android:gravity="center_vertical|center"
+                                        android:fontFamily="@font/open_sans_semibold"
+                                        android:text="  " />
+
+
+
+                                </LinearLayout>
+
+
+                            </LinearLayout>
+
+
                         </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:visibility="visible"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:layout_weight="1"
+                                android:layout_marginTop="10dp"
+                                android:gravity="center_vertical"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="App Price (Without Markup)  :-   " />
+                            <TextView
+                                android:id="@+id/appPrice_withoutMarkup_text_widget_appLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:layout_marginTop="10dp"
+                                android:focusedByDefault="false"
+                                android:digits="0123456789"
+                                android:paddingEnd="25dp"
+                                android:inputType="phone"
+                                android:layout_weight="1.5"
+
+                                android:gravity="center_vertical|center"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="  " />
+
 
 
                         </LinearLayout>
@@ -768,34 +867,34 @@
                                 </LinearLayout>
                             </LinearLayout>
                             <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/dunzo_price_layout"
-                            android:orientation="vertical">
-
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:textColor="@color/TMC_Orange"
-                                android:textSize="18sp"
-                                android:layout_weight="1"
-
-                                android:layout_marginTop="10dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_bold_italic"
-                                android:text="DUNZO PRICE  : " />
-
-                            <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="@color/TMC_Orange"
-                                android:textSize="13sp"
-                                android:layout_marginTop="2dp"
-                                android:layout_marginBottom="2dp"
-                                android:gravity="center_vertical"
-                                android:fontFamily="@font/open_sans_semibold"
-                                android:text="Note :- Dunzo Price Value Can be Zero" />
+                                android:id="@+id/dunzo_price_layout"
+                                android:orientation="vertical">
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="50dp"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="18sp"
+                                    android:layout_weight="1"
+
+                                    android:layout_marginTop="10dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_bold_italic"
+                                    android:text="DUNZO PRICE  : " />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/TMC_Orange"
+                                    android:textSize="13sp"
+                                    android:layout_marginTop="2dp"
+                                    android:layout_marginBottom="2dp"
+                                    android:gravity="center_vertical"
+                                    android:fontFamily="@font/open_sans_semibold"
+                                    android:text="Note :- Dunzo Price Value Can be Zero" />
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
@@ -918,7 +1017,7 @@
 
 
 
-                    </LinearLayout>
+                        </LinearLayout>
 
 
 

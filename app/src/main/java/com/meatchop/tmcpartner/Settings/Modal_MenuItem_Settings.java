@@ -2,7 +2,7 @@ package com.meatchop.tmcpartner.Settings;
 
 public class Modal_MenuItem_Settings extends Throwable {
 
-    String menuItemKeyFromInventoryDetails="",itemnameFromInventoryDetails ="",relationtypeFromInventoryDetails ="CHILD";
+    String tmcpriceWithMarkupValue ="0",tmcpriceperkgWithMarkupValue ="0",appmarkuppercentage,menuItemKeyFromInventoryDetails="",itemnameFromInventoryDetails ="",relationtypeFromInventoryDetails ="CHILD";
     String grossweightinGramsFromInventoryDetails, netweightingramsFromInventoryDetails;
     boolean isshowavailabilityFromInventoryDetails = false;
 
@@ -14,6 +14,29 @@ public class Modal_MenuItem_Settings extends Throwable {
     private String editTextValue;
     boolean isMarinadeItem;
 
+    public String getTmcpriceWithMarkupValue() {
+        return tmcpriceWithMarkupValue;
+    }
+
+    public void setTmcpriceWithMarkupValue(String tmcpriceWithMarkupValue) {
+        this.tmcpriceWithMarkupValue = tmcpriceWithMarkupValue;
+    }
+
+    public String getTmcpriceperkgWithMarkupValue() {
+        return tmcpriceperkgWithMarkupValue;
+    }
+
+    public void setTmcpriceperkgWithMarkupValue(String tmcpriceperkgWithMarkupValue) {
+        this.tmcpriceperkgWithMarkupValue = tmcpriceperkgWithMarkupValue;
+    }
+
+    public String getAppmarkuppercentage() {
+        return appmarkuppercentage;
+    }
+
+    public void setAppmarkuppercentage(String appmarkuppercentage) {
+        this.appmarkuppercentage = appmarkuppercentage;
+    }
 
     public String getWholesaleprice() {
         return wholesaleprice;

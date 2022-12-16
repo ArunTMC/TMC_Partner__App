@@ -49,8 +49,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity {
     ListView itemweightDetails_Listview,itemCutDetails_Listview;
@@ -5430,15 +5432,24 @@ public class ChangeMenuItemWeightAndPriceSecondScreen extends AppCompatActivity 
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-       String CurrentDay = day.format(c);
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDatee = df.format(c);
         String   CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss:SSS");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss:SSS",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String   FormattedTime = dfTime.format(c);
         String   formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;

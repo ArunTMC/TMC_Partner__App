@@ -66,8 +66,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import static com.meatchop.tmcpartner.Constants.TAG;
 
@@ -1641,10 +1643,11 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
 
     private void callAdapter(List<Modal_MenuItem_Settings> displaying_menuItems) {
         try {
+
             Collections.sort(displaying_menuItems, new Comparator<Modal_MenuItem_Settings>() {
                 public int compare(final Modal_MenuItem_Settings object1, final Modal_MenuItem_Settings object2) {
-                    Long i2 = Long.valueOf(object2.getDisplayno());
-                    Long i1 = Long.valueOf(object1.getDisplayno());
+                    String i2 = String.valueOf(object2.getItemname());
+                    String i1 = String.valueOf(object1.getItemname());
                     return i1.compareTo(i2);
                 }
             });
@@ -1742,15 +1745,21 @@ public class ChangeMenuItemStatus_AllowNegativeStock_Settings extends AppCompatA
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String  CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         String   CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String   FormattedTime = dfTime.format(c);
         String   formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;

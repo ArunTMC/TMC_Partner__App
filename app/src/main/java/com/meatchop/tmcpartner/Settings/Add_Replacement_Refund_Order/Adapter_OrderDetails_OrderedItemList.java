@@ -1,13 +1,17 @@
 package com.meatchop.tmcpartner.Settings.Add_Replacement_Refund_Order;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,10 +20,9 @@ import androidx.annotation.Nullable;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.ManageOrders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
@@ -27,9 +30,10 @@ public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_Man
 
     List<Modal_ManageOrders_Pojo_Class> ordersList;
     String itemname_cutname_weight = "";
+    List<String> quantityCountArray = new ArrayList<>();
 
     Replacement_Refund_OrderDetailsScreen replacement_refund_orderDetailsScreen;
-
+     CheckBox marker_checkBox ;
     public Adapter_OrderDetails_OrderedItemList(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Replacement_Refund_OrderDetailsScreen replacement_refund_orderDetailsScreen) {
         super(mContext, R.layout.replacement_refund_orderdetails_ordered_item_list, ordersList);
 
@@ -59,10 +63,13 @@ public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_Man
         final TextView itemQty_widget = listViewItem.findViewById(R.id.itemQty_widget);
         final TextView itemGst_widget = listViewItem.findViewById(R.id.itemGst_widget);
         final TextView itemSubtotal_widget = listViewItem.findViewById(R.id.itemSubtotal_widget);
+        final LinearLayout selecteditemParentLayout = listViewItem.findViewById(R.id.selecteditemParentLayout);
+        final TextView selectedItemPriceTextWidget = listViewItem.findViewById(R.id.selectedItemPriceTextWidget);
+        final TextView selectedItemQuantityTextWidget = listViewItem.findViewById(R.id.selectedItemQuantityTextWidget);
 
         final LinearLayout checkbox_linearLayout = listViewItem.findViewById(R.id.checkbox_linearLayout);
 
-        final CheckBox marker_checkBox = listViewItem.findViewById(R.id.marker_checkBox);
+          marker_checkBox = listViewItem.findViewById(R.id.marker_checkBox);
 
     try {
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
@@ -109,20 +116,7 @@ public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_Man
 
     itemName_widget.setText(String.valueOf(itemName_cutName));
 
-    try{
-        if(isItemMarkedForReplacement){
-            marker_checkBox.setChecked(true);
 
-        }
-        else{
-            marker_checkBox.setChecked(false);
-
-        }
-    }
-    catch (Exception e){
-        itemname_cutname_weight = "";
-        e.printStackTrace();
-    }
 
         try{
             itemname_cutname_weight = itemName+"_"+cutname+"_"+weight;
@@ -141,29 +135,113 @@ public class Adapter_OrderDetails_OrderedItemList extends ArrayAdapter<Modal_Man
     itemQty_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getQuantity()));
     itemGst_widget.setText(String.valueOf(modal_manageOrders_pojo_class.getGstAmount()));
 
+
+        try{
+            if(isItemMarkedForReplacement){
+                marker_checkBox.setChecked(true);
+                if(quantity>1){
+                    double selected_quantity = (Double.parseDouble(modal_manageOrders_pojo_class.getSelectedQuantity()));
+
+                    if(selected_quantity != quantity){
+                        double selected_subtotal = (Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()));
+
+                        selecteditemParentLayout.setVisibility(View.VISIBLE);
+                        selectedItemQuantityTextWidget.setText(String.valueOf(modal_manageOrders_pojo_class.getSelectedQuantity()));
+                        selected_subtotal = selected_subtotal * selected_quantity;
+                        selectedItemPriceTextWidget.setText(String.valueOf(selected_subtotal));
+                    }
+                    else{
+                        selecteditemParentLayout.setVisibility(View.GONE);
+
+                    }
+
+
+                }
+                else{
+                    selecteditemParentLayout.setVisibility(View.GONE);
+
+                }
+
+            }
+            else{
+                marker_checkBox.setChecked(false);
+
+            }
+        }
+        catch (Exception e){
+            itemname_cutname_weight = "";
+            e.printStackTrace();
+        }
+
+
         checkbox_linearLayout.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            boolean checkboxState = false;
-            checkboxState =marker_checkBox.isChecked();
-            try{
-                itemname_cutname_weight = String.valueOf(modal_manageOrders_pojo_class.getItemName())+"_"+String.valueOf(modal_manageOrders_pojo_class.getCutname())+"_"+String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight());
-            }
-            catch (Exception e){
-                itemname_cutname_weight = "";
-                e.printStackTrace();
-            }
-            if(marker_checkBox.isChecked()){
-                checkboxState = false;
+
+            if (!Replacement_Refund_OrderDetailsScreen.isAlreadyMarkedForReplacement) {
+
+
+                boolean checkboxState = false;
+                // checkboxState =marker_checkBox.isChecked();
+                checkboxState = Boolean.valueOf(String.valueOf(ordersList.get(pos).getisItemMarkedForReplacement()));
+
+                //checkboxState = ordersList.get(pos).getisItemMarkedForReplacement();
+                Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = ordersList.get(pos);
+
+                try {
+                    itemname_cutname_weight = String.valueOf(modal_manageOrders_pojo_class.getItemName()) + "_" + String.valueOf(modal_manageOrders_pojo_class.getCutname()) + "_" + String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight());
+                } catch (Exception e) {
+                    itemname_cutname_weight = "";
+                    e.printStackTrace();
+                }
+                if (checkboxState) {
+                    checkboxState = false;
+                } else {
+                    checkboxState = true;
+
+
+                }
+                if (checkboxState) {
+                    String Qty_SelectedItem = "0";
+                    Qty_SelectedItem = String.valueOf(modal_manageOrders_pojo_class.getQuantity());
+                    Qty_SelectedItem = Qty_SelectedItem.replaceAll("[^\\d.]", "");
+                    int Qty_SelectedItem_Int = 0;
+                    try {
+                        Qty_SelectedItem_Int = Integer.parseInt(Qty_SelectedItem);
+                    } catch (Exception e) {
+                        Qty_SelectedItem_Int = 0;
+                        e.printStackTrace();
+                    }
+
+
+                    if (Qty_SelectedItem_Int > 1) {
+                        OpenDialogToChooseQtyWise(pos, modal_manageOrders_pojo_class, checkboxState, itemname_cutname_weight);
+                    } else {
+                        ordersList.get(pos).setItemMarkedForReplacement(checkboxState);
+                        ordersList.get(pos).setSelectedQuantity("1");
+                        notifyDataSetChanged();
+
+                        //marker_checkBox.setChecked(checkboxState);
+                        addItemForMarkedListForReplacement(checkboxState, itemname_cutname_weight, modal_manageOrders_pojo_class);
+
+                    }
+                } else {
+                    ordersList.get(pos).setItemMarkedForReplacement(checkboxState);
+                    ordersList.get(pos).setSelectedQuantity("1");
+
+
+                    //  marker_checkBox.setChecked(checkboxState);
+                    boolean isObjectAvailable = checkItemNameInHashmap(itemname_cutname_weight);
+                    if (isObjectAvailable) {
+                        replacement_refund_orderDetailsScreen.itemsSelectedForReplacementStringArray.remove(itemname_cutname_weight);
+                        replacement_refund_orderDetailsScreen.itemsSelectedForReplacementhashmap.remove(itemname_cutname_weight);
+                    }
+                    notifyDataSetChanged();
+                }
             }
             else{
-                checkboxState = true;
-
-
+                Toast.makeText(mContext, "Already Marked For Replacement", Toast.LENGTH_SHORT).show();
             }
-
-            marker_checkBox.setChecked(checkboxState);
-             addItemForMarkedListForReplacement(checkboxState,itemname_cutname_weight, modal_manageOrders_pojo_class);
         }
     });
 
@@ -174,6 +252,91 @@ catch (Exception e){
     e.printStackTrace();
 }
         return listViewItem;
+
+    }
+
+    private void OpenDialogToChooseQtyWise(int pos, Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class, boolean checkboxState, String itemname_cutname_weight) {
+        quantityCountArray.clear();
+        Dialog dialog = new Dialog(mContext);
+        dialog.setContentView(R.layout.choose_qtywise_replacementorder_layout);
+        TextView selectedItemName = dialog.findViewById(R.id.selectedItemName);
+        TextView orderedQuantityTextWidget = dialog.findViewById(R.id.orderedQuantityTextWidget);
+        TextView orderedItemPriceTextWidget = dialog.findViewById(R.id.orderedItemPriceTextWidget);
+        TextView selectedItemPriceTextWidget = dialog.findViewById(R.id.selectedItemPriceTextWidget);
+        Spinner quantitySelectingSpinner = dialog.findViewById(R.id.quantitySelectingSpinner);
+        Button cancelButton = dialog.findViewById(R.id.cancelButton);
+        TextView saveButton = dialog.findViewById(R.id.saveButton);
+
+        selectedItemName.setText(String.valueOf(modal_manageOrders_pojo_class.getItemName()));
+        orderedQuantityTextWidget.setText(String.valueOf(modal_manageOrders_pojo_class.getQuantity()));
+        final double[] subtotal = {(Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()))};
+        double quantity = (Double.parseDouble(modal_manageOrders_pojo_class.getQuantity()));
+        subtotal[0] = subtotal[0] * quantity;
+        orderedItemPriceTextWidget.setText("Rs. "+String.valueOf(subtotal[0]));
+        for (int i= 1; i <= quantity; i++){
+            quantityCountArray.add(String.valueOf(i));
+        }
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(mContext,android.R.layout.simple_spinner_item, quantityCountArray );
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        quantitySelectingSpinner.setAdapter(arrayAdapter);
+        final String[] selectedQuantityString = {""};
+        quantitySelectingSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                 selectedQuantityString[0] = quantitySelectingSpinner.getSelectedItem().toString();
+                double quantity = (Double.parseDouble(selectedQuantityString[0]));
+                double subtotal = (Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()));
+
+                double subtotal_selectedQuantity = 0;
+                subtotal_selectedQuantity = subtotal * quantity;
+                selectedItemPriceTextWidget.setText("Rs. "+String.valueOf(subtotal_selectedQuantity));
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
+                ordersList.get(pos).setItemMarkedForReplacement(false);
+                ordersList.get(pos).setSelectedQuantity("1");
+                boolean isObjectAvailable = checkItemNameInHashmap(itemname_cutname_weight);
+                if(isObjectAvailable) {
+
+                    replacement_refund_orderDetailsScreen.itemsSelectedForReplacementStringArray.remove(itemname_cutname_weight);
+                    replacement_refund_orderDetailsScreen.itemsSelectedForReplacementhashmap.remove(itemname_cutname_weight);
+                }
+                notifyDataSetChanged();
+
+            }
+        });
+
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ordersList.get(pos).setItemMarkedForReplacement(checkboxState);
+                ordersList.get(pos).setSelectedQuantity(selectedQuantityString[0]);
+                notifyDataSetChanged();
+                
+                modal_manageOrders_pojo_class.setItemMarkedForReplacement(checkboxState);
+                modal_manageOrders_pojo_class.setSelectedQuantity(selectedQuantityString[0]);
+
+                addItemForMarkedListForReplacement(checkboxState, itemname_cutname_weight, modal_manageOrders_pojo_class);
+
+
+                dialog.cancel();
+            }
+        });
+
+        dialog.show();
+
 
     }
 
@@ -192,7 +355,44 @@ try {
         }
 
             String subCtgyKey = "";
+            double  quantity_Double =0;
             modal_manageOrders_pojo_class1 = new Modal_ManageOrders_Pojo_Class();
+
+            try{
+
+                    if (json.has("quantity")) {
+                        modal_manageOrders_pojo_class1.quantity = String.valueOf(json.get("quantity"));
+                        try{
+
+                            quantity_Double = Double.parseDouble(String.valueOf(json.get("quantity"))) ;
+
+                        }
+                        catch (Exception e){
+                            quantity_Double =1;
+                            e.printStackTrace();
+                        }
+                    } else {
+                        quantity_Double =1;
+                        modal_manageOrders_pojo_class1.quantity = "1";
+                    }
+                } catch (Exception e) {
+                    quantity_Double =1;
+                    modal_manageOrders_pojo_class1.quantity = "1";
+                    e.printStackTrace();
+                }
+
+            if(quantity_Double>1){
+                try{
+                    modal_manageOrders_pojo_class1.quantity = String.valueOf(modal_manageOrders_pojo_class.getSelectedQuantity());
+
+                }
+                catch (Exception e){
+                    modal_manageOrders_pojo_class1.quantity = "1";
+                    e.printStackTrace();
+                }
+
+            }
+
             try {
                 if (json.has("tmcsubctgykey")) {
                     modal_manageOrders_pojo_class1.tmcSubCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
@@ -274,15 +474,7 @@ try {
                 e.printStackTrace();
             }
 
-            try {
-                if (json.has("quantity")) {
-                    modal_manageOrders_pojo_class1.quantity = String.valueOf(json.get("quantity"));
-                } else {
-                    modal_manageOrders_pojo_class1.quantity = "";
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
 
             try {
                 if (json.has("tmcprice")) {
@@ -294,6 +486,15 @@ try {
                 e.printStackTrace();
             }
 
+        try {
+            if (json.has("cutname")) {
+                modal_manageOrders_pojo_class1.cutname = String.valueOf(json.get("cutname"));
+            } else {
+                modal_manageOrders_pojo_class1.cutname = "";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     } catch (Exception e) {

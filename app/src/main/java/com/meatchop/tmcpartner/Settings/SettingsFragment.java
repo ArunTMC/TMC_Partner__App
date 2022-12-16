@@ -114,7 +114,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
             changeMenuItemAvail_allowNegativeStock,manageordersLinearLayout, slotwiseAppOrderList, plotOrdersLocation_layout, testlayout, editPaymentModeOftheOrder, delivered_orders_timewiseReport, changeMenuItemStatus, logout, consolidatedSalesReport, PosSalesReport, AppSalesReport, changeMenuItemVisibilityinTv, managemenuLayout, changeMenuItemPrice, changeDeliverySlotdetails, deliveryPartnerSettlementReport, searchOrdersUsingMobileNumbers, posOrdersList, generateCustomerMobileno_BillvalueReport, loadingpanelmask, loadingPanel;
     String UserRole, MenuItems, UserPhoneNumber, vendorkey, vendorName,vendorType;
     TextView progressbarInstruction,userMobileNo, resetTokenNO_text, storeName, App_Sales_Report_text, Pos_Sales_Report_text;
-    LinearLayout phone_sales_report,phone_orders_list,wholesale_orders_list,WholeSaleSalesReport,addWholeSaleOrders_placing_layout,mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout, menuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
+    LinearLayout deliveryStatusTransactionLayout, temporaryLayout,phone_sales_report,phone_orders_list,wholesale_orders_list,WholeSaleSalesReport,addWholeSaleOrders_placing_layout,mobilenowisecreditOrderslist,changeMenuItemPrice_weight,manageRaisedTickets,addBigbasketOrders_placing_layout,orderRating_report,mobilePrinterConnectLayout,menuItemAvailabiltyStatusReport,orderTrackingDetailsDump_report,GeneralConfiguration_linearLayout,dataAnalyticsLinearLayout,viewordersLinearLayout, menuTransactionDetailsLayout, salesLinearLayout, orderDetailsDump_report, cancelledOrdersLayout, resetTokenNoLayout, generateUserDetailsLayout,swiggyOrderPlacing_layout,add_refund_replace_order_layout;
     Button resetTokenNoButton;
     ScrollView settings_scrollview;
     BottomNavigationView bottomNavigationView;
@@ -160,7 +160,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
     Workbook wb;
     Sheet sheet = null;
     private static String[] columnsHeading_userDetails = {"S.No", "User Key", "MobileNo", " Name", "Email", "Created time", "App Version", "deviceos", "updatedtime", "Fcm Token", "User Address Key","AddressLine 1","AddressLine 2","LandMark","PinCode","Address Type","Delivery Distance","Location Latitude","Location Longitutde","Vendor Name","Contact Person Mobile no", "Contact Person name"};
-    private static String[] columnsHeading_orderItemDetails = {"S.No", "Key", "Applied Discount Percentage", " Cut Name", "Cut Price", "Discount Amount", "Grossweight in Grams", "Gst Amount","Orderid ", "Item Name","Net Weight", "TmcPrice","Quantity","Total Price","Portion Size","Order Placed Time", "Slot Date","Slot Name","Marinade Item Details","Tmc Subctgykey", "Vendor Key","Vendor Name"};
+    private static String[] columnsHeading_orderItemDetails = {"S.No", "Key", "Applied Discount Percentage", " Cut Name", "Cut Price", "Discount Amount", "Grossweight in Grams", "Gst Amount","Orderid ", "Item Name","Net Weight", "TmcPrice","Quantity","Total Price","Portion Size","Order Placed Time", "Slot Date","Slot Name","Marinade Item Details","Tmc Subctgykey", "Vendor Key","Vendor Name","total"};
 
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
@@ -171,6 +171,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
     List<Modal_Address> FilteredAddressTableArray = new ArrayList<>();
     List<String>AddedUserKey = new ArrayList<>();
     Spinner printerTypeSpinner;
+    HashMap<String,Double> orderidTotal = new HashMap<>();
     List<ModalOrderItemDetails> OrderItemDetailsTableArray = new ArrayList<>();
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.Settings";
     RadioGroup printerTypeRadioGroup;
@@ -200,7 +201,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
     // TODO: Rename and change types and number of parameters
     public static SettingsFragment newInstance(String data) {
         Bundle args = new Bundle();
-        //  args.putString("menuItem", data);
+         // args.putString("menuItem", data);
 
         SettingsFragment fragment = new SettingsFragment();
         fragment.setArguments(args);
@@ -218,14 +219,24 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         mContext = this.getActivity().getWindow().getContext();
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
-        if (getArguments() != null) {
+        /*if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+         */
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        try {
+            if (getArguments() != null) {
+                getArguments().clear();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         deliveryPartnerSettlementReport = view.findViewById(R.id.deliveryPartnerSettlementReport);
         searchOrdersUsingMobileNumbers = view.findViewById(R.id.searchOrdersUsingMobileNumbers);
         userMobileNo = view.findViewById(R.id.userMobileNo);
@@ -297,8 +308,8 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         layout_fetch_orders_from_orderDetails  = view.findViewById(R.id.layout_fetch_orders_from_orderDetails);
         phone_orders_list = view.findViewById(R.id.phone_orders_list);
         phone_sales_report = view.findViewById(R.id.PhoneSaleSalesReport);
-
-
+        temporaryLayout = view.findViewById(R.id.temporaryLayout);
+        deliveryStatusTransactionLayout = view.findViewById(R.id.deliveryStatusTransactionLayout);
 
         //  bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
 
@@ -317,27 +328,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         SharedPreferences shared_PF_PrinterData = mContext.getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
         String printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
         printerType_sharedPreference = String.valueOf(printerType_sharedPreference.toUpperCase());
-        try{
-            if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
-               // changeSelectedPrinterType(posPrinterRadiobutton.getId(),true);
 
-            }
-            else if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
-              //  changeSelectedPrinterType(usbRadiobutton.getId(),true);
-
-            }
-            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
-              //  changeSelectedPrinterType(bluetoothPrinterRadiobutton.getId(),true);
-
-            }
-            else{
-               // changeSelectedPrinterType(nonePrinterRadiobutton.getId(),true);
-
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
         userMobileNo.setText(UserPhoneNumber);
         storeName.setText(vendorName);
         try {
@@ -656,9 +647,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                 }
             });
         }
-
-
-
+      //  setSettingsUIBasedONManagementRole();
 
         phone_sales_report.setOnClickListener(new OnClickListener() {
             @Override
@@ -971,6 +960,16 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
             }
         });
 
+        deliveryStatusTransactionLayout.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, DeliverySlotsListForTransactionReport.class);
+                startActivity(intent);
+            }
+        });
+
+
+
         delivered_orders_timewiseReport.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -1117,6 +1116,22 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
     }
 
+    private void setSettingsUIBasedONManagementRole() {
+        dataAnalyticsLinearLayout.setVisibility(GONE);
+
+        managemenuLayout.setVisibility(VISIBLE);
+        temporaryLayout .setVisibility(GONE);
+        manageordersLinearLayout.setVisibility(VISIBLE);
+        editPaymentModeOftheOrder.setVisibility(GONE);
+        posOrdersList.setVisibility(GONE);
+        searchOrdersUsingMobileNumbers.setVisibility(GONE);
+        phone_orders_list.setVisibility(GONE);
+        add_refund_replace_order_layout.setVisibility(GONE);
+        resetTokenNoLayout .setVisibility(GONE);
+        mobilenowisecreditOrderslist.setVisibility(GONE);
+    }
+
+
     private void ShowOrHideUI_AccordingTo_VendorType() {
 
 
@@ -1128,8 +1143,8 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
         if (UserPhoneNumber.equals("+919597580128") || UserPhoneNumber.equals("+917010779096")) {
             changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
-            testlayout.setVisibility(GONE);
-            changeMenuItemPrice_weight.setVisibility(VISIBLE);
+            testlayout.setVisibility(VISIBLE);
+            changeMenuItemPrice_weight.setVisibility(GONE);
             changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(VISIBLE);
             generateUserDetailsButton.setVisibility(VISIBLE);
@@ -1147,7 +1162,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         //Navaneedhan
         //Vimal
 
-        if ((UserPhoneNumber.equals("+916383677365")) || (UserPhoneNumber.equals("+917010623119")) ) {
+        if ((UserPhoneNumber.equals("+916383677365")) || (UserPhoneNumber.equals("")) ) {
             managemenuLayout.setVisibility(VISIBLE);
             changeDeliverySlotdetails.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(GONE);
@@ -1420,7 +1435,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                             JSONObject jsonObject = new JSONObject(jsonString);
                             JSONArray JArray = jsonObject.getJSONArray("content");
                             double tmcprice = 0, totalTmcPrice = 0 , quantity =0;
-                            String tmcPrice_String ="", totalTmcPrice_String ="", quantity_String ="";
+                            String orderid="",tmcPrice_String ="", totalTmcPrice_String ="", quantity_String ="";
                             //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
                             int i1 = 0;
                             int arrayLength = JArray.length();
@@ -1444,6 +1459,9 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                                     modalOrderItemDetails.key ="-";
 
                                 }
+
+
+
 
                                 try{
                                     if(json.has("applieddiscountpercentage")){
@@ -1582,13 +1600,17 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                                 try{
                                     if(json.has("orderid")){
                                         modalOrderItemDetails.orderid = json.getString("orderid");
+                                        orderid = json.getString("orderid");
+
                                     }
                                     else{
+                                        orderid ="";
                                         modalOrderItemDetails.orderid ="";
                                     }
                                 }
                                 catch(Exception e ){
                                     e.printStackTrace();
+                                    orderid ="";
                                     modalOrderItemDetails.orderid ="-";
 
                                 }
@@ -1782,7 +1804,15 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                                     e.printStackTrace();
                                 }
                                 modalOrderItemDetails.totalTmcPrice = totalTmcPrice_String;
-
+                                if(orderidTotal.containsKey(orderid)){
+                                    double totalPrice = 0;
+                                    totalPrice = orderidTotal.get(orderid);
+                                    totalPrice = totalTmcPrice + totalPrice;
+                                    orderidTotal.put(orderid,totalPrice);
+                                }
+                                else{
+                                    orderidTotal.put(orderid,totalTmcPrice);
+                                }
                                 OrderItemDetailsTableArray.add(modalOrderItemDetails);
 
                                 if(i1==(arrayLength-1)) {
@@ -2510,7 +2540,13 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
             row.createCell(19).setCellValue(itemRow.getTmcsubctgykey());
             row.createCell(20).setCellValue(itemRow.getVendorkey());
             row.createCell(21).setCellValue(itemRow.getVendorname());
+            if(orderidTotal.containsKey(itemRow.getOrderid())){
+                row.createCell(22).setCellValue(orderidTotal.get(itemRow.getOrderid()));
 
+            }
+            else{
+                row.createCell(22).setCellValue(String.valueOf(itemRow.getTotalTmcPrice()));
+            }
 
 
 

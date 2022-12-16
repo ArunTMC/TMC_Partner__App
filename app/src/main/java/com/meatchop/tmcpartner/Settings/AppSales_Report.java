@@ -579,7 +579,7 @@ public class AppSales_Report extends AppCompatActivity {
                                     paymentMode_DiscountHashmap.clear();
                                     paymentMode_DiscountOrderid.clear();
                                     CouponDiscount = 0;
-                                    Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                                    Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
 
 
                                     addFinalPaymentAmountDetails(paymentModeArray, paymentModeHashmap);
@@ -604,7 +604,7 @@ public class AppSales_Report extends AppCompatActivity {
                                         paymentMode_DiscountHashmap.clear();
                                         paymentMode_DiscountOrderid.clear();
                                         CouponDiscount = 0;
-                                        Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                                        Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
 
                                         isgetOrderForSelectedDateCalled = false;
 
@@ -628,7 +628,7 @@ public class AppSales_Report extends AppCompatActivity {
                                 paymentMode_DiscountHashmap.clear();
                                 paymentMode_DiscountOrderid.clear();
                                 CouponDiscount = 0;
-                                Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                                Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
 
                                 isgetOrderForSelectedDateCalled = false;
 
@@ -652,7 +652,7 @@ public class AppSales_Report extends AppCompatActivity {
                             paymentMode_DiscountHashmap.clear();
                             paymentMode_DiscountOrderid.clear();
                             CouponDiscount=0;
-                            Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                            Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
 
                             isgetOrderForSelectedDateCalled = false;
 
@@ -719,7 +719,7 @@ public class AppSales_Report extends AppCompatActivity {
                 paymentMode_DiscountHashmap.clear();
                 paymentMode_DiscountOrderid.clear();
 
-                Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
                 isgetOrderForSelectedDateCalled = false;
 
                 getOrderForSelectedDate(DateString, vendorKey);
@@ -1674,7 +1674,7 @@ public class AppSales_Report extends AppCompatActivity {
                               adapater_app_sales_report = new Adapter_App_sales_Report(AppSales_Report.this, Order_Item_List, OrderItem_hashmap);
                              posSalesReport_Listview.setAdapter(adapater_app_sales_report);
 
-                            Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                            Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
                             scrollView.fullScroll(View.FOCUS_UP);
 
                             addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
@@ -1697,7 +1697,7 @@ public class AppSales_Report extends AppCompatActivity {
                             paymentMode_DiscountHashmap.clear();
                             paymentMode_DiscountOrderid.clear();
                             CouponDiscount=0;
-                            Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                            Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
 
 
                             addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
@@ -1714,7 +1714,7 @@ public class AppSales_Report extends AppCompatActivity {
                 Adjusting_Widgets_Visibility(false);
                 Adjusting_Widgets_Visibility(false);
 
-                Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
                 if (Order_Item_List.size() > 0 && OrderItem_hashmap.size() > 0) {
                     try {
                         Collections.sort(Order_Item_List, new Comparator<String>() {
@@ -1732,7 +1732,7 @@ public class AppSales_Report extends AppCompatActivity {
                     adapater_app_sales_report = new Adapter_App_sales_Report(AppSales_Report.this, Order_Item_List, OrderItem_hashmap);
                     posSalesReport_Listview.setAdapter(adapater_app_sales_report);
 
-                    Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                    Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
                     scrollView.fullScroll(View.FOCUS_UP);
 
                     addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
@@ -1754,7 +1754,7 @@ public class AppSales_Report extends AppCompatActivity {
                     paymentMode_DiscountHashmap.clear();
                     paymentMode_DiscountOrderid.clear();
                     CouponDiscount=0;
-                    Helper.getListViewSize(posSalesReport_Listview, screenInches);
+                    Helper.getListViewSize(posSalesReport_Listview, screenInches,0);
 
 
                     addFinalPaymentAmountDetails(paymentModeArray,paymentModeHashmap);
@@ -1825,7 +1825,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getRazorpaySales());
                     Razorpay_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(Razorpay_amount);
+                    int intAmount = (int) Math.round(Razorpay_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     RazorpayDiscount_amount = Double.parseDouble(discount_String);
@@ -1848,7 +1848,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPaytmSales());
                     Paytm_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(Paytm_amount);
+                    int intAmount = (int) Math.round(Paytm_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     PaytmDiscount_amount = Double.parseDouble(discount_String);
@@ -1872,7 +1872,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     cash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(cash_amount);
+                    int intAmount = (int) Math.round(cash_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -1895,7 +1895,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     phonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(phonepe_amount);
+                    int intAmount = (int) Math.round(phonepe_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -1927,7 +1927,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getRazorpaySales());
                     preorderRazorpay_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(preorderRazorpay_amount);
+                    int intAmount = (int) Math.round(preorderRazorpay_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderRazorpayDiscount_amount = Double.parseDouble(discount_String);
@@ -1950,7 +1950,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPaytmSales());
                     preorderPaytm_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(preorderPaytm_amount);
+                    int intAmount = (int) Math.round(preorderPaytm_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderPaytmDiscount_amount = Double.parseDouble(discount_String);
@@ -1974,7 +1974,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     preordercash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(preordercash_amount);
+                    int intAmount = (int) Math.round(preordercash_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -1997,7 +1997,7 @@ public class AppSales_Report extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     preorderphonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.ceil(preorderphonepe_amount);
+                    int intAmount = (int) Math.round(preorderphonepe_amount);
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -3060,7 +3060,7 @@ public class AppSales_Report extends AppCompatActivity {
                     try {
                         tmcprice = tmcprice+gstAmount;
                         tmcprice = quantity*tmcprice;
-                        int inttmcPrice = (int) Math.ceil(tmcprice);
+                        int inttmcPrice = (int) Math.round(tmcprice);
 
                         String tmcprice_string = String.valueOf(((inttmcPrice)));
 
@@ -3431,9 +3431,9 @@ public class AppSales_Report extends AppCompatActivity {
                             double gstAmount_from_HashMap = Double.parseDouble(modal_orderDetails_itemDespfrom_hashMap.getGstamount());
                             String oldOrder_WeightInGrams = modal_orderDetails_itemDespfrom_hashMap.getNetweight();
                         /*    double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                            int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                            int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                            int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                            int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
 
@@ -3470,10 +3470,10 @@ public class AppSales_Report extends AppCompatActivity {
                             gstAmount = gstAmount + gstAmount_from_HashMap;
                             String oldOrder_WeightInGrams = modal_orderDetails_itemDespfrom_hashMap.getNetweight();
                          /*   double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                            int intOldOrder_WeightInGrams = (int) Math.ceil(doubleoldOrder_WeightInGrams);
+                            int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
                             double doubleNewOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                            int intNewOrder_WeightInGrams = (int) Math.ceil(newweight);
+                            int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
                             //Log.d(Constants.TAG, "this json pre 3 " +String.valueOf(oldOrder_WeightInGrams));

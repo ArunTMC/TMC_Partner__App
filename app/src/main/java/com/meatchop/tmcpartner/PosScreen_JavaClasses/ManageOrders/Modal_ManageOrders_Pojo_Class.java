@@ -8,14 +8,29 @@ import android.os.Parcelable;
 import org.json.JSONArray;
 
 public class  Modal_ManageOrders_Pojo_Class implements Parcelable {
-public String parentItemName,receivedstock,barcode,allownegativestock,isitemAvailable,stockincomingkey,stockbalance,stockavldetailskey,tmcctgykey,inventorydetailsstring,pricetypeforpos,username,userstatus,portionsize,vendorname,menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
+public String selectedQuantity , parentItemName,receivedstock,barcode,allownegativestock,isitemAvailable,stockincomingkey,stockbalance,stockavldetailskey,tmcctgykey,inventorydetailsstring,pricetypeforpos,username,userstatus,portionsize,vendorname,menuitemkey_weight_cut,menuItemKey,slotTimeRangeFromDB,cutname="",couponkey,orderplaceddate,userkey,paymenttranscationimageurl,deliveryamount,typebasedonDeliveredTime,delayedtime,slottime_in_long,orderplacedtime_in_long,orderconfirmedtime_in_long,orderreadytime_in_long,orderpickeduptime_in_long, orderdeliveredtime_in_long,deliverydistance,tmcSubCtgyKey,itemuniquecode,netweight,grossweight,useraddresslat,useraddresslon,ordertype ,orderconfirmedtime,orderplacedtime,orderreadytime,orderpickeduptime,orderdeliveredtime,orderdetailskey,orderid,payableamount,paymentmode,tokenno,taxamount,usermobile,vendorkey,coupondiscamount,orderstatus;
 public String totaltmcsubctgyquantity,tmcSubCtgyName,grossweightingrams,useraddress,useraddresskey,slottimerange,subTotal_perItem,itemdesp_string,itemName,price,quantity,keyfromtrackingDetails,notes,GstAmount,orderType;
 public   String merchantorderid,isdataFetchedFromOrderTrackingDetails="FALSE",subTotal_PerItemWithoutGst,totalGstAmount,totalAmountWithoutGst,totalAmountWithGst,deliverytype,slotname,slotdate,deliveryPartnerKey,deliveryPartnerMobileNo,deliveryPartnerStatus,deliveryPartnerName,subtotalperItem,ItemFinalPrice,ItemFinalWeight, TotalofSubtotalPerItem;
 public JSONArray itemdesp,inventorydetails;
 public int intTokenNo;
-public boolean ischilditem,isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplacement=false,isCorrectGrossweight = false,isGrossweightEdited = false;
+public boolean isSelectedForReplacement =false,ischilditem,isdelayed,isOrderPlacedlessThan3MinsBefore,isItemMarkedForReplacement=false,isCorrectGrossweight = false,isGrossweightEdited = false;
 public String  isFromEditOrders,isFromGenerateCustomermobile_billvaluereport,isFromCancelledOrders,isOrdersChecked;
 
+    public boolean getisSelectedForReplacement() {
+        return isSelectedForReplacement;
+    }
+
+    public void setisSelectedForReplacement(boolean selectedForReplacement) {
+        isSelectedForReplacement = selectedForReplacement;
+    }
+
+    public String getSelectedQuantity() {
+        return selectedQuantity;
+    }
+
+    public void setSelectedQuantity(String selectedQuantity) {
+        this.selectedQuantity = selectedQuantity;
+    }
 
     public String getParentItemName() {
         return parentItemName;

@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -1915,15 +1917,21 @@ public class Adapter_Pos_WholeSaleOrderList  extends ArrayAdapter<Modal_ManageOr
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
         CurrentDay = day.format(c);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
         CurrentDate = df.format(c);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;

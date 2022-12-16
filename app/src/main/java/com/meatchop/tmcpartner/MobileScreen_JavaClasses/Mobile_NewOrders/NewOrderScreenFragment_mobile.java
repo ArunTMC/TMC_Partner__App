@@ -1,5 +1,6 @@
 package com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -121,8 +122,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -181,7 +184,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     private  boolean isPaymentDetailsMethodCalled =false;
     boolean isMobileAppDataFetchedinDashboard=false;
     boolean isanyProducthaveZeroAsweight=false;
-    boolean isUpdateRedeemPointsWithoutKeyMethodCalled =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false,isPhoneOrderSelected=false;
+    boolean isUpdateRedeemPointsWithoutKeyMethodCalled =false;
+    boolean ispaymentMode_Clicked =false;
+    boolean isPrintedSecondTime=false;
+    static boolean isPhoneOrderSelected=false;
     double screenInches;
     double totalredeempointsusergetfromorder=0,pointsfor100rs_double=0;
     String ordertype="",customermobileno="",customerName ="",maxpointsinaday_String="",minordervalueforredeem_String="",pointsfor100rs_String="";
@@ -270,6 +276,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     public String deliveryAmount_for_this_order ="0";
     TextView  toPay_textWidget;
     String tokenNo="00",userStatus ="";
+    String applieddiscountpercentage = "0", appMarkupPercentage = "0";
+    Spinner orderTypeSpinner_newWidget;
+    boolean isCalledFromOrderTypeSpinner = false;
+
+    private static final int REQUEST_CAMERA_PERMISSION = 201;
+
     public NewOrderScreenFragment_mobile() {
         // Required empty public constructor
     }
@@ -359,7 +371,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
     public String getData() {
 
-        return getArguments().getString("menuItem");
+
+        return requireArguments().getString("menuItem");
     }
 
     @Override
@@ -376,6 +389,31 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         recyclerView = rootView.findViewById(R.id.recyclerView);
         loadingpanelmask = rootView.findViewById(R.id.loadingpanelmask);
         loadingPanel = rootView.findViewById(R.id.loadingPanel);
+        orderTypeSpinner_newWidget = rootView.findViewById(R.id.orderTypeSpinner_newWidget);
+
+
+        try {
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+             //   Log.i(TAG, "scanner if " + getData());
+
+
+            } else {
+                ActivityCompat.requestPermissions(getActivity(), new
+                        String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+              //  Log.i(TAG, "scanner else " + getData());
+
+
+            }
+
+        } catch (Exception e) {
+         //   Log.i(TAG, "scanner Exception " + getData());
+
+            e.printStackTrace();
+        }
+
+
+
+
 
         try{
             MenuItems=getData();
@@ -417,30 +455,64 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             e.printStackTrace();
         }
 
-        if (screenInches < Constants.default_mobileScreenSize) {
             bottomNavigationView = ((MobileScreen_Dashboard) requireActivity()).findViewById(R.id.bottomnav);
             recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     super.onScrollStateChanged(recyclerView, newState);
 
-                    if (!recyclerView.canScrollVertically(-1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
-                        if (screenInches < Constants.default_mobileScreenSize) {
+                   if (!recyclerView.canScrollVertically(-1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
                             bottomNavigationView.setVisibility(View.VISIBLE);
-                        }
+
                     }
                     else if(newState==RecyclerView.SCROLL_STATE_DRAGGING) {
                         if (bottomNavigationView.getVisibility() ==  View.GONE){
-                        Toast.makeText(mContext, "Swipe downwards to make the Settings Button Visible", Toast.LENGTH_SHORT).show();
+                      //  Toast.makeText(mContext, "Swipe downwards to make the Settings Button Visible", Toast.LENGTH_SHORT).show();
                     }
                     }
 
                     else {
                         bottomNavigationView.setVisibility(View.GONE);
+                           Toast.makeText(mContext, "Swipe downwards to make the Settings Button Visible", Toast.LENGTH_SHORT).show();
+
+                    }
+
+
+                }
+
+
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    if (!recyclerView.canScrollVertically(-1)) {
+                       // onScrolledToTop();
+                      //  bottomNavigationView.setVisibility(View.VISIBLE);
+
+                    } else if (!recyclerView.canScrollVertically(1)) {
+                    //    onScrolledToBottom();
+                       // bottomNavigationView.setVisibility(View.GONE);
+
+                    } else if (dy < 0) {
+                      //  onScrolledUp();
+                      //  Toast.makeText(mContext, "dy : "+String.valueOf(dy), Toast.LENGTH_SHORT).show();
+                       // bottomNavigationView.setVisibility(View.GONE);
+
+                    } else if (dy > 0) {
+                      //  onScrolledDown();
+                      //  Toast.makeText(mContext, "dy : "+String.valueOf(dy), Toast.LENGTH_SHORT).show();
+
+                        //bottomNavigationView.setVisibility(View.VISIBLE);
+
+                    }
+                    else if (dy == 0) {
+                        //  onScrolledDown();
+                      //  Toast.makeText(mContext, "dy : "+String.valueOf(dy), Toast.LENGTH_SHORT).show();
 
 
                     }
                 }
+
+
             });
 
 
@@ -465,12 +537,71 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             });
 
             */
-        } else {
-            // bottomNavigationView = ((MobileScreen_Dashboard) Objects.requireNonNull(getActivity())).findViewById(R.id.bottomnav);
+
+        String[] ordertype = new String[0];
+
+        try{
+            if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)) {
+                ordertype =  getResources().getStringArray(R.array.B2BOrderType);
+            }
+            else{
+                ordertype =  getResources().getStringArray(R.array.OrderType);
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
 
+        ArrayAdapter<String> arrayAdapterordertype = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, ordertype);
+        arrayAdapterordertype.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Objects.requireNonNull(orderTypeSpinner_newWidget).setAdapter(arrayAdapterordertype);
 
-      createEmptyRowInListView("empty");
+
+        Objects.requireNonNull(orderTypeSpinner_newWidget).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                selectedOrderType = parent.getItemAtPosition(position).toString().toUpperCase();
+                isCalledFromOrderTypeSpinner = true;
+                turnoffProgressBarAndResetArray();
+                if(selectedOrderType.equals(Constants.PhoneOrder)){
+                    if(vendorType.toUpperCase().equals(Constants.WholeSales_VendorType)) {
+                       // displaySelectedAddress_parentLayout.setVisibility(View.GONE);
+
+                        isPhoneOrderSelected = false;
+                        isAddressForPhoneOrderSelected = false;
+                        selectedOrderType =  Constants.POSORDER;
+                        orderTypeSpinner_newWidget.setSelection(0);
+                    }
+                    else{
+                        isPhoneOrderSelected = true;
+                        selectedOrderType =  Constants.PhoneOrder;
+
+                    }
+
+                }
+                else{
+
+                    isPhoneOrderSelected = false;
+                    isAddressForPhoneOrderSelected = false;
+                    selectedOrderType =  Constants.POSORDER;
+
+                }
+                //  Toast.makeText(parent.getContext(), "Selected: " + selectedPaymentMode, Toast.LENGTH_LONG).show();
+            }
+            @Override
+            public void onNothingSelected(AdapterView <?> parent) {
+                isPhoneOrderSelected = false;
+                isAddressForPhoneOrderSelected = false;
+
+                selectedOrderType =  Constants.POSORDER;
+            }
+        });
+
+
+
+        createEmptyRowInListView("empty");
 
         CallAdapter();
         try{
@@ -962,7 +1093,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         LinearLayout displaySelectedAddress_parentLayout = bottomSheetDialog.findViewById(R.id.displaySelectedAddress_parentLayout);
         LinearLayout  addAddress_close_bottom_sheet = addressBottomSheet.findViewById(R.id.addAddress_close_bottom_sheet);
         LinearLayout close_addressbottom_sheet = addressBottomSheet.findViewById(R.id.close_bottom_sheet);
-         //loadingpanelmask_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingpanelmask);
+
+        LinearLayout orderMode_overlapLayout = bottomSheetDialog.findViewById(R.id.orderMode_overlapLayout);
+
+        //loadingpanelmask_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingpanelmask);
          //loadingPanel_addressbottomSheet = addressBottomSheet.findViewById(R.id.loadingPanel);
        // address_listView = addressBottomSheet.findViewById(R.id.address_listView);
         ImageView swipe_up_arrow = addressBottomSheet.findViewById(R.id.swipe_up_arrow);
@@ -986,6 +1120,15 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         displaySelectedAddress_parentLayout.setVisibility(View.GONE);
         addNewAddress_ParentLayout_bottomSheet.setVisibility(View.GONE);
         selectfromAddressList_ParentLayout_bottomSheet.setVisibility(View.VISIBLE);
+        orderMode_overlapLayout.setVisibility(View.VISIBLE);
+        orderMode_overlapLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
 
 
         String itemTotal = "";
@@ -1057,7 +1200,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Objects.requireNonNull(discountTextWidget).setText("0");
         deliveryChargeTextWidget .setText(String.valueOf(deliveryAmount_for_this_order));
         mobile_ToPay_textwidget .setText(itemTotal);
-
+        if(selectedOrderType.equals(Constants.PhoneOrder)){
+            orderTypeSpinner_Widget.setSelection(1);
+        }
+        else{
+            orderTypeSpinner_Widget.setSelection(0);
+        }
         if(vendorType.equals(Constants.WholeSales_VendorType)){
             customerName_layout.setVisibility(View.VISIBLE);
 
@@ -1314,7 +1462,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             @Override
             public void onNothingSelected(AdapterView <?> parent) {
                 isPhoneOrderSelected = false;
-        isAddressForPhoneOrderSelected = false;
+                 isAddressForPhoneOrderSelected = false;
 
                 selectedOrderType =  Constants.POSORDER;
             }
@@ -2680,6 +2828,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                     selected_Address_modal = new Modal_Address();
                                     isPhoneOrderSelected = false;
+                                    orderTypeSpinner_newWidget.setSelection(0);
                                       isAddressForPhoneOrderSelected = false;
                                     updateUserName = false;
                                     isNewUser = false;
@@ -3227,7 +3376,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         //   Log.d(TAG, "slottime  "+slottime);
         if (slottime.contains("mins")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
                 final Date date = sdf.parse(orderplacedtime);
                 final Calendar calendar = Calendar.getInstance();
@@ -3246,7 +3396,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     e.printStackTrace();
                 }
                 calendar.setTime(date);
-                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat sdff = new SimpleDateFormat("HH:mm",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
@@ -3281,15 +3433,21 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String CurrentDatee = df.format(c);
         CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -3298,15 +3456,19 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
     public void CallAdapter() {
-        if(cart_Item_List.size()<=0 ){
-            mobile_ItemTotal_textwidget.setText("0.00");
-            mobile_GST_textwidget.setText("0.00");
+        try {
+            if (cart_Item_List.size() <= 0) {
+                mobile_ItemTotal_textwidget.setText("0.00");
+                mobile_GST_textwidget.setText("0.00");
 
 
-            mobile_ToPay_textwidget.setText("0.00");
+                mobile_ToPay_textwidget.setText("0.00");
+            } else {
+                add_amount_ForBillDetails();
+            }
         }
-        else {
-            add_amount_ForBillDetails();
+        catch (Exception e){
+
         }
         adapterNewOrderScreenFragmentMobile = new Adapter_NewOrderScreenFragment_Mobile(mContext,cartItem_hashmap, MenuItems, NewOrderScreenFragment_mobile.this);
         adapterNewOrderScreenFragmentMobile.setHandler(newHandler());
@@ -3376,7 +3538,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Date c = Calendar.getInstance().getTime();
         if(orderdetailsnewschema) {
 
-            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat day = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = day.format(c);
 
             return CurrentDate;
@@ -3385,17 +3549,20 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         else {
 
 
-            SimpleDateFormat day = new SimpleDateFormat("EEE");
+            SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+            day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDay = day.format(c);
 
 
-            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+            SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+            df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             CurrentDate = df.format(c);
 
             CurrentDate = CurrentDay + ", " + CurrentDate;
 
             //CurrentDate = CurrentDay+", "+CurrentDate;
-            System.out.println("todays Date  " + CurrentDate);
 
 
             return CurrentDate;
@@ -3640,12 +3807,58 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                         }
                         if(json.has("applieddiscountpercentage")){
-                            newOrdersPojoClass.discountpercentage = String.valueOf(json.get("applieddiscountpercentage"));
+                            newOrdersPojoClass.applieddiscountpercentage = String.valueOf(json.get("applieddiscountpercentage"));
 
                         }
                         else{
-                            newOrdersPojoClass.discountpercentage = "0";
+                            newOrdersPojoClass.applieddiscountpercentage = "0";
                             Toast.makeText(mContext,"TMC applieddiscountpercentage Json is Missing",Toast.LENGTH_LONG).show();
+
+                        }
+                        if(json.has("appmarkuppercentage")){
+                            newOrdersPojoClass.appmarkuppercentage = String.valueOf(json.get("appmarkuppercentage"));
+
+                        }
+                        else{
+                            newOrdersPojoClass.appmarkuppercentage = "0";
+                            //Toast.makeText(mContext,"TMC appmarkuppercentage Json is Missing",Toast.LENGTH_LONG).show();
+
+                        }
+
+                        if(json.has("tmcpriceperkgWithMarkupValue")){
+                            try{
+                                newOrdersPojoClass.tmcpriceperkgWithMarkupValue = String.valueOf(json.get("tmcpriceperkgWithMarkupValue"));
+
+                            }
+                            catch (Exception e){
+                                newOrdersPojoClass.tmcpriceperkgWithMarkupValue = "0";
+
+                                e.printStackTrace();
+                            }
+
+                        }
+                        else{
+                            newOrdersPojoClass.tmcpriceperkgWithMarkupValue = "0";
+                            //Log.d(Constants.TAG, "There is no key for this Menu: "  );
+
+
+                        }
+                        if(json.has("tmcpriceWithMarkupValue")){
+                            try{
+                                newOrdersPojoClass.tmcpriceWithMarkupValue = String.valueOf(json.get("tmcpriceWithMarkupValue"));
+
+                            }
+                            catch (Exception e){
+                                newOrdersPojoClass.tmcpriceWithMarkupValue = "0";
+
+                                e.printStackTrace();
+                            }
+
+                        }
+                        else{
+                            newOrdersPojoClass.tmcpriceWithMarkupValue = "0";
+                            //Log.d(Constants.TAG, "There is no key for this Menu: "  );
+
 
                         }
 
@@ -3678,182 +3891,167 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     }
 
     public void add_amount_ForBillDetails() {
-        DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        for(String Key :cart_Item_List){
-            Modal_NewOrderItems newOrderItems = cartItem_hashmap.get(Key);
+        try {
+            DecimalFormat decimalFormat = new DecimalFormat("0.00");
+            for (String Key : cart_Item_List) {
+                Modal_NewOrderItems newOrderItems = cartItem_hashmap.get(Key);
 
-            //find total amount with out GST
-            double new_total_amountfromArray = 0, discountpercentageDecimal=0, discountPercentage=0,newsavedAmount=0,taxes_and_chargesfromArray=0;
-            if (newOrderItems != null) {
-                try {
-                    String itemFinalPrice_string = String.valueOf(newOrderItems.getItemFinalPrice());
-                    new_total_amountfromArray = Double.parseDouble(itemFinalPrice_string);
+                //find total amount with out GST
+                double new_total_amountfromArray = 0, discountpercentageDecimal = 0, discountPercentage = 0, newsavedAmount = 0, taxes_and_chargesfromArray = 0;
+                if (newOrderItems != null) {
+                    try {
+                        String itemFinalPrice_string = String.valueOf(newOrderItems.getItemFinalPrice());
+                        new_total_amountfromArray = Double.parseDouble(itemFinalPrice_string);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    String discountPercentage_string;
+                    try {
+                        discountPercentage_string = String.valueOf(newOrderItems.getApplieddiscountpercentage());
+
+                        discountPercentage = Double.parseDouble(discountPercentage_string);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
+
+                    try {
+                        discountpercentageDecimal = (100 - discountPercentage) / 100;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        newsavedAmount = new_total_amountfromArray / discountpercentageDecimal;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+
+                    try {
+                        newOrderItems.setSavedAmount(String.valueOf(decimalFormat.format(newsavedAmount)));
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+
+
+                    try {
+                        new_total_amount = new_total_amountfromArray;
+                        old_total_Amount = old_total_Amount + new_total_amount;
+                        //Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
+                        //Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+
+
+                    try {
+                        taxes_and_chargesfromArray = Double.parseDouble(newOrderItems.getGstpercentage());
+                        //Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
+
+                        taxes_and_chargesfromArray = ((taxes_and_chargesfromArray * new_total_amountfromArray) / 100);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+
+
+                    try {
+                        newOrderItems.setGstAmount(String.valueOf(decimalFormat.format(taxes_and_chargesfromArray)));
+
+                        //Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
+                        //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
+                        //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
+                        new_taxes_and_charges_Amount = taxes_and_chargesfromArray;
+                        old_taxes_and_charges_Amount = old_taxes_and_charges_Amount + new_taxes_and_charges_Amount;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+
+
+                    //find total GST amount
+
+                    try {
+                        double subTotal_perItem = new_total_amount + new_taxes_and_charges_Amount;
+
+
+                        newOrderItems.setSubTotal_perItem(String.valueOf(decimalFormat.format(subTotal_perItem)));
+
+
+                        //find total payable Amount
+                        new_to_pay_Amount = (old_total_Amount + old_taxes_and_charges_Amount);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+
+
+                    double deliveryAmount_for_this_order_double = 0;
+                    try {
+                        deliveryAmount_for_this_order_double = Double.parseDouble(deliveryAmount_for_this_order);
+                    } catch (Exception e) {
+                        deliveryAmount_for_this_order_double = 0;
+                        e.printStackTrace();
+                    }
+                    double discountAmount_for_this_order_double = 0;
+
+                    try {
+                        discountAmount_for_this_order_double = Double.parseDouble(discountAmount);
+                    } catch (Exception e) {
+                        discountAmount_for_this_order_double = 0;
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        new_to_pay_Amount = (new_to_pay_Amount + deliveryAmount_for_this_order_double) - (discountAmount_for_this_order_double);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    //find subtotal
                 }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-                String discountPercentage_string;
-                try {
-                    discountPercentage_string = String.valueOf(newOrderItems.getDiscountpercentage());
-
-                    discountPercentage = Double.parseDouble(discountPercentage_string);
-
-                }
-                catch (Exception e ){
-                    e.printStackTrace();
-                }
-
-
-                //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromArray" + new_total_amountfromArray);
-
-                try {
-                    discountpercentageDecimal = (100 - discountPercentage) / 100;
-
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-                try {
-                    newsavedAmount = new_total_amountfromArray / discountpercentageDecimal;
-
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-
-                }
-
-                try{
-                    newOrderItems.setSavedAmount(String.valueOf(decimalFormat.format(newsavedAmount)));
-
-                }
-                catch (Exception e ){
-                    e.printStackTrace();
-
-                }
-
-
-                try{
-                    new_total_amount = new_total_amountfromArray;
-                    old_total_Amount = old_total_Amount + new_total_amount;
-                    //Log.i(TAG, "add_amount_ForBillDetails new_total_amount" + new_total_amount);
-                    //Log.i(TAG, "add_amount_ForBillDetails old_total_Amount" + old_total_Amount);
-
-
-                }
-                catch (Exception e ){
-                    e.printStackTrace();
-
-                }
-
-
-                try{
-                    taxes_and_chargesfromArray = Double.parseDouble(newOrderItems.getGstpercentage());
-                    //Log.i(TAG, "add_amount_ForBillDetails taxes_and_chargesfromadapter" + taxes_and_chargesfromArray);
-
-                    taxes_and_chargesfromArray = ((taxes_and_chargesfromArray * new_total_amountfromArray) / 100);
-
-                }
-                catch (Exception e ){
-                    e.printStackTrace();
-
-                }
-
-
-
-                try{
-                    newOrderItems.setGstAmount(String.valueOf(decimalFormat.format(taxes_and_chargesfromArray)));
-
-                    //Log.i(TAG, "add_amount_ForBillDetails taxes_and_charges " + taxes_and_chargesfromArray);
-                    //Log.i(TAG, "add_amount_ForBillDetails new_total_amountfromadapter" + new_total_amountfromArray);
-                    //Log.i(TAG, "add_amount_ForBillDetails old_taxes_and_charges_Amount" + old_taxes_and_charges_Amount);
-                    new_taxes_and_charges_Amount = taxes_and_chargesfromArray;
-                    old_taxes_and_charges_Amount = old_taxes_and_charges_Amount + new_taxes_and_charges_Amount;
-
-                }
-                catch (Exception e ){
-                    e.printStackTrace();
-
-                }
-
-
-
-                //find total GST amount
-
-                try{
-                    double subTotal_perItem = new_total_amount + new_taxes_and_charges_Amount;
-
-
-                    newOrderItems.setSubTotal_perItem(String.valueOf(decimalFormat.format(subTotal_perItem)));
-
-
-                    //find total payable Amount
-                    new_to_pay_Amount = (old_total_Amount + old_taxes_and_charges_Amount);
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
-
-
-                double deliveryAmount_for_this_order_double =0;
-                try{
-                    deliveryAmount_for_this_order_double = Double.parseDouble(deliveryAmount_for_this_order);
-                }
-                catch (Exception e ){
-                    deliveryAmount_for_this_order_double =0;
-                    e.printStackTrace();
-                }
-                double discountAmount_for_this_order_double =0;
-
-                try{
-                    discountAmount_for_this_order_double = Double.parseDouble(discountAmount) ;
-                }
-                catch (Exception e){
-                    discountAmount_for_this_order_double =0;
-                    e.printStackTrace();
-                }
-
-                try{
-                    new_to_pay_Amount = (new_to_pay_Amount + deliveryAmount_for_this_order_double) - (discountAmount_for_this_order_double) ;
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-
-
-
-
-
-                //find subtotal
             }
+
+
+            try {
+
+                mobile_ItemTotal_textwidget.setText(decimalFormat.format(old_total_Amount));
+                mobile_GST_textwidget.setText(decimalFormat.format(old_taxes_and_charges_Amount));
+                new_totalAmount_withoutGst = (int) Math.round(old_total_Amount);
+                newGst = (int) Math.round(old_taxes_and_charges_Amount);
+                // new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+                finaltoPayAmount = String.valueOf((int) Math.round(new_to_pay_Amount)) + ".00";
+                mobile_ToPay_textwidget.setText(String.valueOf(finaltoPayAmount));
+                toPay_textWidget.setText(String.valueOf(finaltoPayAmount));
+
+                deliveryChargeTextWidget.setText(String.valueOf(deliveryAmount_for_this_order));
+                totalAmounttopay = Double.parseDouble(finaltoPayAmount);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            old_total_Amount = 0;
+            old_taxes_and_charges_Amount = 0;
+            new_to_pay_Amount = 0;
         }
+        catch (Exception e){
 
-
-
-
-
-        try{
-
-            mobile_ItemTotal_textwidget.setText(decimalFormat.format(old_total_Amount));
-            mobile_GST_textwidget.setText(decimalFormat.format(old_taxes_and_charges_Amount));
-            new_totalAmount_withoutGst= (int) Math.round(old_total_Amount);
-            newGst =  (int) Math.round(old_taxes_and_charges_Amount);
-           // new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
-            finaltoPayAmount = String.valueOf((int) Math.round(new_to_pay_Amount))+".00";
-            mobile_ToPay_textwidget.setText(String.valueOf(finaltoPayAmount));
-             toPay_textWidget.setText(String.valueOf(finaltoPayAmount));
-
-            deliveryChargeTextWidget .setText(String.valueOf(deliveryAmount_for_this_order));
-            totalAmounttopay= Double.parseDouble(finaltoPayAmount);
-        }catch (Exception e){
-            e.printStackTrace();
         }
-
-        old_total_Amount=0;
-        old_taxes_and_charges_Amount=0;
-        new_to_pay_Amount=0;
-
 
     }
 
@@ -3981,7 +4179,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     userFetchedManually = false;
 
 
-
+                                    orderTypeSpinner_newWidget.setSelection(0);
                                     cart_Item_List.clear();
                                     cartItem_hashmap.clear();
                                     ispaymentMode_Clicked = false;
@@ -4087,6 +4285,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             }
 
 
+
             String menuItemKey = "";
             if (Objects.requireNonNull(modal_newOrderItems).getMenuItemId() != null) {
                 menuItemKey = modal_newOrderItems.getMenuItemId();
@@ -4103,6 +4302,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     }
                 }
             }
+
+
 
             String receivedStock_AvlDetails = "";
             if (Objects.requireNonNull(modal_newOrderItems).getReceivedstock_AvlDetails() != null) {
@@ -4221,6 +4422,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 itemName = itemName;
             }
 //////////////
+
+            /*
             if(isinventorycheck){
 
             String inventoryDetails = "";
@@ -4351,7 +4554,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     if (inventoryDetails.equals("nil")) {
 
                         getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, grossWeightWithQuantity_double, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
-                    } else {
+                    }
+                    else {
                         try {
                             JSONArray jsonArray = new JSONArray(String.valueOf(inventoryDetails));
                             int jsonArrayIterator = 0;
@@ -4702,7 +4906,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                                 e.printStackTrace();
                                             }
 
-/*
+//interal closing starts
                                             if (json_InventoryDetails.has("grossweightingrams")) {
                                                 try {
                                                     grossWeight_avlDetail_InventoryDetails = String.valueOf(json_InventoryDetails.getString("grossweightingrams"));
@@ -4734,7 +4938,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                             }
 
- */
+ //internal closing ends
 
 
 
@@ -4780,7 +4984,1133 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                     }
                 }
         }
+             */
 
+            //////////////////////
+            if(isinventorycheck) {
+
+
+                String inventoryDetails_firstItem = "";
+                try {
+                    if ((modal_newOrderItems.getInventorydetails() != null) && (!modal_newOrderItems.getInventorydetails().equals("null")) && (!modal_newOrderItems.getInventorydetails().equals(""))) {
+                        inventoryDetails_firstItem = String.valueOf(modal_newOrderItems.getInventorydetails());
+                    } else {
+                        inventoryDetails_firstItem = "nil";
+                    }
+                } catch (Exception e) {
+                    inventoryDetails_firstItem = "nil";
+
+                    e.printStackTrace();
+                }
+
+
+                boolean allowNegativeStock = false;
+                if ((modal_newOrderItems.getAllownegativestock() != null) && (!modal_newOrderItems.getAllownegativestock().equals("null")) && (!modal_newOrderItems.getAllownegativestock().equals(""))) {
+                    allowNegativeStock = Boolean.parseBoolean(modal_newOrderItems.getAllownegativestock().toUpperCase());
+                } else {
+                    allowNegativeStock = false;
+                }
+
+
+                boolean isitemAvailable = false;
+                if ((modal_newOrderItems.getItemavailability_AvlDetails() != null) && (!modal_newOrderItems.getItemavailability_AvlDetails().equals("null")) && (!modal_newOrderItems.getItemavailability_AvlDetails().equals(""))) {
+                    isitemAvailable = Boolean.parseBoolean(modal_newOrderItems.getItemavailability_AvlDetails().toUpperCase());
+                } else {
+                    isitemAvailable = false;
+                }
+
+
+
+                String BarcodeofItem = "";
+                if ((modal_newOrderItems.getBarcode() != null) && (!modal_newOrderItems.getBarcode().equals("null")) && (!modal_newOrderItems.getBarcode().equals(""))) {
+                    BarcodeofItem = String.valueOf(modal_newOrderItems.getBarcode());
+                } else {
+                    BarcodeofItem = "";
+                }
+
+                String priceTypeOfItem = "";
+                if ((modal_newOrderItems.getPricetypeforpos() != null) && (!modal_newOrderItems.getPricetypeforpos().equals("null")) && (!modal_newOrderItems.getPricetypeforpos().equals(""))) {
+                    priceTypeOfItem = String.valueOf(modal_newOrderItems.getPricetypeforpos());
+                } else {
+                    priceTypeOfItem = "";
+                }
+
+
+
+
+
+
+                if (!StockBalanceChangedForThisItemList.contains(menuItemKey)) {
+                    totalgrossweightingrams_doubleFromLoop = 0;
+                    totalgrossFromInsideAndOutsideLoop = 0;
+                    isStockOutGoingAlreadyCalledForthisItem = false;
+
+                    try {
+                        //  ItemUniquecodeFromLoop = modal_newOrderItems_insideLoop.getItemuniquecode();
+                        //  BarcodeFromLoop = modal_newOrderItems_insideLoop.getBarcode().toString();
+                        //  priceTypeofItemFromLoop = modal_newOrderItems_insideLoop.getPricetypeforpos().toString();
+                        //   if (!BarcodeFromLoop.equals(BarcodeofItem)) {
+                        if (inventoryDetails_firstItem.equals("nil")) {
+
+
+                            ////////for same inventoryDetails Item - starting
+
+                            for (int iterator = 0; iterator < cart_Item_List.size(); iterator++) {
+                                String hashmapkey = "";
+                                hashmapkey = cart_Item_List.get(iterator);
+                                String itemUniquecodeFromLoop = "", inventoryDetails_secondItem = "", priceTypeOfPOS = "";
+                                String menuItemKeyFromInventoryDetails_secondItem = "",menuItemKeyFrom_secondItem="";
+
+                                Modal_NewOrderItems modal_newOrderItems_insideLoop = cartItem_hashmap.get(hashmapkey);
+                                try {
+                                    itemUniquecodeFromLoop = modal_newOrderItems_insideLoop.getItemuniquecode().toString();
+
+                                } catch (Exception e) {
+                                    itemUniquecodeFromLoop = "";
+                                    e.printStackTrace();
+                                }
+                                try {
+                                    menuItemKeyFrom_secondItem = modal_newOrderItems_insideLoop.getMenuItemId().toString();
+
+                                } catch (Exception e) {
+                                    menuItemKeyFrom_secondItem = "";
+                                    e.printStackTrace();
+                                }
+
+                                try {
+                                    inventoryDetails_secondItem = modal_newOrderItems_insideLoop.getInventorydetails().toString();
+
+                                } catch (Exception e) {
+                                    inventoryDetails_secondItem = "";
+                                    e.printStackTrace();
+                                }
+
+                                try {
+
+                                    if (inventoryDetails_secondItem.equals("nil")) {
+
+
+                                        if (menuItemKeyFrom_secondItem.equals(menuItemKey)) {
+
+                                            try {
+                                                priceTypeOfPOS = modal_newOrderItems_insideLoop.getPricetypeforpos().toString().toUpperCase();
+                                            } catch (Exception e) {
+                                                priceTypeOfPOS = "";
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+                                                if (priceTypeOfPOS.equals(Constants.TMCPRICE)) {
+
+
+                                                    String quantity_secondItemInventoryDetails = "";
+                                                    if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                        quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                    } else {
+                                                        quantity_secondItemInventoryDetails = "";
+                                                    }
+
+
+
+
+
+
+                                                    double quantityDouble_secondItemInventoryDetails = 0;
+                                                    try {
+                                                        if (quantity_secondItemInventoryDetails.equals("")) {
+                                                            quantity_secondItemInventoryDetails = "1";
+                                                        }
+                                                        quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+
+
+
+                                                    try {
+                                                        totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + quantityDouble_secondItemInventoryDetails;
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    //     StockBalanceChangedForThisItemList.add(menuItemKey);
+
+
+                                                    //  isStockOutGoingAlreadyCalledForthisItem = true;
+
+
+                                                }
+                                                else if (priceTypeOfPOS.equals(Constants.TMCPRICEPERKG)) {
+
+                                                    String grossweight_secondItemInventoryDetails = "";
+
+                                                    String quantity_secondItemInventoryDetails = "";
+                                                    if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                        quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                    } else {
+                                                        quantity_secondItemInventoryDetails = "";
+                                                    }
+
+
+                                                    if (modal_newOrderItems_insideLoop.getGrossweight() != null) {
+                                                        grossweight_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getGrossweight();
+
+                                                    } else {
+                                                        grossweight_secondItemInventoryDetails = "";
+                                                    }
+
+
+                                                    String grossWeightingrams_secondItemInventoryDetails = "";
+                                                    try {
+                                                        if (!grossweight_secondItemInventoryDetails.equals("")) {
+                                                            grossWeightingrams_secondItemInventoryDetails = grossweight_secondItemInventoryDetails.replaceAll("[^\\d.]", "");
+
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    double grossweightingrams_double_secondItemInventoryDetails = 0;
+                                                    try {
+                                                        if (!grossWeightingrams_secondItemInventoryDetails.equals("")) {
+                                                            grossweightingrams_double_secondItemInventoryDetails = Double.parseDouble(grossWeightingrams_secondItemInventoryDetails);
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    double quantityDouble_secondItemInventoryDetails = 0;
+                                                    try {
+                                                        if (quantity_secondItemInventoryDetails.equals("")) {
+                                                            quantity_secondItemInventoryDetails = "1";
+                                                        }
+                                                        quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    double grossWeightWithQuantity_double_secondItemInventoryDetails = 0;
+
+                                                    try {
+                                                        grossWeightWithQuantity_double_secondItemInventoryDetails = grossweightingrams_double_secondItemInventoryDetails * quantityDouble_secondItemInventoryDetails;
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + grossWeightWithQuantity_double_secondItemInventoryDetails;
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    //  StockBalanceChangedForThisItemList.add(menuItemKey);
+
+
+                                                    //isStockOutGoingAlreadyCalledForthisItem = true;
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+
+                                        }
+
+
+
+                                    }
+                                    else {
+
+                                        try{
+                                            JSONArray jsonArray_secondItem = new JSONArray(String.valueOf(inventoryDetails_secondItem));
+                                            int jsonArrayIterator_secondItem = 0;
+                                            int jsonArrayCount_secondItem = jsonArray_secondItem.length();
+                                            String grossweightinGramsFromInventoryDetails_secondItem, netweightingramsFromInventoryDetails_secondItem,menuitemKeyFromInventoryDetails_secondItem;
+
+                                            for (; jsonArrayIterator_secondItem < (jsonArrayCount_secondItem); jsonArrayIterator_secondItem++) {
+                                                grossweightinGramsFromInventoryDetails_secondItem = "0";
+                                                netweightingramsFromInventoryDetails_secondItem = "0";
+                                                try {
+                                                    JSONObject json_InventoryDetails_secondItem = jsonArray_secondItem.getJSONObject(jsonArrayIterator_secondItem);
+                                                    menuItemKeyFromInventoryDetails_secondItem = "";
+                                                    // grossweightinGramsFromInventoryDetails = 0;
+                                                    //netweightingramsFromInventoryDetails = 0;
+
+                                                    try {
+                                                        menuItemKeyFromInventoryDetails_secondItem = json_InventoryDetails_secondItem.getString("menuitemkey");
+                                                    } catch (Exception e) {
+                                                        menuItemKeyFromInventoryDetails_secondItem = "";
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        if (json_InventoryDetails_secondItem.has("grossweightingrams")) {
+                                                            grossweightinGramsFromInventoryDetails_secondItem = String.valueOf(json_InventoryDetails_secondItem.getString("grossweightingrams"));
+                                                        } else {
+
+                                                            grossweightinGramsFromInventoryDetails_secondItem = "0";
+
+                                                        }
+                                                    } catch (Exception e) {
+                                                        grossweightinGramsFromInventoryDetails_secondItem = "0";
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        netweightingramsFromInventoryDetails_secondItem = String.valueOf(json_InventoryDetails_secondItem.getString("netweightingrams"));
+                                                    } catch (Exception e) {
+                                                        netweightingramsFromInventoryDetails_secondItem = "0";
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                }
+                                                catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+
+
+                                                if (menuItemKeyFromInventoryDetails_secondItem.equals(menuItemKey)) {
+
+                                                    try {
+                                                        priceTypeOfPOS = modal_newOrderItems_insideLoop.getPricetypeforpos().toString().toUpperCase();
+                                                    } catch (Exception e) {
+                                                        priceTypeOfPOS = "";
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    try {
+                                                        if (priceTypeOfPOS.equals(Constants.TMCPRICE)) {
+
+                                                            String grossweight_secondItemInventoryDetails = "";
+
+                                                            String quantity_secondItemInventoryDetails = "";
+                                                            if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                                quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                            } else {
+                                                                quantity_secondItemInventoryDetails = "";
+                                                            }
+                                                            System.out.println(String.valueOf(quantity_secondItemInventoryDetails)+" resaa quantity_secondItemInventoryDetails  " );
+
+
+                                                            try {
+                                                                grossweight_secondItemInventoryDetails = grossweightinGramsFromInventoryDetails_secondItem;
+
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                                grossweight_secondItemInventoryDetails = "0";
+                                                            }
+
+                                                            try {
+                                                                if (grossweight_secondItemInventoryDetails.equals("") || (grossweight_secondItemInventoryDetails.equals("0"))) {
+                                                                    try {
+                                                                        grossweight_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getGrossweight().toString();
+
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                        grossweight_secondItemInventoryDetails = "1";
+                                                                    }
+                                                                }
+                                                            } catch (Exception e) {
+                                                                grossweight_secondItemInventoryDetails = "1";
+
+                                                                e.printStackTrace();
+                                                            }
+
+
+                                                            String grossWeightingrams_secondItemInventoryDetails = "";
+                                                            try {
+                                                                if (!grossweight_secondItemInventoryDetails.equals("")) {
+                                                                    grossWeightingrams_secondItemInventoryDetails = grossweight_secondItemInventoryDetails.replaceAll("[^\\d.]", "");
+
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                            double grossweightingrams_double_secondItemInventoryDetails = 0;
+                                                            try {
+                                                                if (!grossWeightingrams_secondItemInventoryDetails.equals("")) {
+                                                                    grossweightingrams_double_secondItemInventoryDetails = Double.parseDouble(grossWeightingrams_secondItemInventoryDetails);
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            double quantityDouble_secondItemInventoryDetails = 0;
+                                                            try {
+                                                                if (quantity_secondItemInventoryDetails.equals("")) {
+                                                                    quantity_secondItemInventoryDetails = "1";
+                                                                }
+                                                                quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            double grossWeightWithQuantity_double_secondItemInventoryDetails = 0;
+
+                                                            try {
+                                                                grossWeightWithQuantity_double_secondItemInventoryDetails = grossweightingrams_double_secondItemInventoryDetails * quantityDouble_secondItemInventoryDetails;
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            System.out.println(String.valueOf(grossWeightWithQuantity_double_secondItemInventoryDetails)+" resaa grossWeightWithQuantity_double_secondItemInventoryDetails  ");
+                                                            System.out.println(String.valueOf(quantityDouble_secondItemInventoryDetails)+" resaa quantityDouble_secondItemInventoryDetails " );
+
+                                                            try {
+                                                                totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + grossWeightWithQuantity_double_secondItemInventoryDetails;
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                            System.out.println(String.valueOf(totalgrossweightingrams_doubleFromLoop)+" resaa totalgrossweightingrams_doubleFromLoop  " );
+
+
+                                                            //   StockBalanceChangedForThisItemList.add(menuItemKey);
+
+
+                                                            //    isStockOutGoingAlreadyCalledForthisItem = true;
+
+
+                                                        } else if (priceTypeOfPOS.equals(Constants.TMCPRICEPERKG)) {
+
+                                                            String grossweight_secondItemInventoryDetails = "";
+
+                                                            String quantity_secondItemInventoryDetails = "";
+                                                            if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                                quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                            } else {
+                                                                quantity_secondItemInventoryDetails = "";
+                                                            }
+
+
+                                                            if (modal_newOrderItems_insideLoop.getGrossweight() != null) {
+                                                                grossweight_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getGrossweight();
+
+                                                            } else {
+                                                                grossweight_secondItemInventoryDetails = "";
+                                                            }
+
+
+                                                            String grossWeightingrams_secondItemInventoryDetails = "";
+                                                            try {
+                                                                if (!grossweight_secondItemInventoryDetails.equals("")) {
+                                                                    grossWeightingrams_secondItemInventoryDetails = grossweight_secondItemInventoryDetails.replaceAll("[^\\d.]", "");
+
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                            double grossweightingrams_double_secondItemInventoryDetails = 0;
+                                                            try {
+                                                                if (!grossWeightingrams_secondItemInventoryDetails.equals("")) {
+                                                                    grossweightingrams_double_secondItemInventoryDetails = Double.parseDouble(grossWeightingrams_secondItemInventoryDetails);
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            double quantityDouble_secondItemInventoryDetails = 0;
+                                                            try {
+                                                                if (quantity_secondItemInventoryDetails.equals("")) {
+                                                                    quantity_secondItemInventoryDetails = "1";
+                                                                }
+                                                                quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            double grossWeightWithQuantity_double_secondItemInventoryDetails = 0;
+
+                                                            try {
+                                                                grossWeightWithQuantity_double_secondItemInventoryDetails = grossweightingrams_double_secondItemInventoryDetails * quantityDouble_secondItemInventoryDetails;
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+
+                                                            try {
+                                                                totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + grossWeightWithQuantity_double_secondItemInventoryDetails;
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            //StockBalanceChangedForThisItemList.add(menuItemKey);
+
+
+                                                            //  isStockOutGoingAlreadyCalledForthisItem = true;
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                }
+
+
+
+                                            }
+
+
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+
+                            ////////for same inventoryDetails Item - Ending
+
+                            StockBalanceChangedForThisItemList.add(menuItemKey);
+
+
+                            isStockOutGoingAlreadyCalledForthisItem = true;
+
+                            if (isStockOutGoingAlreadyCalledForthisItem) {
+                                //  try {
+                                // totalgrossFromInsideAndOutsideLoop = grossWeightWithQuantity_double + totalgrossweightingrams_doubleFromLoop;
+                                // } catch (Exception e) {
+                                //       e.printStackTrace();
+                                //  }
+
+
+                                getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, totalgrossweightingrams_doubleFromLoop, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
+
+                            } else {
+                                getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, grossWeightWithQuantity_double, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
+
+                            }
+
+
+
+
+                        }
+                        else{
+                            try{
+                                JSONArray jsonArray = new JSONArray(String.valueOf(inventoryDetails_firstItem));
+                                int jsonArrayIterator = 0;
+                                int jsonArrayCount = jsonArray.length();
+                                for (; jsonArrayIterator < (jsonArrayCount); jsonArrayIterator++) {
+                                    try {
+                                        String menuItemKeyFromInventoryDetails = "";
+                                        double grossweightinGramsFromInventoryDetails = 0, netweightingramsFromInventoryDetails = 0;
+                                        JSONObject json_InventoryDetails = jsonArray.getJSONObject(jsonArrayIterator);
+
+                                        try {
+                                            menuItemKeyFromInventoryDetails = json_InventoryDetails.getString("menuitemkey");
+                                        } catch (Exception e) {
+                                            menuItemKeyFromInventoryDetails = "";
+                                            e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            grossweightinGramsFromInventoryDetails = Double.parseDouble(json_InventoryDetails.getString("grossweightingrams"));
+                                        } catch (Exception e) {
+                                            grossweightinGramsFromInventoryDetails = 0;
+                                            // e.printStackTrace();
+                                        }
+
+
+                                        try {
+                                            netweightingramsFromInventoryDetails = Double.parseDouble(json_InventoryDetails.getString("netweightingrams"));
+                                        } catch (Exception e) {
+                                            netweightingramsFromInventoryDetails = 0;
+                                            // e.printStackTrace();
+                                        }
+                                        if (!StockBalanceChangedForThisItemList.contains(menuItemKeyFromInventoryDetails)) {
+                                            totalgrossweightingrams_doubleFromLoop = 0;
+                                            ////////for same inventoryDetails Item - starting
+                                            for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < MenuItemArray.size(); iterator_menuitemStockAvlDetails++) {
+
+                                                Modal_MenuItem modal_menuItemStockAvlDetails = MenuItemArray.get(iterator_menuitemStockAvlDetails);
+
+                                                String menuItemKeyFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getKey());
+                                                String itemUniquecodeFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getItemuniquecode());
+                                                String priceTypeForPOSFromMenuAvlDetails = String.valueOf(modal_menuItemStockAvlDetails.getPricetypeforpos());
+                                                String stockIncomingKey_avlDetail = "", Key_avlDetail = "", receivedStock_avlDetail = "", grossWeight_avlDetail_InventoryDetails = "", itemName_avlDetail_inventoryDetails = "", barcode_avlDetail = "", priceTypeForPOS_avlDetail = "",
+                                                        tmcSubCtgy_avlDetail = "", tmcCtgy_avlDetail = "";
+
+                                                if (menuItemKeyFromInventoryDetails.equals(menuItemKeyFromMenuAvlDetails)) {
+                                                    double grossWeightWithQuantityDouble_avlDetail_InventoryDetails = 0, grossWeightDouble_avlDetail_InventoryDetails = 0;
+
+                                                    try {
+                                                        stockIncomingKey_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getStockincomingkey_AvlDetails());
+                                                    } catch (Exception e) {
+                                                        stockIncomingKey_avlDetail = "nil";
+                                                        e.printStackTrace();
+                                                    }
+                                                    boolean itemAvailability_avlDetail = true;
+
+                                                    try {
+                                                        itemAvailability_avlDetail = Boolean.parseBoolean(String.valueOf(modal_menuItemStockAvlDetails.getItemavailability_AvlDetails()));
+                                                    } catch (Exception e) {
+                                                        itemAvailability_avlDetail = true;
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    try {
+                                                        Key_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getKey_AvlDetails());
+
+                                                    } catch (Exception e) {
+                                                        Key_avlDetail = "";
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    try {
+                                                        barcode_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getBarcode_AvlDetails());
+
+                                                    } catch (Exception e) {
+                                                        barcode_avlDetail = "";
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    try {
+                                                        receivedStock_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getReceivedstock_AvlDetails());
+
+                                                    } catch (Exception e) {
+                                                        receivedStock_avlDetail = "";
+
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        itemName_avlDetail_inventoryDetails = String.valueOf(modal_menuItemStockAvlDetails.getItemname());
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        tmcSubCtgy_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getTmcsubctgykey());
+
+                                                    } catch (Exception e) {
+                                                        tmcSubCtgy_avlDetail = "";
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        tmcCtgy_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getTmcctgykey());
+
+                                                    } catch (Exception e) {
+                                                        tmcCtgy_avlDetail = "";
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        priceTypeForPOS_avlDetail = String.valueOf(modal_menuItemStockAvlDetails.getPricetypeforpos());
+
+                                                    } catch (Exception e) {
+                                                        priceTypeForPOS_avlDetail = "";
+                                                        e.printStackTrace();
+                                                    }
+                                                    for (int iterator = 0; iterator < cart_Item_List.size(); iterator++) {
+                                                        String hashmapkey = "";
+                                                        hashmapkey = cart_Item_List.get(iterator);
+                                                        String itemUniquecodeFromLoop = "", inventoryDetails_secondItem = "", priceTypeOfPOS = "";
+                                                        String menuItemKeyFromInventoryDetails_secondItem = "", menuItemKeyFrom_secondItem = "";
+
+                                                        Modal_NewOrderItems modal_newOrderItems_insideLoop = cartItem_hashmap.get(hashmapkey);
+                                                        try {
+                                                            itemUniquecodeFromLoop = modal_newOrderItems_insideLoop.getItemuniquecode().toString();
+
+                                                        } catch (Exception e) {
+                                                            itemUniquecodeFromLoop = "";
+                                                            e.printStackTrace();
+                                                        }
+                                                        try {
+                                                            menuItemKeyFrom_secondItem = modal_newOrderItems_insideLoop.getMenuItemId().toString();
+
+                                                        } catch (Exception e) {
+                                                            menuItemKeyFrom_secondItem = "";
+                                                            e.printStackTrace();
+                                                        }
+
+                                                        try {
+                                                            inventoryDetails_secondItem = modal_newOrderItems_insideLoop.getInventorydetails().toString();
+
+                                                        } catch (Exception e) {
+                                                            inventoryDetails_secondItem = "";
+                                                            e.printStackTrace();
+                                                        }
+
+                                                        try {
+
+                                                            if (inventoryDetails_secondItem.equals("nil")) {
+
+
+                                                                if (menuItemKeyFrom_secondItem.equals(menuItemKeyFromInventoryDetails)) {
+
+                                                                    try {
+                                                                        priceTypeOfPOS = modal_newOrderItems_insideLoop.getPricetypeforpos().toString().toUpperCase();
+                                                                    } catch (Exception e) {
+                                                                        priceTypeOfPOS = "";
+                                                                        e.printStackTrace();
+                                                                    }
+
+                                                                    try {
+                                                                        if (priceTypeOfPOS.equals(Constants.TMCPRICE)) {
+
+
+                                                                            String quantity_secondItemInventoryDetails = "";
+                                                                            if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                                                quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                                            } else {
+                                                                                quantity_secondItemInventoryDetails = "";
+                                                                            }
+
+
+                                                                            double quantityDouble_secondItemInventoryDetails = 0;
+                                                                            try {
+                                                                                if (quantity_secondItemInventoryDetails.equals("")) {
+                                                                                    quantity_secondItemInventoryDetails = "1";
+                                                                                }
+                                                                                quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+
+                                                                            try {
+                                                                                totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + quantityDouble_secondItemInventoryDetails;
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+                                                                            //  StockBalanceChangedForThisItemList.add(menuItemKeyFromMenuAvlDetails);
+
+
+                                                                            // isStockOutGoingAlreadyCalledForthisItem = true;
+
+
+                                                                        }
+                                                                        else if (priceTypeOfPOS.equals(Constants.TMCPRICEPERKG)) {
+
+                                                                            String grossweight_secondItemInventoryDetails = "";
+
+                                                                            String quantity_secondItemInventoryDetails = "";
+                                                                            if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                                                quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                                            } else {
+                                                                                quantity_secondItemInventoryDetails = "";
+                                                                            }
+
+
+                                                                            if (modal_newOrderItems_insideLoop.getGrossweight() != null) {
+                                                                                grossweight_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getGrossweight();
+
+                                                                            } else {
+                                                                                grossweight_secondItemInventoryDetails = "";
+                                                                            }
+
+
+                                                                            String grossWeightingrams_secondItemInventoryDetails = "";
+                                                                            try {
+                                                                                if (!grossweight_secondItemInventoryDetails.equals("")) {
+                                                                                    grossWeightingrams_secondItemInventoryDetails = grossweight_secondItemInventoryDetails.replaceAll("[^\\d.]", "");
+
+                                                                                }
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                            double grossweightingrams_double_secondItemInventoryDetails = 0;
+                                                                            try {
+                                                                                if (!grossWeightingrams_secondItemInventoryDetails.equals("")) {
+                                                                                    grossweightingrams_double_secondItemInventoryDetails = Double.parseDouble(grossWeightingrams_secondItemInventoryDetails);
+                                                                                }
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+                                                                            double quantityDouble_secondItemInventoryDetails = 0;
+                                                                            try {
+                                                                                if (quantity_secondItemInventoryDetails.equals("")) {
+                                                                                    quantity_secondItemInventoryDetails = "1";
+                                                                                }
+                                                                                quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+                                                                            double grossWeightWithQuantity_double_secondItemInventoryDetails = 0;
+
+                                                                            try {
+                                                                                grossWeightWithQuantity_double_secondItemInventoryDetails = grossweightingrams_double_secondItemInventoryDetails * quantityDouble_secondItemInventoryDetails;
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+
+                                                                            try {
+                                                                                totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + grossWeightWithQuantity_double_secondItemInventoryDetails;
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+                                                                            //   StockBalanceChangedForThisItemList.add(menuItemKeyFromMenuAvlDetails);
+
+
+                                                                            // isStockOutGoingAlreadyCalledForthisItem = true;
+                                                                        }
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+
+                                                                }
+
+
+                                                            }
+                                                            else {
+
+                                                                try {
+                                                                    JSONArray jsonArray_secondItem = new JSONArray(String.valueOf(inventoryDetails_secondItem));
+                                                                    int jsonArrayIterator_secondItem = 0;
+                                                                    int jsonArrayCount_secondItem = jsonArray_secondItem.length();
+                                                                    String grossweightinGramsFromInventoryDetails_secondItem, netweightingramsFromInventoryDetails_secondItem, menuitemKeyFromInventoryDetails_secondItem;
+
+                                                                    for (; jsonArrayIterator_secondItem < (jsonArrayCount_secondItem); jsonArrayIterator_secondItem++) {
+                                                                        grossweightinGramsFromInventoryDetails_secondItem = "0";
+                                                                        netweightingramsFromInventoryDetails_secondItem = "0";
+                                                                        try {
+                                                                            JSONObject json_InventoryDetails_secondItem = jsonArray_secondItem.getJSONObject(jsonArrayIterator_secondItem);
+                                                                            menuItemKeyFromInventoryDetails_secondItem = "";
+                                                                            // grossweightinGramsFromInventoryDetails = 0;
+                                                                            netweightingramsFromInventoryDetails = 0;
+
+                                                                            try {
+                                                                                menuItemKeyFromInventoryDetails_secondItem = json_InventoryDetails_secondItem.getString("menuitemkey");
+                                                                            } catch (Exception e) {
+                                                                                menuItemKeyFromInventoryDetails_secondItem = "";
+                                                                                e.printStackTrace();
+                                                                            }
+
+
+                                                                            try {
+                                                                                if (json_InventoryDetails_secondItem.has("grossweightingrams")) {
+                                                                                    grossweightinGramsFromInventoryDetails_secondItem = String.valueOf(json_InventoryDetails_secondItem.getString("grossweightingrams"));
+                                                                                } else {
+
+                                                                                    grossweightinGramsFromInventoryDetails_secondItem = "0";
+
+                                                                                }
+                                                                            } catch (Exception e) {
+                                                                                grossweightinGramsFromInventoryDetails_secondItem = "0";
+                                                                                e.printStackTrace();
+                                                                            }
+
+
+                                                                            try {
+                                                                                netweightingramsFromInventoryDetails_secondItem = String.valueOf(json_InventoryDetails_secondItem.getString("netweightingrams"));
+                                                                            } catch (Exception e) {
+                                                                                netweightingramsFromInventoryDetails_secondItem = "0";
+                                                                                //  e.printStackTrace();
+                                                                            }
+
+
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                        }
+
+
+                                                                        if (menuItemKeyFromInventoryDetails_secondItem.equals(menuItemKeyFromInventoryDetails)) {
+
+                                                                            try {
+                                                                                priceTypeOfPOS = modal_newOrderItems_insideLoop.getPricetypeforpos().toString().toUpperCase();
+                                                                            } catch (Exception e) {
+                                                                                priceTypeOfPOS = "";
+                                                                                e.printStackTrace();
+                                                                            }
+
+                                                                            try {
+                                                                                if (priceTypeOfPOS.equals(Constants.TMCPRICE)) {
+
+                                                                                    String grossweight_secondItemInventoryDetails = "";
+
+                                                                                    String quantity_secondItemInventoryDetails = "";
+                                                                                    if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                                                        quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                                                    } else {
+                                                                                        quantity_secondItemInventoryDetails = "";
+                                                                                    }
+
+
+                                                                                    try {
+                                                                                        grossweight_secondItemInventoryDetails = grossweightinGramsFromInventoryDetails_secondItem;
+
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                        grossweight_secondItemInventoryDetails = "0";
+                                                                                    }
+
+                                                                                    try {
+                                                                                        if (grossweight_secondItemInventoryDetails.equals("") || (grossweight_secondItemInventoryDetails.equals("0"))) {
+                                                                                            try {
+                                                                                                grossweight_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getGrossweight().toString();
+
+                                                                                            } catch (Exception e) {
+                                                                                                e.printStackTrace();
+                                                                                                grossweight_secondItemInventoryDetails = "1";
+                                                                                            }
+                                                                                        }
+                                                                                    } catch (Exception e) {
+                                                                                        grossweight_secondItemInventoryDetails = "1";
+
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+
+                                                                                    String grossWeightingrams_secondItemInventoryDetails = "";
+                                                                                    try {
+                                                                                        if (!grossweight_secondItemInventoryDetails.equals("")) {
+                                                                                            grossWeightingrams_secondItemInventoryDetails = grossweight_secondItemInventoryDetails.replaceAll("[^\\d.]", "");
+
+                                                                                        }
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+                                                                                    double grossweightingrams_double_secondItemInventoryDetails = 0;
+                                                                                    try {
+                                                                                        if (!grossWeightingrams_secondItemInventoryDetails.equals("")) {
+                                                                                            grossweightingrams_double_secondItemInventoryDetails = Double.parseDouble(grossWeightingrams_secondItemInventoryDetails);
+                                                                                        }
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+                                                                                    double quantityDouble_secondItemInventoryDetails = 0;
+                                                                                    try {
+                                                                                        if (quantity_secondItemInventoryDetails.equals("")) {
+                                                                                            quantity_secondItemInventoryDetails = "1";
+                                                                                        }
+                                                                                        quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+                                                                                    double grossWeightWithQuantity_double_secondItemInventoryDetails = 0;
+
+                                                                                    try {
+                                                                                        grossWeightWithQuantity_double_secondItemInventoryDetails = grossweightingrams_double_secondItemInventoryDetails * quantityDouble_secondItemInventoryDetails;
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+
+                                                                                    try {
+                                                                                        totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + grossWeightWithQuantity_double_secondItemInventoryDetails;
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+
+                                                                                    //   StockBalanceChangedForThisItemList.add(menuItemKeyFromMenuAvlDetails);
+
+
+                                                                                    //  isStockOutGoingAlreadyCalledForthisItem = true;
+
+                                                                                }
+                                                                                else if (priceTypeOfPOS.equals(Constants.TMCPRICEPERKG)) {
+
+                                                                                    String grossweight_secondItemInventoryDetails = "";
+
+                                                                                    String quantity_secondItemInventoryDetails = "";
+                                                                                    if (modal_newOrderItems_insideLoop.getQuantity() != null) {
+                                                                                        quantity_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getQuantity();
+
+
+                                                                                    } else {
+                                                                                        quantity_secondItemInventoryDetails = "";
+                                                                                    }
+
+
+                                                                                    if (modal_newOrderItems_insideLoop.getGrossweight() != null) {
+                                                                                        grossweight_secondItemInventoryDetails = modal_newOrderItems_insideLoop.getGrossweight();
+
+                                                                                    } else {
+                                                                                        grossweight_secondItemInventoryDetails = "";
+                                                                                    }
+
+
+                                                                                    String grossWeightingrams_secondItemInventoryDetails = "";
+                                                                                    try {
+                                                                                        if (!grossweight_secondItemInventoryDetails.equals("")) {
+                                                                                            grossWeightingrams_secondItemInventoryDetails = grossweight_secondItemInventoryDetails.replaceAll("[^\\d.]", "");
+
+                                                                                        }
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+                                                                                    double grossweightingrams_double_secondItemInventoryDetails = 0;
+                                                                                    try {
+                                                                                        if (!grossWeightingrams_secondItemInventoryDetails.equals("")) {
+                                                                                            grossweightingrams_double_secondItemInventoryDetails = Double.parseDouble(grossWeightingrams_secondItemInventoryDetails);
+                                                                                        }
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+                                                                                    double quantityDouble_secondItemInventoryDetails = 0;
+                                                                                    try {
+                                                                                        if (quantity_secondItemInventoryDetails.equals("")) {
+                                                                                            quantity_secondItemInventoryDetails = "1";
+                                                                                        }
+                                                                                        quantityDouble_secondItemInventoryDetails = Double.parseDouble(quantity_secondItemInventoryDetails);
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+                                                                                    double grossWeightWithQuantity_double_secondItemInventoryDetails = 0;
+
+                                                                                    try {
+                                                                                        grossWeightWithQuantity_double_secondItemInventoryDetails = grossweightingrams_double_secondItemInventoryDetails * quantityDouble_secondItemInventoryDetails;
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+
+
+                                                                                    try {
+                                                                                        totalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop + grossWeightWithQuantity_double_secondItemInventoryDetails;
+                                                                                    } catch (Exception e) {
+                                                                                        e.printStackTrace();
+                                                                                    }
+                                                                                    // Toast.makeText(mContext, "totalgrossweightingrams_doubleFromLoop " + String.valueOf(totalgrossweightingrams_doubleFromLoop), Toast.LENGTH_SHORT).show();
+
+
+                                                                                    //    StockBalanceChangedForThisItemList.add(menuItemKeyFromMenuAvlDetails);
+
+
+                                                                                    // isStockOutGoingAlreadyCalledForthisItem = true;
+                                                                                }
+                                                                            } catch (Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+
+                                                                        }
+
+
+                                                                    }
+
+
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
+
+                                                            }
+
+
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+
+
+                                                    }
+
+                                                    StockBalanceChangedForThisItemList.add(menuItemKeyFromInventoryDetails);
+
+
+                                                    isStockOutGoingAlreadyCalledForthisItem = true;
+
+
+
+                                                    //  if (priceTypeOfItem.toUpperCase().equals(Constants.TMCPRICEPERKG)) {
+
+
+                                                    if (isStockOutGoingAlreadyCalledForthisItem) {
+                                                        //  try {
+                                                        //    totalgrossFromInsideAndOutsideLoop = grossWeightWithQuantity_double + totalgrossweightingrams_doubleFromLoop;
+                                                        // } catch (Exception e) {
+                                                        //      e.printStackTrace();
+                                                        //  }
+
+
+                                                        getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, totalgrossweightingrams_doubleFromLoop, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
+
+
+                                                    } else {
+                                                        getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossWeightWithQuantity_double, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
+
+                                                    }
+
+                                                            /*} else {
+                                                                getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossweightinGramsFromInventoryDetails, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
+
+                                                            }
+
+                                                             */
+
+
+
+
+                                                }
+                                            }
+
+                                            ////////for same inventoryDetails Item - Ending
+
+
+
+
+
+                                        }
+
+
+
+
+
+
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    //    }
+
+
+
+
+                }
+
+
+
+            }
+            ///////////////////////
 ///////////
 
             String price = "";
@@ -4841,11 +6171,46 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 subCtgyKey = "";
             }
 
+
+            if(modal_newOrderItems.getApplieddiscountpercentage()!=null){
+                applieddiscountpercentage =   modal_newOrderItems.getApplieddiscountpercentage();
+                applieddiscountpercentage = applieddiscountpercentage.replaceAll("[^\\d. ]", "");
+            }
+            else{
+                applieddiscountpercentage = "0";
+            }
+            try{
+                if(modal_newOrderItems.getAppmarkuppercentage()!=null){
+                    appMarkupPercentage =   modal_newOrderItems.getAppmarkuppercentage();
+                    appMarkupPercentage = appMarkupPercentage.replaceAll("[^\\d. ]", "");
+                }
+                else{
+                    appMarkupPercentage = "0";
+                }
+            }
+            catch (Exception e){
+                appMarkupPercentage = "0";
+                e.printStackTrace();
+            }
+
+
             PlaceOrder_in_OrderItemDetails(subCtgyKey,itemName,grossweight, weight,netweight, quantity, price, "", GstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName,grossWeightingrams,grossweightingrams_double);
 
 
             JSONObject itemdespObject = new JSONObject();
             try {
+                try {
+                    if ((!applieddiscountpercentage.equals("0")) && (!applieddiscountpercentage.equals("")) && (!applieddiscountpercentage.equals("null")) && (!applieddiscountpercentage.equals(null))) {
+                        itemdespObject.put("applieddiscpercentage", applieddiscountpercentage);
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                if(isPhoneOrderSelected) {
+                    itemdespObject.put("appmarkuppercentage", appMarkupPercentage);
+
+                }
                 itemdespObject.put("menuitemid", menuItemId);
                 itemdespObject.put("itemname", itemName);
                 itemdespObject.put("tmcprice", Double.parseDouble(price));
@@ -6002,7 +7367,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             phrasebody2_table.addCell(phraseEmptycell1);
 
 
-            Phrase phraseOrderType = new Phrase( "Order Type :  "+ordertype, normalFont);
+         /*   Phrase phraseOrderType = new Phrase( "Order Type :  "+ordertype, normalFont);
             PdfPCell orderTypecell = new PdfPCell(new Phrase(phraseOrderType));
             orderTypecell.setBorder(Rectangle.NO_BORDER);
             orderTypecell.setHorizontalAlignment(Element.ALIGN_LEFT);
@@ -6012,6 +7377,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             orderTypecell.setPaddingBottom(10);
             orderTypecell.setPaddingTop(10);
             phrasebody2_table.addCell(orderTypecell);
+
+
+          */
+
 
 
             Phrase phrasePaymentMode = new Phrase( "Payment Mode : "+ payment_mode, normalFont);
@@ -6042,9 +7411,45 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             usernamecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             usernamecell.setPaddingLeft(10);
             usernamecell.setPaddingRight(20);
-            usernamecell.setPaddingBottom(30);
+            usernamecell.setPaddingBottom(10);
             phrasebody2_table.addCell(usernamecell);
 
+            double newamountUserHaveAsCredit =0; double finaltoPayAmountinmethod_double = 0;
+            try{
+                finaltoPayAmountinmethod = finaltoPayAmountinmethod.replaceAll("[^\\d.]", "");
+                finaltoPayAmountinmethod_double = Double.parseDouble(finaltoPayAmountinmethod);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                newamountUserHaveAsCredit = finaltoPayAmountinmethod_double + totalamountUserHaveAsCredit;
+
+            }
+             catch (Exception e){
+                e.printStackTrace();
+             }
+
+
+            Phrase phraseoldCreditAmount = new Phrase( "Amount in Credit before this bill : Rs. "+ String.valueOf(totalamountUserHaveAsCredit), normalFont);
+            PdfPCell oldcreditAmtcell = new PdfPCell(new Phrase(phraseoldCreditAmount));
+            oldcreditAmtcell.setBorder(Rectangle.NO_BORDER);
+            oldcreditAmtcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            oldcreditAmtcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            oldcreditAmtcell.setPaddingLeft(10);
+            oldcreditAmtcell.setPaddingRight(20);
+            oldcreditAmtcell.setPaddingBottom(10);
+            phrasebody2_table.addCell(oldcreditAmtcell);
+
+            Phrase phrasenewCreditAmount = new Phrase( "Amount in Credit after this bill : Rs. "+ String.valueOf(newamountUserHaveAsCredit), normalFont);
+            PdfPCell newCreditAmountcell = new PdfPCell(new Phrase(phrasenewCreditAmount));
+            newCreditAmountcell.setBorder(Rectangle.NO_BORDER);
+            newCreditAmountcell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            newCreditAmountcell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            newCreditAmountcell.setPaddingLeft(10);
+            newCreditAmountcell.setPaddingRight(20);
+            newCreditAmountcell.setPaddingBottom(30);
+            phrasebody2_table.addCell(newCreditAmountcell);
 
 
 
@@ -6236,9 +7641,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
                                     try {
-                                        Log.d(TAG, " response: onMobileAppData " + response);
+                                       // Log.d(TAG, " response: onMobileAppData " + response);
 
-                                        Log.i(TAG, "getStock incoming name" + itemName);
+                                       // Log.i(TAG, "getStock incoming name" + itemName);
 
                                         JSONArray JArray = response.getJSONArray("content");
 
@@ -6293,9 +7698,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             }
 
 
-                                            Log.i(TAG, "getStock incoming stocktype_stockOutGngDetails_String" + stocktype_stockOutGngDetails_String[0]);
+                                         //   Log.i(TAG, "getStock incoming stocktype_stockOutGngDetails_String" + stocktype_stockOutGngDetails_String[0]);
 
-                                            Log.i(TAG, "getStock incoming outgoingtype_stockOutGngDetails_String" + outgoingtype_stockOutGngDetails_String[0]);
+                                         //   Log.i(TAG, "getStock incoming outgoingtype_stockOutGngDetails_String" + outgoingtype_stockOutGngDetails_String[0]);
 
 
                                                 try {
@@ -6312,7 +7717,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
 
-                                            Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_String" + outgoingqty_stockOutGngDetails_String[0]);
+                                        //    Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_String" + outgoingqty_stockOutGngDetails_String[0]);
 
 
                                             try {
@@ -6322,7 +7727,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                                 e.printStackTrace();
                                             }
 
-                                            Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double" + outgoingqty_stockOutGngDetails_Double[0]);
+                                         //   Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double" + outgoingqty_stockOutGngDetails_Double[0]);
 
 
                                             try {
@@ -6337,7 +7742,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                                 e.printStackTrace();
                                             }
 
-                                            Log.i(TAG, "getStock incoming stockincomingkey_stockOutGngDetails_String" + stockincomingkey_stockOutGngDetails_String[0]);
+                                          //  Log.i(TAG, "getStock incoming stockincomingkey_stockOutGngDetails_String" + stockincomingkey_stockOutGngDetails_String[0]);
 
 
                                             try {
@@ -6349,12 +7754,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                             }
 
 
-                                            Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double" + outgoingqty_stockOutGngDetails_Double[0]);
+                                          //  Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double" + outgoingqty_stockOutGngDetails_Double[0]);
 
 
                                             if (outgoingtype_stockOutGngDetails_String[0].equals(Constants.SUPPLYGAP_OUTGOINGTYPE)) {
-                                                Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double 1 " + Total_outgoingqty_stockOutGngDetails_Double[0]);
-                                                Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double 1 " + outgoingqty_stockOutGngDetails_Double[0]);
+                                             //   Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double 1 " + Total_outgoingqty_stockOutGngDetails_Double[0]);
+                                             //   Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double 1 " + outgoingqty_stockOutGngDetails_Double[0]);
 
 
                                                 try {
@@ -6382,12 +7787,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                             } else {
                                                 try {
-                                                    Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double 3 " + Total_outgoingqty_stockOutGngDetails_Double[0]);
-                                                    Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double 3 " + outgoingqty_stockOutGngDetails_Double[0]);
+                                                 //   Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double 3 " + Total_outgoingqty_stockOutGngDetails_Double[0]);
+                                                 //  Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double 3 " + outgoingqty_stockOutGngDetails_Double[0]);
 
                                                     Total_outgoingqty_stockOutGngDetails_Double[0] = Total_outgoingqty_stockOutGngDetails_Double[0] + outgoingqty_stockOutGngDetails_Double[0];
-                                                    Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double 4 " + Total_outgoingqty_stockOutGngDetails_Double[0]);
-                                                    Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double 4 " + outgoingqty_stockOutGngDetails_Double[0]);
+                                                //    Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double 4 " + Total_outgoingqty_stockOutGngDetails_Double[0]);
+                                                 //   Log.i(TAG, "getStock incoming outgoingqty_stockOutGngDetails_Double 4 " + outgoingqty_stockOutGngDetails_Double[0]);
 
 
                                                 } catch (Exception e) {
@@ -6399,27 +7804,27 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                         }
                                     }
 
-                                        Log.i(TAG, "getStock incoming receivedStock_AvlDetails_double  " + receivedStock_AvlDetails_double[0]);
+                                      //  Log.i(TAG, "getStock incoming receivedStock_AvlDetails_double  " + receivedStock_AvlDetails_double[0]);
 
 
-                                        Log.i(TAG, "getStock incoming receivedStock_AvlDetails  " + receivedStock_AvlDetails);
+                                       // Log.i(TAG, "getStock incoming receivedStock_AvlDetails  " + receivedStock_AvlDetails);
 
                                         try {
                                             receivedStock_AvlDetails_double[0] = Double.parseDouble(receivedStock_AvlDetails);
-                                            Log.i(TAG, "getStock incoming receivedStock_AvlDetails_double  " + receivedStock_AvlDetails_double[0]);
+                                           // Log.i(TAG, "getStock incoming receivedStock_AvlDetails_double  " + receivedStock_AvlDetails_double[0]);
 
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
                                         double stockBalanceBeforeMinusCurrentItem = 0;
                                         try {
-                                            Log.i(TAG, "getStock incoming receivedStock_AvlDetails_double 2  " + receivedStock_AvlDetails_double[0]);
-                                            Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double  5  " + Total_outgoingqty_stockOutGngDetails_Double[0]);
+                                          //  Log.i(TAG, "getStock incoming receivedStock_AvlDetails_double 2  " + receivedStock_AvlDetails_double[0]);
+                                          //  Log.i(TAG, "getStock incoming Total_outgoingqty_stockOutGngDetails_Double  5  " + Total_outgoingqty_stockOutGngDetails_Double[0]);
 
                                             stockBalanceBeforeMinusCurrentItem = receivedStock_AvlDetails_double[0] - Total_outgoingqty_stockOutGngDetails_Double[0];
 
 
-                                            Log.i(TAG, "getStock incoming stockBalanceBeforeMinusCurrentItem 2  " + stockBalanceBeforeMinusCurrentItem);
+                                          //  Log.i(TAG, "getStock incoming stockBalanceBeforeMinusCurrentItem 2  " + stockBalanceBeforeMinusCurrentItem);
 
                                         } catch (Exception e) {
                                             e.printStackTrace();
@@ -6429,12 +7834,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                         try {
 
 
-                                            Log.i(TAG, "getStock incoming stockBalanceBeforeMinusCurrentItem 3  " + stockBalanceBeforeMinusCurrentItem);
+                                            // Log.i(TAG, "getStock incoming stockBalanceBeforeMinusCurrentItem 3  " + stockBalanceBeforeMinusCurrentItem);
 
                                             finalStockBalance_double[0] = stockBalanceBeforeMinusCurrentItem - currentBillingItemWeight_double;
 
-                                            Log.i(TAG, "getStock incoming currentBillingItemWeight_double 4 " + currentBillingItemWeight_double);
-                                            Log.i(TAG, "getStock incoming finalStockBalance_double 4 " + finalStockBalance_double[0]);
+                                          //  Log.i(TAG, "getStock incoming currentBillingItemWeight_double 4 " + currentBillingItemWeight_double);
+                                           // Log.i(TAG, "getStock incoming finalStockBalance_double 4 " + finalStockBalance_double[0]);
 
                                         } catch (Exception e) {
                                             e.printStackTrace();
@@ -7892,7 +9297,7 @@ showProgressBar(true);
                     BluetoothPrintDriver.SetLineSpacing((byte) 55);
                     BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                     BluetoothPrintDriver.SetAlignMode((byte) 0);
-                    BluetoothPrintDriver.printString("RATE                                  SUBTOTAL");
+                    BluetoothPrintDriver.printString("PricePerKg         Weight*Qty         SUBTOTAL");
                     BluetoothPrintDriver.BT_Write("\r");
                     BluetoothPrintDriver.LF();
 
@@ -7999,7 +9404,61 @@ showProgressBar(true);
                             String subtotal ="Rs."+ modal_newOrderItems.getSubTotal_perItem();
                             String quantity = modal_newOrderItems.getQuantity();
                             String itemrate = "Rs."+modal_newOrderItems.getItemFinalPrice();
+                            String priceperKg = "0", pricePerKgtoPrint ="0", weighttoPrint ="0";
+
+                            try{
+                                if(String.valueOf(modal_newOrderItems.getPricetypeforpos()).toUpperCase().equals(Constants.TMCPRICE)){
+                                    priceperKg = String.valueOf("Rs." + modal_newOrderItems.getTmcprice());
+
+                                }
+                                else{
+                                    priceperKg = String.valueOf("Rs." + modal_newOrderItems.getTmcpriceperkg());
+
+                                }
+                            }
+                            catch (Exception e){
+                                priceperKg ="0";
+                                e.printStackTrace();
+                            }
+
+
+
                             String weight = modal_newOrderItems.getItemFinalWeight();
+
+                            try{
+                                if(weight.equals("") || weight.equals("null") || weight.equals(null) || weight.equals("0")){
+                                    try {
+
+                                        if((!modal_newOrderItems.getGrossweight().equals("")) && (!modal_newOrderItems.getGrossweight().equals("null")) && (!modal_newOrderItems.getGrossweight().equals(null))){
+                                            weight = modal_newOrderItems.getGrossweight().toString();
+
+                                        }
+                                        else  if((!modal_newOrderItems.getNetweight().equals("")) && (!modal_newOrderItems.getNetweight().equals("null")) && (!modal_newOrderItems.getNetweight().equals(null))){
+                                            weight = modal_newOrderItems.getNetweight().toString();
+
+                                        }
+                                        else  if((!modal_newOrderItems.getPortionsize().equals("")) && (!modal_newOrderItems.getNetweight().equals("null")) && (!modal_newOrderItems.getNetweight().equals(null))){
+                                            weight = modal_newOrderItems.getPortionsize().toString();
+
+                                        }
+                                        else{
+                                            weight = modal_newOrderItems.getItemFinalWeight().toString();
+
+                                        }
+
+
+                                    } catch (Exception e) {
+                                        weight = "0";
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+
+
                             String itemDespName_Weight_quantity = "";
 
                             //´ÖÌå
@@ -8014,9 +9473,149 @@ showProgressBar(true);
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                            BluetoothPrintDriver.printString(itemDespName_Weight_quantity);
+                            BluetoothPrintDriver.printString(fullitemName);
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
+
+
+
+
+
+                            if (weight.length() == 4) {
+                                //14spaces
+                                weighttoPrint = weight + "             ";
+                            }
+                            if (weight.length() == 5) {
+                                //13spaces
+                                weighttoPrint = weight + "            ";
+                            }
+                            if (weight.length() == 6) {
+                                //12spaces
+                                weighttoPrint = weight + "           ";
+                            }
+                            if (weight.length() == 7) {
+                                //11spaces
+                                weighttoPrint = weight + "          ";
+                            }
+                            if (weight.length() == 8) {
+                                //10spaces
+                                weighttoPrint = weight + "         ";
+                            }
+                            if (weight.length() == 9) {
+                                //9spaces
+                                weighttoPrint = weight + "        ";
+                            }
+                            if (weight.length() == 10) {
+                                //8spaces
+                                weighttoPrint = weight + "       ";
+                            }
+                            if (weight.length() == 11) {
+                                //7spaces
+                                weighttoPrint = weight + "      ";
+                            }
+                            if (weight.length() == 12) {
+                                //6spaces
+                                weighttoPrint = weight + "     ";
+                            }
+                            if (weight.length() == 13) {
+                                //5spaces
+                                weighttoPrint = weight + "  ";
+                            }
+                            if (weight.length() == 14) {
+                                //4spaces
+                                weighttoPrint = weight + "   ";
+                            }
+                            if (weight.length() == 15) {
+                                //3spaces
+                                weighttoPrint = weight + "  ";
+                            }
+                            if (weight.length() == 16) {
+                                //2spaces
+                                weighttoPrint = weight + " ";
+                            }
+                            if (weight.length() == 17) {
+                                //1spaces
+                                weighttoPrint = weight + "";
+                            }
+                            if (weight.length() == 18) {
+                                //1spaces
+                                weighttoPrint = weight + "";
+                            }
+
+                            if (priceperKg.length() == 1) {
+                                //14spaces
+                                pricePerKgtoPrint = priceperKg + "                ";
+                            }
+                            if (priceperKg.length() == 2) {
+                                //14spaces
+                                pricePerKgtoPrint = priceperKg + "               ";
+                            }
+                            if (priceperKg.length() == 3) {
+                                //14spaces
+                                pricePerKgtoPrint = priceperKg + "              ";
+                            }
+
+                            if (priceperKg.length() == 4) {
+                                //14spaces
+                                pricePerKgtoPrint = priceperKg + "             ";
+                            }
+                            if (priceperKg.length() == 5) {
+                                //13spaces
+                                pricePerKgtoPrint = priceperKg + "            ";
+                            }
+                            if (priceperKg.length() == 6) {
+                                //12spaces
+                                pricePerKgtoPrint = priceperKg + "          ";
+                            }
+                            if (priceperKg.length() == 7) {
+                                //11spaces
+                                pricePerKgtoPrint = priceperKg + "         ";
+                            }
+                            if (priceperKg.length() == 8) {
+                                //10spaces
+                                pricePerKgtoPrint = priceperKg + "         ";
+                            }
+                            if (priceperKg.length() == 9) {
+                                //9spaces
+                                pricePerKgtoPrint = priceperKg + "        ";
+                            }
+                            if (priceperKg.length() == 10) {
+                                //8spaces
+                                pricePerKgtoPrint = priceperKg + "       ";
+                            }
+                            if (priceperKg.length() == 11) {
+                                //7spaces
+                                pricePerKgtoPrint = priceperKg + "      ";
+                            }
+                            if (priceperKg.length() == 12) {
+                                //6spaces
+                                pricePerKgtoPrint = priceperKg + "     ";
+                            }
+                            if (priceperKg.length() == 13) {
+                                //5spaces
+                                pricePerKgtoPrint = priceperKg + "    ";
+                            }
+                            if (priceperKg.length() == 14) {
+                                //4spaces
+                                pricePerKgtoPrint = priceperKg + "   ";
+                            }
+                            if (priceperKg.length() == 15) {
+                                //3spaces
+                                pricePerKgtoPrint = priceperKg + "  ";
+                            }
+                            if (priceperKg.length() == 16) {
+                                //2spaces
+                                pricePerKgtoPrint = priceperKg + " ";
+                            }
+                            if (priceperKg.length() == 17) {
+                                //1spaces
+                                pricePerKgtoPrint = priceperKg + " ";
+                            }
+                            if (priceperKg.length() == 18) {
+                                //1spaces
+                                pricePerKgtoPrint = priceperKg + "";
+                            }
+
 
 
 
@@ -8096,54 +9695,64 @@ showProgressBar(true);
                             }
                             if (subtotal.length() == 4) {
                                 //5spaces
-                                subtotal = "        " + subtotal;
+                                subtotal = "          " + subtotal;
                             }
                             if (subtotal.length() == 5) {
                                 //6spaces
-                                subtotal = "        " + subtotal;
+                                subtotal = "          " + subtotal;
                             }
                             if (subtotal.length() == 6) {
                                 //8spaces
-                                subtotal = "          " + subtotal;
+                                subtotal = "            " + subtotal;
                             }
                             if (subtotal.length() == 7) {
                                 //7spaces
-                                subtotal = "         " + subtotal;
+                                subtotal = "           " + subtotal;
                             }
                             if (subtotal.length() == 8) {
                                 //6spaces
-                                subtotal = "        " + subtotal;
+                                subtotal = "          " + subtotal;
                             }
                             if (subtotal.length() == 9) {
                                 //5spaces
-                                subtotal = "       " + subtotal;
+                                subtotal = "         " + subtotal;
                             }
                             if (subtotal.length() == 10) {
                                 //4spaces
-                                subtotal = "      " + subtotal;
+                                subtotal = "        " + subtotal;
                             }
                             if (subtotal.length() == 11) {
                                 //3spaces
-                                subtotal = "     " + subtotal;
+                                subtotal = "         " + subtotal;
                             }
                             if (subtotal.length() == 12) {
                                 //2spaces
-                                subtotal = "    " + subtotal;
+                                subtotal = "      " + subtotal;
                             }
                             if (subtotal.length() == 13) {
                                 //1spaces
-                                subtotal = "   " + subtotal;
+                                subtotal = "     " + subtotal;
                             }
                             if (subtotal.length() == 14) {
                                 //no space
-                                subtotal = "  " + subtotal;
+                                subtotal = "    " + subtotal;
                             }
 
-                            BluetoothPrintDriver.Begin();
+                          /*  BluetoothPrintDriver.Begin();
                             BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                             BluetoothPrintDriver.SetAlignMode((byte) 0);
                             BluetoothPrintDriver.SetLineSpacing((byte) 85);
                             BluetoothPrintDriver.printString(itemrate+ Gst + subtotal);
+                            BluetoothPrintDriver.BT_Write("\r");
+                            BluetoothPrintDriver.LF();
+
+
+                           */
+                            BluetoothPrintDriver.Begin();
+                            BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                            BluetoothPrintDriver.SetAlignMode((byte) 0);
+                            BluetoothPrintDriver.SetLineSpacing((byte) 85);
+                            BluetoothPrintDriver.printString(pricePerKgtoPrint+ weight+" * "+quantity + subtotal);
                             BluetoothPrintDriver.BT_Write("\r");
                             BluetoothPrintDriver.LF();
 
@@ -8252,7 +9861,7 @@ showProgressBar(true);
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                         BluetoothPrintDriver.SetAlignMode((byte) 0);
                         BluetoothPrintDriver.SetLineSpacing((byte) 85);
-                        BluetoothPrintDriver.printString(totalRate+ totalGst + totalSubtotal);
+                        BluetoothPrintDriver.printString(totalRate +"   "+ totalSubtotal);
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
 
@@ -8813,10 +10422,14 @@ showProgressBar(true);
 
                 fulladdress_textview.setText("");
                 autoCompleteCustomerName_widget.setText("");
+                if(!isCalledFromOrderTypeSpinner) {
+                    orderTypeSpinner_newWidget.setSelection(0);
+                }
+                isCalledFromOrderTypeSpinner = false;
 
                 selected_Address_modal = new Modal_Address();
                 isPhoneOrderSelected = false;
-        isAddressForPhoneOrderSelected = false;
+                isAddressForPhoneOrderSelected = false;
                 updateUserName = false;
                 isNewUser = false;
                 isAddress_Added_ForUser = false;
@@ -8841,12 +10454,12 @@ showProgressBar(true);
                 createEmptyRowInListView("empty");
                 CallAdapter();
                 discountAmount ="0";
-        deliveryAmount_for_this_order ="0";
+                 deliveryAmount_for_this_order ="0";
 
                 finaltoPayAmount = "0";
                 new_totalAmount_withoutGst =0;
                 isPhoneOrderSelected = false;
-        isAddressForPhoneOrderSelected = false;
+                isAddressForPhoneOrderSelected = false;
 
                 isPrintedSecondTime = false;
                 isUpdateCouponTransactionMethodCalled=false;
@@ -8921,6 +10534,25 @@ showProgressBar(true);
 
         JSONObject jsonObject = new JSONObject();
         try {
+
+            try {
+                if ((!applieddiscountpercentage.equals("0")) && (!applieddiscountpercentage.equals("")) && (!applieddiscountpercentage.equals("null")) && (!applieddiscountpercentage.equals(null))) {
+                    jsonObject.put("applieddiscountpercentage", applieddiscountpercentage);
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                if (isPhoneOrderSelected) {
+                    jsonObject.put("appmarkuppercentage", appMarkupPercentage);
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
             jsonObject.put("orderid", orderid);
             jsonObject.put("itemname", itemnamee);
 

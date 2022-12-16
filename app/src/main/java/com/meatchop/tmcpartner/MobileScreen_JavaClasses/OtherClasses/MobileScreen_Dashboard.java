@@ -46,12 +46,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderScreenFragment_mobile;
 import com.meatchop.tmcpartner.MobileScreen_JavaClasses.Replacement_RefundClasses.ReplacementRefundListFragment;
 import com.meatchop.tmcpartner.NukeSSLCerts;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Modal_MenuItem;
+import com.meatchop.tmcpartner.PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_WholeSaleCustomers;
 import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.NewOrders_MenuItem_Fragment;
 import com.meatchop.tmcpartner.Settings.Modal_MenuItemCutDetails;
@@ -65,6 +67,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -75,12 +79,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class MobileScreen_Dashboard extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
-    LinearLayout loadingPanel,loadingpanelmask;
+    LinearLayout loadingPanel,loadingpanelmask,loadingpanelmask_userAccess;
     Fragment  CurrentFragment;
     Fragment mfragment;
 
@@ -128,6 +133,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         loadingpanelmask = findViewById(R.id.loadingpanelmask);
         loadingPanel = findViewById(R.id.loadingPanel);
         bottomNavigationView = findViewById(R.id.bottomnav);
+        loadingpanelmask_userAccess = findViewById(R.id.loadingpanelmask_userAccess);
+
+
         Adjusting_Widgets_Visibility(true);
        String size =  getDisplaySize(MobileScreen_Dashboard.this);
      //   Toast.makeText(this, size, Toast.LENGTH_SHORT).show();
@@ -338,7 +346,12 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     }
 
 
-
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //Clear the Activity's bundle of the subsidiary fragments' bundles.
+        outState.clear();
+    }
 
     @Override
     protected void onResume() {
@@ -365,6 +378,11 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
             if (isConnected()) {
                 //Toast.makeText(getApplicationContext(), "Internet Connected", Toast.LENGTH_SHORT).show();
               //  Log.i("Start time ",getDate_and_time());
+
+
+                checkForAccessPermissionInDataBase();
+              //  Log.d(Constants.TAG, "Elasticache  Start Time: " + getDate_and_time());
+
                 getDatafromVendorTable(vendorEntryKey);
                completemenuItemStockAvlDetails =   getMenuItemStockAvlDetails();
 
@@ -582,6 +600,150 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     }
 
+    private void checkForAccessPermissionInDataBase() {
+          SharedPreferences shared = getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        String mobileno = (shared.getString("UserPhoneNumber", "+91"));
+
+        String UserMobileNumberEncoded  = "";
+        try {
+            UserMobileNumberEncoded = URLEncoder.encode(mobileno, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_checkUserhaveForPartnerApp+"?mobileno="+UserMobileNumberEncoded,null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+                        ////Log.d(Constants.TAG, "Response: " + response);
+                        try {
+
+                            JSONArray result  = response.getJSONArray("content");
+                            ////Log.d(Constants.TAG, "Response: " + result);
+                            int i1=0;
+                            int arrayLength = result.length();
+                            ////Log.d(TAG, "Response: " + arrayLength);
+                            boolean isUserhaveAccess = false;
+
+                            if(arrayLength>0){
+                                for(;i1<=(arrayLength-1);i1++) {
+                                    try {
+                                        JSONObject json = result.getJSONObject(i1);
+                                        try {
+
+                                            if (json.has("appname")) {
+                                                if (String.valueOf(json.getString("appname")).toUpperCase().equals(Constants.AppName_in_AppUserAccess)) {
+                                                    isUserhaveAccess = true;
+                                                }
+                                            } else {
+                                                isUserhaveAccess = false;
+                                            }
+
+                                        } catch (Exception e) {
+                                            isUserhaveAccess = false;
+                                            e.printStackTrace();
+                                        }
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                        ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                        ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                        ////Log.d(Constants.TAG, "e: " + e.toString());
+
+                                    }
+
+
+                                }
+
+                            }
+                            else
+                            {
+                                isUserhaveAccess = false;
+
+                            }
+
+
+                            if(isUserhaveAccess){
+                                loadingpanelmask_userAccess.setVisibility(View.GONE);
+
+                            }
+                            else{
+                                showAccessRejectedDialog();
+
+                            }
+
+
+                        } catch (JSONException e) {
+
+                            showAccessRejectedDialog();
+
+
+                            e.printStackTrace();
+                        }
+                    }
+
+                },new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+
+                ////Log.d(Constants.TAG, "Error: " + error.getLocalizedMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.getMessage());
+                ////Log.d(Constants.TAG, "Error: " + error.toString());
+                showAccessRejectedDialog();
+
+                error.printStackTrace();
+            }
+        })
+        {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("modulename", "Store");
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
+
+
+
+    }
+
+    private void showAccessRejectedDialog() {
+        loadingpanelmask_userAccess.setVisibility(View.VISIBLE);
+
+        new TMCAlertDialogClass(MobileScreen_Dashboard.this, R.string.app_name, R.string.UserMobileNo_DoesNot_HaveAccess,
+                R.string.OK_Text, R.string.Empty_Text,
+                new TMCAlertDialogClass.AlertListener() {
+                    @Override
+                    public void onYes() {
+                        showAccessRejectedDialog();
+
+
+                    }
+
+                    @Override
+                    public void onNo() {
+
+                    }
+                });
+
+    }
+
 
     private void saveWholeSalesCustomerDetailsInSharedPreference(List<Modal_WholeSaleCustomers> wholeSaleCustomersArrayList) {
 
@@ -603,8 +765,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     }
     private void getDatafromVendorTable(String vendorEntryKey) {
-
-
+//api_GetTestDataFromElasticache2
+//api_GetVendorUsingUserKey
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetVendorUsingUserKey +vendorEntryKey,null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -612,6 +774,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                         ////Log.d(Constants.TAG, "Response: " + response);
                         try {
+                           // Log.d(Constants.TAG, "Elasticache  response Time of vendor table: " + getDate_and_time());
 
                            JSONObject resultobject  = response.getJSONObject("content");
                             JSONObject resultitem = resultobject.getJSONObject("Item");
@@ -748,6 +911,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         editor.apply();
+        //api_getListofMenuItemStockAvlDetails
+        //api_GetTestDataFromWriteRedisFromDynamoDB
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItemStockAvlDetails+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
@@ -767,6 +932,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     //Log.d(TAG, "starting:onResponse ");
 
                     //Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
+                //    Log.d(Constants.TAG, "Elasticache response Time of Menu Stock Avl table: " + getDate_and_time());
 
                     try {
                         JSONArray JArray = response.getJSONArray("content");
@@ -1092,12 +1258,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     }
 
     private void getDatafromMobileApp() {
-
+//api_GetPOSMobileAppData
+        //api_GetTestDataForPOSMobileApp
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPOSMobileAppData, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
 
+                       // Log.d(Constants.TAG, "Elasticache  response Time of POS Mobile App table: " + getDate_and_time());
 
                         try {
                             String jsonString =response.toString();
@@ -1118,7 +1286,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     try{
                                         orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
                                         updateweightforonlineorders = (json.getBoolean("updateweightforonlineorders"));
-                                       // updateweightforonlineorders = false;
+                                       //updateweightforonlineorders = true;
                                       // orderdetailsnewschema = false;
                                         saveInventoryCodePermisionAndMinimumScreenSizeforPOSinSharedPreference(isinventorycheck,minimumscreensizeforpos,orderdetailsnewschema,updateweightforonlineorders);
 
@@ -1975,6 +2143,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         editor.apply();
+        //api_getListofMenuItems   ?storeid
+        //api_GetTestDataFromWriteRedisFromDynamoDB ?vendorkey
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems+"?storeid="+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
@@ -1997,6 +2167,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                     try {
                        // completemenuItem = new String(String.valueOf(response));
+                    //    Log.d(Constants.TAG, "Elasticache response Time of Menu item table: " + getDate_and_time());
 
                         JSONArray JArray = response.getJSONArray("content");
                    //    completemenuItem = new String(String.valueOf(JArray));
@@ -2056,12 +2227,21 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
                                     }
+                                    if (json.has("appmarkuppercentage")) {
+                                        modal_menuItem.appmarkuppercentage = String.valueOf(json.get("appmarkuppercentage"));
+                                    } else {
+                                        modal_menuItem.appmarkuppercentage = "0";
+                                        ////Log.d(Constants.TAG, "There is no key for this Menu: " );
+
+
+                                    }
+
 
                                     if (json.has("applieddiscountpercentage")) {
                                         modal_menuItem.applieddiscountpercentage = String.valueOf(json.get("applieddiscountpercentage"));
 
                                     } else {
-                                        modal_menuItem.applieddiscountpercentage = "";
+                                        modal_menuItem.applieddiscountpercentage = "0";
                                         //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " + MenuItemKey);
 
 
@@ -2225,6 +2405,97 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
                                     }
+
+
+
+                                    ////// for TMCPrice
+                                    try{
+                                        double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+                                        try {
+                                            if (json.has("tmcprice")) {
+                                                tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
+
+                                            } else {
+                                                tmcprice_double = 0;
+                                                ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                            tmcprice_double =0;
+                                        }
+                                        if(json.has("appmarkuppercentage")){
+                                            int markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
+
+                                            try{
+                                                appMarkupPercn_value  = (markupPercentageInt * tmcprice_double )/100;
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try{
+                                                tmcpriceWithAppMarkupValue  = appMarkupPercn_value + tmcprice_double;
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                            modal_menuItem.tmcpriceWithMarkupValue = String.valueOf((int) Double.parseDouble(String.valueOf(Math.ceil(tmcpriceWithAppMarkupValue))));
+                                        }
+                                        else{
+                                            modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
+
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    ////// for TMCPrice PerKG
+
+                                    try{
+                                        double tmcpriceperkg_double =0 ,  tmcpriceperkgWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+                                        try {
+                                            if (json.has("tmcpriceperkg")) {
+                                                tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
+
+                                            } else {
+                                                tmcpriceperkg_double = 0;
+                                                ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            e.printStackTrace();
+                                            tmcpriceperkg_double =0;
+                                        }
+                                        if(json.has("appmarkuppercentage")){
+                                            int markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
+
+                                            try{
+                                                appMarkupPercn_value  = (markupPercentageInt * tmcpriceperkg_double  )/100;
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try{
+                                                tmcpriceperkgWithAppMarkupValue  = appMarkupPercn_value + tmcpriceperkg_double;
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                            modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue))));
+                                        }
+                                        else{
+                                            modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+
+                                        }
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
 
 
                                     if (json.has("itemuniquecode")) {
@@ -2452,7 +2723,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
                                     String MenuList_String = new Gson().toJson(MenuList);
-                                   // completemenuItem = MenuList_String;
+                                    completemenuItem = MenuList_String;
                                 }
 
 
@@ -2942,7 +3213,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 }
                                 else{
-                                    modal_menuItem.applieddiscountpercentage = "";
+                                    modal_menuItem.applieddiscountpercentage = "0";
                                     //Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
 
@@ -3335,15 +3606,24 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
         Date c = Calendar.getInstance().getTime();
         System.out.println("111Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
-       String CurrentDay = day.format(c);
+        SimpleDateFormat day = new SimpleDateFormat("EEE",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        String CurrentDay = day.format(c);
+
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDatee = df.format(c);
         String  CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss.SS");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss.SS",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+
         String    FormattedTime = dfTime.format(c);
         String   formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -3512,7 +3792,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     }
 
-    private void loadMyFragment(Fragment fm) {if (fm != null) {
+    private void loadMyFragment(Fragment fm) {
+        if (fm != null) {
         try{
             SharedPreferences sharedPreferences
                     = getSharedPreferences("CurrentSelectedStatus",
@@ -3527,12 +3808,23 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                     Constants.NEW_ORDER_STATUS);
             myEdit.apply();
             CurrentFragment = fm;
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.frame, fm)
+            if(fm.equals(new NewOrderScreenFragment_mobile())){
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame, NewOrderScreenFragment_mobile.newInstance(completemenuItem))
 
-                    .addToBackStack(null)
-                    .commit();
+                        .addToBackStack(null)
+                        .commit();
+
+            }
+            else{
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame, fm)
+
+                        .addToBackStack(null)
+                        .commit();
+            }
 
         }catch(Exception e){
             onResume();

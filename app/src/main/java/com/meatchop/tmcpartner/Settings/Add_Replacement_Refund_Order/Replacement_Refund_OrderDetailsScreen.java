@@ -42,7 +42,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class =new Modal_ManageOrders_Pojo_Class();
@@ -58,7 +60,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     Button make_replacement_button;
     static LinearLayout loadingPanel;
     static LinearLayout loadingpanelmask;
-    boolean isAlreadyMarkedForReplacement = false;
+    static boolean isAlreadyMarkedForReplacement = false;
     Adapter_OrderDetails_OrderedItemList adapter_forOrderDetails_listview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -259,14 +261,22 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                 String subCtgyKey ="";
                 Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
                 manageOrders_pojo_class.itemdesp_string = String.valueOf(json);
-                if (json.has("netweight")) {
-                    manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
+                try{
+                    if (json.has("netweight")) {
+                        manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
 
+                    }
+                    else{
+                        manageOrders_pojo_class.ItemFinalWeight = "";
+
+                    }
                 }
-                else{
+                catch (Exception e){
                     manageOrders_pojo_class.ItemFinalWeight = "";
 
+                    e.printStackTrace();
                 }
+
                 try {
                     if(json.has("tmcsubctgykey")) {
                         subCtgyKey = String.valueOf(json.get("tmcsubctgykey"));
@@ -313,10 +323,11 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                         cutname = String.valueOf(json.get("cutname"));
                     }
                     else {
-                        cutname = " ";
+                        cutname = "";
                     }
                 }
                 catch (Exception e){
+                    cutname = "";
                     e.printStackTrace();
                 }
 
@@ -405,7 +416,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
 
          adapter_forOrderDetails_listview= new Adapter_OrderDetails_OrderedItemList(Replacement_Refund_OrderDetailsScreen.this, OrderdItems_desp,Replacement_Refund_OrderDetailsScreen.this);
         orderidItemListview.setAdapter(adapter_forOrderDetails_listview);
-          Helper.getListViewSize(orderidItemListview, screenInches);
+          Helper.getListViewSize(orderidItemListview, screenInches, 150);
 
 
 
@@ -442,14 +453,15 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
 
                                     replacementDetails_textview.setVisibility(View.GONE);
                                     make_replacement_button.setVisibility(View.VISIBLE);
-
+                                    isAlreadyMarkedForReplacement = false;
                                 } else {
+
                                 for (int i = 0; i < resultArray.length(); i++) {
                                     JSONObject result = resultArray.getJSONObject(i);
 
                                     JSONArray markeditemdesp = new JSONArray();
 
-                                    String status_json = "", orderid_json = "",reason_json="";
+                                    String status_json = "", orderid_json = "",reason_json="",markeddate_json="";
 
                                     try {
                                         if (result.has("status")) {
@@ -476,7 +488,6 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
 
-
                                     try {
                                         if (result.has("reasonformarked")) {
                                             reason_json = result.getString("reasonformarked");
@@ -485,6 +496,17 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                         }
                                     } catch (Exception e) {
                                         reason_json = "";
+
+                                        e.printStackTrace();
+                                    }
+                                    try {
+                                        if (result.has("markeddate")) {
+                                            markeddate_json = result.getString("markeddate");
+                                        } else {
+                                            markeddate_json = "";
+                                        }
+                                    } catch (Exception e) {
+                                        markeddate_json = "";
 
                                         e.printStackTrace();
                                     }
@@ -512,6 +534,40 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                         for (int j = 0; j<OrderdItems_desp.size();j++){
                                             Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class= OrderdItems_desp.get(j);
                                             String menuItemKeyFromOrderDetails = modal_manageOrders_pojo_class.getMenuItemKey().toString();
+                                            String cutnameOrderDetails = "", itemNameOrderDetails = "",weightOrderDetails = "",itemname_cutname_weightFromOrderDetails="";
+                                            try {
+                                                itemNameOrderDetails =modal_manageOrders_pojo_class.getItemName().toString();
+                                            } catch (Exception e) {
+                                                itemNameOrderDetails = "";
+                                                e.printStackTrace();
+                                            }
+
+                                            try {
+                                                weightOrderDetails =modal_manageOrders_pojo_class.getItemFinalWeight().toString();
+
+                                            } catch (Exception e) {
+                                                weightOrderDetails = "";
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+                                                cutnameOrderDetails =modal_manageOrders_pojo_class.getCutname().toString();
+
+                                            } catch (Exception e) {
+                                                cutnameOrderDetails = "";
+                                                e.printStackTrace();
+                                            }
+
+                                            try{
+                                                itemname_cutname_weightFromOrderDetails = itemNameOrderDetails+"_"+cutnameOrderDetails+"_"+weightOrderDetails;
+                                            }
+                                            catch (Exception e){
+                                                itemname_cutname_weightFromOrderDetails = "";
+                                                e.printStackTrace();
+                                            }
+
+
                                            String menuItemKeyFromReplacementDetails ="";
                                             for (int k =0 ;k < markeditemdesp.length();k++){
 
@@ -524,9 +580,89 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                                     menuItemKeyFromReplacementDetails="";
                                                 }
 
-                                                if(menuItemKeyFromReplacementDetails.equals(menuItemKeyFromOrderDetails)){
+                                                String cutname = "", itemName = "",itemName_cutName = "" ,weight = "",itemname_cutname_weightFromReplacementDetails="";
+                                                try {
+                                                    if(json.has("itemname")){
+                                                        itemName = json.getString("itemname");
+                                                    }
+                                                    else{
+                                                        itemName="";
+                                                    }
+                                                } catch (Exception e) {
+                                                    itemName = "";
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+                                                    if(json.has("netweight")){
+                                                        weight = json.getString("netweight");
+                                                    }
+                                                    else{
+                                                        weight="";
+                                                    }
+                                                   // weight = String.valueOf(modal_manageOrders_pojo_class.getItemFinalWeight());
+                                                } catch (Exception e) {
+                                                    weight = "";
+                                                    e.printStackTrace();
+                                                }
+
+
+                                                try {
+                                                    if(json.has("cutname")){
+                                                        cutname = json.getString("cutname");
+                                                    }
+                                                    else{
+                                                        cutname="";
+                                                    }
+                                                //    cutname = String.valueOf(modal_manageOrders_pojo_class.getCutname());
+                                                } catch (Exception e) {
+                                                    cutname = "";
+                                                    e.printStackTrace();
+                                                }
+
+                                                try{
+                                                    itemname_cutname_weightFromReplacementDetails = itemName+"_"+cutname+"_"+weight;
+                                                }
+                                                catch (Exception e){
+                                                    itemname_cutname_weightFromReplacementDetails = "";
+                                                    e.printStackTrace();
+                                                }
+
+                                                if(itemname_cutname_weightFromReplacementDetails.equals(itemname_cutname_weightFromOrderDetails)){
                                                     modal_manageOrders_pojo_class.isItemMarkedForReplacement = true;
+                                                    try{
+                                                        modal_manageOrders_pojo_class.setSelectedQuantity(json.getString("quantity"));
+
+                                                    }
+                                                    catch (Exception e){
+                                                        modal_manageOrders_pojo_class.setSelectedQuantity("1");
+
+                                                        e.printStackTrace();
+                                                    }
+
                                                     adapter_forOrderDetails_listview.notifyDataSetChanged();
+                                                }else{
+                                                    long transactiontimeInLong = 0, checkPointDate = 0;
+                                                    transactiontimeInLong  = getLongValuefortheDate(markeddate_json);
+                                                    checkPointDate = getLongValuefortheDate("2022-09-27 00:00:00");
+                                                    if(transactiontimeInLong < checkPointDate){
+                                                        menuItemKeyFromReplacementDetails = menuItemKeyFromReplacementDetails+"_"+weight;
+                                                        menuItemKeyFromOrderDetails = menuItemKeyFromOrderDetails+"_"+weightOrderDetails ;
+                                                        if(menuItemKeyFromReplacementDetails.equals(menuItemKeyFromOrderDetails)){
+                                                            modal_manageOrders_pojo_class.isItemMarkedForReplacement = true;
+                                                            try{
+                                                                modal_manageOrders_pojo_class.setSelectedQuantity(json.getString("quantity"));
+
+                                                            }
+                                                            catch (Exception e){
+                                                                modal_manageOrders_pojo_class.setSelectedQuantity("1");
+
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            adapter_forOrderDetails_listview.notifyDataSetChanged();
+                                                        }
+                                                    }
                                                 }
 
                                             }
@@ -538,6 +674,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                     showProgressBar(false);
                                     make_replacement_button.setVisibility(View.GONE);
                                     replacementDetails_textview.setVisibility(View.VISIBLE);
+                                    isAlreadyMarkedForReplacement = true;
 
                                     replacementDetails_textview.setText("This Order is Already Marked For Replacement/ Refund");
                                 }
@@ -587,6 +724,42 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
 
 
     }
+    public long getLongValuefortheDate(String orderplacedtime) {
+        long longvalue = 0;
+
+        if(!orderplacedtime.equals("") && !orderplacedtime.equals("null") && !orderplacedtime.equals(null) ) {
+            try {
+                String time1 = orderplacedtime;
+                //   Log.d(TAG, "time1long  "+orderplacedtime);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.ENGLISH);
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+                Date date = sdf.parse(time1);
+                long time1long = date.getTime() / 1000;
+                longvalue = (time1long);
+
+            } catch (Exception ex) {
+                //  ex.printStackTrace();
+                try {
+                    String time1 = orderplacedtime;
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+                    sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
+                    Date date = sdf.parse(time1);
+                    long time1long = date.getTime() / 1000;
+                    longvalue = (time1long);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return longvalue;
+    }
 
     void showProgressBar(boolean show) {
         if(show) {
@@ -605,7 +778,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     private void addEntryinReplacementOrderDetails() {
 
         JSONArray markedItemsArray = new JSONArray();
-        double total_amount_avl_for_user = 0;
+        double total_amount_avl_for_user = 0,total_amount_for_Item =0;
         String Currenttime  = getDate_and_time() ;
         String Currenttime_transactiontable  = getDate_and_time_TransactionTable() ;
 
@@ -613,7 +786,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             for(int i = 0 ; i<itemsSelectedForReplacementStringArray.size();i++){
                 JSONObject markedItemsJsonObject = new JSONObject();
                 double gstamount_double=0;
-                double quantity_double=0;
+                int quantity_int=0;
                 double amount_double=0;
 
                 String itemName = itemsSelectedForReplacementStringArray.get(i);
@@ -755,7 +928,17 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-
+                    try {
+                        String value = modal_manageOrders_pojo_class_fromHashmap.getCutname().toString();
+                        if (!value.equals("null") && !value.equals(null)) {
+                            markedItemsJsonObject.put("cutname", value);
+                        } else {
+                            markedItemsJsonObject.put("cutname", "");
+                        }
+                    } catch (Exception e) {
+                        markedItemsJsonObject.put("cutname", "");
+                        e.printStackTrace();
+                    }
 
                     try {
                         String value = modal_manageOrders_pojo_class_fromHashmap.getItemName().toString();
@@ -816,37 +999,100 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                                 value ="0";
                             }
                             try {
-                                quantity_double = Double.parseDouble(value);
+                                quantity_int = Integer.parseInt(value);
                             }
                             catch (Exception e){
                                 e.printStackTrace();
                             }
-                            markedItemsJsonObject.put("quantity", quantity_double);
+
+
+
+
+
+                          //  markedItemsJsonObject.put("quantity", quantity_double);
                         } else {
                             value ="0";
                             try {
-                                quantity_double = Double.parseDouble(value);
+                                quantity_int = Integer.parseInt(value);
                             }
                             catch (Exception e){
-                                quantity_double =0;
+                                quantity_int =0;
                                 e.printStackTrace();
                             }
-                            markedItemsJsonObject.put("quantity", quantity_double);
+                          //  markedItemsJsonObject.put("quantity", quantity_double);
                         }
                     } catch (Exception e) {
-                         quantity_double=0;
+                        quantity_int=0;
 
                         try {
-                            quantity_double = Double.parseDouble("0");
+                            quantity_int = Integer.parseInt("0");
                         }
                         catch (Exception e1){
-                            quantity_double =0;
+                            quantity_int =0;
                             e1.printStackTrace();
                         }
-                        markedItemsJsonObject.put("quantity", quantity_double);
+                        //markedItemsJsonObject.put("quantity", quantity_double);
                         e.printStackTrace();
                     }
 
+/*
+                    if(quantity_int > 1){
+                        try {
+                            String value = modal_manageOrders_pojo_class_fromHashmap.getSelectedQuantity().toString();
+                            if (!value.equals("null") && !value.equals(null)) {
+                                value = value.replaceAll("[^\\d.]", "");
+                                if(value.equals("")){
+                                    value ="0";
+                                }
+                                try {
+                                    quantity_int = Integer.parseInt(value);
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+
+
+
+
+                                //  markedItemsJsonObject.put("quantity", quantity_double);
+                            } else {
+                                value ="0";
+                                try {
+                                    quantity_int = Integer.parseInt(value);
+                                }
+                                catch (Exception e){
+                                    quantity_int =0;
+                                    e.printStackTrace();
+                                }
+                                //  markedItemsJsonObject.put("quantity", quantity_double);
+                            }
+                        } catch (Exception e) {
+                            quantity_int=0;
+
+                            try {
+                                quantity_int = Integer.parseInt("0");
+                            }
+                            catch (Exception e1){
+                                quantity_int =0;
+                                e1.printStackTrace();
+                            }
+                            //markedItemsJsonObject.put("quantity", quantity_double);
+                            e.printStackTrace();
+                        }
+                    }
+
+
+ */
+
+
+
+                    try{
+                        markedItemsJsonObject.put("quantity", quantity_int);
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
 
 
                     try {
@@ -892,8 +1138,9 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
                 catch (Exception e){
                     e.printStackTrace();
                 }
-                total_amount_avl_for_user = total_amount_avl_for_user+amount_double+gstamount_double;
-                total_amount_avl_for_user = total_amount_avl_for_user*quantity_double;
+                total_amount_for_Item = amount_double+gstamount_double;
+                total_amount_for_Item = total_amount_for_Item*quantity_int;
+                total_amount_avl_for_user = total_amount_avl_for_user+ total_amount_for_Item;
                 total_amount_avl_for_user = Math.round(total_amount_avl_for_user);
                 markedItemsArray.put(markedItemsJsonObject);
 
@@ -914,7 +1161,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             jsonObject.put("vendorkey", vendorKey);
             jsonObject.put("amountusercanavl", total_amount_avl_for_user);
             jsonObject.put("orderplaceddate", orderPlacedDate);
-
+            jsonObject.put("ordertype", ordertype);
             jsonObject.put("orderdelivereddate", orderDeliveredDate);
             jsonObject.put("markeddate", Currenttime);
             jsonObject.put("markeditemdesp", markedItemsArray);
@@ -992,6 +1239,7 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             jsonObject.put("ordermarkeddate", markedateOldFormat);
             jsonObject.put("transactiontime", currenttime);
             jsonObject.put("orderid", orderid);
+            jsonObject.put("ordertype", ordertype);
             jsonObject.put("vendorkey", vendorKey);
             jsonObject.put("transactiontype", "MARKED");
             jsonObject.put("orderdelivereddate", orderDeliveredDate);
@@ -1054,17 +1302,22 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     {
 
         Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
        String CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
         String CurrentDatee = df.format(c);
         String CurrentDate = CurrentDay+", "+CurrentDatee;
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String FormattedTime = dfTime.format(c);
         String formattedDate = CurrentDay+", "+CurrentDatee+" "+FormattedTime;
         return formattedDate;
@@ -1074,10 +1327,11 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
     {
 
         Date c = Calendar.getInstance().getTime();
-        System.out.println("Current time => 2022-03-01T10:03:14+0530 " + c);
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String FormattedTime = dfTime.format(c);
 
         return FormattedTime;
@@ -1088,11 +1342,15 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         String CurrentDate1 = "";
 
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH);
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
             try {
                 Date date = sdf.parse(transactiontime);
 
-                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                 CurrentDate1 = day.format(date);
 
 
@@ -1104,11 +1362,15 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
         } catch (Exception e) {
 
             try {
-                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+                SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.ENGLISH);
+                sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                 try {
                     Date date = sdff.parse(transactiontime);
 
-                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                    SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                    day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                     CurrentDate1 = day.format(date);
 
                 } catch (Exception e1) {
@@ -1117,11 +1379,16 @@ public class Replacement_Refund_OrderDetailsScreen extends AppCompatActivity {
             } catch (Exception e2) {
 
                 try {
-                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd");
+                    SimpleDateFormat sdff = new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH);
+                    sdff.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                     try {
                         Date date = sdff.parse(transactiontime);
 
-                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                        SimpleDateFormat day = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss",Locale.ENGLISH);
+                        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
+
                         CurrentDate1 = day.format(date);
 
                     } catch (Exception e3) {

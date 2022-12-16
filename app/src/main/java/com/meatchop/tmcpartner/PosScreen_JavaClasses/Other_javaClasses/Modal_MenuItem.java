@@ -4,10 +4,35 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Modal_MenuItem implements Parcelable {
-    public String showinpos,showinapp,allownegativestock, barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
+    public String tmcpriceWithMarkupValue ="0",tmcpriceperkgWithMarkupValue ="0",appmarkuppercentage,showinpos,showinapp,allownegativestock, barcode_AvlDetails,itemavailability_AvlDetails,key_AvlDetails,lastupdatedtime_AvlDetails,menuitemkey_AvlDetails,receivedstock_AvlDetails,stockbalance_AvlDetails,stockincomingkey_AvlDetails,vendorkey_AvlDetails,
             inventorydetails,itemcutdetails,itemweightdetails,bigbasketprice,dunzoprice,swiggyprice,reportname,grossweightingrams,applieddiscountpercentage,barcode,checkoutimageurl,displayno,grossweight,gstpercentage,imageurl,itemavailability,
             itemcalories,itemname,itemuniquecode,key,marinadelinkedcodes,menuboarddisplayname,menutype,netweight,portionsize,preparationsteps,
             menuItemId,preparationtime,pricetypeforpos,showinmenuboard,tmcctgykey,tmcprice,tmcpriceperkg,tmcsubctgykey,vendorkey,vendorname,wholesaleprice;
+
+
+    public String getTmcpriceWithMarkupValue() {
+        return tmcpriceWithMarkupValue;
+    }
+
+    public void setTmcpriceWithMarkupValue(String tmcpriceWithMarkupValue) {
+        this.tmcpriceWithMarkupValue = tmcpriceWithMarkupValue;
+    }
+
+    public String getTmcpriceperkgWithMarkupValue() {
+        return tmcpriceperkgWithMarkupValue;
+    }
+
+    public void setTmcpriceperkgWithMarkupValue(String tmcpriceperkgWithMarkupValue) {
+        this.tmcpriceperkgWithMarkupValue = tmcpriceperkgWithMarkupValue;
+    }
+
+    public String getAppmarkuppercentage() {
+        return appmarkuppercentage;
+    }
+
+    public void setAppmarkuppercentage(String appmarkuppercentage) {
+        this.appmarkuppercentage = appmarkuppercentage;
+    }
 
     public String getShowinpos() {
         return showinpos;
@@ -177,7 +202,9 @@ public class Modal_MenuItem implements Parcelable {
         inventorydetails = in.readString();
         allownegativestock = in.readString();
         wholesaleprice  = in.readString();
-
+        appmarkuppercentage   = in.readString();
+        tmcpriceperkgWithMarkupValue = in.readString();
+        tmcpriceWithMarkupValue = in.readString();
     }
 
     public static final Creator<Modal_MenuItem> CREATOR = new Creator<Modal_MenuItem>() {
@@ -512,6 +539,8 @@ public class Modal_MenuItem implements Parcelable {
         parcel.writeString(inventorydetails);
         parcel.writeString(allownegativestock);
         parcel.writeString(wholesaleprice);
-
+        parcel.writeString(appmarkuppercentage);
+        parcel.writeString(tmcpriceperkgWithMarkupValue);
+        parcel.writeString(tmcpriceWithMarkupValue);
     }
 }

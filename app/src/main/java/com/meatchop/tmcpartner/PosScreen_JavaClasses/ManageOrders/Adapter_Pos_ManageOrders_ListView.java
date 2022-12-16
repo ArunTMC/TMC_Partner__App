@@ -62,7 +62,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 import static androidx.appcompat.content.res.AppCompatResources.getDrawable;
@@ -1139,6 +1141,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                             if (pricetypeforpos.toString().toUpperCase().equals("TMCPRICEPERKG")) {
                                                 pricePerKgItemCount++;
                                             }
+                                            else{
+                                                if((!inventoryDetails_String.equals("nil") && !inventoryDetails_String.equals(""))){
+                                                    pricePerKgItemCount++;
+
+                                                }
+                                            }
 
                                             json.put("pricetypeforpos", pricetypeforpos);
 
@@ -1155,8 +1163,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                                             adapterPosition = pos;
                                             ChangeStatusOftheOrder(changestatusto, vendorkey, OrderKey, orderid, customerMobileNo, Currenttime);
                                             //  Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
-                                            notifyDataSetChanged();
                                             modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+                                            notifyDataSetChanged();
+
                                         }
                                     }
 
@@ -1174,8 +1183,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     ChangeStatusOftheOrder(changestatusto,vendorkey,OrderKey, orderid, customerMobileNo, Currenttime);
 
                     //Pos_ManageOrderFragment.sorted_OrdersList.remove(pos);
-                    notifyDataSetChanged();
                     modal_manageOrders_pojo_class.setOrderstatus(changestatusto);
+                    notifyDataSetChanged();
 
                 }
 
@@ -2305,7 +2314,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
             new_to_pay_Amount =  (old_total_Amount + old_taxes_and_charges_Amount);
-            int new_totalAmount_withGst = (int) Math.ceil(new_to_pay_Amount);
+            int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
             setOrderAmountDetails.setTotalAmountWithGst(String.valueOf(decimalFormat.format(new_totalAmount_withGst)));
 
@@ -2333,7 +2342,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         String orderid = manageOrders_pojo_class.getOrderid();
         double total_subtotal_double = Double.parseDouble(String.valueOf(manageOrders_pojo_class.getPayableamount()));
 
-        int total_subtotalint = (int) Math.ceil(total_subtotal_double);
+        int total_subtotalint = (int) Math.round(total_subtotal_double);
         double total_subtotal = 0;
         String payment_mode = "";
         String userMobile = "";
@@ -3034,7 +3043,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             }
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
-        int new_total_subtotal = (int) Math.ceil(total_subtotal);
+        int new_total_subtotal = (int) Math.round(total_subtotal);
 
         String couponDiscount_string = String.valueOf(couponDiscount_double);
         String totalSubtotal_string = String.valueOf(new_total_subtotal);
@@ -3786,15 +3795,21 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => Sat, 9 Jan 2021 13:12:24 " + c);
 
-        SimpleDateFormat day = new SimpleDateFormat("EEE");
+        SimpleDateFormat day = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDay = day.format(c);
 
-        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("d MMM yyyy",Locale.ENGLISH);
+        df.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         CurrentDate = df.format(c);
 
 
 
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm:ss",Locale.ENGLISH);
+        dfTime.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         FormattedTime = dfTime.format(c);
         formattedDate = CurrentDay+", "+CurrentDate+" "+FormattedTime;
         return formattedDate;
@@ -4461,7 +4476,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                 try{
                     Date c = Calendar.getInstance().getTime();
 
-                    SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+                    SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS",Locale.ENGLISH);
+                    day .setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
                     String time  = day.format(c);
                     System.out.println("button clicked time " + time);
 
@@ -4672,7 +4689,9 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     private void CalculateStockBalanceAndAddStockBalaHistory_OutgngDetails(String changestatusto, String vendorkey, String orderid, String customerMobileNo, String currenttime, List<Modal_ManageOrders_Pojo_Class> orderdItems_desp) {
         Date c = Calendar.getInstance().getTime();
 
-        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+        SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS",Locale.ENGLISH);
+        day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+
         String time  = day.format(c);
         System.out.println("CalculateStockBalanceAsync method  time " + time);
 
@@ -4698,7 +4717,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 Date c = Calendar.getInstance().getTime();
 
-                SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS");
+                SimpleDateFormat day = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SS",Locale.ENGLISH);
+                day.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
                 String time  = day.format(c);
                 System.out.println("Success response method  time " + time);
 
