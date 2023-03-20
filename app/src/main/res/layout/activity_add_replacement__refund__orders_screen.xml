@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen">
+    tools:context=".mobilescreen_javaclasses.replacement_refund_classes.AddReplacement_Refund_OrdersScreen">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

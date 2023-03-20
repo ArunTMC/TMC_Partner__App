@@ -9,7 +9,7 @@ android:orientation="vertical"
 android:paddingStart="8dp"
 android:paddingTop="5dp"
 android:paddingEnd="8dp"
-tools:context=".Settings.Edit_Or_CancelOrder_OrderDetails_Screen">
+tools:context=".settings.Edit_Or_CancelOrder_OrderDetails_Screen">
 
 <ScrollView
     android:layout_width="match_parent"

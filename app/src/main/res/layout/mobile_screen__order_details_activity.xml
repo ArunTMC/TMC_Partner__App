@@ -4,6 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails">
+    tools:context=".mobilescreen_javaclasses.manage_orders.MobileScreen_OrderDetails">
 
 </androidx.constraintlayout.widget.ConstraintLayout>

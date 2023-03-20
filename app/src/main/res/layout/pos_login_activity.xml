@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:orientation="vertical"
-    tools:context=".PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen">
+    tools:context=".posscreen_javaclasses.other_java_classes.Pos_LoginScreen">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

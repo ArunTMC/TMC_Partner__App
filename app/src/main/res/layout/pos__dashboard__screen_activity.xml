@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen">
+    tools:context=".posscreen_javaclasses.other_java_classes.Pos_Dashboard_Screen">
 
 
     <RelativeLayout

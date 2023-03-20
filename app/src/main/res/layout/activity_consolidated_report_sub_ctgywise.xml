@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Settings.ConsolidatedReportSubCtgywise">
+    tools:context=".settings.ConsolidatedReportSubCtgywise">
 
 
     <LinearLayout
@@ -35,15 +35,14 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:layout_height="35dp"
+                android:gravity="left"
+                android:id="@+id/storename_totalSale_layout"
+                android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/imageView4"
                     android:visibility="gone"
-
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@mipmap/back_arrow" />
@@ -54,15 +53,24 @@
                     android:layout_height="wrap_content"
                     android:layout_weight=".1"
                     android:textColor="@color/TMC_Primary_Text_Color"
-                    android:textSize="15sp"
+                    android:textSize="18sp"
                     android:layout_marginStart="13dp"
                     android:fontFamily="@font/open_sans_bold"
 
-                    android:text="TMC Hastinapuram" />
+                    android:text="TMC Hastinapuram " />
+                <View
+                    android:id="@+id/dividerbelowheader"
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:visibility="gone"
+                    android:background="@drawable/border_line" />
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
+
+                    android:layout_marginTop="5dp"
+                    android:layout_gravity="left"
                     android:orientation="horizontal">
                     <TextView
                         android:layout_width="match_parent"
@@ -70,7 +78,7 @@
                         android:layout_weight="1"
 
                         android:textColor="@color/TMC_Orange"
-                        android:textSize="15sp"
+                        android:textSize="17sp"
                         android:layout_marginStart="13dp"
                         android:fontFamily="@font/open_sans_bold"
                         android:gravity="end"
@@ -81,11 +89,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/TMC_Orange"
-                        android:textSize="14sp"
+                        android:textSize="17sp"
                         android:layout_marginStart="13dp"
                         android:fontFamily="@font/open_sans_bold"
 
-                        android:text="00000.00" />
+                        android:text="0.00 .Rs" />
 
                 </LinearLayout>
             </LinearLayout>
@@ -175,6 +183,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:id="@+id/orders_pack_layout"
+
                     android:gravity="left"
                     android:orientation="horizontal">
                 <TextView
@@ -213,8 +223,15 @@
                     android:textSize="16sp"
                     android:fontFamily="@font/open_sans_semibold"
                     android:gravity="center_vertical"
-                    android:text=" - Orders )," />
+                    android:text=" - Orders )" />
 
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="right"
+                        android:layout_marginEnd="10dp"
+                        android:orientation="horizontal" >
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -240,15 +257,62 @@
                     android:textSize="16sp"
                     android:fontFamily="@font/open_sans_semibold"
                     android:gravity="center_vertical"
-                    android:text=" - Packs )." />
+                    android:text=" - Packs )" />
 
+                    </LinearLayout>
 
                 </LinearLayout>
+
+
+
+
+
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@drawable/border_line" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal" >
+
+
+
+
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:visibility="visible"
+                android:id="@+id/generateSubCtgyReport_Layout"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:textColor="@color/TMC_Orange"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:gravity="center_vertical|end"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginEnd="13dp"
+                    android:text="Export SubCtgy Report" />
+
+            </LinearLayout>
+
+
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight=".6"
+                    android:layout_weight=".8"
                     android:gravity="right"
                     android:id="@+id/generateReport_Layout"
                     android:orientation="vertical">
@@ -259,7 +323,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:textColor="@color/TMC_Orange"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:fontFamily="@font/open_sans_semibold"
                         android:gravity="center_vertical|end"
                         android:layout_marginStart="13dp"
@@ -269,7 +333,14 @@
                 </LinearLayout>
 
 
+
             </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@drawable/border_line" />
+
             <ScrollView
                 android:layout_width="match_parent"
                 android:scrollIndicators="none"
@@ -284,10 +355,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical" >
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="10dp"
-                        android:background="@drawable/border_line" />
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -598,6 +666,16 @@
 
                         </LinearLayout>
 
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:id="@+id/final_salesLayout"
+                            android:orientation="vertical">
+
+
+
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="10dp"
@@ -719,6 +797,107 @@
 
                         </LinearLayout>
 
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="2.PHONE ORDER SALES"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp" />
+
+
+                            <TextView
+                                android:id="@+id/phoneOrderSales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="20dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="Product Sales "
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+
+                            <TextView
+                                android:id="@+id/phoneProductSales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0000.00"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="15sp" />
+
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:layout_marginStart="20dp"
+
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="Delivery Markup Amount"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                            <TextView
+                                android:id="@+id/totalPhone_MarkupAmount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="right"
+                                android:text="0000.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="15sp" />
+
+                        </LinearLayout>
+
+
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="30dp"
@@ -731,7 +910,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="2.POS SALES"
+                                android:text="3.POS SALES"
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -751,37 +930,10 @@
 
                         </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="30dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
 
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:fontFamily="@font/open_sans_bold"
-                                android:text="3.PHONE ORDER SALES"
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp" />
 
 
-                            <TextView
-                                android:id="@+id/phoneOrderSales"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:fontFamily="@font/open_sans_bold"
-                                android:gravity="right"
-                                android:text="0.00"
-
-                                android:textColor="@color/TMC_Primary_Text_Color"
-                                android:textSize="16sp" />
-
-
-                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -950,6 +1102,7 @@
                                 android:textSize="16sp" />
 
 
+                        </LinearLayout>
                         </LinearLayout>
 
                     </LinearLayout>

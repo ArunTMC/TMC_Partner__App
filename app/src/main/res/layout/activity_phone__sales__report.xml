@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Settings.Phone_Sales_Report">
+    tools:context=".settings.Phone_Sales_Report">
 
 
 
@@ -429,6 +429,42 @@
                             android:layout_width="match_parent"
                             android:layout_height="10dp"
                             android:background="@drawable/border_line" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:text="(D) Delivery Markup Amount"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp" />
+
+
+                            <TextView
+                                android:id="@+id/totalPhone_MarkupAmount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans"
+                                android:gravity="right"
+                                android:text="0000.00"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="15sp" />
+
+                        </LinearLayout>
+
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp"
+                            android:background="@drawable/border_line" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -443,7 +479,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(D) TOTAL ((A-B)+C)  "
+                                android:text="(E) TOTAL ((A-B)+C)  "
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -479,7 +515,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(E) GST  "
+                                android:text="(F) GST  "
                                 android:textColor="@color/TMC_Primary_Text_Color"
                                 android:textSize="16sp" />
 
@@ -517,7 +553,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/open_sans_bold"
-                                android:text="(F) FINAL SALES (D+E)  "
+                                android:text="(G) FINAL SALES (E+F)  "
                                 android:textColor="@color/TMC_Orange"
                                 android:textSize="16sp" />
 

@@ -8,19 +8,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.meatchop.tmcpartner.MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.mobilescreen_javaclasses.other_classes.MobileScreen_Dashboard;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -28,8 +25,6 @@ import java.net.URL;
 import java.util.Map;
 
 import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launcher;
-import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launcher_transperent;
-import static com.meatchop.tmcpartner.R.mipmap.tmcicon_launchersmall;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //extending the FirebaseMessagingService class in MyFirebaseMessagingService class to get all the  FirebaseMessagingService methods

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".MobileScreen_JavaClasses.ManageOrders.Mobile_ManageOrders1">
+    tools:context=".mobilescreen_javaclasses.manage_orders.Mobile_ManageOrders1">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout

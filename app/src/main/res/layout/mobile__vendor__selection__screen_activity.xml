@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MobileScreen_JavaClasses.OtherClasses.Mobile_Vendor_Selection_Screen"
+    tools:context=".mobilescreen_javaclasses.other_classes.Mobile_Vendor_Selection_Screen"
     android:background="@mipmap/portrait_poster"
     >
     <RelativeLayout

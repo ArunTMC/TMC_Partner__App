@@ -4,7 +4,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        tools:context=".Settings.Pos_Orders_List">
+        tools:context=".settings.Pos_Orders_List">
 
         <!-- TODO: Update blank fragment layout -->
         <LinearLayout

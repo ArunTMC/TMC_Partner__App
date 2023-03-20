@@ -49,82 +49,112 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Settings.DeliverySlotsTransactionDetailsReport"></activity>
-        <activity android:name=".Settings.DeliverySlotsListForTransactionReport" />
-        <activity android:name=".MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderBarcodeScannerScreen" />
+        <activity android:name=".settings.DeliverySlotsTransactionDetailsReport"/>
+        <activity android:name=".settings.DeliverySlotsListForTransactionReport" />
+        <activity android:name=".mobilescreen_javaclasses.mobile_neworders.NewOrderBarcodeScannerScreen" />
 
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="barcode" />
 
-        <activity android:name=".Settings.SupplierVehicleTime_AddRecord" />
-        <activity android:name=".Settings.Phone_Sales_Report" />
-        <activity android:name=".Settings.Phone_Orders_List" />
-        <activity android:name=".Settings.Replacement_Refund_Transaction_Report" />
-        <activity android:name=".Settings.WholeSaleOrdersList" />
-        <activity android:name=".Settings.WholeSaleOrderSalesReport" />
-        <activity android:name=".Settings.CreditOrders_MobileNumberwiseTransactionScreen" />
-        <activity android:name=".Settings.CreditOrders_MobileNumberwise_Report" />
-        <activity android:name=".MobileScreen_JavaClasses.Replacement_RefundClasses.AddReplacement_Refund_OrdersScreen" />
-        <activity android:name=".Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen" />
-        <activity android:name=".Settings.Add_Replacement_Refund_Order.Add_Replacement_Refund_Screen" />
-        <activity android:name=".Settings.GenerateUserDetailsReport" />
-        <activity android:name=".Settings.ChangeMenuItemStatus_AllowNegativeStock_Settings" />
-        <activity android:name=".Settings.ChangeMenuItemWeightAndPriceSecondScreen" />
-        <activity android:name=".Settings.OrderAndRatingDetailsScreen" />
-        <activity android:name=".Settings.RaisedTicketDetailsForRating" />
-        <activity android:name=".MobileScreen_JavaClasses.Mobile_NewOrders.CartActivity_Mobile_NewOrdersScreen" />
-        <activity android:name=".Settings.DatewiseRatingreport_SecondScreen" />
-        <activity android:name=".Settings.DatewiseRatingreport_FirstScreen" />
-        <activity android:name=".Settings.MenuItemAvailabilityStatusReport" />
+        <activity android:name=".settings.SupplierVehicleTime_AddRecord" />
+        <activity android:name=".settings.Phone_Sales_Report" />
+        <activity android:name=".settings.Phone_Orders_List" />
+        <activity android:name=".settings.Replacement_Refund_Transaction_Report" />
+        <activity android:name=".settings.WholeSaleOrdersList" />
+        <activity android:name=".settings.WholeSaleOrderSalesReport" />
+        <activity android:name=".settings.CreditOrders_MobileNumberwiseTransactionScreen" />
+        <activity android:name=".settings.CreditOrders_MobileNumberwise_Report" />
+        <activity android:name=".mobilescreen_javaclasses.replacement_refund_classes.AddReplacement_Refund_OrdersScreen" />
+        <activity android:name=".settings.add_replacement_refund_order.Replacement_Refund_OrderDetailsScreen" />
+        <activity android:name=".settings.add_replacement_refund_order.Add_Replacement_Refund_Screen" />
+        <activity android:name=".settings.GenerateUserDetailsReport" />
+        <activity android:name=".settings.ChangeMenuItemStatus_AllowNegativeStock_Settings" />
+        <activity android:name=".settings.ChangeMenuItemWeightAndPriceSecondScreen" />
+        <activity android:name=".settings.OrderAndRatingDetailsScreen" />
+        <activity android:name=".settings.RaisedTicketDetailsForRating" />
+        <activity android:name=".mobilescreen_javaclasses.mobile_neworders.CartActivity_Mobile_NewOrdersScreen" />
+        <activity android:name=".settings.DatewiseRatingreport_SecondScreen" />
+        <activity android:name=".settings.DatewiseRatingreport_FirstScreen" />
+        <activity android:name=".settings.MenuItemAvailabilityStatusReport" />
         <activity
-            android:name=".Settings.AddDunzoOrders"
-            android:windowSoftInputMode="adjustPan" />
+            android:name=".settings.AddDunzoOrders"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true"
+            />
         <activity
-            android:name=".Settings.AddWholeSalesOrder"
-            android:windowSoftInputMode="adjustPan" />
+            android:name=".settings.AddWholeSalesOrder"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true"
+
+            />
         <activity
-            android:name=".Settings.AddBigBasketOrder"
-            android:windowSoftInputMode="adjustPan" />
+            android:name=".settings.AddBigBasketOrder"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true"
+
+            />
         <activity
-            android:name=".Settings.AddSwiggyOrders"
-            android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".Settings.ConsolidatedSalesReportWeekwise" />
-        <activity android:name=".Settings.DeviceListActivity" />
-        <activity android:name=".Settings.TokenNoShowingActivity" />
-        <activity android:name=".Settings.SlotwiseAppOrderslist" />
-        <activity android:name=".Settings.MenuAvailabilityStatusTransaction" />
+            android:name=".settings.AddSwiggyOrders"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="true"
+
+            />
+        <activity android:name=".settings.ConsolidatedSalesReportWeekwise"
+            android:exported="true"
+            />
+        <activity android:name=".settings.DeviceListActivity"
+            android:exported="true"
+            />
+        <activity android:name=".settings.TokenNoShowingActivity"
+            android:exported="true"
+            />
+        <activity android:name=".settings.SlotwiseAppOrderslist"
+            android:exported="true"
+            />
+        <activity android:name=".settings.MenuAvailabilityStatusTransaction"
+            android:exported="true"
+            />
         <activity
-            android:name=".Settings.PlotOrdersLocationWithTokenNo"
-            android:label="Map" />
-        <activity android:name=".Settings.testActivty" />
-        <activity android:name=".Settings.ConsolidatedReportSubCtgywise" />
-        <activity android:name=".Settings.CancelledOrders" />
-        <activity android:name=".Settings.GenerateCustomerMobileNo_BillValueReport" />
-        <activity android:name=".Settings.GenerateOrderDetailsDump" />
-        <activity android:name=".Settings.Edit_Or_CancelOrder_OrderDetails_Screen" />
-        <activity android:name=".Settings.Edit_Or_CancelTheOrders" />
-        <activity android:name=".Settings.DeliveredOrdersTimewiseReport" />
-        <activity android:name=".Settings.Pos_Orders_List" />
-        <activity android:name=".Settings.App_Sales_Report_Subctgywise" />
-        <activity android:name=".Settings.GetDeliverypartnersAssignedOrders" />
-        <activity android:name=".Settings.searchScreen_OrderDetails" />
-        <activity android:name=".Settings.searchOrdersUsingMobileNumber" />
-        <activity android:name=".Settings.App_LaunchScreen" />
-        <activity android:name=".Settings.DeliveryPartnerSettlementReport" />
-        <activity android:name=".Settings.ChangeDelivery_Slot_Availability_Status" />
-        <activity android:name=".Settings.ChangeMenuItem_Price_Settings" />
-        <activity android:name=".Settings.MenuItem_List_Settings" />
-        <activity android:name=".Settings.ChangeMenuItem_Availabilty_InTV_Settings" />
-        <activity android:name=".Settings.AppSales_Report" />
-        <activity android:name=".Settings.PosSalesReport" />
-        <activity android:name=".Settings.Consolidated_Sales_Report" />
-        <activity android:name=".Settings.ChangeMenuItemStatus_Settings" />
-        <activity android:name=".MobileScreen_JavaClasses.ManageOrders.MobileScreen_OrderDetails1" />
-        <activity android:name=".MobileScreen_JavaClasses.ManageOrders.MobileScreen_AssignDeliveryPartner1" />
-        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_OtpVerificationActivity" />
-        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_Dashboard" />
-        <activity android:name=".PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen" />
+            android:name=".settings.PlotOrdersLocationWithTokenNo"
+            android:label="Map"
+            android:exported="true"
+            />
+        <activity android:name=".settings.testActivty"
+            android:exported="true"
+            />
+        <activity android:name=".settings.ConsolidatedReportSubCtgywise"
+            android:exported="true"
+            />
+        <activity android:name=".settings.CancelledOrders"
+            android:exported="true"
+            />
+        <activity android:name=".settings.GenerateCustomerMobileNo_BillValueReport"
+            />
+        <activity android:name=".settings.GenerateOrderDetailsDump" />
+        <activity android:name=".settings.Edit_Or_CancelOrder_OrderDetails_Screen" />
+        <activity android:name=".settings.Edit_Or_CancelTheOrders" />
+        <activity android:name=".settings.DeliveredOrdersTimewiseReport" />
+        <activity android:name=".settings.Pos_Orders_List" />
+        <activity android:name=".settings.App_Sales_Report_Subctgywise" />
+        <activity android:name=".settings.GetDeliverypartnersAssignedOrders" />
+        <activity android:name=".settings.searchScreen_OrderDetails" />
+        <activity android:name=".settings.searchOrdersUsingMobileNumber" />
+        <activity android:name=".settings.App_LaunchScreen" />
+        <activity android:name=".settings.DeliveryPartnerSettlementReport" />
+        <activity android:name=".settings.ChangeDelivery_Slot_Availability_Status" />
+        <activity android:name=".settings.ChangeMenuItem_Price_Settings" />
+        <activity android:name=".settings.MenuItem_List_Settings" />
+        <activity android:name=".settings.ChangeMenuItem_Availabilty_InTV_Settings" />
+        <activity android:name=".settings.AppSales_Report" />
+        <activity android:name=".settings.PosSalesReport" />
+        <activity android:name=".settings.Consolidated_Sales_Report" />
+        <activity android:name=".settings.ChangeMenuItemStatus_Settings" />
+        <activity android:name=".mobilescreen_javaclasses.manage_orders.MobileScreen_OrderDetails1" />
+        <activity android:name=".mobilescreen_javaclasses.manage_orders.MobileScreen_AssignDeliveryPartner1" />
+        <activity android:name=".mobilescreen_javaclasses.other_classes.MobileScreen_OtpVerificationActivity" />
+        <activity android:name=".mobilescreen_javaclasses.other_classes.MobileScreen_Dashboard" />
+        <activity android:name=".posscreen_javaclasses.manage_orders.Pos_OrderDetailsScreen" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -159,25 +189,33 @@
             </intent-filter>
         </service>
         <service
-            android:name=".PosScreen_JavaClasses.ManageOrders.TrackingOrderDetails_ServiceClass"
+            android:name=".posscreen_javaclasses.manage_orders.TrackingOrderDetails_ServiceClass"
             android:enabled="true"
             android:exported="true" />
         <service
             android:name=".FetchAddressIntentService"
             android:enabled="true" />
 
-        <activity android:name=".PosScreen_JavaClasses.ManageOrders.AssigningDeliveryPartner" />
-        <activity android:name=".MobileScreen_JavaClasses.OtherClasses.Mobile_Vendor_Selection_Screen" />
+        <activity android:name=".posscreen_javaclasses.manage_orders.AssigningDeliveryPartner" />
+        <activity android:name=".mobilescreen_javaclasses.other_classes.Mobile_Vendor_Selection_Screen" />
         <activity
-            android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen"
-            android:windowSoftInputMode="adjustPan" />
+            android:name=".posscreen_javaclasses.other_java_classes.Pos_Dashboard_Screen"
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
+        </activity>
         <activity android:name=".Printer_Demo_activity" />
-        <activity android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen" />
+        <activity android:name=".posscreen_javaclasses.other_java_classes.Pos_Vendor_Selection_Screen" />
         <activity
-            android:name=".MobileScreen_JavaClasses.OtherClasses.Mobile_LoginScreen"
+            android:name=".mobilescreen_javaclasses.other_classes.Mobile_LoginScreen"
             android:exported="true" />
         <activity
-            android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_LoginScreen"
+            android:name=".posscreen_javaclasses.other_java_classes.Pos_LoginScreen"
             android:exported="true"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -188,85 +226,86 @@
         </activity>
 
         <receiver
-            android:name=".PosScreen_JavaClasses.Other_javaClasses.Pos_Dashboard_Screen"
+            android:name=".posscreen_javaclasses.other_java_classes.Pos_Dashboard_Screen"
             android:exported="true">
             <intent-filter>
+                <action android:name="com.android.example.USB_PERMISSION.BillingScreenWeightMachine" />
                 <action android:name="com.android.example.USB_PERMISSION.BillingScreen" />
                 <action android:name="com.android.example.USB_PERMISSION.ManageOrders" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.AddSwiggyOrders"
+            android:name=".settings.AddSwiggyOrders"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddSwiggyOrders" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.AddWholeSalesOrder"
+            android:name=".settings.AddWholeSalesOrder"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddWholeSalesOrder" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.AddBigBasketOrder"
+            android:name=".settings.AddBigBasketOrder"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddBigBasketOrder" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.AddDunzoOrders"
+            android:name=".settings.AddDunzoOrders"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AddDunzoOrders" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.PosSalesReport"
+            android:name=".settings.PosSalesReport"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.PosSalesReport" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.App_Sales_Report_Subctgywise"
+            android:name=".settings.App_Sales_Report_Subctgywise"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.AppSalesReportSubCtgyWise" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.ConsolidatedSalesReportWeekwise"
+            android:name=".settings.ConsolidatedSalesReportWeekwise"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.ConsolidatedSalesReportWeekwise" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.WholeSaleOrderSalesReport"
+            android:name=".settings.WholeSaleOrderSalesReport"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.WholeSaleOrderSalesReport" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.searchOrdersUsingMobileNumber"
+            android:name=".settings.searchOrdersUsingMobileNumber"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.APPOrdersList" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.Pos_Orders_List"
+            android:name=".settings.Pos_Orders_List"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.POSOrdersList" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Settings.WholeSaleOrdersList"
+            android:name=".settings.WholeSaleOrdersList"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.example.USB_PERMISSION.WholeSaleOrdersList" />

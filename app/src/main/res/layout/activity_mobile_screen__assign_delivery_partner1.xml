@@ -5,7 +5,7 @@ xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:orientation="vertical"
-tools:context=".MobileScreen_JavaClasses.ManageOrders.MobileScreen_AssignDeliveryPartner1">
+tools:context=".mobilescreen_javaclasses.manage_orders.MobileScreen_AssignDeliveryPartner1">
 
 <ListView
     android:id="@+id/deliveryPartners_list_widget"

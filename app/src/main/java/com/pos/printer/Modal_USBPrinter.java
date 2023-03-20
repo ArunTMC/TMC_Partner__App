@@ -1,5 +1,5 @@
 package com.pos.printer;
-import com.meatchop.tmcpartner.PosScreen_JavaClasses.Pos_NewOrders.Modal_NewOrderItems;
+import com.meatchop.tmcpartner.posscreen_javaclasses.pos_new_orders.Modal_NewOrderItems;
 
 import org.json.JSONArray;
 

@@ -8,7 +8,7 @@
     android:paddingStart="8dp"
     android:paddingTop="5dp"
     android:paddingEnd="8dp"
-    tools:context=".PosScreen_JavaClasses.ManageOrders.Pos_OrderDetailsScreen">
+    tools:context=".posscreen_javaclasses.manage_orders.Pos_OrderDetailsScreen">
 
     <ScrollView
         android:layout_width="match_parent"

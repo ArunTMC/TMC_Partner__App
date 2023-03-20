@@ -31,6 +31,7 @@ public class Constants {
     public static final String RecievedAmountCantbeEmpty  ="Recieved Amount Column Can't Be Empty";
     public static final String RecievedAmountShouldBeGreaterthanTotalAmount  ="Recieved Amount Should not be Less than total Amount";
 
+    public static final String Empty_Text= "EMPTY";
 
     public static final String Empty_Date_Format = "--//--//--//--";
     private static final String PACKAGE_NAME = "com.example.googlemap";
@@ -134,12 +135,16 @@ public class Constants {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //API"S
+    public static String isNewSbCtgyTable_APIUsed ="NO";
+    public static final String YES ="YES";
+    public static final String NO ="NO";
 
 
     public static final String api_checkUserhaveForPartnerApp = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/appuseraccessusingmobileno";
 
     public static final String api_getListofSubCtgy = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=SubCategory";
     public static final String api_getListofWholeSaleCustomers = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/getallwholesalecustomerdetails";
+    public static final String api_getListofTMCTileForVendorkey = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/gettmctileforstoreid?storeid=";
 
     public static final String api_getListofVendors = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list";
     public static final String api_verifyVendorPassword ="https://9z1mg6qh3a.execute-api.ap-south-1.amazonaws.com/stage/resource";
@@ -259,6 +264,9 @@ public class Constants {
     public static final String api_GetTokenNoUsingKey ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/key?tablename=OrderTokenNumber&key=";
     public static final String api_getAllUserswithPagenation ="https://irahdrz4w2.execute-api.ap-south-1.amazonaws.com/stage/resource?modulename=user";
     public static final String api_getAllAddresswithPagenation ="https://irahdrz4w2.execute-api.ap-south-1.amazonaws.com/stage/resource?modulename=address";
+    public static final String api_getAllAddressUsingVendorkeywithPagenation ="https://irahdrz4w2.execute-api.ap-south-1.amazonaws.com/stage/addresstableusingvendorkey";
+
+
     public static final String  api_GetMenuItemCutDetails ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=ItemCut";
     public static final String  api_GetMenuItemWeightDetails ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/record/list?modulename=ItemWeight";
 
@@ -366,11 +374,28 @@ public class Constants {
     //CustomerTrackingOrderDetials API's :
     public static final String api_AddCustomerTrackingOrderDetails ="https://08klj9r8hb.execute-api.ap-south-1.amazonaws.com/dev/add/customerordertrackingdetails";
     public static final String api_UpdateCustomerTrackingOrderDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/customerordertrackingdetails";
-  /// Testing
-     public static final String api_GetTestDataFromElasticache= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/elasticacheredistestfunction";
+
+
+    //SQL Details
+    public static final String api_UpdateSqlDBSyncDetails ="https://cex0daaea6.execute-api.ap-south-1.amazonaws.com/dev/update/sqldbsyncdetails";
+
+    public static final String api_GetSqlDBSyncDetails ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/sqldbsyncdetails?vendorkey=";
+
+
+
+
+    //safii bhai version
+    public static final String api_GetTMCOrderDetails_Safii ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/tmcorderdetails_shaffi";
+
+
+
+    /// Testing
+   /*  public static final String api_GetTestDataFromElasticache= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/elasticacheredistestfunction";
      public static final String api_GetTestDataFromWriteRedisFromDynamoDB = "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/writeredisfromdynamodb?vendorkey=";
 
     public static final String api_GetTestDataFromElasticache2= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/elasticachetestfunction2?vendorkey=";
     public static final String api_GetTestDataForPOSMobileApp= "https://5i8mj6bo87.execute-api.ap-south-1.amazonaws.com/stage/resource";
 
+
+    */
 }

@@ -4,7 +4,7 @@ xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
 xmlns:app="http://schemas.android.com/apk/res-auto"
-tools:context=".Settings.GenerateUserDetailsReport">
+tools:context=".settings.GenerateUserDetailsReport">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -129,7 +129,13 @@ tools:context=".Settings.GenerateUserDetailsReport">
             />
     </LinearLayout>
 
-    <LinearLayout
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
         android:layout_width="match_parent"
         android:visibility="visible"
         android:layout_height="match_parent"
@@ -499,6 +505,10 @@ tools:context=".Settings.GenerateUserDetailsReport">
             android:background="@drawable/border_line"
             />
 
+
+
+
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -519,6 +529,7 @@ tools:context=".Settings.GenerateUserDetailsReport">
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:visibility="gone"
 
                     >
 
@@ -610,6 +621,7 @@ tools:context=".Settings.GenerateUserDetailsReport">
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:visibility="gone"
                     android:layout_marginTop="20dp">
 
                     <LinearLayout
@@ -701,7 +713,7 @@ tools:context=".Settings.GenerateUserDetailsReport">
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
+                    android:visibility="gone"
                     android:layout_marginTop="20dp">
 
                     <LinearLayout
@@ -847,6 +859,24 @@ tools:context=".Settings.GenerateUserDetailsReport">
                             android:orientation="horizontal">
 
                             <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:id="@+id/getUserDataVelachery"
+                                android:gravity="center"
+                                android:text="Get Data"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+
+                            <TextView
                                 android:id="@+id/generate_viewVelacherySheet"
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
@@ -862,6 +892,116 @@ tools:context=".Settings.GenerateUserDetailsReport">
 
                             <TextView
                                 android:id="@+id/generate_shareVelacherySheet"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+                                android:text="Share Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:text="Datewise Users Added \MKProteins Address: "
+                                android:id="@+id/no_of_users_mkproteins_Label"
+
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="16sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/no_of_users_mkproteins_textview"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/open_sans_bold"
+                                android:gravity="center"
+                                android:text="0"
+                                android:textColor="@color/TMC_Primary_Text_Color"
+                                android:textSize="17sp"
+                                android:visibility="visible"
+
+                                />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="15dp"
+                            android:layout_marginBottom="15dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="20dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:id="@+id/getUserData_mkproteins"
+                                android:gravity="center"
+                                android:text="Get Data"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+
+                                android:visibility="visible"
+
+                                />
+
+
+                            <TextView
+                                android:id="@+id/generate_viewmkproteinsSheet"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_weight="1.1"
+                                android:background="@drawable/orange_non_selected_button_background"
+                                android:fontFamily="@font/open_sans_semibold"
+                                android:gravity="center"
+
+                                android:text="View Sheet"
+                                android:textColor="@color/TMC_Orange"
+                                android:textSize="13sp"
+                                android:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/generate_sharemkproteinsSheet"
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:layout_marginStart="20dp"
@@ -901,6 +1041,8 @@ tools:context=".Settings.GenerateUserDetailsReport">
 
     </LinearLayout>
 
+
+    </ScrollView>
 
 </LinearLayout>
         <LinearLayout

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Settings.Add_Replacement_Refund_Order.Replacement_Refund_OrderDetailsScreen">
+    tools:context=".settings.add_replacement_refund_order.Replacement_Refund_OrderDetailsScreen">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="45dp"

@@ -5,7 +5,7 @@
     android:id="@+id/textviewllllllllllllll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Settings.DatewiseRatingreport_SecondScreen">
+    tools:context=".settings.DatewiseRatingreport_SecondScreen">
 <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">

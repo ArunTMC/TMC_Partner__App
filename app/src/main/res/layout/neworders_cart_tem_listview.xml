@@ -82,7 +82,6 @@
                 android:backgroundTint="@color/EditTextBorderColor"
                 android:fontFamily="@font/open_sans_semibold"
                 android:gravity="center_vertical|center_horizontal"
-                android:hint="Enter weight of the Item"
 
                 android:paddingStart="15dp"
                 android:paddingEnd="15dp"
@@ -121,7 +120,7 @@
                 android:layout_height="34dp"
                 android:gravity="center"
                 android:orientation="horizontal"
-                android:visibility="gone">
+                android:visibility="invisible">
 
                 <ImageView
                     android:layout_width="24dp"
@@ -253,11 +252,10 @@
 
             <LinearLayout
                 android:id="@+id/removeItem_fromCart_widget"
-                android:layout_width="40dp"
+                android:layout_width="45dp"
                 android:layout_height="match_parent"
                 android:layout_weight=".03"
                 android:orientation="horizontal"
-
                 android:visibility="visible">
 
                 <ImageView

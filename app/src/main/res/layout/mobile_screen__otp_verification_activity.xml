@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MobileScreen_JavaClasses.OtherClasses.MobileScreen_OtpVerificationActivity">
+    tools:context=".mobilescreen_javaclasses.other_classes.MobileScreen_OtpVerificationActivity">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

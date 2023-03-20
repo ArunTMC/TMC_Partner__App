@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PosScreen_JavaClasses.NewOrders.Pos_NewOrder_MenuItem_fragment">
+    tools:context=".posscreen_javaclasses.NewOrders.Pos_NewOrder_MenuItem_fragment">
 
 
     <LinearLayout

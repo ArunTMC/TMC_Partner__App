@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MobileScreen_JavaClasses.Mobile_NewOrders.NewOrderBarcodeScannerScreen">
+    tools:context=".mobilescreen_javaclasses.mobile_neworders.NewOrderBarcodeScannerScreen">
 
 
 

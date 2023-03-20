@@ -7,7 +7,7 @@
     android:orientation="vertical"
 
 
-    tools:context=".Settings.ChangeDelivery_Slot_Availability_Status">
+    tools:context=".settings.ChangeDelivery_Slot_Availability_Status">
 
 
     <TextView

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Settings.ChangeMenuItem_Price_Settings">
+    tools:context=".settings.ChangeMenuItem_Price_Settings">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="45dp"
@@ -86,7 +86,7 @@
 
                                 <TextView
                                     android:layout_width="match_parent"
-                                    android:layout_height="70dp"
+                                    android:layout_height="60dp"
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp"
                                     android:layout_marginTop="10dp"
@@ -118,22 +118,23 @@
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="20dp"
+                                    android:layout_marginTop="35dp"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:gravity="center_vertical"
                                     android:text="App Markup Percentage :-  (  in % ) "
                                     android:textColor="@color/TMC_Primary_Text_Color"
                                     android:textSize="16sp" />
+
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="50dp"
-                                    android:layout_marginTop="20dp"
+                                    android:layout_marginTop="30dp"
 
-                                    android:textColor="@color/TMC_Primary_Text_Color"
-                                    android:textSize="16sp"
-                                    android:gravity="center_vertical"
                                     android:fontFamily="@font/open_sans_semibold"
-                                    android:text="Selling Price ( Price Per Kg ) :-   " />
+                                    android:gravity="center_vertical"
+                                    android:text="Selling Price ( Price Per Kg ) :-   "
+                                    android:textColor="@color/TMC_Primary_Text_Color"
+                                    android:textSize="16sp" />
 
 
                             </LinearLayout>
@@ -175,7 +176,7 @@
                                 <TextView
                                     android:id="@+id/itemName_text_widget"
                                     android:layout_width="match_parent"
-                                    android:layout_height="70dp"
+                                    android:layout_height="60dp"
                                     android:layout_marginTop="8dp"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:gravity="center_vertical|center"
@@ -236,7 +237,7 @@
                                 <EditText
                                     android:id="@+id/selling_price_common_edittext_widget"
                                     android:layout_width="match_parent"
-                                    android:layout_height="50dp"
+                                    android:layout_height="70dp"
                                     android:layout_marginTop="15dp"
                                     android:layout_weight="1"
                                     android:background="@color/TMC_PaleOrange"
@@ -352,7 +353,7 @@
                                     android:paddingEnd="25dp"
                                     android:digits="0123456789"
                                     android:inputType="phone"
-                                    android:layout_weight="1.5"
+                                    android:layout_weight="1"
 
                                     android:gravity="center_vertical|center"
                                     android:fontFamily="@font/open_sans_semibold"
@@ -394,7 +395,7 @@
                                     android:digits="0123456789"
                                     android:paddingEnd="25dp"
                                     android:inputType="phone"
-                                    android:layout_weight="1.5"
+                                    android:layout_weight="1"
 
                                     android:gravity="center_vertical|center"
                                     android:fontFamily="@font/open_sans_semibold"
@@ -492,7 +493,8 @@
                                         android:digits="0123456789"
                                         android:layout_weight="1"
                                         android:id="@+id/TMCpriceperkg_pos_price_label"
-
+                                        android:paddingTop="8dp"
+                                        android:paddingBottom="8dp"
                                         android:gravity="center_vertical"
                                         android:fontFamily="@font/open_sans_semibold"
                                         android:text="POS Price ( Price Per Kg )  :-   " />
@@ -504,11 +506,10 @@
                                         android:layout_height="match_parent"
                                         android:textColor="@color/TMC_Primary_Text_Color"
                                         android:textSize="16sp"
-                                        android:layout_marginTop="10dp"
                                         android:paddingEnd="25dp"
                                         android:digits="0123456789"
                                         android:inputType="phone"
-                                        android:layout_weight="1.5"
+                                        android:layout_weight="1"
 
                                         android:gravity="center_vertical|center"
                                         android:fontFamily="@font/open_sans_semibold"
@@ -591,7 +592,7 @@
                                         android:digits="0123456789"
                                         android:paddingEnd="25dp"
                                         android:inputType="phone"
-                                        android:layout_weight="1.5"
+                                        android:layout_weight="1"
 
                                         android:gravity="center_vertical|center"
                                         android:fontFamily="@font/open_sans_semibold"
@@ -629,7 +630,7 @@
                                         android:digits="0123456789"
                                         android:paddingEnd="25dp"
                                         android:inputType="phone"
-                                        android:layout_weight="1.5"
+                                        android:layout_weight="1 "
 
                                         android:gravity="center_vertical|center"
                                         android:fontFamily="@font/open_sans_semibold"
@@ -672,7 +673,7 @@
                                 android:digits="0123456789"
                                 android:paddingEnd="25dp"
                                 android:inputType="phone"
-                                android:layout_weight="1.5"
+                                android:layout_weight="1"
 
                                 android:gravity="center_vertical|center"
                                 android:fontFamily="@font/open_sans_semibold"

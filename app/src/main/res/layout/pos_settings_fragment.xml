@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
 
-    tools:context=".Settings.SettingsFragment">
+    tools:context=".settings.SettingsFragment">
 
     <!-- TODO: Update blank fragment layout
 
@@ -1304,10 +1304,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:layout_marginEnd="10dp"
-
+                    android:visibility="gone"
                     android:orientation="horizontal">
 
                     <TextView
@@ -1348,11 +1348,141 @@
 
 
 
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:id="@+id/mobilePrinterConnectLayout"
+                    android:gravity="center_vertical"
+                    >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="Printer Status : "
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="....Loading.... "
+                        android:layout_weight="1"
+                        android:id="@+id/printerConnectionStatus_Textwidget"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/open_sans_semibold"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
+                        android:id="@+id/connect_printer_button_widget"
+                        android:text="Connect"
+                        android:textSize="13sp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:visibility="visible"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/TMC_White"
+
+                        />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:id="@+id/resetTokenNoLayout"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="@string/Current_token_no"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/resetTokenNO_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="0"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp"
+
+                        />
+
+                    <Button
+                        android:id="@+id/resetTokenNoButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/button_background"
+                        android:text="@string/Reset_token_no"
+                        android:textColor="@color/TMC_White"
+                        android:textSize="13sp"
+                        android:visibility="visible"
+
+                        />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:id="@+id/refreshMenuItemLayout"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:text="@string/RefreshMenuItem"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="16sp" />
+
+
+
+                    <Button
+                        android:id="@+id/refreshMenuItemButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/button_background"
+                        android:text="@string/Refresh"
+                        android:textColor="@color/TMC_White"
+                        android:textSize="13sp"
+                        android:visibility="visible"
+
+                        />
+                </LinearLayout>
+
+
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
-
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -1378,17 +1508,17 @@
                         />
                 </LinearLayout>
 
-                  <LinearLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
-
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
                         android:text="@string/Mobile_Number"
                         android:textSize="16sp"
                         android:textColor="@color/TMC_Primary_Text_Color"
@@ -1398,7 +1528,6 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
                         android:text="+919948859549"
                         android:textSize="16sp"
                         android:id="@+id/userMobileNo"
@@ -1408,107 +1537,13 @@
 
                         />
                 </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:id="@+id/mobilePrinterConnectLayout"
-                    android:gravity="center_vertical"
-                    >
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight=".1"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="Printer Status : "
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="....Loading.... "
-                        android:layout_weight="1"
-                        android:id="@+id/printerConnectionStatus_Textwidget"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp"
-                        android:fontFamily="@font/open_sans_semibold"/>
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:id="@+id/connect_printer_button_widget"
-                        android:text="Connect"
-                        android:textSize="13sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginEnd="10dp"
-                        android:visibility="visible"
-                        android:background="@drawable/button_background"
-                        android:textColor="@color/TMC_White"
-
-                        />
-
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:gravity="center_vertical"
-                    android:id="@+id/resetTokenNoLayout"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginTop="5dp"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/open_sans_semibold"
-
-                        android:text="@string/Current_token_no"
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/resetTokenNO_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_marginTop="5dp"
-                        android:fontFamily="@font/open_sans_semibold"
-                        android:text="0"
-                        android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
-
-                        android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp"
-
-                        />
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:id="@+id/resetTokenNoButton"
-                        android:text="@string/Reset_token_no"
-                        android:textSize="13sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginEnd="10dp"
-                        android:visibility="visible"
-                        android:background="@drawable/button_background"
-                        android:textColor="@color/TMC_White"
-
-                        />
-                </LinearLayout>
-
-
-
-
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
@@ -1525,7 +1560,8 @@
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
                     android:id="@+id/login_as_another_vendor"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
@@ -1544,7 +1580,8 @@
                     android:layout_height="40dp"
                     android:gravity="center_vertical"
                     android:id="@+id/logout"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
 
-    tools:context=".MobileScreen_JavaClasses.Replacement_RefundClasses.ReplacementRefundListFragment">
+    tools:context=".mobilescreen_javaclasses.replacement_refund_classes.ReplacementRefundListFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout

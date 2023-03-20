@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Settings.Add_Replacement_Refund_Order.Add_Replacement_Refund_Screen">
+    tools:context=".settings.add_replacement_refund_order.Add_Replacement_Refund_Screen">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

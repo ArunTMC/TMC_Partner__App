@@ -6,7 +6,7 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:orientation="vertical"
 
-tools:context=".Settings.CreditOrders_MobileNumberwise_Report">
+tools:context=".settings.CreditOrders_MobileNumberwise_Report">
 
 <!-- TODO: Update blank fragment layout -->
 <LinearLayout

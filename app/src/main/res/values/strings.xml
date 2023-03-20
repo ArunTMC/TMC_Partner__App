@@ -56,7 +56,7 @@
     <string name="Token_No_Error_Instruction">Cant Generate Token No </string>
     <string name="OrderCancellingInstruction">Are You Sure ! You Want to Cancel this Order  </string>
     <string name="Token_No_Not_Found_Instruction">Cant Find Token No </string>
-
+    <string name="WeightMachine_Not_Found_Instruction">Please Connect Weight Machine , And Click Ok !!!!!</string>
     <string name="Pos_Printer_Not_Connected">POS Printer is Not Connected</string>
 
 
@@ -299,7 +299,9 @@
     <string name="Consolidated_Sales_Report_Weekwise">Consolidated Sales Report Weekwise </string>
     <string name="Mobile_Billing_Screen">Mobile Billing Screen</string>
 
+    <string name="Refresh">Refresh</string>
     <string name="Reset_token_no">Reset</string>
+    <string name="RefreshMenuItem">Refresh Menu Item</string>
     <string name="Current_token_no">Current Token No   : </string>
     <string name="Genereate_User_Details">Generate User Details With Address</string>
     <string name="Generate_OrderItemDetails">Generate Order Item Details </string>
@@ -326,7 +328,7 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.9 </string>
+    <string name="Version_No">Version No : 1.9.9 (9)  </string>
     <string name="scanning">scanning for devices....</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>

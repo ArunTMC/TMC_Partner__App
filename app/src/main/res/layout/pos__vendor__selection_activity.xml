@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PosScreen_JavaClasses.Other_javaClasses.Pos_Vendor_Selection_Screen"
+    tools:context=".posscreen_javaclasses.other_java_classes.Pos_Vendor_Selection_Screen"
     android:background="@mipmap/poster"
     >
 
