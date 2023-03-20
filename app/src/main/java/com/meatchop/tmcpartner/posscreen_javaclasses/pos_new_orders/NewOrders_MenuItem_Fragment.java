@@ -437,9 +437,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
 
-
-
-
         try {
             if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 Log.d(Constants.TAG, " scanner if: " );
