@@ -4425,6 +4425,12 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     totalordervalue_tillnow="";
                                     totalredeempointsuserhave="";
 
+
+
+
+
+
+
                                     redeemed_points_text_widget.setText("");
                                     redeemPointsLayout.setVisibility(View.GONE);
                                     discountAmountLayout.setVisibility(View.VISIBLE);
