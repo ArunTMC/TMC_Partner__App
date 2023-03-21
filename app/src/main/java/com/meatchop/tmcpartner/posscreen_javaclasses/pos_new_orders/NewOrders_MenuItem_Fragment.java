@@ -136,6 +136,7 @@ import static com.meatchop.tmcpartner.Constants.api_Update_MenuItemStockAvlDetai
  * Use the {@link NewOrders_MenuItem_Fragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+
 public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInputOutputManager.Listener {
      RecyclerView recyclerView;
     ListView listview;
