@@ -28,7 +28,7 @@ public class PrinterFunctions {
 	public static native int PrintText(String portName,int portSettings,int underline,int invertColor,int emphasized,int upsideDown,int heightExpansion,int widthExpansion,int leftMargin,int alignment,String textData);
 	public static native int PrintTextKanji(String portName,int portSettings,int underline,int invertColor,int emphasized,int upsideDown,int heightExpansion,int widthExpansion,int leftMargin,int alignment,String textData);
 	public static native int PrintBitmapImage(String portName,int portSettings,int m,String ImgUrl);
-	public static native int PrintSampleReceipt(String portName,int portSettings);
+	public static native int PrintSampleReceipt(String portName, int portSettings);
 	public static native int PrintSampleReceiptCn(String portName,int portSettings);
 	//--------------------------
 	public static native int PrintBarCode(String portName,int portSettings,String barcodeData,int option,int height,int width,int alignment,int mod);

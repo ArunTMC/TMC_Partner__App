@@ -107,9 +107,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     boolean isMenuListSavedLocally = false;
 
-    boolean isinventorycheck = false;
+    boolean isinventorycheck = false  , isweighteditable =false;
     boolean localDBcheck = false;
-    boolean orderdetailsnewschema = false,updateweightforonlineorders =false;
+    boolean orderdetailsnewschema = false,updateweightforonlineorders =false , isbarcodescannerconnected = false , enableorderplacingmicroservice = false;
 
     String MenuItemKey,vendorKey,tmcSubctgykey,tmcSubctgyname,tmcctgyname;
 
@@ -134,6 +134,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     VendorSQL_DB_Manager vendorSQL_db_manager;
     boolean isAnyOnlineSyncNeeded = false , isOnlineSyncNeededForMenu = false ,isCalledFromSQLtimeSync =false;
     private static final String TAG = MobileScreen_Dashboard.class.getSimpleName();
+    boolean isFetchMenuItemCalled = false , isFetchTmcSubCtgyCalled = false , isFetchVendorCalled = false , isFetchPOSAppDataCalled = false , isFetchMenuItemStockAvlCalled = false;
 
 
 
@@ -1039,7 +1040,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                 ////// for TMCPrice
                                 try{
-                                    double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+                                double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+
+                                try{
                                     try {
                                         if (!cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcPrice)).equals("") && (!String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcPrice))).toUpperCase().equals("NULL"))) {
                                             tmcprice_double = Double.parseDouble(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcPrice))));
@@ -1054,7 +1057,17 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         tmcprice_double =0;
                                     }
                                     if (!cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage)).equals("") && (!String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))).toUpperCase().equals("NULL"))) {
-                                        int markupPercentageInt = Integer.parseInt(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))));
+                                        int markupPercentageInt = 0;
+                                        try{
+                                            markupPercentageInt =  Integer.parseInt(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))));
+                                        }
+                                        catch (Exception e){
+                                            markupPercentageInt = 0;
+                                            String value ="";
+                                            value = String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage)));
+                                            Toast.makeText(this, "Error in getting app markup  "+value, Toast.LENGTH_SHORT).show();
+                                            e.printStackTrace();
+                                        }
 
                                         try{
                                             appMarkupPercn_value  = (markupPercentageInt * tmcprice_double )/100;
@@ -1072,7 +1085,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         }
 
 
-                                        modal_menuItem.tmcpriceWithMarkupValue = String.valueOf((int) Double.parseDouble(String.valueOf(Math.ceil(tmcpriceWithAppMarkupValue))));
+                                        modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(Math.round(tmcpriceWithAppMarkupValue));
                                     }
                                     else{
                                         modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
@@ -1080,54 +1093,64 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     }
                                 }
                                 catch (Exception e){
+                                    modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
+
+                                    e.printStackTrace();
+                                }
+                                }
+                                catch (Exception e){
+
                                     e.printStackTrace();
                                 }
                                 ////// for TMCPrice PerKG
 
-                                try{
-                                    double tmcpriceperkg_double =0 ,  tmcpriceperkgWithAppMarkupValue = 0 , appMarkupPercn_value =0;
+
+                                try {
+                                    double tmcpriceperkg_double = 0, tmcpriceperkgWithAppMarkupValue = 0, appMarkupPercn_value = 0;
+
                                     try {
-                                        if (!cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg)).equals("") && (!String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg))).toUpperCase().equals("NULL"))) {
-                                            tmcpriceperkg_double = Double.parseDouble(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg))));
+                                        try {
+                                            if (!cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg)).equals("") && (!String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg))).toUpperCase().equals("NULL"))) {
+                                                tmcpriceperkg_double = Double.parseDouble(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg))));
 
-                                        } else {
+                                            } else {
+                                                tmcpriceperkg_double = 0;
+                                                ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
                                             tmcpriceperkg_double = 0;
-                                            ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
                                         }
-                                    }
-                                    catch (Exception e){
-                                        e.printStackTrace();
-                                        tmcpriceperkg_double =0;
-                                    }
-                                    if (!cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage)).equals("") && (!String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))).toUpperCase().equals("NULL"))) {
+                                        if (!cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage)).equals("") && (!String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))).toUpperCase().equals("NULL"))) {
 
-                                        int markupPercentageInt =Integer.parseInt(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))));
+                                            int markupPercentageInt = Integer.parseInt(String.valueOf(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage))));
 
-                                        try{
-                                            appMarkupPercn_value  = (markupPercentageInt * tmcpriceperkg_double  )/100;
-                                        }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
+                                            try {
+                                                appMarkupPercn_value = (markupPercentageInt * tmcpriceperkg_double) / 100;
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
 
 
-                                        try{
-                                            tmcpriceperkgWithAppMarkupValue  = appMarkupPercn_value + tmcpriceperkg_double;
+                                            try {
+                                                tmcpriceperkgWithAppMarkupValue = appMarkupPercn_value + tmcpriceperkg_double;
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf((Math.round(tmcpriceperkgWithAppMarkupValue)));
+                                        } else {
+                                            modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+
                                         }
-                                        catch (Exception e){
-                                            e.printStackTrace();
-                                        }
-                                        modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf((int) Double.parseDouble(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue))));
-                                    }
-                                    else{
+                                    } catch (Exception e) {
                                         modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
 
+                                        e.printStackTrace();
                                     }
                                 }
-                                catch (Exception e){
+                                catch (Exception e) {
                                     e.printStackTrace();
                                 }
-
 
 
                             }
@@ -1172,6 +1195,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                        do {
                            orderdetailsnewschema = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.orderdetailsnewschema))));
                            updateweightforonlineorders = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.updateweightforonlineorders))));
+                           enableorderplacingmicroservice = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.enableorderplacingmicroservice))));
                            maxpointsinaday  = (cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.redeemdata_maxpointsinaday)));
                            minordervalueforredeem = (cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.redeemdata_minordervalueforredeem)));
                            pointsfor100rs  = (cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.redeemdata_pointsfor100rs)));
@@ -1265,7 +1289,28 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                             }
 
 
+                            try{
+                                isweighteditable = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(VendorSQL_DB_Manager.isweighteditable))));
 
+
+                            }
+                            catch (Exception e){
+
+                                isweighteditable =     false;
+                                e.printStackTrace();
+                            }
+
+
+                            try{
+                                isbarcodescannerconnected = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(VendorSQL_DB_Manager.isbarcodescannerconnected))));
+
+
+                            }
+                            catch (Exception e){
+
+                                isbarcodescannerconnected =     true;
+                                e.printStackTrace();
+                            }
 
                             try{
                                 minimumscreensizeforpos =  String.valueOf(cursor.getString(cursor.getColumnIndex(VendorSQL_DB_Manager.minimumscreensizeforpos)));
@@ -1458,6 +1503,13 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     }
 
     private void getTMCSubCtgy() {
+
+        if (isFetchTmcSubCtgyCalled) {
+            return ;
+        }
+        isFetchTmcSubCtgyCalled = true;
+
+
         String Api_to_Call = "";
         if(Constants.isNewSbCtgyTable_APIUsed.equals(Constants.YES)) {
             Api_to_Call = Constants.api_getListofTMCTileForVendorkey+vendorKey;
@@ -1536,8 +1588,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     finally {
                                         try {
                                             if (jArray.length() - i == 1) {
-                                                tmcSubCtgyItemSQL_db_manager = null;
                                                 tmcSubCtgyItemSQL_db_manager.close();
+                                                tmcSubCtgyItemSQL_db_manager = null;
 
                                             }
                                         }
@@ -1592,7 +1644,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-        private void getWholeSalesOrderCustomersList() {
+    private void getWholeSalesOrderCustomersList() {
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofWholeSaleCustomers,null,
                 new Response.Listener<JSONObject>() {
@@ -1868,6 +1920,15 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     private void getDatafromVendorTable(String vendorEntryKey) {
 //api_GetTestDataFromElasticache2
 //api_GetVendorUsingUserKey
+
+
+        if(isFetchVendorCalled){
+            return;
+        }
+        isFetchVendorCalled = true;
+
+
+
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetVendorUsingUserKey +vendorEntryKey,null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -1904,6 +1965,17 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
                                        e.printStackTrace();
                                    }
+                                    try{
+                                        isweighteditable =  Boolean.parseBoolean(String.valueOf(json.get("isweighteditable")));
+
+                                    }
+                                    catch (Exception e){
+
+                                        isweighteditable  =     false;
+
+
+                                        e.printStackTrace();
+                                    }
 
 
 
@@ -1916,6 +1988,18 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         localDBcheck =     false;
                                         e.printStackTrace();
                                     }
+
+
+                                    try{
+                                        isbarcodescannerconnected =      Boolean.parseBoolean(String.valueOf(json.get("isbarcodescannerconnected")));
+
+                                    }
+                                    catch (Exception e){
+
+                                        isbarcodescannerconnected =     true;
+                                        e.printStackTrace();
+                                    }
+
 
 
                                     try{
@@ -2039,7 +2123,8 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
 
 
-
+                                    modal_vendor.setIsbarcodescannerconnected(String.valueOf(isbarcodescannerconnected));
+                                    modal_vendor.setIsweighteditable(String.valueOf(isweighteditable));
                                     modal_vendor.setInventorycheckpos(String.valueOf(isinventorycheck));
                                     modal_vendor.setLocaldbcheck(String.valueOf(localDBcheck));
                                     modal_vendor.setDefaultprintertype(String.valueOf(defaultprintertype));
@@ -2069,9 +2154,9 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                             finally {
                                                 try {
                                                     if (arrayLength - i1 == 1) {
-                                                        vendorSQL_db_manager = null;
-                                                        tmcSubCtgyItemSQL_db_manager.close();
 
+                                                        vendorSQL_db_manager.close();
+                                                        vendorSQL_db_manager = null;
                                                     }
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
@@ -2509,6 +2594,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     }
 
     private void getDatafromMobileApp() {
+
+        if(isFetchPOSAppDataCalled){
+            return;
+        }
+        isFetchPOSAppDataCalled = true;
+
+
+
 //api_GetPOSMobileAppData
         //api_GetTestDataForPOSMobileApp
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetPOSMobileAppData, null,
@@ -2538,6 +2631,10 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                         orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
 
                                         updateweightforonlineorders = (json.getBoolean("updateweightforonlineorders"));
+                                        enableorderplacingmicroservice = (json.getBoolean("enableorderplacingmicroservice"));
+
+
+                                        modal_posAppMobileData.setEnableorderplacingmicroservice(String.valueOf(enableorderplacingmicroservice));
                                         modal_posAppMobileData.setOrderdetailsnewschema(String.valueOf(orderdetailsnewschema));
                                         modal_posAppMobileData.setUpdateweightforonlineorders(String.valueOf(updateweightforonlineorders));
                                        //updateweightforonlineorders = true;
@@ -2790,6 +2887,7 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                                     "DeliveryPersonListString",
                                     DeliveryPersonListString);
                             myEdit.apply();
+
 
 
                         } catch (Exception e) {
@@ -3441,6 +3539,14 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
 
     private String getMenuItemusingStoreId(String vendorKey) {
         //Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
+
+
+        if (isFetchMenuItemCalled) {
+            return completemenuItem;
+        }
+        isFetchMenuItemCalled = true;
+
+
         completemenuItem="";
         MenuList.clear();
         SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
@@ -4360,6 +4466,13 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
     private String  getMenuAvlDetailsUsingVendorkey(String vendorKey) {
 
 
+        if (isFetchMenuItemStockAvlCalled) {
+            return completemenuItem;
+        }
+        isFetchMenuItemStockAvlCalled = true;
+
+
+
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItemStockAvlDetails+vendorKey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
@@ -5225,6 +5338,22 @@ public class MobileScreen_Dashboard extends AppCompatActivity {
                 isinventorycheck
         );
 
+        myEdit.putBoolean(
+                "isbarcodescannerconnected",
+                isbarcodescannerconnected
+        );
+
+        myEdit.putBoolean(
+                "enableorderplacingmicroservice",
+                enableorderplacingmicroservice
+        );
+
+
+
+        myEdit.putBoolean(
+                "isweighteditable",
+                isweighteditable
+        );
 
         myEdit.putString(
                 "MinimumScreenSizeForPos",

@@ -76,7 +76,8 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
             String[] textsToPrint = printerData.getTextsToPrint();
 
             for(String textToPrint : textsToPrint) {
-                printer.printFormattedTextAndCut(textToPrint);
+                printer.printFormattedText(textToPrint);
+                //printer.printFormattedTextAndCut(textToPrint);
                 Thread.sleep(500);
             }
 

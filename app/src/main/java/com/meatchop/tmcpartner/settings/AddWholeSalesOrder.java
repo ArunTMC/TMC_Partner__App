@@ -5538,7 +5538,26 @@ public class AddWholeSalesOrder extends AppCompatActivity {
                 String quantity = modal_newOrderItems.getQuantity();
                 String price = modal_newOrderItems.getItemFinalPrice();
                 String weight = modal_newOrderItems.getItemFinalWeight();
-                Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal, "cutname");
+                String priceperkg_unitprice = modal_newOrderItems.getTmcpriceperkg();
+                String pricetypeforpos ="" , priceSuffix ="";
+                try {
+                    pricetypeforpos = modal_newOrderItems.getPricetypeforpos();
+                } catch (Exception e) {
+                    pricetypeforpos = "0";
+                    e.printStackTrace();
+                }
+
+                if(String.valueOf(pricetypeforpos).toUpperCase().equals("TMCPRICE")){
+
+                    if(modal_newOrderItems.getNetweight().equals("")){
+                        priceSuffix =  modal_newOrderItems.getPortionsize();
+                    }
+                    else{
+                        priceSuffix = modal_newOrderItems.getNetweight();
+                    }
+                }
+
+                Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gst, subtotal, "cutname", priceperkg_unitprice, pricetypeforpos, priceSuffix);
 
             }
 

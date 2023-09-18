@@ -114,7 +114,7 @@
                 android:paddingStart="10dp">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginTop="5dp"
@@ -125,28 +125,54 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="4dp"
                         android:layout_marginTop="6dp"
-                        android:text="Barcode"
+                        android:text="code"
                         android:textColor="@color/TMC_Primary_Text_Color"
 
                         android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/mobile_barcode_textwidget"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_width="70dp"
+                        android:layout_height="35dp"
+                        android:layout_marginStart="4dp"
                         android:layout_marginTop="5dp"
-                        android:layout_marginEnd="30dp"
+                        android:layout_marginEnd="4dp"
                         android:inputType="textPersonName"
                         android:text="99222"
+                        android:visibility="visible"
                        android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="18sp" />
+
+
+
+                    <EditText
+                        android:id="@+id/mobile_barcode_editwidget"
+                        android:layout_width="70dp"
+                        android:layout_height="35dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/pale_orange_background"
+                        android:digits="0123456789"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
+                        android:focusedByDefault="false"
+                        android:inputType="number"
+                        android:text=""
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp" />
+
+
+
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/barcodescannerLayout"
                     android:layout_width="60dp"
+                    android:layout_marginEnd="30dp"
                     android:layout_height="match_parent"
                     android:layout_marginTop="5dp"
                     android:orientation="vertical"
@@ -189,9 +215,26 @@
                         android:textColor="@color/TMC_Primary_Text_Color"
 
                         android:textSize="13sp" />
-
+                    <TextView
+                        android:id="@+id/mobile_weight_textviewwidget"
+                        android:layout_width="100dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:visibility="gone"
+                        android:background="@drawable/grey_color_textview_backgrounf"
+                        android:digits="0123456789g"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
+                        android:focusedByDefault="false"
+                        android:inputType="number"
+                        android:text="1000gm"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp" />
                     <EditText
-                        android:id="@+id/mobile_weight_textwidget"
+                        android:id="@+id/mobile_weight_editwidget"
                         android:layout_width="100dp"
                         android:layout_height="match_parent"
                         android:layout_marginStart="10dp"
@@ -212,7 +255,7 @@
 
                 <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_marginTop="5dp"
 
@@ -221,7 +264,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="20dp"
+                        android:layout_marginStart="15dp"
                         android:layout_marginTop="6dp"
                         android:text="Quantity"
                         android:textColor="@color/TMC_Primary_Text_Color"
@@ -240,13 +283,15 @@
                         android:paddingStart="5dp"
 
                         android:paddingEnd="10dp"
-                        android:visibility="visible">
+                        android:visibility="gone">
+
 
                         <LinearLayout
                             android:id="@+id/mobile_tmcUnitprice_weightAdd_layout"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:layout_marginEnd="10dp"
+
                             android:orientation="horizontal">
 
                             <ImageView
@@ -263,17 +308,17 @@
                             android:fontFamily="@font/open_sans_bold"
                             android:gravity="center"
                             android:text="999"
+
                             android:background="@drawable/grey_color_textview_backgrounf"
                             android:padding="5dp"
                             android:textColorHint="@color/TMC_Hint_Color"
                             android:textSize="16sp"
-                            android:visibility="visible" />
+                           />
 
                         <LinearLayout
                             android:id="@+id/mobile_tmcUnitprice_weightMinus_layout"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-
                             android:orientation="horizontal">
 
                             <ImageView
@@ -285,7 +330,49 @@
                                 android:background="@mipmap/minus" />
                         </LinearLayout>
                     </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/edittextQuantity_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:orientation="horizontal"
+                        android:paddingStart="5dp"
+                        android:paddingEnd="10dp"
+                        android:visibility="visible">
 
+                        <EditText
+                            android:id="@+id/itemQuantity_edittextwidget"
+                            android:layout_width="77dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginTop="3dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@drawable/pale_orange_background"
+                            android:digits="0123456789"
+                            android:focusedByDefault="false"
+                            android:gravity="center"
+                            android:imeOptions="actionDone"
+                            android:inputType="number"
+                            android:singleLine="true"
+                            android:text="1"
+                            android:textColor="@color/TMC_Primary_Text_Color"
+                            android:textSize="15sp" />
+
+
+
+                    <ImageView
+                        app:layout_constraintStart_toEndOf="@+id/itemQuantity_edittextwidget"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="5dp"
+                        android:id="@+id/edit_quantity_layout"
+                        android:visibility="gone"
+                        android:background="@mipmap/edit_icon" />
+
+                </LinearLayout>
                 </LinearLayout>
 
 
@@ -315,13 +402,14 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="75dp"
+                    android:layout_width="45dp"
                     android:layout_height="match_parent"
                     android:orientation="vertical"></LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="7dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -340,10 +428,29 @@
                         android:layout_marginTop="4dp"
                         android:layout_marginEnd="10dp"
                         android:id="@+id/mobile_PriceWidget"
-
+                        android:visibility="gone"
                         android:text="159.00 rs"
                         android:textColor="@color/TMC_Primary_Text_Color"
                         android:textSize="18sp" />
+                    <EditText
+                        android:id="@+id/mobile_price_editwidget"
+                        android:layout_width="100dp"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/pale_orange_background"
+                        android:digits="0123456789"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
+                        android:focusedByDefault="false"
+                        android:inputType="number"
+                        android:text=" "
+                        android:visibility="visible"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp" />
+
 
                 </LinearLayout>
 

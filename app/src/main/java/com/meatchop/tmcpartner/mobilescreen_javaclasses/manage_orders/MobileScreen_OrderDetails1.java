@@ -12,10 +12,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -23,8 +28,13 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -63,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 
 public class MobileScreen_OrderDetails1 extends AppCompatActivity {
@@ -85,9 +96,9 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     static LinearLayout loadingpanelmask;
     List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     ResultReceiver resultReceiver;
-    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
+    public static   Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
 
-
+    boolean isDeliveryPartnerMethodCalled = false;
    boolean orderdetailsnewschema = false;
     String vendorkey = "",orderid ="",customerMobileNo ="";
     Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface = null;
@@ -177,8 +188,15 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         try {
             SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
             DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
+            if(DeliveryPersonList.equals("")){
+                getDeliveryPartnerList(false,"","","","","");
 
-            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+            }
+            else{
+                ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+            }
+            //ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -576,7 +594,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
                 String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
                 String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-
+                deliverypartnerName = modal_manageOrders_pojo_class .getDeliveryPartnerName();
                 if(!deliverypartnerName.equals("null")) {
 
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
@@ -2158,18 +2176,262 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
     }
 
     private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
-
+        showProgressBar(true);
+        if(deliveryPartnerList.size()>0) {
+        try{
         bottomSheetDialog = new BottomSheetDialog(MobileScreen_OrderDetails1.this);
         bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
 
         ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_OrderDetails1.this, deliveryPartnerList,orderkey,fromActivityName+"orderdetails",deliverypartnerName,orderid,customerMobileNo,vendorkey);
+        TextView deliverypersonList_instructiontextview = bottomSheetDialog.findViewById(R.id.deliverypersonList_instructiontextview);
+        TextView deliveryPersonName_TextView = bottomSheetDialog.findViewById(R.id.deliveryPersonName_TextView);
+        ImageView searchicon = bottomSheetDialog.findViewById(R.id.searchicon);
+        ImageView closeicon = bottomSheetDialog.findViewById(R.id.closeicon);
+        EditText deliveryPersonName_editText = bottomSheetDialog.findViewById(R.id.deliveryPersonName_editText);
 
-        ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+        deliveryPersonName_TextView.setVisibility(View.VISIBLE);
+        searchicon.setVisibility(View.VISIBLE);
+        closeicon.setVisibility(View.GONE);
+        deliveryPersonName_editText.setVisibility(View.GONE);
+        deliverypersonList_instructiontextview.setVisibility(View.VISIBLE);
+        deliverypersonList_instructiontextview.setText("Loading...");
 
+        searchicon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deliveryPersonName_TextView.setVisibility(View.GONE);
+                searchicon.setVisibility(View.GONE);
+                closeicon.setVisibility(View.VISIBLE);
+                deliveryPersonName_editText.setVisibility(View.VISIBLE);
+                showKeyboard(deliveryPersonName_editText);
+
+            }
+        });
+
+
+
+        deliveryPersonName_TextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deliveryPersonName_TextView.setVisibility(View.GONE);
+                searchicon.setVisibility(View.GONE);
+                closeicon.setVisibility(View.VISIBLE);
+                deliveryPersonName_editText.setVisibility(View.VISIBLE);
+                showKeyboard(deliveryPersonName_editText);
+            }
+        });
+
+        closeicon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deliveryPersonName_TextView.setVisibility(View.VISIBLE);
+                searchicon.setVisibility(View.VISIBLE);
+                closeicon.setVisibility(View.GONE);
+                deliveryPersonName_editText.setVisibility(View.GONE);
+                hideKeyboard(deliveryPersonName_editText);
+
+
+                deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                ListView1.setVisibility(View.VISIBLE);
+                deliverypersonList_instructiontextview.setText("");
+                deliveryPersonName_editText.setText("");
+
+                Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_OrderDetails1.this, deliveryPartnerList,orderkey,fromActivityName+"orderdetails",deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+            }
+        });
+
+        deliveryPersonName_editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String deliveryPersonNameFromListener = String.valueOf(s);
+                if(!deliveryPersonNameFromListener.equals("")) {
+                    try {
+                        List<AssignDeliveryPartner_PojoClass> sorteddeliveryPartnerList = new ArrayList<>();
+
+                        for (int i = 0; i < deliveryPartnerList.size(); i++) {
+
+                            AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                            assignDeliveryPartner_pojoClass = deliveryPartnerList.get(i);
+                            if (assignDeliveryPartner_pojoClass.getDeliveryPartnerName().toUpperCase().contains(deliveryPersonNameFromListener.toUpperCase())) {
+                                sorteddeliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+                            }
+
+                            if (i == (deliveryPartnerList.size() - 1)) {
+                                if (sorteddeliveryPartnerList.size() > 0) {
+
+                                    deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                                    ListView1.setVisibility(View.VISIBLE);
+                                    deliverypersonList_instructiontextview.setText("");
+
+                                    Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_OrderDetails1.this, sorteddeliveryPartnerList,orderkey,fromActivityName+"orderdetails",deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                                    ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+
+
+                                } else {
+                                    deliverypersonList_instructiontextview.setVisibility(View.VISIBLE);
+                                    ListView1.setVisibility(View.GONE);
+                                    deliverypersonList_instructiontextview.setText("There is no delivery person in this name");
+                                }
+                            }
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+            Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(MobileScreen_OrderDetails1.this, deliveryPartnerList,orderkey,fromActivityName+"orderdetails",deliverypartnerName,orderid,customerMobileNo,vendorkey);
+
+           ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+            deliverypersonList_instructiontextview.setVisibility(View.GONE);
+        //mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+            showProgressBar(false);
         bottomSheetDialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        }
+        else{
+
+            getDeliveryPartnerList(true , orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+
+        }
     }
+
+
+    private void hideKeyboard(EditText editText) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        Objects.requireNonNull(imm).hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+    private void showKeyboard(final EditText editText) {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                editText.requestFocus();
+                InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                editText.setSelection(editText.getText().length());
+            }
+        },0);
+    }
+
+
+
+    public void getDeliveryPartnerList(boolean openBottomSheet, String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        if(isDeliveryPartnerMethodCalled){
+            return;
+        }
+        isDeliveryPartnerMethodCalled = true;
+
+
+        SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorkey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+                            //converting jsonSTRING into array
+                            String DeliveryPersonListString = response.toString();
+                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonListString);
+
+                            SharedPreferences sharedPreferences
+                                    = getSharedPreferences("DeliveryPersonList",
+                                    MODE_PRIVATE);
+
+                            SharedPreferences.Editor myEdit
+                                    = sharedPreferences.edit();
+
+
+                            myEdit.putString(
+                                    "DeliveryPersonListString",
+                                    DeliveryPersonListString);
+                            myEdit.apply();
+                            isDeliveryPartnerMethodCalled = false;
+                            if(openBottomSheet){
+                                showBottomSheetDialog(orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                            }
+                        } catch (Exception e) {
+                            isDeliveryPartnerMethodCalled = false;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                String errorCode = "";
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(getApplicationContext(),"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
+                isDeliveryPartnerMethodCalled = false;
+
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorkey);
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(MobileScreen_OrderDetails1.this).add(jsonObjectRequest);
+    }
+
 
     private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
         if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
@@ -2185,7 +2447,9 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 int arrayLength = JArray.length();
                 //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
 
-
+                if(arrayLength==0){
+                    Toast.makeText(getApplicationContext(), "There is no delivery person for this vendor", Toast.LENGTH_SHORT).show();
+                }
                 for (; i1 < (arrayLength); i1++) {
 
                     try {
@@ -2223,6 +2487,7 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+
     }
 
 
@@ -2404,9 +2669,10 @@ public class MobileScreen_OrderDetails1 extends AppCompatActivity {
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        //int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        double new_totalAmount_withGst = Double.parseDouble(decimalFormat.format(new_to_pay_Amount));
 
-        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
+        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst));
         old_total_Amount=0;
         old_taxes_and_charges_Amount=0;
         new_to_pay_Amount=0;

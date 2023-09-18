@@ -389,7 +389,8 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
                 }
 
 
-            } catch (JSONException e) {
+            }
+            catch (JSONException e) {
                 e.printStackTrace();
             }
             itemDespArray.put(itemdespObject);
@@ -534,7 +535,8 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
             e.printStackTrace();
         }
 
-
+            //api_AddVendorOrderDetails
+            //api_AddCustomerOrderDetails
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_AddCustomerOrderDetails ,
                 jsonObject, new Response.Listener<JSONObject>() {
             @Override
@@ -747,7 +749,8 @@ public class Add_CustomerOrder_TrackingTable_AsyncTask extends AsyncTask<String,
                 e.printStackTrace();
 
             }
-
+            //api_AddVendorTrackingOrderDetails
+            //api_AddCustomerTrackingOrderDetails
             JsonObjectRequest jsonObjectRequest2 = new JsonObjectRequest(Request.Method.POST, Constants.api_AddCustomerTrackingOrderDetails,
                     orderTrackingTablejsonObject, new Response.Listener<JSONObject>() {
                 @Override

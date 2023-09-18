@@ -107,7 +107,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     String finalCashAmount_pdf, finalRazorpayAmount_pdf, finalPhonepeAmount_pdf,finalCreditAmount_pdf, finalPaytmAmount_pdf, finalCardAmount_pdf;
     String finalpreorderCashAmount_pdf, finalpreorderRazorpayAmount_pdf, finalpreorderCreditAmount_pdf,finalpreorderPhonepeAmount_pdf, finalpreorderPaytmAmount_pdf ,  finalpreorderCardAmount_pdf;
     Adapter_Pos_Sales_Report adapter = new Adapter_Pos_Sales_Report();
-    TextView preorder_creditSales,creditSales,Phonepe, Razorpay, Paytm, cashOnDelivery,cardSales;
+    TextView packCount_textwidget,preorder_creditSales,creditSales,Phonepe, Razorpay, Paytm, cashOnDelivery,cardSales;
     TextView totalApp_MarkupAmount,instruction_textview,vendorName,appOrdersCount_textwidget, preorder_cashOnDelivery, preorder_Phonepe, preorder_Razorpay, preorder_paytmSales;
 
 
@@ -155,6 +155,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     public static List<String> paymentMode_DeliveryChargeOrderid;
     public static HashMap<String, Modal_OrderDetails> paymentMode_DeliveryChargeHashmap = new HashMap();
 
+    DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
 
     List<ListData> dataList = new ArrayList<>();
@@ -193,6 +194,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     double totalappMarkupPercentageValue =0;
     TMCSubCtgyItemSQL_DB_Manager tmcSubCtgyItemSQL_db_manager;
 
+    int no_of_packs=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -234,6 +236,10 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         totalApp_MarkupAmount = findViewById(R.id.totalApp_MarkupAmount);
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
+        packCount_textwidget = findViewById(R.id.packCount_textwidget);
+        
+        
+        
         Order_Item_List = new ArrayList<>();
         finalBillDetails = new ArrayList<>();
         tmcSubCtgykey = new ArrayList<>();
@@ -307,6 +313,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
         vendorName.setText(vendorname);
         totalappMarkupPercentageValue =0;
+        no_of_packs =0;
+        no_of_packs =0;
         Order_Item_List.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
@@ -498,6 +506,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 }
                 else {
                     totalappMarkupPercentageValue =0;
+                     no_of_packs =0;
                     Order_Item_List.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
@@ -856,22 +865,29 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
             text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
         else if((vendorKey.equals("vendor_5"))) {
 
 
             text_to_Print = "[c]<b><font size='big'>Bismillah Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        }
+        else if((vendorKey.equals("vendor_6"))) {
 
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah </b>\n\n";
+          //  text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Chicken and Mutton \n";
         }
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
 
      //   text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
@@ -1432,6 +1448,21 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
 
                 }
+
+                else  if((vendorKey.equals("vendor_6"))) {
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "New NS Bismillah" + "\n");
+
+                   // PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                  //  PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                   // PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+                }
+
+
                 else {
 
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
@@ -1946,6 +1977,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             instruction_textview.setText("After Selecting the Date !! Click Fetch Data");
                             Order_Item_List.clear();
                             totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
                             FinalBill_hashmap.clear();
@@ -2194,6 +2226,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     instruction_textview.setText("There is no Order On this Date");
                     Order_Item_List.clear();
                     totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
                     FinalBill_hashmap.clear();
@@ -2234,6 +2267,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 instruction_textview.setText("There is some error"+String.valueOf(error));
                 Order_Item_List.clear();
                 totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                 OrderItem_hashmap.clear();
                 finalBillDetails.clear();
                 FinalBill_hashmap.clear();
@@ -2268,6 +2302,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         };
         Order_Item_List.clear();
         totalappMarkupPercentageValue =0;
+        no_of_packs =0;
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
         FinalBill_hashmap.clear();
@@ -2836,6 +2871,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     Adjusting_Widgets_Visibility(false);
                     Order_Item_List.clear();
                     totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
                     FinalBill_hashmap.clear();
@@ -2877,6 +2913,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private void getPreOrderForSelectedDate(String previousDaydate,String currentDate, String vendorKey) {
         Order_Item_List.clear();
         totalappMarkupPercentageValue =0;
+        no_of_packs =0;
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
         FinalBill_hashmap.clear();
@@ -3256,6 +3293,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                         Adjusting_Widgets_Visibility(false);
                                         Order_Item_List.clear();
                                         totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                                         OrderItem_hashmap.clear();
                                         finalBillDetails.clear();
                                         FinalBill_hashmap.clear();
@@ -3291,6 +3329,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                             Adjusting_Widgets_Visibility(false);
                                             Order_Item_List.clear();
                                             totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                                             OrderItem_hashmap.clear();
                                             finalBillDetails.clear();
                                             FinalBill_hashmap.clear();
@@ -3322,6 +3361,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 Adjusting_Widgets_Visibility(false);
                                 Order_Item_List.clear();
                                 totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                                 OrderItem_hashmap.clear();
                                 finalBillDetails.clear();
                                 FinalBill_hashmap.clear();
@@ -3355,6 +3395,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             Adjusting_Widgets_Visibility(false);
                             Order_Item_List.clear();
                             totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
                             FinalBill_hashmap.clear();
@@ -3433,6 +3474,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 Adjusting_Widgets_Visibility(false);
                 Order_Item_List.clear();
                 totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                 OrderItem_hashmap.clear();
                 finalBillDetails.clear();
                 FinalBill_hashmap.clear();
@@ -3916,6 +3958,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             Adjusting_Widgets_Visibility(false);
                             Order_Item_List.clear();
                             totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
                             FinalBill_hashmap.clear();
@@ -3978,6 +4021,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     Adjusting_Widgets_Visibility(false);
                     Order_Item_List.clear();
                     totalappMarkupPercentageValue =0;
+        no_of_packs =0;
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
                     FinalBill_hashmap.clear();
@@ -4221,7 +4265,6 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
     private void addFinalPaymentAmountDetails(List<String> paymentModeArray, HashMap<String, Modal_OrderDetails> paymentModeHashmap) {
         FinalBill_hashmap.clear();
         finalBillDetails.clear();
-        DecimalFormat decimalFormat = new DecimalFormat("0.00");
         double card_amount = 0,phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,credit_Discountamount=0,credit_amount=0,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
         cardDiscount_amount =0 , RazorpayDiscount_amount=0,totalAmount=0,GST=0,totalAmountWithOutGst=0,totalAmount_with_Coupondiscount_double=0;
         double preordercard_amount = 0, preorderphonepe_amount = 0,preorderCredit_Discountamount=0,preorderCredit_Amount=0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
@@ -4230,7 +4273,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
         double cardDeliveryCharge_amount = 0, razorpayDeliveryCharge_amount=0,creditDeliveryCharge_amount=0,paytmDeliveryCharge_amount=0,cash_on_del_DeliveryCharge_amount=0,phonepeDeliveryCharge_amount=0,razorpaypreorderDeliveryCharge =0,
                 cardpreorderDeliveryCharge_amount = 0,cash_on_del_preorderDeliveryCharge=0,creditpreorderDeliveryCharge_amount=0,paytmpreorderDeliveryCharge=0,phonepepreorderDeliveryCharge=0;
         appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-
+        packCount_textwidget.setText(String.valueOf(no_of_packs));
 
 
         for(String PaymentModefromArray : paymentModeArray) {
@@ -4244,7 +4287,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getRazorpaySales());
                     Razorpay_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(Razorpay_amount);
+                  //  int intAmount = (int) Math.round(Razorpay_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(Razorpay_amount ));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     RazorpayDiscount_amount = Double.parseDouble(discount_String);
@@ -4269,7 +4313,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
                     card_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(card_amount);
+                    //int intAmount = (int) Math.round(card_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(card_amount ));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     cardDiscount_amount = Double.parseDouble(discount_String);
@@ -4293,7 +4339,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPaytmSales());
                     Paytm_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(Paytm_amount);
+                   // int intAmount = (int) Math.round(Paytm_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(Paytm_amount ));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     PaytmDiscount_amount = Double.parseDouble(discount_String);
@@ -4318,7 +4366,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
                     credit_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(credit_amount);
+                  //  int intAmount = (int) Math.round(credit_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(credit_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     credit_Discountamount = Double.parseDouble(discount_String);
@@ -4344,7 +4393,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     cash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(cash_amount);
+                  //  int intAmount = (int) Math.round(cash_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(cash_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -4369,7 +4420,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     phonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phonepe_amount);
+                    //int intAmount = (int) Math.round(phonepe_amount);
+
+                    double intAmount = Double.parseDouble(decimalFormat.format(phonepe_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -4403,7 +4456,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getRazorpaySales());
                     preorderRazorpay_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderRazorpay_amount);
+                   // int intAmount = (int) Math.round(preorderRazorpay_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderRazorpay_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderRazorpayDiscount_amount = Double.parseDouble(discount_String);
@@ -4425,7 +4480,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
                     preordercard_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preordercard_amount);
+                  //  int intAmount = (int) Math.round(preordercard_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preordercard_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderCardDiscount_amount = Double.parseDouble(discount_String);
@@ -4449,7 +4505,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPaytmSales());
                     preorderPaytm_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderPaytm_amount);
+                   // int intAmount = (int) Math.round(preorderPaytm_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderPaytm_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderPaytmDiscount_amount = Double.parseDouble(discount_String);
@@ -4476,7 +4533,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
                     preorderCredit_Amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderCredit_Amount);
+                    //int intAmount = (int) Math.round(preorderCredit_Amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderCredit_Amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderCredit_Discountamount = Double.parseDouble(discount_String);
@@ -4500,7 +4559,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     preordercash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preordercash_amount);
+                   // int intAmount = (int) Math.round(preordercash_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preordercash_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -4525,7 +4586,8 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     preorderphonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderphonepe_amount);
+                  //  int intAmount = (int) Math.round(preorderphonepe_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderphonepe_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -4688,7 +4750,9 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
 
         try{
-            totalApp_MarkupAmount.setText(String.valueOf(Math.round(totalappMarkupPercentageValue)));
+            totalApp_MarkupAmount.setText(String.valueOf(decimalFormat.format(totalappMarkupPercentageValue)));
+
+          //  totalApp_MarkupAmount.setText(String.valueOf(Math.round(totalappMarkupPercentageValue)));
 
            // totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
         }
@@ -4755,7 +4819,7 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
 
             for(int i=0; i < jsonArray.length(); i++) {
                 //Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
-
+                no_of_packs = no_of_packs +1;
                 JSONObject json = jsonArray.getJSONObject(i);
                 //Log.d(Constants.TAG, "this json" +json.toString());
 
@@ -5023,6 +5087,18 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                             e.printStackTrace();
                             marinadesObjectquantity = 1;
                         }
+
+                        try{
+                            if (marinadesObjectquantity > 1) {
+                                no_of_packs = (no_of_packs - 1);
+                                no_of_packs = (no_of_packs +((int) marinadesObjectquantity));
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+
 
                         JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
                         String marinadeitemmenuItemId = String.valueOf(marinadesObject.get("menuitemid"));
@@ -5950,6 +6026,17 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                     }
                     double tmcprice = Double.parseDouble(String.valueOf(json.get("tmcprice")));
                     int quantity = Integer.parseInt(String.valueOf(json.get("quantity")));
+
+
+                    try{
+                        if (quantity > 1) {
+                            no_of_packs = (no_of_packs - 1);
+                            no_of_packs = (no_of_packs +((int) quantity));
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                     try {
                         newweight = Double.parseDouble(String.valueOf(newOrderWeightInGrams));
 
@@ -6657,9 +6744,11 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                 oldOrder_WeightInGrams="0";
                             }
                             double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                            int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
+                           // int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
+                            double intOldOrder_WeightInGrams = Double.parseDouble(decimalFormat.format (doubleoldOrder_WeightInGrams));
+                            double intNewOrder_WeightInGrams = Double.parseDouble(decimalFormat.format(newweight));
 
-                            int intNewOrder_WeightInGrams = (int) Math.round(newweight);
+                          //  int intNewOrder_WeightInGrams = (int) Math.round(newweight);
 
                             intOldOrder_WeightInGrams = intOldOrder_WeightInGrams +intNewOrder_WeightInGrams;
 
@@ -6709,11 +6798,13 @@ public class App_Sales_Report_Subctgywise extends AppCompatActivity {
                                     oldOrder_WeightInGrams = "0";
                                 }
                                 double doubleoldOrder_WeightInGrams = Double.parseDouble(oldOrder_WeightInGrams);
-                                int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
+                               // int intOldOrder_WeightInGrams = (int) Math.round(doubleoldOrder_WeightInGrams);
 
-                                int intNewOrder_WeightInGrams = (int) Math.round(newweight);
+                                //int intNewOrder_WeightInGrams = (int) Math.round(newweight);
+                                double intOldOrder_WeightInGrams = Double.parseDouble(decimalFormat.format (doubleoldOrder_WeightInGrams));
+                                double intNewOrder_WeightInGrams = Double.parseDouble(decimalFormat.format(newweight));
 
-                                intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
+                                 intOldOrder_WeightInGrams = intOldOrder_WeightInGrams + intNewOrder_WeightInGrams;
                                 //Log.d(Constants.TAG, "this json pre 3 " + String.valueOf(oldOrder_WeightInGrams));
 
                                 modal_orderDetails_itemDespfrom_hashMap.setWeightingrams(String.valueOf((intOldOrder_WeightInGrams)));

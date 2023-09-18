@@ -68,11 +68,18 @@ public class Adapter_CreditOrdersTransactionList extends ArrayAdapter<Modal_Cred
              orderid_layout.setVisibility(View.GONE);
 
          } else if (transactionTypeString.toUpperCase().equals(Constants.CREDIT_AMOUNT_ADDED)) {
-             transactionType_textWidget.setText("CREDIT ORDER PLACED");
+             transactionType_textWidget.setText(" ORDER PLACED ");
              transactionValue_label.setText("Order Placed For ");
              orderid_layout.setVisibility(View.VISIBLE);
 
-         } else {
+         }
+         else if (transactionTypeString.toUpperCase().equals(Constants.CREDIT_AMOUNT_CANCELLED)) {
+             transactionType_textWidget.setText(" ORDER CANCELLED ");
+             transactionValue_label.setText(" ");
+             orderid_layout.setVisibility(View.VISIBLE);
+
+         }
+         else {
              transactionType_textWidget.setText(transactionTypeString);
 
          }

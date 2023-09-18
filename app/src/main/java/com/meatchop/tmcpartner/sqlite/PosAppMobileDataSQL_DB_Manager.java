@@ -22,7 +22,7 @@ public class PosAppMobileDataSQL_DB_Manager {
             appacessdetails_admin ="appacessdetails_admin",
             appacessdetails_cashier ="appacessdetails_cashier" , appacessdetails_deliverymanager ="appacessdetails_deliverymanager" ,appacessdetails_reportsviewer ="appacessdetails_reportsviewer",
             appacessdetails_storemanager ="appacessdetails_storemanager" ,redeemdata_maxpointsinaday ="redeemdata_maxpointsinaday" , redeemdata_minordervalueforredeem ="redeemdata_minordervalueforredeem" ,
-            updateweightforonlineorders ="updateweightforonlineorders" , redeemdata_pointsfor100rs = "redeemdata_pointsfor100rs" ,localDB_id ="localDB_id";
+            updateweightforonlineorders ="updateweightforonlineorders" , redeemdata_pointsfor100rs = "redeemdata_pointsfor100rs" ,localDB_id ="localDB_id" , enableorderplacingmicroservice = "enableorderplacingmicroservice";
 
 
     public static String database_Table = "PosAppMobileData";
@@ -42,6 +42,7 @@ public class PosAppMobileDataSQL_DB_Manager {
             + redeemdata_maxpointsinaday + " TEXT NOT NULL,"
             + redeemdata_minordervalueforredeem + " TEXT NOT NULL,"
             + updateweightforonlineorders + " TEXT NOT NULL,"
+            + enableorderplacingmicroservice + " TEXT NOT NULL,"
             + redeemdata_pointsfor100rs + " TEXT NOT NULL );";
 
 
@@ -131,6 +132,27 @@ public class PosAppMobileDataSQL_DB_Manager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+        try {
+            if (!modal_Pos_appMobileData.getEnableorderplacingmicroservice().equals("") && !String.valueOf(modal_Pos_appMobileData.getEnableorderplacingmicroservice()).toUpperCase().equals("NULL")) {
+                if (String.valueOf(modal_Pos_appMobileData.getEnableorderplacingmicroservice()).toUpperCase().equals(Constants.Empty_Text)) {
+
+                    contentValues.put(enableorderplacingmicroservice, false);
+
+                } else {
+
+                    contentValues.put(enableorderplacingmicroservice, modal_Pos_appMobileData.getEnableorderplacingmicroservice());
+
+
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
 
 
         try {
@@ -448,6 +470,14 @@ public class PosAppMobileDataSQL_DB_Manager {
 
             try {
                 contentValues.put(redeemdata_pointsfor100rs, String.valueOf(modal_Pos_appMobileData.getRedeemdata_pointsfor100rs()));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+                contentValues.put(enableorderplacingmicroservice, String.valueOf(modal_Pos_appMobileData.getEnableorderplacingmicroservice()));
 
             } catch (Exception e) {
                 e.printStackTrace();

@@ -19,7 +19,7 @@ public class VendorSQL_DB_Manager {
     public static final String pincode = "pincode", localDB_id = "localDB_id", addressline1 = "addressline1", addressline2 = "addressline2", vendortype = "vendortype", vendormobile = "vendormobile",
             status = "status", key = "key", inventorycheck = "inventorycheck", istestvendor = "istestvendor", vendorname = "vendorname", localdbcheck = "localdbcheck" , isweightmachineconnected ="isweightmachineconnected";
     public static final String defaultprintertype = "defaultprintertype", vendorfssaino = "vendorfssaino", locationlat = "locationlat", locationlong = "locationlong", inventorycheckpos = "inventorycheckpos", minimumscreensizeforpos = "minimumscreensizeforpos"
-            ,isbarcodescannerconnected  = "isbarcodescannerconnected";
+            ,isbarcodescannerconnected  = "isbarcodescannerconnected" , isweighteditable ="isweighteditable";
 
 
     public static String database_Table = "Vendor";
@@ -45,6 +45,7 @@ public class VendorSQL_DB_Manager {
             + minimumscreensizeforpos + " TEXT NOT NULL,"
             + isweightmachineconnected + " TEXT NOT NULL,"
             + isbarcodescannerconnected + " TEXT NOT NULL,"
+            + isweighteditable +" TEXT NOT NULL,"
             + vendormobile + " TEXT NOT NULL );";
 
 
@@ -243,6 +244,29 @@ public class VendorSQL_DB_Manager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+
+
+        try {
+            if (!modalVendor.getIsweighteditable().equals("") && !String.valueOf(modalVendor.getIsweighteditable()).toUpperCase().equals("NULL")) {
+                if (String.valueOf(modalVendor.getIsweighteditable()).toUpperCase().equals(Constants.Empty_Text)) {
+
+                    contentValues.put(isweighteditable, "");
+
+                } else {
+
+                    contentValues.put(isweighteditable, modalVendor.getIsweighteditable());
+
+
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
 
 
         try {
@@ -541,6 +565,14 @@ public class VendorSQL_DB_Manager {
 
             try {
                 contentValues.put(istestvendor, String.valueOf(modalVendor.getIstestvendor()));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+                contentValues.put(isweighteditable, String.valueOf(modalVendor.getIsweighteditable()));
 
             } catch (Exception e) {
                 e.printStackTrace();

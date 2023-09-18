@@ -2,21 +2,37 @@ package com.meatchop.tmcpartner.settings;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.StrictMode;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +44,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -38,10 +55,15 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.mobilescreen_javaclasses.manage_orders.Adapter_Mobile_AssignDeliveryPartner1;
+import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.AssignDeliveryPartner_PojoClass;
+import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.AssigningDeliveryPartner;
 import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.posscreen_javaclasses.pos_new_orders.Adapter_AutoCompleteMenuItem;
 import com.meatchop.tmcpartner.vendor_order_tracking_details.VendorOrdersTableInterface;
 import com.meatchop.tmcpartner.vendor_order_tracking_details.VendorOrdersTableService;
 
@@ -70,21 +92,27 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
 
+import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
+
 public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     Spinner deliveryPartnerSelectionSpinner;
+    AutoCompleteTextView deliveryPartnerSelection_autoCompletewidget;
     private ArrayList<Modal_DeliveryPartner> deliveryPartner_arrayList;
+    List<AssignDeliveryPartner_PojoClass> sorteddeliveryPartnerList = new ArrayList<>();
     LinearLayout orderDetailsLayout,PrintReport_Layout,viewOrdersList_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel,getOrdersList_Layout;
     DatePickerDialog datepicker;
     TextView totaldeliveredOrdersCount,totalOrdersCount,preorder_cashOnDelivery,preorder_Phonepe,preorder_Razorpay,preorder_paytmSales;
     TextView cashOnDelivery_phoneOrders,upiSales_phoneOrders,cardSales_phoneOrders,phonepe_phoneOrders,Phonepe,totalSales_headingText,Razorpay,Paytm, cashOnDelivery,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     TextView creditSales,preorder_creditSales,creditSales_phoneOrders,preorder_cardSales;
-    TextView deliveryChargeAmount_textwidget,deliverypartnerName_textwidget,cashSales, cardSales,ordersInstruction;
+    TextView deliveryChargeAmount_textwidget,deliverypartnerName_textwidget,cashSales, cardSales,ordersInstruction , deliveryPersonMobilenoLabel ,  deliveryPersonNameLabel;
+    public static TextView deliveryPersonName_textview , deliveryPersonMobileno_textview;
+    LinearLayout deliveryPartner_Linearlayout  , deliveryPartnermobileno_Linearlayout;
     String vendorKey,CurrentDay_date,assignedOrdersString="";
     double screenInches;
     String CurrentDate;
     String DateString;
     List<Modal_DeliveryPartner> assignedOrdersList;
-
+    DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
     public static List<String> OrderIdCount;
     public static List<String> delivered_OrderIdCount;
@@ -137,7 +165,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     private JSONArray result = new JSONArray();
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final int OPENPDF_ACTIVITY_REQUEST_CODE = 2;
-    String deliveryPartnerStatus,deliveryPartnerKey,deliveryPartnerMobileNo ="",deliveryPartnerName;
+    public static  String deliveryPartnerStatus,deliveryPartnerKey,deliveryPartnerMobileNo ="",deliveryPartnerName;
     String finalCashAmount_pdf,finalRazorpayAmount_pdf,finalPhonepeAmount_pdf,finalPaytmAmount_pdf,finalCreditAmount_pdf,finalCardAmount_pdf;
     String finalpreorderCashAmount_pdf,finalpreorderRazorpayAmount_pdf,finalpreorderPhonepeAmount_pdf,finalpreorderPaytmAmount_pdf,finalpreorderCreditAmount_pdf,finalpreorderCardAmount_pdf;
     String finalphoneorderCashAmount_pdf,finalphoneorderPhoenpeAmount_pdf,finalphoneorderCardAmount_pdf,finalphoneorderUPIAmount_pdf,finalphoneorderCreditAmount_pdf;
@@ -153,6 +181,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
     boolean  isVendorOrdersTableServiceCalled = false;
 
 
+    public static BottomSheetDialog  bottomSheetDialog;
+
 
 
     @Override
@@ -162,6 +192,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
+        deliveryPartnerSelection_autoCompletewidget  = findViewById(R.id.deliveryPartnerSelection_autoCompletewidget);
         deliveryPartnerSelectionSpinner = findViewById(R.id.deliveryPartnerSelectionSpinner);
         deliveryPartner_arrayList=new ArrayList<>();
 
@@ -173,6 +204,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         dateSelectorLayout = findViewById(R.id.dateSelectorLayout);
         dateSelector_text = findViewById(R.id.dateSelector_text);
         viewOrdersList_Layout = findViewById(R.id.viewOrdersList_Layout);
+        deliveryPersonNameLabel= findViewById(R.id.deliveryPersonNameLabel);
+        deliveryPersonMobilenoLabel = findViewById(R.id.deliveryPersonMobilenoLabel);
+        deliveryPartnermobileno_Linearlayout = findViewById(R.id.deliveryPartnermobileno_Linearlayout);
         PrintReport_Layout = findViewById(R.id.PrintReport_Layout);
         totalAmt_without_GST = findViewById(R.id.totalAmt_without_GST);
         totalCouponDiscount_Amt = findViewById(R.id.totalCouponDiscount_Amt);
@@ -213,6 +247,12 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
         preorder_Phonepe  = findViewById(R.id.preorder_Phonepe);
         preorder_Razorpay = findViewById(R.id.preorder_Razorpay);
         preorder_paytmSales = findViewById(R.id.preorder_paytmSales);
+
+        deliveryPartner_Linearlayout = findViewById(R.id.deliveryPartner_Linearlayout);
+        deliveryPersonName_textview = findViewById(R.id.deliveryPersonName);
+        deliveryPersonMobileno_textview = findViewById(R.id.deliveryPersonMobileno);
+        bottomSheetDialog = new BottomSheetDialog(DeliveryPartnerSettlementReport.this);
+
         delivered_OrderIdCount = new ArrayList<>();
         OrderIdCount = new ArrayList<>();
         assignedOrdersList = new ArrayList<>();
@@ -306,6 +346,115 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
         orderDetailsLayout .setVisibility( View.GONE);
         ordersInstruction.setVisibility(View.VISIBLE);
+
+        deliveryPartner_Linearlayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                OrderIdCount.clear();
+                delivered_OrderIdCount.clear();
+                Order_Item_List.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                paymentModeHashmap.clear();
+                paymentModeArray.clear();
+                paymentMode_DiscountHashmap.clear();
+                paymentMode_DiscountOrderid.clear();
+                preorder_paymentModeHashmap.clear();
+                preorder_paymentModeArray.clear();
+                preorderpaymentMode_DiscountOrderid.clear();
+                preorderpaymentMode_DiscountHashmap.clear();
+                paymentMode_DeliveryChargeHashmap.clear();
+                paymentMode_DeliveryChargeOrderid.clear();
+
+                phoneorder_paymentModeHashmap.clear();
+                phoneorder_paymentModeArray.clear();
+                phoneorderpaymentMode_DiscountOrderid.clear();
+                phoneorderpaymentMode_DiscountHashmap.clear();
+                phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                preorderpaymentMode_DeliveryChargeHashmap.clear();
+                deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
+                deliveryCharges_preorder=0;
+
+
+                CouponDiscount = 0;
+                CouponDiscount_preorder = 0;
+
+
+                if(screenInches>Constants.default_mobileScreenSize) {
+                    Intent intent = new Intent(getApplicationContext(), AssigningDeliveryPartner.class);
+                    intent.putExtra("From", "DeliveryPartnerSettlementReport");
+                    startActivity(intent);
+                }
+                else {
+                    showBottomSheetDialog();
+
+                }
+
+            }
+        });
+
+        deliveryPartnermobileno_Linearlayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                OrderIdCount.clear();
+                delivered_OrderIdCount.clear();
+                Order_Item_List.clear();
+                OrderItem_hashmap.clear();
+                finalBillDetails.clear();
+                FinalBill_hashmap.clear();
+                paymentModeHashmap.clear();
+                paymentModeArray.clear();
+                paymentMode_DiscountHashmap.clear();
+                paymentMode_DiscountOrderid.clear();
+                preorder_paymentModeHashmap.clear();
+                preorder_paymentModeArray.clear();
+                preorderpaymentMode_DiscountOrderid.clear();
+                preorderpaymentMode_DiscountHashmap.clear();
+                paymentMode_DeliveryChargeHashmap.clear();
+                paymentMode_DeliveryChargeOrderid.clear();
+
+                phoneorder_paymentModeHashmap.clear();
+                phoneorder_paymentModeArray.clear();
+                phoneorderpaymentMode_DiscountOrderid.clear();
+                phoneorderpaymentMode_DiscountHashmap.clear();
+                phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
+                preorderpaymentMode_DeliveryChargeOrderid.clear();
+                preorderpaymentMode_DeliveryChargeHashmap.clear();
+                deliveryCharges=0;
+                deliveryCharges_phoneorder =0;
+                CouponDiscount_phoneorder=0;
+                deliveryCharges_preorder=0;
+
+
+                CouponDiscount = 0;
+                CouponDiscount_preorder = 0;
+
+
+                if(screenInches>Constants.default_mobileScreenSize) {
+                    Intent intent = new Intent(getApplicationContext(), AssigningDeliveryPartner.class);
+                    intent.putExtra("From", "DeliveryPartnerSettlementReport");
+                    startActivity(intent);
+                }
+                else {
+                    showBottomSheetDialog();
+
+                }
+
+            }
+        });
+
         getOrdersList_Layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -466,7 +615,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
         if(screenInches>Constants.default_mobileScreenSize){
-            viewOrdersList_Layout.setVisibility(View.GONE);
+            viewOrdersList_Layout.setVisibility(View.INVISIBLE);
         }
 
         viewOrdersList_Layout.setOnClickListener(new View.OnClickListener() {
@@ -557,6 +706,219 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
  */
 
+
+
+
+
+    public void showBottomSheetDialog() {
+        Adjusting_Widgets_Visibility(true);
+        if(deliveryPartner_arrayList.size()>0) {
+            try {
+
+                bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
+                ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
+                TextView deliverypersonList_instructiontextview = bottomSheetDialog.findViewById(R.id.deliverypersonList_instructiontextview);
+                TextView deliveryPersonName_TextView = bottomSheetDialog.findViewById(R.id.deliveryPersonName_TextView);
+                ImageView searchicon = bottomSheetDialog.findViewById(R.id.searchicon);
+                ImageView closeicon = bottomSheetDialog.findViewById(R.id.closeicon);
+                EditText deliveryPersonName_editText = bottomSheetDialog.findViewById(R.id.deliveryPersonName_editText);
+
+                deliveryPersonName_TextView.setVisibility(View.VISIBLE);
+                searchicon.setVisibility(View.VISIBLE);
+                closeicon.setVisibility(View.GONE);
+                deliveryPersonName_editText.setVisibility(View.GONE);
+                deliverypersonList_instructiontextview.setVisibility(View.VISIBLE);
+                deliverypersonList_instructiontextview.setText("Loading...");
+                ListView1.setVisibility(View.GONE);
+
+
+                try {
+
+                    searchicon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryPersonName_TextView.setVisibility(View.GONE);
+                            searchicon.setVisibility(View.GONE);
+                            closeicon.setVisibility(View.VISIBLE);
+                            deliveryPersonName_editText.setVisibility(View.VISIBLE);
+                            showKeyboard(deliveryPersonName_editText);
+
+                        }
+                    });
+
+
+                    deliveryPersonName_TextView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryPersonName_TextView.setVisibility(View.GONE);
+                            searchicon.setVisibility(View.GONE);
+                            closeicon.setVisibility(View.VISIBLE);
+                            deliveryPersonName_editText.setVisibility(View.VISIBLE);
+                            showKeyboard(deliveryPersonName_editText);
+                        }
+                    });
+
+                    closeicon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryPersonName_TextView.setVisibility(View.VISIBLE);
+                            searchicon.setVisibility(View.VISIBLE);
+                            closeicon.setVisibility(View.GONE);
+                            deliveryPersonName_editText.setVisibility(View.GONE);
+                            hideKeyboard(deliveryPersonName_editText);
+
+
+                            deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                            ListView1.setVisibility(View.VISIBLE);
+                            deliverypersonList_instructiontextview.setText("");
+                            deliveryPersonName_editText.setText("");
+                            sorteddeliveryPartnerList.clear();
+                            for (int i = 0; i < deliveryPartner_arrayList.size(); i++) {
+
+                                AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                                assignDeliveryPartner_pojoClass.setDeliveryPartnerKey(deliveryPartner_arrayList.get(i).getDeliveryPartnerKey());
+                                assignDeliveryPartner_pojoClass.setDeliveryPartnerMobileNo(deliveryPartner_arrayList.get(i).getDeliveryPartnerMobileNo());
+                                assignDeliveryPartner_pojoClass.setDeliveryPartnerName(deliveryPartner_arrayList.get(i).getDeliveryPartnerName());
+                                assignDeliveryPartner_pojoClass.setDeliveryPartnerStatus(deliveryPartner_arrayList.get(i).getDeliveryPartnerStatus());
+
+
+
+                                sorteddeliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+
+
+
+
+                            }
+                            Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(getApplicationContext(), sorteddeliveryPartnerList,  "DeliveryPartnerSettlementReport");
+                            ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+                        }
+                    });
+
+
+                    deliveryPersonName_editText.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                            String deliveryPersonNameFromListener = String.valueOf(s);
+                            sorteddeliveryPartnerList.clear();
+                            if (!deliveryPersonNameFromListener.equals("")) {
+                                try {
+
+                                    for (int i = 0; i < deliveryPartner_arrayList.size(); i++) {
+
+                                        AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                                        assignDeliveryPartner_pojoClass.setDeliveryPartnerKey(deliveryPartner_arrayList.get(i).getDeliveryPartnerKey());
+                                        assignDeliveryPartner_pojoClass.setDeliveryPartnerMobileNo(deliveryPartner_arrayList.get(i).getDeliveryPartnerMobileNo());
+                                        assignDeliveryPartner_pojoClass.setDeliveryPartnerName(deliveryPartner_arrayList.get(i).getDeliveryPartnerName());
+                                        assignDeliveryPartner_pojoClass.setDeliveryPartnerStatus(deliveryPartner_arrayList.get(i).getDeliveryPartnerStatus());
+
+
+
+                                        if (assignDeliveryPartner_pojoClass.getDeliveryPartnerName().toUpperCase().contains(deliveryPersonNameFromListener.toUpperCase())) {
+                                            sorteddeliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+                                        }
+
+                                        if (i == (deliveryPartner_arrayList.size() - 1)) {
+                                            if (sorteddeliveryPartnerList.size() > 0) {
+
+                                                deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                                                ListView1.setVisibility(View.VISIBLE);
+                                                deliverypersonList_instructiontextview.setText("");
+
+                                                Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(getApplicationContext(), sorteddeliveryPartnerList,  "DeliveryPartnerSettlementReport");
+                                                ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+                                            } else {
+                                                deliverypersonList_instructiontextview.setVisibility(View.VISIBLE);
+                                                ListView1.setVisibility(View.GONE);
+                                                deliverypersonList_instructiontextview.setText("There is no delivery person in this name");
+                                            }
+                                        }
+
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+
+
+
+                    try{
+                        sorteddeliveryPartnerList.clear();
+                        for (int i = 0; i < deliveryPartner_arrayList.size(); i++) {
+
+                            AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                            assignDeliveryPartner_pojoClass.setDeliveryPartnerKey(deliveryPartner_arrayList.get(i).getDeliveryPartnerKey());
+                            assignDeliveryPartner_pojoClass.setDeliveryPartnerMobileNo(deliveryPartner_arrayList.get(i).getDeliveryPartnerMobileNo());
+                            assignDeliveryPartner_pojoClass.setDeliveryPartnerName(deliveryPartner_arrayList.get(i).getDeliveryPartnerName());
+                            assignDeliveryPartner_pojoClass.setDeliveryPartnerStatus(deliveryPartner_arrayList.get(i).getDeliveryPartnerStatus());
+
+
+
+                                sorteddeliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+
+
+
+
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+                    Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(getApplicationContext(), sorteddeliveryPartnerList,  "DeliveryPartnerSettlementReport");
+                    ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+                    deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                    ListView1.setVisibility(View.VISIBLE);
+                    Adjusting_Widgets_Visibility(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                bottomSheetDialog.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+
+           // getDeliveryPartnerList(true , orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+
+        }
+    }
+
+    private void hideKeyboard(EditText editText) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        Objects.requireNonNull(imm).hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
+
+
+
+    private void showKeyboard(final EditText editText) {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                editText.requestFocus();
+                InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                editText.setSelection(editText.getText().length());
+            }
+        },0);
+    }
 
 
 
@@ -2825,6 +3187,14 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
                         deliveryPartnerSelectionSpinner.setAdapter(adapter_deliveryPartnerList_spinner);
 
+
+                       // Adapter_AutoCompleteDeliveryPartnerName  adapter = new Adapter_AutoCompleteDeliveryPartnerName(DeliveryPartnerSettlementReport.this,deliveryPartner_arrayList);
+                       // adapter.setHandler(newHandler());
+
+                       // deliveryPartnerSelection_autoCompletewidget.setAdapter(adapter);
+
+
+
                         Adjusting_Widgets_Visibility(false);
 
                     } catch (Exception e) {
@@ -2854,6 +3224,83 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
 
 
+    public Handler newHandler() {
+        Handler.Callback callback = new Handler.Callback() {
+
+            @Override
+            public boolean handleMessage(Message msg) {
+                Bundle bundle = msg.getData();
+                String response_from = bundle.getString("from");
+
+                if (String.valueOf(response_from).equalsIgnoreCase("autoCompleteDeliveryPartnername")) {
+
+                    String data = bundle.getString("dropdown");
+
+                    deliveryPartnerStatus = bundle.getString("status");
+                    deliveryPartnerKey = bundle.getString("key");
+                    deliveryPartnerMobileNo = bundle.getString("mobileno");
+                    deliveryPartnerName = bundle.getString("name");
+
+
+
+
+                    if (String.valueOf(data).equalsIgnoreCase("dismissdropdowninDeliveryPartnerReport")) {
+                        //Log.e(TAG, "dismissDropdown");
+                        //Log.e(Constants.TAG, "createBillDetails in CartItem 0 ");
+
+
+
+
+                        deliveryPartnerSelection_autoCompletewidget.clearFocus();
+
+                        deliveryPartnerSelection_autoCompletewidget.dismissDropDown();
+
+                        deliveryPartnerSelection_autoCompletewidget.setText(deliveryPartnerName);
+
+                        deliverypartnerName_textwidget.setText(deliveryPartnerName);
+                        OrderIdCount.clear();
+                        delivered_OrderIdCount.clear();
+                        Order_Item_List.clear();
+                        OrderItem_hashmap.clear();
+                        finalBillDetails.clear();
+                        FinalBill_hashmap.clear();
+                        paymentModeHashmap.clear();
+                        paymentModeArray.clear();
+                        paymentMode_DiscountHashmap.clear();
+                        paymentMode_DiscountOrderid.clear();
+                        preorder_paymentModeHashmap.clear();
+                        preorder_paymentModeArray.clear();
+                        preorderpaymentMode_DiscountOrderid.clear();
+                        preorderpaymentMode_DiscountHashmap.clear();
+                        paymentMode_DeliveryChargeHashmap.clear();
+                        paymentMode_DeliveryChargeOrderid.clear();
+
+                        phoneorder_paymentModeHashmap.clear();
+                        phoneorder_paymentModeArray.clear();
+                        phoneorderpaymentMode_DiscountOrderid.clear();
+                        phoneorderpaymentMode_DiscountHashmap.clear();
+                        phoneorderpaymentMode_DeliveryChargeOrderid.clear();
+                        phoneorderpaymentMode_DeliveryChargeHashmap.clear();
+
+                        preorderpaymentMode_DeliveryChargeOrderid.clear();
+                        preorderpaymentMode_DeliveryChargeHashmap.clear();
+                        deliveryCharges=0;
+                        deliveryCharges_phoneorder =0;
+                        CouponDiscount_phoneorder=0;
+                        deliveryCharges_preorder=0;
+
+
+                        CouponDiscount = 0;
+                        CouponDiscount_preorder = 0;
+                    }
+                }
+
+                return false;
+            }
+        };
+        return new Handler(callback);
+    }
+
 
 
 
@@ -2863,7 +3310,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
     private void getVendorwiseDeliveryPartner() {
         Adjusting_Widgets_Visibility(true);
-
+        sorteddeliveryPartnerList.clear();
         deliveryPartner_arrayList.clear();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorKey  , null,
                 new com.android.volley.Response.Listener<JSONObject>() {
@@ -2900,6 +3347,13 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                                     Adapter_DeliveryPartnerList_Spinner adapter_deliveryPartnerList_spinner= new Adapter_DeliveryPartnerList_Spinner(DeliveryPartnerSettlementReport.this,deliveryPartner_arrayList,DeliveryPartnerSettlementReport.this);
 
                                     deliveryPartnerSelectionSpinner.setAdapter(adapter_deliveryPartnerList_spinner);
+
+
+                                  //  Adapter_AutoCompleteDeliveryPartnerName  adapter = new Adapter_AutoCompleteDeliveryPartnerName(DeliveryPartnerSettlementReport.this,deliveryPartner_arrayList);
+                                  //  adapter.setHandler(newHandler());
+
+                                 //   deliveryPartnerSelection_autoCompletewidget.setAdapter(adapter);
+
 
                                     Adjusting_Widgets_Visibility(false);
 
@@ -2940,6 +3394,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.getMessage());
                 //Log.d(Constants.TAG, "getDeliveryPartnerList Error: " + error.toString());
                 deliveryPartner_arrayList.clear();
+                sorteddeliveryPartnerList.clear();
                 error.printStackTrace();
             }
         }) {
@@ -3941,7 +4396,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                         tmcprice = tmcprice+gstAmount;
                         tmcprice = quantity*tmcprice;
                        // int inttmcPrice = (int) Math.round(tmcprice);
-                        int inttmcPrice = (int) (tmcprice);
+                        double inttmcPrice = Double.parseDouble(decimalFormat.format (tmcprice));
 
                         String tmcprice_string = String.valueOf(((inttmcPrice)));
 
@@ -4846,7 +5301,7 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
 
         totalOrdersCount.setText(String.valueOf(OrderIdCount.size()));
         totaldeliveredOrdersCount.setText(String.valueOf(delivered_OrderIdCount.size()));
-        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
         double card_Amount = 0, cardDdiscount_Amount = 0,credit_amount=0,credit_Discount_amount = 0,phonepe_amount = 0,phonepe_Discount_amount = 0 ,cash_amount = 0,cash_Discount_amount = 0 ,Paytm_amount=0, Razorpay_amount=0,PaytmDiscount_amount = 0,
                 RazorpayDiscount_amount=0,totalAmount=0,GST=0,totalAmountWithOutGst=0,totalAmount_with_Coupondiscount_deliveryCharges_double=0;
         double preordercard_amount=0,preordercredit_amount=0,preordercredit_Discount_amount = 0,preorderphonepe_amount = 0,preorderphonepe_Discount_amount = 0 ,preordercash_amount = 0,preordercash_Discount_amount = 0 ,preorderPaytm_amount=0, preorderRazorpay_amount=0,preorderPaytmDiscount_amount = 0,
@@ -4871,7 +5326,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getRazorpaySales());
                     Razorpay_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(Razorpay_amount);
+                    //int intAmount = (int) Math.round(Razorpay_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(Razorpay_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     RazorpayDiscount_amount = Double.parseDouble(discount_String);
@@ -4896,7 +5352,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPaytmSales());
                     Paytm_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(Paytm_amount);
+                   // int intAmount = (int) Math.round(Paytm_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(Paytm_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     PaytmDiscount_amount = Double.parseDouble(discount_String);
@@ -4920,7 +5378,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
                     card_Amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(card_Amount);
+                   // int intAmount = (int) Math.round(card_Amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(card_Amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     cardDdiscount_Amount = Double.parseDouble(discount_String);
@@ -4945,7 +5405,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     cash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(cash_amount);
+                    //int intAmount = (int) Math.round(cash_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(cash_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -4971,7 +5433,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     phonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phonepe_amount);
+                    //int intAmount = (int) Math.round(phonepe_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(phonepe_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -4997,7 +5461,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
                     credit_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(credit_amount);
+                   // int intAmount = (int) Math.round(credit_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(credit_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -5031,7 +5496,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getRazorpaySales());
                     preorderRazorpay_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderRazorpay_amount);
+                   // int intAmount = (int) Math.round(preorderRazorpay_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderRazorpay_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderRazorpayDiscount_amount = Double.parseDouble(discount_String);
@@ -5055,7 +5521,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPaytmSales());
                     preorderPaytm_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderPaytm_amount);
+                   // int intAmount = (int) Math.round(preorderPaytm_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderPaytm_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     preorderPaytmDiscount_amount = Double.parseDouble(discount_String);
@@ -5079,7 +5547,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
                     preordercard_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preordercard_amount);
+                  //  int intAmount = (int) Math.round(preordercard_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preordercard_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -5106,7 +5575,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     preordercash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preordercash_amount);
+                   // int intAmount = (int) Math.round(preordercash_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preordercash_amount));
+
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -5133,7 +5604,8 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     preorderphonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(preorderphonepe_amount);
+                   // int intAmount = (int) Math.round(preorderphonepe_amount);
+                    double intAmount = Double.parseDouble(decimalFormat.format(preorderphonepe_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -5167,7 +5639,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getUpiSales());
                     phoneorderUpi_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phoneorderUpi_amount);
+                   // int intAmount = (int) Math.round(phoneorderUpi_amount);
+                 //   double intAmount = Double.parseDouble(decimalFormat.format(phoneorderUpi_amount));
+                    double intAmount =  (Math.round(phoneorderUpi_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     phoneorderUpiDiscount_amount = Double.parseDouble(discount_String);
@@ -5191,7 +5665,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCardSales());
                     phoneorderCard_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phoneorderCard_amount);
+                   // int intAmount = (int) Math.round(phoneorderCard_amount);
+                  //  double intAmount = Double.parseDouble(decimalFormat.format(phoneorderCard_amount));
+                    double intAmount =  (Math.round(phoneorderCard_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
                     phoneorderCardDiscount_amount = Double.parseDouble(discount_String);
@@ -5217,7 +5693,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCashOndeliverySales());
                     phoneordercash_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phoneordercash_amount);
+                   // int intAmount = (int) Math.round(phoneordercash_amount);
+                   // double intAmount = Double.parseDouble(decimalFormat.format(phoneordercash_amount));
+                    double intAmount =  (Math.round(phoneordercash_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -5241,7 +5719,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getPhonepeSales());
                     phoneorderphonepe_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phoneorderphonepe_amount);
+                   // int intAmount = (int) Math.round(phoneorderphonepe_amount);
+                    double intAmount =  (Math.round(phoneorderphonepe_amount));
+                  //  double intAmount = Double.parseDouble(decimalFormat.format(phoneorderphonepe_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());
@@ -5267,7 +5747,9 @@ public class DeliveryPartnerSettlementReport extends AppCompatActivity {
                 try {
                     String tmcpriceperkg = String.valueOf(modal_orderDetails.getCreditSales());
                     phoneordercredit_amount = Double.parseDouble(tmcpriceperkg);
-                    int intAmount = (int) Math.round(phoneordercredit_amount);
+                    //int intAmount = (int) Math.round(phoneordercredit_amount);
+                   // double intAmount = Double.parseDouble(decimalFormat.format(phoneordercredit_amount));
+                    double intAmount =  (Math.round(phoneordercredit_amount));
                     totalAmountWithOutGst = totalAmountWithOutGst + intAmount;
 
                     String discount_String = String.valueOf(Objects.requireNonNull(Payment_Modewise_discount).getDiscountAmount());

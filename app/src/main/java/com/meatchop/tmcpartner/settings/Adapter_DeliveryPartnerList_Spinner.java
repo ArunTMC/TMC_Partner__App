@@ -41,10 +41,9 @@ DeliveryPartnerSettlementReport deliveryPartnerSettlementReport;
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         view = inflter.inflate(R.layout.deliverypartner_selecting_spinner, null);
-        TextView deliveryPersonName = (TextView) view.findViewById(R.id.deliveryPersonName);
 
         View divider = (View) view.findViewById(R.id.divider);
-
+        TextView deliveryPersonName = (TextView) view.findViewById(R.id.deliveryPersonName);
         TextView deliveryPersonMobileno = (TextView) view.findViewById(R.id.deliveryPersonMobileno);
         Modal_DeliveryPartner modal_deliveryPartner = deliveryPartner_arrayList.get(i);
         deliveryPersonName.setText(String.valueOf(modal_deliveryPartner.getDeliveryPartnerName()));

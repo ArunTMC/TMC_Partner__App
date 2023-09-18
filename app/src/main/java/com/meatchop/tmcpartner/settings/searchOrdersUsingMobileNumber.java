@@ -40,9 +40,14 @@ import android.widget.Toast;
 import com.RT_Printer.BluetoothPrinter.BLUETOOTH.BluetoothPrintDriver;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -77,6 +82,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -101,7 +107,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     Button mobile_new_Order_widget, mobile_confirmed_Order_widget, mobile_ready_Order_widget, mobile_transist_Order_widget, mobile_delivered_Order_widget;
     ImageView mobile_search_button, mobile_search_close_btn,applaunchimage;
     EditText mobile_search_barEditText;
-    
+
     String mobile_jsonString,orderStatus,vendorKey,vendorname,TAG = "Tag";
     String DateString,PreviousDateString;
     ListView manageOrders_ListView;
@@ -160,7 +166,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
     List<String> StatusSpinnerData;
     String selected_StatusFrom_spinner = "All";
     int statusspinner_check = 0;
-
+    boolean isDeliveryPartnerMethodCalled = false;
     Button connect_printer_button_widget;
     // Local Bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter = null;
@@ -235,7 +241,15 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             SharedPreferences shared_PF_PrinterData = getSharedPreferences("PrinterConnectionData",MODE_PRIVATE);
             printerType_sharedPreference = (shared_PF_PrinterData.getString("printerType", ""));
 
-            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+            //ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+            if(DeliveryPersonList.equals("")){
+                getDeliveryPartnerList(false,"","","","","");
+
+            }
+            else{
+                ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+            }
 
        }
        catch (Exception e){
@@ -980,7 +994,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         String CouponDiscount ="";
         String OrderType = "";
         String PayableAmountfromArray = "";
-        String PayableAmount = "";
+        String PayableAmount = "";String PayableAmountwithOutRoundOFF = "";
         String PaymentMode = "";
         String MobileNumber ="";
         String TokenNo="";
@@ -997,7 +1011,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         double totalAmountFromAddingSubtotalWithDiscount =0;
         double totalAmountFromAddingSubtotalWithDiscountanddeliveryAmnt =0;
         String DeliveryAmount =  "";
-
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
         try {
             OrderPlacedtime= modal_manageOrders_pojo_class.getOrderplacedtime();
         }
@@ -1741,6 +1755,30 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
                 BluetoothPrintDriver.BT_Write("\r");
                 BluetoothPrintDriver.LF();
             }
+            if((vendorKey.equals("vendor_6"))) {
+
+                Title = "New NS Bismillah ";
+
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString(Title);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+             /*   BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+              */
+            }
+
+
             else {
                 Title = "The Meat Chop";
 
@@ -2946,68 +2984,79 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             BluetoothPrintDriver.printString("----------------------------------------------");
             BluetoothPrintDriver.BT_Write("\r");
             BluetoothPrintDriver.LF();
-
+            PayableAmountwithOutRoundOFF = "Rs." + String.valueOf(decimalFormat.format(totalAmountFromAddingSubtotal));
+            try{
+                if(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.APPORDER)){
+                    totalAmountFromAddingSubtotal = Double.parseDouble(decimalFormat.format(totalAmountFromAddingSubtotal));
+                }
+                else{
+                    totalAmountFromAddingSubtotal = (Math.round(totalAmountFromAddingSubtotal));
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
 
             PayableAmount = "Rs." + String.valueOf(totalAmountFromAddingSubtotal);
             if (PayableAmount.length() == 4) {
                 //21spaces
-                PayableAmount = PayableAmount + "                                     " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                                     " + PayableAmount;
             }
             if (PayableAmount.length() == 5) {
                 //20spaces
-                PayableAmount = PayableAmount + "                                  " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                                  " + PayableAmount;
             }
             if (PayableAmount.length() == 6) {
                 //19spaces
-                PayableAmount = PayableAmount + "                                 " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                                 " + PayableAmount;
             }
             if (PayableAmount.length() == 7) {
                 //18spaces
-                PayableAmount = PayableAmount + "                                " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                                " + PayableAmount;
             }
             if (PayableAmount.length() == 8) {
                 //17spaces
-                PayableAmount = PayableAmount + "                               " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                               " + PayableAmount;
             }
             if (PayableAmount.length() == 9) {
                 //16spaces
-                PayableAmount = PayableAmount + "                              " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                              " + PayableAmount;
             }
             if (PayableAmount.length() == 10) {
                 //15spaces
-                PayableAmount = PayableAmount + "                             " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                             " + PayableAmount;
             }
             if (PayableAmount.length() == 11) {
                 //14spaces
-                PayableAmount = PayableAmount + "                            " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                            " + PayableAmount;
             }
             if (PayableAmount.length() == 12) {
                 //13spaces
-                PayableAmount = PayableAmount + "                           " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                           " + PayableAmount;
             }
             if (PayableAmount.length() == 13) {
                 //12spaces
-                PayableAmount = PayableAmount + "                          " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                          " + PayableAmount;
             }
             if (PayableAmount.length() == 14) {
                 //11spaces
-                PayableAmount = PayableAmount + "                         " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                         " + PayableAmount;
             }
             if (PayableAmount.length() == 15) {
                 //10spaces
-                PayableAmount = PayableAmount + "                        " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                        " + PayableAmount;
             }
             if (PayableAmount.length() == 16) {
                 //9spaces
-                PayableAmount = PayableAmount + "                       " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                       " + PayableAmount;
             }
             if (PayableAmount.length() == 17) {
                 //8spaces
-                PayableAmount = PayableAmount + "                       " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                       " + PayableAmount;
             }
             if (PayableAmount.length() == 18) {
                 //7spaces
-                PayableAmount = PayableAmount + "                     " + PayableAmount;
+                PayableAmount = PayableAmountwithOutRoundOFF + "                     " + PayableAmount;
             }
 
 
@@ -3802,6 +3851,110 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
 
     }
+
+
+
+
+    public void getDeliveryPartnerList(boolean openBottomSheet, String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        if(isDeliveryPartnerMethodCalled){
+            return;
+        }
+        isDeliveryPartnerMethodCalled = true;
+
+
+        SharedPreferences preferences =getSharedPreferences("DeliveryPersonList", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorkey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+                            //converting jsonSTRING into array
+                            String DeliveryPersonListString = response.toString();
+                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonListString);
+
+                            SharedPreferences sharedPreferences
+                                    = getSharedPreferences("DeliveryPersonList",
+                                    MODE_PRIVATE);
+
+                            SharedPreferences.Editor myEdit
+                                    = sharedPreferences.edit();
+
+
+                            myEdit.putString(
+                                    "DeliveryPersonListString",
+                                    DeliveryPersonListString);
+                            myEdit.apply();
+                            isDeliveryPartnerMethodCalled = false;
+
+                        } catch (Exception e) {
+                            isDeliveryPartnerMethodCalled = false;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                String errorCode = "";
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(getApplicationContext(),"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
+                isDeliveryPartnerMethodCalled = false;
+
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorkey);
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(searchOrdersUsingMobileNumber.this).add(jsonObjectRequest);
+    }
+
+
+
 
     private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
         if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
@@ -6207,7 +6360,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         String CouponDiscount ="";
         String OrderType = "";
         String PayableAmountfromArray = "";
-        String PayableAmount = "";
+        String PayableAmount = "",PayableAmountwithOutRoundOFF ="";
         String PaymentMode = "";
         String MobileNumber ="";
         String TokenNo="";
@@ -6220,7 +6373,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
         String DistanceFromStore ="";
         String Address =  "";
         JSONArray itemdesp = new JSONArray();
-
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
         double totalAmountFromAddingSubtotal=0;
         double couponDiscount_double=0;
         double deliveryAmount_double=0;
@@ -6464,14 +6617,22 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
             text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        }
+        if((vendorKey.equals("vendor_6")) ) {
 
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah</b>\n\n";
+         //   text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Chicken and Mutton \n";
         }
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
 
         }
        // text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
@@ -6963,6 +7124,18 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        PayableAmountwithOutRoundOFF = "Rs." + String.valueOf(decimalFormat.format(totalAmountFromAddingSubtotal));
+        try{
+            if(modal_usbPrinter.getOrdertype().toUpperCase().equals(Constants.APPORDER)){
+                totalAmountFromAddingSubtotal = Double.parseDouble(decimalFormat.format(totalAmountFromAddingSubtotal));
+            }
+            else{
+                totalAmountFromAddingSubtotal = (Math.round(totalAmountFromAddingSubtotal));
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
         PayableAmount = "Rs." + String.valueOf(totalAmountFromAddingSubtotal);
@@ -7035,7 +7208,7 @@ public class searchOrdersUsingMobileNumber extends AppCompatActivity {
 
        // text_to_Print = text_to_Print+"[L]" +PayableAmount+" \n";
 
-        text_to_Print = text_to_Print+"[L]  " +PayableAmount+" [R] "+PayableAmount+" \n";
+        text_to_Print = text_to_Print+"[L]  " +PayableAmountwithOutRoundOFF+" [R] "+PayableAmount+" \n";
 
         text_to_Print = text_to_Print+"[L]  ----------------------------------------------" +" \n";
 

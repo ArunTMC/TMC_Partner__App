@@ -4,7 +4,7 @@ public class Modal_vendor {
     String pincode="",addressline1 ="", addressline2 ="", vendortype="",vendormobile="",status="",key="",inventorycheck = "",
             istestvendor ="",vendorname="", localdbcheck ="" ,localDB_id ="";
     String get,defaultprintertype="",vendorfssaino ="",locationlat="",locationlong="",inventorycheckpos="" ,
-            minimumscreensizeforpos ="", isweightmachineconnected ="",isbarcodescannerconnected ="";
+            minimumscreensizeforpos ="", isweightmachineconnected ="",isbarcodescannerconnected ="" , isweighteditable ="";
 
 
     public String getGet(String name) {
@@ -77,6 +77,10 @@ public class Modal_vendor {
         else if(name.equals("isbarcodescannerconnected")){
             value = this.isbarcodescannerconnected;
         }
+        else if(name.equals("isweighteditable")){
+            value = this.isweighteditable;
+        }
+
 
         return value;
     }
@@ -88,6 +92,15 @@ public class Modal_vendor {
 
     public void setIsbarcodescannerconnected(String isbarcodescannerconnected) {
         this.isbarcodescannerconnected = isbarcodescannerconnected;
+    }
+
+
+    public String getIsweighteditable() {
+        return isweighteditable;
+    }
+
+    public void setIsweighteditable(String isweighteditable) {
+        this.isweighteditable = isweighteditable;
     }
 
     public String getIsweightmachineconnected() {

@@ -2,10 +2,15 @@ package com.meatchop.tmcpartner;
 
 public class Printer_POJO_Class {
     String cutname,orderID; String itemName; String itemWeight; String itemRate; String discount;String GST; String subTotal;String quantity;String grossWeight;
-    String SlotDate,SlotName,SlotTimeInRange,totalRate,couponDiscount,totaldiscount,totalGST,totalsubtotal;
+    String SlotDate,SlotName,SlotTimeInRange,totalRate,couponDiscount,totaldiscount,totalGST,totalsubtotal , priceperkg_unitprice  , pricetypeforpos ;
     double oldSavedAmount;
-    String useraddress,SubCtgyName ,itemname_report,tmcprice_report;
-    public Printer_POJO_Class(String grossweight, String quantity, String orderID, String itemName, String itemWeight, String itemRate, String discount, String GST, String subTotal, String cutname) {
+    String useraddress,SubCtgyName ,itemname_report,tmcprice_report ,priceSuffix ;
+
+
+    public Printer_POJO_Class() {
+    }
+
+    public Printer_POJO_Class(String grossweight, String quantity, String orderID, String itemName, String itemWeight, String itemRate, String discount, String GST, String subTotal, String cutname, String priceperkg_unitpricee, String pricetypeforposs, String priceSuffixx) {
         this.grossWeight =grossweight;
         this.quantity =quantity;
         this.orderID=orderID;
@@ -16,8 +21,34 @@ public class Printer_POJO_Class {
         this.GST=GST;
         this.subTotal=subTotal;
         this.cutname=cutname ;
+        this.priceperkg_unitprice= priceperkg_unitpricee;
+        this.pricetypeforpos = pricetypeforposs;
+        this.priceSuffix = priceSuffixx;
+    }
 
 
+    public String getPriceSuffix() {
+        return priceSuffix;
+    }
+
+    public void setPriceSuffix(String priceSuffix) {
+        this.priceSuffix = priceSuffix;
+    }
+
+    public String getPricetypeforpos() {
+        return pricetypeforpos;
+    }
+
+    public void setPricetypeforpos(String pricetypeforpos) {
+        this.pricetypeforpos = pricetypeforpos;
+    }
+
+    public String getPriceperkg_unitprice() {
+        return priceperkg_unitprice;
+    }
+
+    public void setPriceperkg_unitprice(String priceperkg_unitprice) {
+        this.priceperkg_unitprice = priceperkg_unitprice;
     }
 
     public String getCutname() {

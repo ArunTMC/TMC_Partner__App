@@ -196,13 +196,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:textColor="@color/TMC_Primary_Text_Color"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:fontFamily="@font/open_sans_semibold"
                         android:gravity="center_vertical"
                         android:layout_marginStart="13dp"
                         android:layout_marginEnd="10dp"
 
-                        android:text="No.of.orders :- " />
+                        android:text="Orders :- " />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -214,6 +214,44 @@
 
                         android:text="0" />
 
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/TMC_Primary_Text_Color"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:gravity="center_vertical"
+                        android:layout_marginStart="13dp"
+                        android:layout_marginEnd="10dp"
+
+                        android:text="  Packs :- " />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/TMC_Orange"
+                        android:textSize="16sp"
+                        android:id="@+id/packCount_textwidget"
+                        android:fontFamily="@font/open_sans_semibold"
+                        android:gravity="center"
+
+                        android:text="0" />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/generateReport_Layout"
+                    android:layout_width="40dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_height="40dp"
+                    android:gravity="right">
+
+                    <ImageView
+                        android:layout_width="30dp"
+
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical|end"
+                        app:srcCompat="@mipmap/pdforange1" />
+
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="0dp"
@@ -221,8 +259,7 @@
                     android:layout_weight=".8"
                     android:gravity="end"
                     android:layout_marginStart="20dp"
-
-                    android:id="@+id/generateReport_Layout"
+                    android:visibility="gone"
                     android:orientation="vertical">
 
 

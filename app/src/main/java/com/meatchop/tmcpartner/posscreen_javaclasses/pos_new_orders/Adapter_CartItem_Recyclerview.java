@@ -17,13 +17,12 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 
 public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_CartItem_Recyclerview.ViewHolder> {
 
@@ -49,24 +49,28 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
     private double item_total = 0;
     private double item_weight = 0;
 
-    String Menulist,vendorType="";
+    String Menulist,vendorType="" , vendorkey ="";
     private Handler handler;
     int price_per_kg, taxes_and_charges;
     NewOrders_MenuItem_Fragment newOrders_menuItem_fragment;
     public static HashMap<String,Modal_NewOrderItems> itemInCart = new HashMap();
     public static List<Modal_NewOrderItems> completemenuItem;
-    boolean isWeightCanBeEdited = true , isweightmachineconnected = false ,isbarcodescannerconnected = false, isListRecycledAfterItemAdded = true;
+    public static boolean isbarcodescannerconnected = false , isThreadinSleepState = false;
+    int finallyMethodCalledCount = 0;
+    boolean isWeightCanBeEdited = true , isweightmachineconnected = false , isListRecycledAfterItemAdded = true;
     public Adapter_CartItem_Recyclerview(Context context, HashMap<String, Modal_NewOrderItems> itemInCart, String menuItems, NewOrders_MenuItem_Fragment newOrders_menuItem_fragment, List<Modal_NewOrderItems> completemenuItem) {
 
         //Log.e(TAG, "Auto call adapter itemInCart itemInCart" + itemInCart.size());
         this.newOrders_menuItem_fragment = newOrders_menuItem_fragment;
         this.context = context;
         this.completemenuItem = completemenuItem;
-
-
         this.Menulist = menuItems;
         SharedPreferences shared = context.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         vendorType = shared.getString("VendorType","");
+        vendorkey = shared.getString("VendorKey","");
+        isWeightCanBeEdited = (shared.getBoolean("isweighteditable", false));
+        isweightmachineconnected = (shared.getBoolean("isweightmachineconnected", false));
+        isbarcodescannerconnected =  (shared.getBoolean("isbarcodescannerconnected", false));
 
     }
 
@@ -94,6 +98,25 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
+
+        Log.i("Adapter", "Got refreshed " + position);
+
+        if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
+           newOrders_menuItem_fragment.redeemPoints_String ="0";
+           newOrders_menuItem_fragment.totalpointsredeemedalreadybyuser="0";
+           newOrders_menuItem_fragment.totalredeempointsuserhave="0";
+           newOrders_menuItem_fragment.pointsalreadyredeemDouble=0;
+           newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked=false;
+           //discountlayout visible
+            newOrders_menuItem_fragment.discountAmountLayout.setVisibility(View.GONE);
+           newOrders_menuItem_fragment.redeemPointsLayout.setVisibility(View.GONE);
+
+           newOrders_menuItem_fragment.discount_textview_labelwidget.setVisibility(View.VISIBLE);
+           newOrders_menuItem_fragment.discount_rs_text_widget.setVisibility(View.VISIBLE);
+           newOrders_menuItem_fragment.redeemedpoints_Labeltextwidget.setVisibility(View.GONE);
+           newOrders_menuItem_fragment.ponits_redeemed_text_widget.setVisibility(View.GONE);
+           newOrders_menuItem_fragment.add_amount_ForBillDetails();
+        }
 
 
         //Log.e(TAG, "onBindViewHolder: called.");
@@ -124,11 +147,11 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
             if (isWeightCanBeEdited || isweightmachineconnected || !isbarcodescannerconnected) {
                // if(isWeightCanBeEdited) {
                     if (recylerviewPojoClass.getisPriceEdited()) {
-                        holder.itemPrice_Widget.setVisibility(View.GONE);
+                        holder.itemPrice_Widget.setVisibility(View.INVISIBLE);
                         holder.itemprice_edittextwidget.setVisibility(View.VISIBLE);
                     } else {
                         holder.itemPrice_Widget.setVisibility(View.VISIBLE);
-                        holder.itemprice_edittextwidget.setVisibility(View.GONE);
+                        holder.itemprice_edittextwidget.setVisibility(View.INVISIBLE);
                     }
 
                     holder.edit_price_layout.setVisibility(View.VISIBLE);
@@ -136,14 +159,14 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
               // }
 
                 if(recylerviewPojoClass.getisWeightEdited()){
-                    holder.itemWeight_widget.setVisibility(View.GONE);
+                    holder.itemWeight_widget.setVisibility(View.INVISIBLE);
                     holder.itemWeight_edittextwidget.setVisibility(View.VISIBLE);
 
 
                 }
                 else{
                     holder.itemWeight_widget.setVisibility(View.VISIBLE);
-                    holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+                    holder.itemWeight_edittextwidget.setVisibility(View.INVISIBLE);
 
 
                 }
@@ -153,20 +176,20 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
             else {
                 holder.itemWeight_widget.setVisibility(View.VISIBLE);
-                holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+                holder.itemWeight_edittextwidget.setVisibility(View.INVISIBLE);
                 holder.edit_weight_layout.setVisibility(View.INVISIBLE);
 
                 holder.itemPrice_Widget.setVisibility(View.VISIBLE);
-                holder.itemprice_edittextwidget.setVisibility(View.GONE);
+                holder.itemprice_edittextwidget.setVisibility(View.INVISIBLE);
                 holder.edit_price_layout.setVisibility(View.INVISIBLE);
             }
         }
         else {
             holder.itemWeight_widget.setVisibility(View.VISIBLE);
-            holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+            holder.itemWeight_edittextwidget.setVisibility(View.INVISIBLE);
             holder.edit_weight_layout.setVisibility(View.INVISIBLE);
             holder.itemPrice_Widget.setVisibility(View.VISIBLE);
-            holder.itemprice_edittextwidget.setVisibility(View.GONE);
+            holder.itemprice_edittextwidget.setVisibility(View.INVISIBLE);
             holder.edit_price_layout.setVisibility(View.INVISIBLE);
 
         }
@@ -210,9 +233,10 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                 }
                 holder.barcode_widget.setText(recylerviewPojoClass.getItemuniquecode());
                 if(!holder.barcode_widget.getText().toString().equals("")&&holder.barcode_widget.getText().length()>3){
-                     holder.barcode_widget.setKeyListener(null);
+                  //   holder.barcode_widget.setKeyListener(null);
 
                 }
+                holder.barcode_widget.setKeyListener(null);
 
             //    holder.itemWeight_edittextwidget.setKeyListener(null);
 
@@ -228,7 +252,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                    if(recylerviewPojoClass.getGrossweight().equals("")){
                        if (recylerviewPojoClass.getNetweight().equals("")) {
                            holder.itemWeight_widget.setVisibility(View.VISIBLE);
-                           holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+                           holder.itemWeight_edittextwidget.setVisibility(View.INVISIBLE);
                            holder.edit_weight_layout.setVisibility(View.INVISIBLE);
 
                            holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getPortionsize()));
@@ -236,7 +260,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                        }
                        else{
                            holder.itemWeight_widget.setVisibility(View.VISIBLE);
-                           holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+                           holder.itemWeight_edittextwidget.setVisibility(View.INVISIBLE);
                            holder.edit_weight_layout.setVisibility(View.INVISIBLE);
 
                            holder.itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getNetweight()));
@@ -338,8 +362,188 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
         }
+        try {
+            if (vendorkey.equals("vendor_1")) {
+                if (recylerviewPojoClass.getItemuniquecode().equals("1612")){
+                    holder.tmcUnitprice_weightAdd_layout.setVisibility(View.INVISIBLE);
+                    holder.itemQuantity_widget.setVisibility(View.VISIBLE);
+                    holder.tmcUnitprice_weightMinus_layout.setVisibility(View.GONE);
+                    holder.itemQuantity_edittextwidget.setVisibility(View.GONE);
+                    holder.edit_quantity_layout.setVisibility(View.VISIBLE);
+                }
+                else{
+                    holder.tmcUnitprice_weightAdd_layout.setVisibility(View.VISIBLE);
+                    holder.itemQuantity_widget.setVisibility(View.VISIBLE);
+                    holder.tmcUnitprice_weightMinus_layout.setVisibility(View.VISIBLE);
+
+                    holder.itemQuantity_edittextwidget.setVisibility(View.GONE);
+                    holder.edit_quantity_layout.setVisibility(View.GONE);
+                }
+            }
+            else {
+                holder.tmcUnitprice_weightAdd_layout.setVisibility(View.VISIBLE);
+                holder.itemQuantity_widget.setVisibility(View.VISIBLE);
+                holder.tmcUnitprice_weightMinus_layout.setVisibility(View.VISIBLE);
+
+                holder.itemQuantity_edittextwidget.setVisibility(View.GONE);
+                holder.edit_quantity_layout.setVisibility(View.GONE);
+            }
+        }
+        catch (Exception e){
+            holder.tmcUnitprice_weightAdd_layout.setVisibility(View.VISIBLE);
+            holder.itemQuantity_widget.setVisibility(View.VISIBLE);
+            holder.tmcUnitprice_weightMinus_layout.setVisibility(View.VISIBLE);
+
+            holder.itemQuantity_edittextwidget.setVisibility(View.GONE);
+            holder.edit_quantity_layout.setVisibility(View.GONE);
+            e.printStackTrace();
+        }
+
+        holder.itemQuantity_edittextwidget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+             @Override
+             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                 try {
+
+                     if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                         //do what you want on the press of 'done'
+
+                         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                         Objects.requireNonNull(imm).hideSoftInputFromWindow(holder.itemQuantity_edittextwidget.getWindowToken(), 0);
+
+                         String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
+
+                         Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
 
 
+
+
+
+                             String quantity_String = holder.itemQuantity_edittextwidget.getText().toString();
+
+                             quantity_String = quantity_String.replaceAll("[^\\d.]", "");
+
+                             if (quantity_String.equals("")) {
+                                 AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.Quantity_cant_be_empty);
+
+                             } else {
+                                 int quantity = 0;
+                                 try{
+                                     quantity = Integer.parseInt(quantity_String);
+                                 }
+                                 catch (Exception e){
+                                     quantity =0;
+                                     e.printStackTrace();
+                                 }
+
+
+
+
+                                 if (quantity == 0) {
+                                     AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.Quantity_cant_be_Zero);
+
+                                 } else {
+                                     modal_newOrderItems.setisQuantityEdited(false);
+
+
+
+                                     holder.itemQuantity_widget.setText(String.valueOf(quantity));
+                                     double item_price = Double.parseDouble(Objects.requireNonNull(modal_newOrderItems).getItemPrice_quantityBased());
+                                     item_price = item_price * quantity;
+
+                                     holder.itemPrice_Widget.setText(decimalFormat.format(item_price));
+                                     holder.itemprice_edittextwidget.setText(decimalFormat.format(item_price));
+
+                                     modal_newOrderItems.setItemFinalPrice(String.valueOf(decimalFormat.format(item_price)));
+
+
+                                     modal_newOrderItems.setQuantity(String.valueOf(quantity));
+                                     if(newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked){
+                                         newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
+
+                                     }
+                                     if((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0"))||(!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))){
+                                         newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
+                                         newOrders_menuItem_fragment.discount_rs_text_widget.setText("0");
+                                         newOrders_menuItem_fragment.discountAmount_StringGlobal ="0";
+                                     }
+                                     newOrders_menuItem_fragment.add_amount_ForBillDetails();
+
+
+
+
+
+                                     holder.tmcUnitprice_weightAdd_layout.setVisibility(View.GONE);
+                                     holder.itemQuantity_widget.setVisibility(View.VISIBLE);
+                                     holder.tmcUnitprice_weightMinus_layout.setVisibility(View.GONE);
+
+                                     holder.itemQuantity_edittextwidget.setVisibility(View.GONE);
+                                     holder.edit_quantity_layout.setVisibility(View.VISIBLE);
+
+
+                                     newOrders_menuItem_fragment.add_amount_ForBillDetails();
+                                     NewOrders_MenuItem_Fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+
+
+
+
+                                 }
+                             }
+                             // onNewDataArrived(itemInCart);
+
+
+
+
+                     }
+                 }
+                 catch (Exception e) {
+                     e.printStackTrace();
+                 }
+
+
+                 return false;
+             }
+         });
+
+        holder.edit_quantity_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
+
+                Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
+                if(!modal_newOrderItems.getisWeightEdited()) {
+                    if (!modal_newOrderItems.getisPriceEdited()) {
+
+
+                            holder.itemQuantity_edittextwidget.setFocusable(true);
+                            holder.itemQuantity_widget.setVisibility(View.GONE);
+                            holder.itemQuantity_edittextwidget.setVisibility(View.VISIBLE);
+                            holder.itemQuantity_edittextwidget.setText(String.valueOf(holder.itemQuantity_widget.getText().toString()));
+                            modal_newOrderItems.setisQuantityEdited(true);
+
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    holder.itemQuantity_edittextwidget.requestFocus();
+                                    InputMethodManager mgr = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    mgr.showSoftInput(holder.itemQuantity_edittextwidget, InputMethodManager.SHOW_IMPLICIT);
+                                    holder.itemQuantity_edittextwidget.setSelection(holder.itemQuantity_edittextwidget.getText().length());
+                                }
+                            }, 0);
+
+
+                    }
+                    else {
+                        AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.CannotbeEdited_When_EditingPrice);
+
+                    }
+                }
+                else{
+                    AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.CannotbeEdited_When_EditingWeight);
+
+                }
+                }
+        });
         holder.addNewItem_layout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -351,24 +555,29 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                                     if(!newOrders_menuItem_fragment.isConnectUSBSerialPort) {
 
+                                    if(newOrders_menuItem_fragment.newRowCanBeCreated()) {
+                                        newOrders_menuItem_fragment.createEmptyRowInListView("empty");
+                                        // Log.i("TAG", "itemCart : " + itemInCart.size());
+                                        holder.addNewItem_layout.setVisibility(View.GONE);
+                                        // onNewDataArrived(itemInCart);
+                                        finallyMethodCalledCount = 0;
+                                        isThreadinSleepState = false;
+                                        newOrders_menuItem_fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
+                                        isListRecycledAfterItemAdded = true;
+                                        if (newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked) {
+                                            newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
 
-                                    newOrders_menuItem_fragment.createEmptyRowInListView("empty");
-                                    // Log.i("TAG", "itemCart : " + itemInCart.size());
-                                    holder.addNewItem_layout.setVisibility(View.GONE);
-                                    // onNewDataArrived(itemInCart);
-
-                                    newOrders_menuItem_fragment.adapter_cartItem_recyclerview.notifyDataSetChanged();
-                                        isListRecycledAfterItemAdded =true;
-                                    if (newOrders_menuItem_fragment.isProceedtoCheckoutinRedeemdialogClicked) {
-                                        newOrders_menuItem_fragment.cancelRedeemPointsFromOrder();
-
+                                        }
+                                        if ((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0")) || (!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))) {
+                                            newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
+                                            newOrders_menuItem_fragment.discount_rs_text_widget.setText("0");
+                                            newOrders_menuItem_fragment.discountAmount_StringGlobal = "0";
+                                            newOrders_menuItem_fragment.discountAmount_DoubleGlobal = 0;
+                                            newOrders_menuItem_fragment.isDiscountApplied = false;
+                                        }
                                     }
-                                    if ((!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals("0")) || (!newOrders_menuItem_fragment.discount_Edit_widget.getText().toString().equals(""))) {
-                                        newOrders_menuItem_fragment.discount_Edit_widget.setText("0");
-                                        newOrders_menuItem_fragment.discount_rs_text_widget.setText("0");
-                                        newOrders_menuItem_fragment.discountAmount_StringGlobal = "0";
-                                        newOrders_menuItem_fragment.discountAmount_DoubleGlobal = 0;
-                                        newOrders_menuItem_fragment.isDiscountApplied = false;
+                                    else{
+                                        //if item cannot be created didnt have to do anythingbuil
                                     }
                                     }
                                     else{
@@ -556,31 +765,37 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                     String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
 
                     Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-                if(!modal_newOrderItems.getisWeightEdited()) {
+                if(!modal_newOrderItems.getisQuantityEdited()) {
+                    if (!modal_newOrderItems.getisWeightEdited()) {
 
-                    String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
-                    if (pricetypeforpos.equals("tmcpriceperkg")) {
-                        holder.itemprice_edittextwidget.setFocusable(true);
-                        holder.itemPrice_Widget.setVisibility(View.GONE);
-                        holder.itemprice_edittextwidget.setVisibility(View.VISIBLE);
+                        String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
+                        if (pricetypeforpos.equals("tmcpriceperkg")) {
+                            holder.itemprice_edittextwidget.setFocusable(true);
+                            holder.itemPrice_Widget.setVisibility(View.INVISIBLE);
+                            holder.itemprice_edittextwidget.setVisibility(View.VISIBLE);
 
-                        modal_newOrderItems.setisPriceEdited(true);
+                            modal_newOrderItems.setisPriceEdited(true);
 
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                holder.itemprice_edittextwidget.requestFocus();
-                                InputMethodManager mgr = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                mgr.showSoftInput(holder.itemprice_edittextwidget, InputMethodManager.SHOW_IMPLICIT);
-                                holder.itemprice_edittextwidget.setSelection(holder.itemprice_edittextwidget.getText().length());
-                            }
-                        }, 0);
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    holder.itemprice_edittextwidget.requestFocus();
+                                    InputMethodManager mgr = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    mgr.showSoftInput(holder.itemprice_edittextwidget, InputMethodManager.SHOW_IMPLICIT);
+                                    holder.itemprice_edittextwidget.setSelection(holder.itemprice_edittextwidget.getText().length());
+                                }
+                            }, 0);
+
+                        }
+                    }
+                    else {
+                        AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.CannotbeEdited_When_EditingWeight);
 
                     }
                 }
-                else{
-                    AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.PriceCannotbeEdited_When_EditingWeight);
+                else {
+                    AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.CannotbeEdited_When_EditingQuantity);
 
                 }
             }
@@ -595,11 +810,13 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                             String barcode = NewOrders_MenuItem_Fragment.cart_Item_List.get(position);
 
                             Modal_NewOrderItems modal_newOrderItems = NewOrders_MenuItem_Fragment.cartItem_hashmap.get(barcode);
-                            if(!Objects.requireNonNull(modal_newOrderItems).getisPriceEdited()) {
+                            if(!modal_newOrderItems.getisQuantityEdited()) {
+
+                                if(!Objects.requireNonNull(modal_newOrderItems).getisPriceEdited()) {
                             String pricetypeforpos = modal_newOrderItems.getPricetypeforpos().toString();
                             if(pricetypeforpos.equals("tmcpriceperkg")) {
                                 holder.itemWeight_edittextwidget.setFocusable(true);
-                                holder.itemWeight_widget.setVisibility(View.GONE);
+                                holder.itemWeight_widget.setVisibility(View.INVISIBLE);
                                 holder.itemWeight_edittextwidget.setVisibility(View.VISIBLE);
 
                                 modal_newOrderItems.setisWeightEdited(true);
@@ -625,7 +842,12 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                             }
                             else{
-                            AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.WeightCannotbeEdited_When_EditingPrice);
+                            AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.CannotbeEdited_When_EditingPrice);
+
+                            }
+                            }
+                            else {
+                                AlertDialogClass.showDialog(newOrders_menuItem_fragment.getActivity(), R.string.CannotbeEdited_When_EditingQuantity);
 
                             }
 
@@ -738,7 +960,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 holder.itemprice_edittextwidget.setText(decimalFormat.format(price));
 
                                 holder.itemPrice_Widget.setVisibility(View.VISIBLE);
-                                holder.itemprice_edittextwidget.setVisibility(View.GONE);
+                                holder.itemprice_edittextwidget.setVisibility(View.INVISIBLE);
                                 newOrders_menuItem_fragment.add_amount_ForBillDetails();
 
                                 //Log.e("TAg", "weight item_total" + item_total);
@@ -999,7 +1221,7 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
                                 }
 
                                 holder.itemWeight_widget.setVisibility(View.VISIBLE);
-                                holder.itemWeight_edittextwidget.setVisibility(View.GONE);
+                                holder.itemWeight_edittextwidget.setVisibility(View.INVISIBLE);
 
                                 holder.itemPrice_Widget.setText(decimalFormat.format(itemtotalwithQuantity));
                                 holder.itemprice_edittextwidget.setText(decimalFormat.format(itemtotalwithQuantity));
@@ -1116,21 +1338,19 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
         AutoCompleteTextView autoComplete_widget;
 
-        LinearLayout tmcUnitprice_weightAdd_layout, tmcUnitprice_weightMinus_layout,edit_weight_layout;
 
-
+       // LinearLayout edit_weight_layout , tmcUnitprice_weightAdd_layout , tmcUnitprice_weightMinus_layout , edit_price_layout , removeItem_fromCart_widget;
         TextView itemIndex,itemWeight_widget, itemQuantity_widget;
 
         TextView itemPrice_Widget,gramsTextview;
 
-        EditText itemWeight_edittextwidget,barcode_widget,itemprice_edittextwidget;
+        EditText itemWeight_edittextwidget,barcode_widget,itemprice_edittextwidget,itemQuantity_edittextwidget;
 
 
 
-        ImageView minus_to_remove_item_widget;
-        LinearLayout removeItem_fromCart_widget, addNewItem_layout,edit_price_layout;
+        ImageView edit_weight_layout,tmcUnitprice_weightAdd_layout , tmcUnitprice_weightMinus_layout,edit_price_layout,removeItem_fromCart_widget,edit_quantity_layout;
+        Button addNewItem_layout;
         boolean isTMCproduct = false;
-        ConstraintLayout parentLayout;
         boolean isIndiaGateBasmatiRiceproduct = false;
 
         private EditTextListener EditTextListener = new EditTextListener();
@@ -1153,20 +1373,16 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
             this.itemprice_edittextwidget = itemView.findViewById(R.id.itemprice_edittextwidget);
             this.edit_price_layout = itemView.findViewById(R.id.edit_price_layout);
             this.itemPrice_Widget = itemView.findViewById(R.id.itemPrice_Widget);
-            this.minus_to_remove_item_widget = itemView.findViewById(R.id.minus_to_remove_item_widget);
             this.removeItem_fromCart_widget = itemView.findViewById(R.id.removeItem_fromCart_widget);
             this.addNewItem_layout = itemView.findViewById(R.id.addNewItem_layout);
-            this.parentLayout = itemView.findViewById(R.id.parentLayout);
             this.edit_weight_layout = itemView.findViewById(R.id.edit_weight_layout);
-
+            this.itemQuantity_edittextwidget = itemView.findViewById(R.id.itemQuantity_edittextwidget);
+            this.edit_quantity_layout = itemView.findViewById(R.id.edit_quantity_layout);
             itemInCart.putAll(NewOrders_MenuItem_Fragment.cartItem_hashmap);
 
 
             try{
                 SharedPreferences shared = context.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
-                isWeightCanBeEdited = (shared.getBoolean("isweighteditable", false));
-                isweightmachineconnected = (shared.getBoolean("isweightmachineconnected", false));
-                isbarcodescannerconnected =  (shared.getBoolean("isbarcodescannerconnected", false));
 
 
             }
@@ -1237,8 +1453,62 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
 
                 if(isweightmachineconnected || !isbarcodescannerconnected){
-                    Log.i("WeightData", " Recyclerview 1 : "+s1);
-                    if(s1.length()>=4) {
+                  //  Log.i("WeightData", " Recyclerview 1 : "+s1);
+
+                    /*
+                    Thread thread=new Thread(){
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                if(!isThreadinSleepState) {
+                                    sleep(1500);
+                                }
+                                isThreadinSleepState = true;
+                            }
+                            catch(Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                            finally
+                            {
+                                isThreadinSleepState = false;
+                                finallyMethodCalledCount  = finallyMethodCalledCount +1;
+                                int barcodeCount = 0 ;
+                                barcodeCount = barcode_widget.getText().length();
+
+                                if(barcodeCount == finallyMethodCalledCount) {
+                                    runOnUiThread(new Runnable() {
+                                        public void run() {
+                                            String Barcode = barcode_widget.getText().toString();
+                                            getMenuItemUsingBarCode(Barcode);
+                                        }
+                                    });
+                                }
+                                else{
+                                    if(finallyMethodCalledCount > barcodeCount){
+                                        finallyMethodCalledCount = barcodeCount;
+                                        runOnUiThread(new Runnable() {
+                                            public void run() {
+                                                String Barcode = barcode_widget.getText().toString();
+                                                getMenuItemUsingBarCode(Barcode);
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    thread.start();
+
+
+                     */
+
+
+
+
+                    if(s1.length()>=2) {
                         String Barcode = barcode_widget.getText().toString();
                         getMenuItemUsingBarCode(Barcode);
                     }
@@ -1435,6 +1705,24 @@ public class Adapter_CartItem_Recyclerview extends RecyclerView.Adapter<Adapter_
 
                             newItem_newOrdersPojoClass.barcode = String.valueOf(modal_newOrderItems.getBarcode());
                             newItem_newOrdersPojoClass.tmcctgykey = String.valueOf(modal_newOrderItems.getTmcctgykey());
+
+
+
+                            try {
+                                if (modal_newOrderItems.getInventorydetails().equals("")) {
+                                    newItem_newOrdersPojoClass.inventorydetails = (String.valueOf(""));
+
+                                } else {
+                                    newItem_newOrdersPojoClass.inventorydetails = (String.valueOf(modal_newOrderItems.getInventorydetails()));
+                                }
+                            } catch (Exception e) {
+
+                                newItem_newOrdersPojoClass.inventorydetails = (String.valueOf(""));
+
+
+                                e.printStackTrace();
+                            }
+
 
 
                             try {

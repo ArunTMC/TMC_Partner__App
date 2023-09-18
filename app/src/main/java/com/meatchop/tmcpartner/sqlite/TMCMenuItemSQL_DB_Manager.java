@@ -892,7 +892,7 @@ public class TMCMenuItemSQL_DB_Manager {
 
 
         try{
-            if(!modal_menuItem.getTmcpriceperkgWithMarkupValue().equals("") && !String.valueOf(modal_menuItem.getTmcpriceperkgWithMarkupValue()).toUpperCase().equals("NULL")){
+            if(!modal_menuItem.getTmcpriceperkgWithMarkupValue().equals("") && !modal_menuItem.getTmcpriceperkgWithMarkupValue().equals("0000") && !String.valueOf(modal_menuItem.getTmcpriceperkgWithMarkupValue()).toUpperCase().equals("NULL")){
                 if(String.valueOf(modal_menuItem.getTmcpriceperkgWithMarkupValue()).toUpperCase().equals(Constants.Empty_Text)){
 
                     contentValues.put(tmcpriceperkgWithMarkupValue                    , "");
@@ -912,7 +912,7 @@ public class TMCMenuItemSQL_DB_Manager {
         }
 
         try{
-            if(!modal_menuItem.getTmcpriceWithMarkupValue().equals("") && !String.valueOf(modal_menuItem.getTmcpriceWithMarkupValue()).toUpperCase().equals("NULL")){
+            if(!modal_menuItem.getTmcpriceWithMarkupValue().equals("") && !modal_menuItem.getTmcpriceperkgWithMarkupValue().equals("0000") && !String.valueOf(modal_menuItem.getTmcpriceWithMarkupValue()).toUpperCase().equals("NULL")){
                 if(String.valueOf(modal_menuItem.getTmcpriceWithMarkupValue()).toUpperCase().equals(Constants.Empty_Text)){
 
                     contentValues.put(tmcpriceWithMarkupValue                    , "");
@@ -991,6 +991,25 @@ public class TMCMenuItemSQL_DB_Manager {
         }
 
 
+        try{
+            if(!modal_menuItem.getBarcode_AvlDetails().equals("") && !String.valueOf(modal_menuItem.getBarcode_AvlDetails()).toUpperCase().equals("NULL")){
+                if(String.valueOf(modal_menuItem.getBarcode_AvlDetails()).toUpperCase().equals(Constants.Empty_Text)){
+
+                    contentValues.put(barcode_AvlDetails                    , "");
+
+                }
+                else{
+
+                    contentValues.put(barcode_AvlDetails       , modal_menuItem.getBarcode_AvlDetails());
+
+
+                }
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
         try{

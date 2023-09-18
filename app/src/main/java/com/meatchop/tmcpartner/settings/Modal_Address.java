@@ -1,10 +1,59 @@
 package com.meatchop.tmcpartner.settings;
 
-public class Modal_Address {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Modal_Address implements Parcelable {
     String displayno = "",deliveryCharge ="",tagas,updatedtime,contactpersonmobileno="",addresstype= "", landmark="",pincode="",locationlong= "", vendorname="",userkey= "",locationlat="",key= "", deliverydistance="",vendorkey= "",addressline1="",addressline2="",contactpersonname="";
     boolean isAddressSelected = false;
     boolean isNewAddress = false;
     boolean isAddressEdited = false;
+
+    public Modal_Address() {
+        displayno = "";deliveryCharge ="";tagas="";updatedtime="";contactpersonmobileno="";addresstype= ""; landmark="";pincode="";
+        locationlong= ""; vendorname="";userkey= "";locationlat="";key= ""; deliverydistance="";vendorkey= "";addressline1="";addressline2="";
+        contactpersonname="";
+        isAddressSelected = false;
+        isNewAddress = false;
+        isAddressEdited = false;
+    }
+
+
+    public Modal_Address(Parcel in) {
+        displayno = in.readString();
+        deliveryCharge = in.readString();
+        tagas = in.readString();
+        updatedtime = in.readString();
+        contactpersonmobileno = in.readString();
+        addresstype = in.readString();
+        landmark = in.readString();
+        pincode = in.readString();
+        locationlong = in.readString();
+        vendorname = in.readString();
+        userkey = in.readString();
+        locationlat = in.readString();
+        key = in.readString();
+        deliverydistance = in.readString();
+        vendorkey = in.readString();
+        addressline1 = in.readString();
+        addressline2 = in.readString();
+        contactpersonname = in.readString();
+        isAddressSelected = in.readByte() != 0;
+        isNewAddress = in.readByte() != 0;
+        isAddressEdited = in.readByte() != 0;
+    }
+
+    public static final Creator<Modal_Address> CREATOR = new Creator<Modal_Address>() {
+        @Override
+        public Modal_Address createFromParcel(Parcel in) {
+            return new Modal_Address(in);
+        }
+
+        @Override
+        public Modal_Address[] newArray(int size) {
+            return new Modal_Address[size];
+        }
+    };
 
     public String getDisplayno() {
         return displayno;
@@ -188,5 +237,35 @@ public class Modal_Address {
 
     public void setContactpersonname(String contactpersonname) {
         this.contactpersonname = contactpersonname;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(displayno);
+        dest.writeString(deliveryCharge);
+        dest.writeString(tagas);
+        dest.writeString(updatedtime);
+        dest.writeString(contactpersonmobileno);
+        dest.writeString(addresstype);
+        dest.writeString(landmark);
+        dest.writeString(pincode);
+        dest.writeString(locationlong);
+        dest.writeString(vendorname);
+        dest.writeString(userkey);
+        dest.writeString(locationlat);
+        dest.writeString(key);
+        dest.writeString(deliverydistance);
+        dest.writeString(vendorkey);
+        dest.writeString(addressline1);
+        dest.writeString(addressline2);
+        dest.writeString(contactpersonname);
+        dest.writeByte((byte) (isAddressSelected ? 1 : 0));
+        dest.writeByte((byte) (isNewAddress ? 1 : 0));
+        dest.writeByte((byte) (isAddressEdited ? 1 : 0));
     }
 }

@@ -37,7 +37,9 @@ public class Adapter_AutoCompleteMenuItem extends ArrayAdapter<Modal_NewOrderIte
     private Handler handler;
     int currentPosition;
     boolean isweightmachineconnected = false;
-public Adapter_AutoCompleteMenuItem(@NonNull Context context, @NonNull String menuList, int adapterPosition, List<Modal_NewOrderItems> completemenuItem) {
+
+
+    public Adapter_AutoCompleteMenuItem(@NonNull Context context, @NonNull String menuList, int adapterPosition, List<Modal_NewOrderItems> completemenuItem) {
         super(context, 0);
         this.menulist=menuList;
         this.completemenuItem= completemenuItem;
@@ -53,9 +55,11 @@ public Adapter_AutoCompleteMenuItem(@NonNull Context context, @NonNull String me
         e.printStackTrace();
     }
         }
-@NonNull
-@Override
-public Filter getFilter() {
+
+
+    @NonNull
+    @Override
+    public Filter getFilter() {
         return menuFilter;
         }
 
@@ -80,8 +84,8 @@ public Filter getFilter() {
 
 
     @NonNull
-@Override
-public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    @Override
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
 
         if (convertView == null) {
@@ -124,7 +128,19 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
             }
 
+            try{
+                if(menuuItem.getInventorydetails().equals("")){
+                    modal_newOrderItems.setInventorydetails("");
 
+                }
+                else {
+                    modal_newOrderItems.setInventorydetails(menuuItem.getInventorydetails());
+                }
+            }
+            catch(Exception e){
+              //  Toast.makeText(context,"Can't Get Menu TMC SubCtgyKey at AutoComplete Menu Adapter ",Toast.LENGTH_LONG).show();
+
+            }
 
             try{
                 if(menuuItem.getTmcsubctgykey().equals("")){
@@ -740,6 +756,7 @@ public View getView(int position, @Nullable View convertView, @NonNull ViewGroup
 
     return convertView;
         }
+
     private String CalculateTmcPriceValueWithMarkup(Modal_NewOrderItems modal_newOrderItems) {
         String  tmcpriceWithAppMarkupValueString = "0";
         try{
@@ -1498,4 +1515,6 @@ public CharSequence convertResultToString(Object resultValue) {
     return ((Modal_NewOrderItems) resultValue).getItemname();
         }
         };
-        }
+
+
+}

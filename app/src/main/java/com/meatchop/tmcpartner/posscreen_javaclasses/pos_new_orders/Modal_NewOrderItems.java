@@ -9,8 +9,16 @@ public class Modal_NewOrderItems extends Throwable implements Serializable {
             selectedQty,checkoutimageurl,vendorkey, netweight,key,discountpercentage="0",tmcpriceperkg,applieddiscountpercentage="0",itemavailability,portionsize,menuItemId;
     public String editTextValue,bigbasketprice,swiggyprice,dunzoprice,wholesaleprice;
 
-    boolean isWeightEdited = false,isWeightEdittextClicked =false , isPriceEdited = false , isLastEntry = false;
+    boolean isWeightEdited = false,isWeightEdittextClicked =false , isPriceEdited = false , isLastEntry = false , isQuantityEdited = false;
 
+
+    public boolean getisQuantityEdited() {
+        return isQuantityEdited;
+    }
+
+    public void setisQuantityEdited(boolean quantityEdited) {
+        isQuantityEdited = quantityEdited;
+    }
 
     public String getLocalDB_id() {
         return localDB_id;

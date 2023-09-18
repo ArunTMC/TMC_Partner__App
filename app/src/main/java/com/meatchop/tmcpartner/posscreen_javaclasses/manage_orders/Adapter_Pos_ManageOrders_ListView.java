@@ -115,15 +115,15 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
     Update_CustomerOrderDetails_TrackingTableInterface mResultCallback_UpdateCustomerOrderDetailsTableInterface;
 
 
-    public Adapter_Pos_ManageOrders_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_ManageOrderFragment pos_manageOrderFragment, String orderStatus) {
+    public Adapter_Pos_ManageOrders_ListView(Context mContext, List<Modal_ManageOrders_Pojo_Class> ordersList, Pos_ManageOrderFragment pos_manageOrderFragment, String orderStatus , List<Modal_MenuItem>MenuItemm ) {
         super(mContext, R.layout.pos_manageorders_listview_child, ordersList);
         this.pos_manageOrderFragment=pos_manageOrderFragment;
         OrderdItems_desp =new ArrayList<>();
         this.mContext=mContext;
        this.ordersList=ordersList;
       this.orderStatus=orderStatus;
-
-        getMenuItemArrayFromSharedPreferences();
+        this.MenuItem = MenuItemm;
+      //  getMenuItemArrayFromSharedPreferences();
 
     }
 
@@ -543,7 +543,8 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                    */
 
 
-                } else {
+                }
+                else {
 
                     //Log.i("tag", "array.lengrh(i" + json.length());
                     try {
@@ -1660,10 +1661,15 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
     private void getStockOutGoingDetailsUsingOrderid(String orderid) {
+        boolean isinventorycheck = false;
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+
+        if (isinventorycheck) {
 
 
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getStockOutgoingUsingSalesOrderid+orderid ,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getStockOutgoingUsingSalesOrderid + orderid, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(@NonNull JSONObject response) {
@@ -1672,12 +1678,12 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                             try {
 
-                                String ordertype="#";
+                                String ordertype = "#";
 
                                 //converting jsonSTRING into array
-                                JSONArray JArray  = response.getJSONArray("content");
+                                JSONArray JArray = response.getJSONArray("content");
                                 //Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                                int i1=0;
+                                int i1 = 0;
                                 int arrayLength = JArray.length();
                                 /*Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
                                 if(arrayLength>1){
@@ -1688,7 +1694,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                                  */
 
-                                for(;i1<(arrayLength);i1++) {
+                                for (; i1 < (arrayLength); i1++) {
 
                                     try {
                                         JSONObject json = JArray.getJSONObject(i1);
@@ -1696,11 +1702,6 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
 
                                         ChangeOutGoingTypeInOutgoingTable(entryKey);
-
-
-
-
-
 
 
                                     } catch (JSONException e) {
@@ -1718,10 +1719,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                             }
 
 
-
-
-                        }
-                        catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                             pos_manageOrderFragment.showProgressBar(false);
 
@@ -1729,16 +1727,14 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                         }
 
 
-
                     }
 
-                },new com.android.volley.Response.ErrorListener() {
+                }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
                 try {
                     Toast.makeText(mContext, "PaymentMode cnanot be found", Toast.LENGTH_LONG).show();
                     pos_manageOrderFragment.showProgressBar(false);
-
 
 
                     Log.d(Constants.TAG, "Location cnanot be found Error: " + error.getMessage());
@@ -1747,15 +1743,13 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
                     error.printStackTrace();
 
 
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     pos_manageOrderFragment.showProgressBar(false);
 
                 }
             }
-        })
-        {
+        }) {
             @Override
             public Map<String, String> getParams() throws AuthFailureError {
                 final Map<String, String> params = new HashMap<>();
@@ -1764,7 +1758,6 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
 
                 return params;
             }
-
 
 
             @NonNull
@@ -1782,9 +1775,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
         Volley.newRequestQueue(mContext).add(jsonObjectRequest);
 
 
-
-
-
+    }
     }
 
 
@@ -3005,7 +2996,7 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PreformCut(portName,portSettings,1);
 
             try {
-                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal, cutname);
+                Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal, cutname, "priceperkg_unitprice", "pricetypeforpos", "priceSuffix");
             }
             catch (Exception exception){
                 exception.printStackTrace();
@@ -3042,7 +3033,20 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             }
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
-        int new_total_subtotal = (int) Math.round(total_subtotal);
+      //  int new_total_subtotal = (int) Math.round(total_subtotal);
+          double new_total_subtotal = 0;
+          try{
+              if(manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.APPORDER)){
+                  new_total_subtotal = Double.parseDouble(decimalFormat.format(total_subtotal));
+              }
+              else{
+                  new_total_subtotal = (Math.round(total_subtotal));
+              }
+          }
+          catch (Exception e){
+              e.printStackTrace();
+          }
+
 
         String couponDiscount_string = String.valueOf(couponDiscount_double);
         String totalSubtotal_string = String.valueOf(new_total_subtotal);
@@ -3071,6 +3075,20 @@ public class Adapter_Pos_ManageOrders_ListView extends ArrayAdapter<Modal_Manage
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
 
         }
+        else if((vendorKey.equals("vendor_6"))) {
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "New NS  Bismillah" + "\n");
+
+          //  PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+          //  PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+          //  PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+        }
+
+
         else {
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 180);

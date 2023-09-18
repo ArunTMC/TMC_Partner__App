@@ -5,13 +5,12 @@ public class Modal_PosAppMobileData {
     public String orderdeliveredtextmsg ="" , orderdetailsnewschema ="",orderpickeduptextmsg ="",appacessdetails_admin ="",
             appacessdetails_cashier ="" , appacessdetails_deliverymanager ="" ,appacessdetails_reportsviewer ="",
             appacessdetails_storemanager ="" ,redeemdata_maxpointsinaday ="" , redeemdata_minordervalueforredeem ="" ,
-            updateweightforonlineorders ="" , redeemdata_pointsfor100rs = "" ,localDB_id ="";
+            updateweightforonlineorders ="" , redeemdata_pointsfor100rs = "" ,localDB_id ="" , enableorderplacingmicroservice ="";
 
 
-
-
-
-
+    public String getEnableorderplacingmicroservice() {
+        return enableorderplacingmicroservice;
+    }
 
     public String getOrderdeliveredtextmsg() {
         return orderdeliveredtextmsg;
@@ -67,9 +66,9 @@ public class Modal_PosAppMobileData {
     }
 
 
-
-
-
+    public void setEnableorderplacingmicroservice(String enableorderplacingmicroservice) {
+        this.enableorderplacingmicroservice = enableorderplacingmicroservice;
+    }
 
     public void setLocalDB_id(String localDB_id) {
         this.localDB_id = localDB_id;

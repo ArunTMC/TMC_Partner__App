@@ -5,7 +5,95 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:id="@+id/searchRelativeLayout"
+        android:layout_height="70dp">
+
+        <TextView
+            android:id="@+id/namelabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/TMC_Orange"
+            android:fontFamily="@font/open_sans_bold"
+            android:textSize="12sp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Enter Delivery Person Name :" />
+
+        <EditText
+            android:id="@+id/deliveryPersonName_editText"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:ems="10"
+            android:textSize="14sp"
+            android:paddingStart="2dp"
+            android:paddingEnd="20dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@color/TMC_Black"
+            android:layout_below="@+id/namelabel"
+            android:inputType="textPersonName"
+            android:visibility="gone"
+            android:hint="Search with Delivery Person Name"
+            />
+
+        <TextView
+            android:id="@+id/deliveryPersonName_TextView"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center_vertical"
+            android:ems="10"
+            android:textSize="14sp"
+            android:paddingStart="2dp"
+            android:paddingEnd="20dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@color/TMC_Black"
+            android:layout_below="@+id/namelabel"
+            android:inputType="textPersonName"
+            android:hint="Search with Delivery Person Name"
+            />
+
+
+        <ImageView
+            android:id="@+id/searchicon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="14dp"
+            android:src="@mipmap/search_icon"
+            android:layout_below="@+id/namelabel"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+
+            />
+
+        <ImageView
+            android:id="@+id/closeicon"
+            android:layout_width="20dp"
+            android:visibility="gone"
+            android:layout_height="20dp"
+            android:src="@mipmap/close_icon"
+            android:layout_below="@+id/namelabel"
+            android:layout_marginTop="14dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+
+            />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/searchRelativeLayout"
+        android:id="@+id/borderview"
+        android:background="@color/TMC_Secondary_Text_Color"/>
+
     <ListView
+        android:layout_below="@+id/borderview"
+        android:layout_marginTop="15dp"
         android:id="@+id/listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,6 +101,19 @@
         android:dividerHeight="2dp"
         android:nestedScrollingEnabled="true" />
 
+
+    <TextView
+        android:id="@+id/deliverypersonList_instructiontextview"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/borderview"
+        android:textSize="18sp"
+        android:textColor="@color/TMC_Black"
+        android:gravity="center"
+        android:fontFamily="@font/open_sans_semibold"
+        android:visibility="gone"
+        android:layout_marginBottom="250dp"
+        android:text="There is no delivery person in this vendor"
+        android:layout_height="match_parent"/>
 
     <LinearLayout
         android:id="@+id/loadingpanelmask_dailyItemWisereport"

@@ -49,7 +49,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TMCPartnerApp"
         android:usesCleartextTraffic="true">
-        <activity android:name=".settings.DeliverySlotsTransactionDetailsReport"/>
+
+
+
+        <service android:name=".asynctaskforprinter.BackgroundServiceForPrintingReceipt2"
+            android:enabled="true"
+            android:exported="false"
+            />
+        <service android:name=".asynctaskforprinter.BackgroundServiceForPrintingReceipt"
+            android:enabled="true"
+            android:exported="false"/>
+        <activity android:name=".settings.DeliverySlotsTransactionDetailsReport">
+
+        </activity>
         <activity android:name=".settings.DeliverySlotsListForTransactionReport" />
         <activity android:name=".mobilescreen_javaclasses.mobile_neworders.NewOrderBarcodeScannerScreen" />
 
@@ -232,6 +244,8 @@
                 <action android:name="com.android.example.USB_PERMISSION.BillingScreenWeightMachine" />
                 <action android:name="com.android.example.USB_PERMISSION.BillingScreen" />
                 <action android:name="com.android.example.USB_PERMISSION.ManageOrders" />
+                <action android:name="receiverForCompletePrintingtheReceipt" />
+
             </intent-filter>
         </receiver>
         <receiver

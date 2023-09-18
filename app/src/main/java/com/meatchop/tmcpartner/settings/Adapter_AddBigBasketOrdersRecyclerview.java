@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.meatchop.tmcpartner.posscreen_javaclasses.pos_new_orders.Modal_NewOrderItems;
@@ -596,7 +598,7 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
     public class ViewHolder extends RecyclerView.ViewHolder {
         AutoCompleteTextView autoComplete_widget;
 
-        LinearLayout tmcUnitprice_weightAdd_layout, tmcUnitprice_weightMinus_layout;
+        ImageView tmcUnitprice_weightAdd_layout, tmcUnitprice_weightMinus_layout;
 
 
         TextView itemIndex,itemWeight_widget, itemQuantity_widget;
@@ -606,7 +608,8 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
         EditText itemWeight_edittextwidget,barcode_widget;
 
         ImageView minus_to_remove_item_widget;
-        LinearLayout removeItem_fromCart_widget, addNewItem_layout;
+        ImageView removeItem_fromCart_widget,edit_weight_layout,edit_price_layout;;
+        Button addNewItem_layout;
         ConstraintLayout parentLayout;
         boolean isTMCproduct = false;
         boolean isIndiaGateBasmatiRiceproduct = false;
@@ -623,21 +626,28 @@ public class Adapter_AddBigBasketOrdersRecyclerview extends RecyclerView.Adapter
             this.tmcUnitprice_weightMinus_layout = itemView.findViewById(R.id.tmcUnitprice_weightMinus_layout);
             this.itemWeight_widget = itemView.findViewById(R.id.itemWeight_widget);
             this.itemQuantity_widget = itemView.findViewById(R.id.itemQuantity_widget);
-
             this.gramsTextview = itemView.findViewById(R.id.gramsTextview);
-
-
             this.itemPrice_Widget = itemView.findViewById(R.id.itemPrice_Widget);
-
-            this.minus_to_remove_item_widget = itemView.findViewById(R.id.minus_to_remove_item_widget);
-
             this.removeItem_fromCart_widget = itemView.findViewById(R.id.removeItem_fromCart_widget);
             this.addNewItem_layout = itemView.findViewById(R.id.addNewItem_layout);
-
             this.parentLayout = itemView.findViewById(R.id.parentLayout);
+            this.edit_price_layout = itemView.findViewById(R.id.edit_price_layout);
+            this.edit_weight_layout = itemView.findViewById(R.id.edit_weight_layout);
+            tmcUnitprice_weightAdd_layout.setVisibility(View.GONE);
+            tmcUnitprice_weightMinus_layout.setVisibility(View.GONE);
+            removeItem_fromCart_widget.setVisibility(View.GONE);
+            edit_price_layout.setVisibility(View.GONE);
+            edit_weight_layout.setVisibility(View.GONE);
             itemWeight_widget.setVisibility(View.GONE);
             itemWeight_edittextwidget.setVisibility(View.VISIBLE);
             gramsTextview.setVisibility(View.VISIBLE);
+            ConstraintSet constraintSet = new ConstraintSet();
+            constraintSet.clone(parentLayout);
+            constraintSet.connect(R.id.gramsTextview,ConstraintSet.START,R.id.itemWeight_edittextwidget,ConstraintSet.END,-60);
+            constraintSet.connect(R.id.tmcUnitprice_weightAdd_layout,ConstraintSet.START,R.id.gramsTextview,ConstraintSet.END,15);
+            constraintSet.applyTo(parentLayout);
+
+
             adapter = new Adapter_AutoCompleteMenuitemForBigbasketOrders(context, Menulist,getPosition());
             adapter.setHandler(newHandler());
 

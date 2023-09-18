@@ -96,7 +96,11 @@ import static android.os.Build.VERSION.SDK_INT;
 public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     LinearLayout fetchData_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel, generateSubCtgyReport_Layout;
     DatePickerDialog datepicker;
-    TextView phoneProductSales,totalPhone_MarkupAmount,totalAppSales,totalApp_MarkupAmount,deliveryCharge_label,instruction_textview,wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget, noofOrders, noofPacks, vendorName, deliveryChargeAmount_textwidget, totalSales_headingText, appsales, possales,creditSales, swiggySales, dunzoSales, bigbasketSales, phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView phoneProductSales,totalPhone_MarkupAmount,totalAppSales,totalApp_MarkupAmount,deliveryCharge_label,instruction_textview,
+            wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget, noofOrders, noofPacks, vendorName,
+            deliveryChargeAmount_textwidget, totalSales_headingText, appsales, possales,creditSales, swiggySales, dunzoSales, 
+            bigbasketSales, phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount,
+            totalGST_Amt, final_sales,creditProductSales,creditMarkupAmount;
     String vendorKey, vendorname, ordertype, slotname, DateString,paymentMode;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -167,7 +171,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     boolean isgetReplacementOrderForSelectedDateCalled = false;
 
     boolean isOrderDetailsResponseReceivedForSelectedDate = false;
-
     boolean isReplacementTransacDetailsResponseReceivedForSelectedDate = false;
 
     int no_of_orders = 0;
@@ -176,7 +179,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     int no_of_ItemCount = 0;
     ScrollView scrollView;
     double itemDespTotalAmount = 0;
-    String replacementOrderDetailsString, startDateString_forReplacementransaction = "", endDateString_forReplacementransaction = "", CurrentDate, CouponDiscount, pos_CouponDiscount,WholeSales_CouponDiscount, Swiggy_CouponDiscount, Dunzo_CouponDiscount, BigBasket_CouponDiscount, PhoneOrder_CouponDiscount,Credit_CouponDiscount, PreviousDateString,
+    String replacementOrderDetailsString, startDateString_forReplacementransaction = "", endDateString_forReplacementransaction = "", CurrentDate,
+            CouponDiscount, pos_CouponDiscount,WholeSales_CouponDiscount, Swiggy_CouponDiscount, Dunzo_CouponDiscount, BigBasket_CouponDiscount, 
+            PhoneOrder_CouponDiscount,Credit_CouponDiscount, PreviousDateString,
             deliveryamount = "0", deliveryAmountPhoneOrder ="0",deliveryAmountForCreditOrders ="0";
     ListView consolidatedSalesReport_Listview;
     private static int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -200,9 +205,9 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
     boolean  isTMCTestTableServiceCalled = false;
     ArrayList<String> repeatedOrderid =  new ArrayList<>();
     LinearLayout orders_pack_layout,final_salesLayout,storename_totalSale_layout;
-    View dividerbelowheader;
+    View dividerbelowheader,exportreportDivider;
 
-    double totalappMarkupPercentageValue =0,totalPhoneMarkupPercentageValue =0;
+    double totalappMarkupPercentageValue =0,totalPhoneMarkupPercentageValue =0 , totalCreditMarkupPercentageValue =0; 
     TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
     boolean localDBcheck = false;
     TMCSubCtgyItemSQL_DB_Manager tmcSubCtgyItemSQL_db_manager;
@@ -214,7 +219,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         setContentView(R.layout.activity_consolidated_report_sub_ctgywise);
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
-
+        exportreportDivider= findViewById(R.id.exportreportDivider);
         dividerbelowheader = findViewById(R.id.dividerbelowheader);
         storename_totalSale_layout = findViewById(R.id.storename_totalSale_layout);
         final_salesLayout  = findViewById(R.id.final_salesLayout);
@@ -256,8 +261,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
         generateSubCtgyReport_Layout = findViewById(R.id.generateSubCtgyReport_Layout);
-
-
+        creditMarkupAmount = findViewById(R.id.creditMarkupAmount);
+        creditProductSales = findViewById(R.id.creditProductSales);
 
 
         Order_Item_List = new ArrayList<>();
@@ -317,13 +322,15 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         creditOrderdeliveryCharge_hashmap.clear();
         SubCtgywiseTotalArray.clear();
         SubCtgywiseTotalHashmap.clear();
-             SubCtgywiseWeightHashmap.clear();
-             SubCtgywiseQuantityHashmap.clear();
+        SubCtgywiseWeightHashmap.clear();
+        SubCtgywiseQuantityHashmap.clear();
         
         tmcSubCtgykey.clear();
         no_of_ItemCount = 0;
         totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
+
 
         try {
             ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
@@ -376,12 +383,17 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
         }
         if(screenInches>Constants.default_mobileScreenSize){
             dividerbelowheader.setVisibility(View.GONE);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 100);
+            generateReport_Layout.setVisibility(View.GONE);
+            exportreportDivider.setVisibility(View.GONE);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 30);
             storename_totalSale_layout.setLayoutParams(layoutParams);
             storename_totalSale_layout.setOrientation(LinearLayout.HORIZONTAL);
         }
         else{
             dividerbelowheader.setVisibility(View.VISIBLE);
+            generateReport_Layout.setVisibility(View.VISIBLE);
+            exportreportDivider.setVisibility(View.VISIBLE);
+
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200);
             storename_totalSale_layout.setLayoutParams(layoutParams);
             storename_totalSale_layout.setOrientation(LinearLayout.VERTICAL);
@@ -458,6 +470,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             no_of_orders = 0;
             totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
           //  getOrderForSelectedDate(PreviousDateString, DateString, vendorKey);
            // getdataFromReplacementTransaction(startDateString_forReplacementransaction, endDateString_forReplacementransaction, vendorKey);
@@ -542,7 +555,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 no_of_ItemCount = 0;
                 no_of_orders = 0;
                 totalappMarkupPercentageValue =0;
-                 totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                 addOrderedItemAmountDetails(Order_Item_List, OrderItem_hashmap);
 
@@ -1414,7 +1428,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             no_of_ItemCount = 0;
                             no_of_orders = 0;
                             totalappMarkupPercentageValue =0;
-                            totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -1477,7 +1492,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 no_of_ItemCount = 0;
                 no_of_orders = 0;
                 totalappMarkupPercentageValue =0;
-                totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                 ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -2153,7 +2169,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             no_of_ItemCount = 0;
                             no_of_orders = 0;
                             totalappMarkupPercentageValue =0;
-                            totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -2164,7 +2181,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             no_of_ItemCount = 0;
                             no_of_orders = 0;
                             totalappMarkupPercentageValue =0;
-                            totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                             noofOrders.setText(String.valueOf(no_of_orders));
 
@@ -2291,7 +2309,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     no_of_ItemCount = 0;
                     no_of_orders = 0;
                      totalappMarkupPercentageValue =0;
-                      totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                     ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -2351,6 +2370,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 no_of_orders = 0;
                 totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                 ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -2895,7 +2915,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         no_of_ItemCount = 0;
                         no_of_orders = 0;
                         totalappMarkupPercentageValue =0;
-                        totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                         ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -3865,7 +3886,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                             no_of_ItemCount = 0;
                             no_of_orders = 0;
                             totalappMarkupPercentageValue =0;
-                             totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                             ReportListviewSizeHelper.getListViewSize(consolidatedSalesReport_Listview, screenInches);
 
@@ -3949,6 +3971,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                     no_of_orders = 0;
                      totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
 
                     deliveryCharge_hashmap.clear();
                     deliveryCharge_hashmap.clear();
@@ -5426,6 +5449,16 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                         }
 
                     }
+                    else if(ordertype.toUpperCase().equals(Constants.CREDIT)){
+                        try{
+                            totalCreditMarkupPercentageValue = markupValue + totalCreditMarkupPercentageValue;
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    }
+
 
 
 
@@ -6969,8 +7002,8 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
 
 
             try{
-
-                totalApp_MarkupAmount.setText(String.valueOf(Math.round(totalappMarkupPercentageValue)));
+                totalApp_MarkupAmount.setText(String.valueOf(decimalFormat.format(totalappMarkupPercentageValue)));
+              //  totalApp_MarkupAmount.setText(String.valueOf(Math.round(totalappMarkupPercentageValue)));
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -6986,8 +7019,6 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-
-
             try{
                 phoneOrderSales.setText(String.valueOf(decimalFormat.format(phoneorder_Amount)));
             }
@@ -7001,7 +7032,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
                 e.printStackTrace();
             }
             try{
-                totalPhone_MarkupAmount.setText(String.valueOf(Math.round(totalPhoneMarkupPercentageValue)));
+                totalPhone_MarkupAmount.setText(String.valueOf(decimalFormat.format(Math.round(totalPhoneMarkupPercentageValue))));
 
                 //  totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
             }
@@ -7014,6 +7045,55 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             catch (Exception e){
                 e.printStackTrace();
             }
+
+
+
+
+
+
+
+
+
+            try{
+                totalCreditMarkupPercentageValue  = Double.parseDouble(decimalFormat.format(totalCreditMarkupPercentageValue));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+            try{
+                creditSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                creditorder_Amount  = creditorder_Amount - totalCreditMarkupPercentageValue ;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                creditMarkupAmount.setText(String.valueOf(decimalFormat.format(Math.round(totalCreditMarkupPercentageValue))));
+
+                //  totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                creditProductSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+
+
 
 
 
@@ -7030,12 +7110,12 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             final_sales.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement)));
             appsales.setText(String.valueOf(decimalFormat.format(apporder_Amount)));
             possales.setText(String.valueOf(decimalFormat.format(posorder_Amount)));
-            creditSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
+          //  creditSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
             wholesalesOrderSales.setText(String.valueOf(decimalFormat.format(wholeSaleorder_Amount)));
             swiggySales.setText(String.valueOf(decimalFormat.format(swiggyorder_Amount)));
             dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoorder_Amount)));
             bigbasketSales.setText(String.valueOf(decimalFormat.format(bigBasketorder_Amount)));
-            deliveryChargeAmount_textwidget.setText(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder)));
+            deliveryChargeAmount_textwidget.setText(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder+deliveryCharge_creditOrder)));
          //   phoneOrderSales.setText(String.valueOf(decimalFormat.format(phoneorder_Amount)));
             totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement))+" .Rs");
 
@@ -7048,7 +7128,7 @@ public class ConsolidatedReportSubCtgywise extends AppCompatActivity {
             finalBillDetails.add("REPLACEMENT : ");
             FinalBill_hashmap.put("REPLACEMENT : ", String.valueOf(decimalFormat.format(totalReplacementAmount)));
             finalBillDetails.add("DELIVERYCHARGES : ");
-            FinalBill_hashmap.put("DELIVERYCHARGES : ", String.valueOf(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder))));
+            FinalBill_hashmap.put("DELIVERYCHARGES : ", String.valueOf(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder+deliveryCharge_creditOrder))));
             finalBillDetails.add("SUBTOTAL : ");
             FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             finalBillDetails.add("GST : ");

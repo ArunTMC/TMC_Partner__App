@@ -106,7 +106,7 @@ import static android.os.Build.VERSION.SDK_INT;
 public class Phone_Sales_Report extends AppCompatActivity {
     LinearLayout fetchData_Layout,PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView totalPhone_MarkupAmount,deliveryChargeAmount_textwidget,Phonepe_textview,appOrdersCount_textwidget,instruction_textview,vendorName,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,
+    TextView packCount_textwidget,totalPhone_MarkupAmount,deliveryChargeAmount_textwidget,Phonepe_textview,appOrdersCount_textwidget,instruction_textview,vendorName,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,
             totalSales_headingText, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String vendorKey = "",vendorname ="";
 
@@ -177,6 +177,8 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
     double totalPhoneMarkupPercentageValue =0;
 
+    int no_of_packs=0;
+    
     TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
     boolean localDBcheck = false ;
 
@@ -192,6 +194,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
+        packCount_textwidget =  findViewById(R.id.packCount_textwidget);
         totalPhone_MarkupAmount = findViewById(R.id.totalPhone_MarkupAmount);
         vendorName = findViewById(R.id.vendorName);
         fetchData_Layout = findViewById(R.id.fetchData_Layout);
@@ -230,6 +233,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
         array_of_orderId = new ArrayList<>();
 
         totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
         array_of_orderId.clear();
         OrderItem_hashmap.clear();
@@ -353,6 +357,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
 
                     totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
                     Order_Item_List.clear();
                     array_of_orderId.clear();
                     OrderItem_hashmap.clear();
@@ -764,15 +769,24 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
             text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
+        else if((vendorKey.equals("vendor_6"))) {
+
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah</b>\n\n";
+         //   text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Chicken and Mutton \n";
+        }
+
+
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
 
         //text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        //text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
@@ -1262,6 +1276,20 @@ public class Phone_Sales_Report extends AppCompatActivity {
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
 
             }
+           else  if((vendorKey.equals("vendor_6"))) {
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "New NS Bismillah" + "\n");
+
+               // PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+              //  PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+               // PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+            }
+
+
             else {
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
@@ -1949,6 +1977,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
                             instruction_textview.setText("After Selecting the Date !! Click Fetch Data");
 
                             totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
                             array_of_orderId.clear();
                             OrderItem_hashmap.clear();
@@ -2009,6 +2038,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
         }
         isgetOrderForSelectedDateCalled = true;
         totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
         array_of_orderId.clear();
         OrderItem_hashmap.clear();
@@ -2279,6 +2309,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
                             else{
                                 totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
                                 array_of_orderId.clear();
                                 OrderItem_hashmap.clear();
@@ -2348,6 +2379,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
                     Toast.makeText(Phone_Sales_Report.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                     Adjusting_Widgets_Visibility(false);
                     totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
                     array_of_orderId.clear();
                     OrderItem_hashmap.clear();
@@ -2439,6 +2471,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
                     instruction_textview.setText("There is no Order On this Date");
 
                     totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
                     Order_Item_List.clear();
                     array_of_orderId.clear();
                     OrderItem_hashmap.clear();
@@ -2481,6 +2514,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
                 instruction_textview.setText("There is some error"+String.valueOf(error));
 
                 totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
                 array_of_orderId.clear();
                 OrderItem_hashmap.clear();
@@ -2842,7 +2876,8 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
                     } else {
                         totalPhoneMarkupPercentageValue =0;
-        Order_Item_List.clear();
+                         no_of_packs=0;
+                        Order_Item_List.clear();
                         array_of_orderId.clear();
                         OrderItem_hashmap.clear();
                         finalBillDetails.clear();
@@ -3140,7 +3175,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
 
             appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-
+            packCount_textwidget.setText(String.valueOf(no_of_packs));
 
             String TMCsubCtgyKey = "",subCtgyTotal="";
             for (int i = 0; i < order_item_list.size(); i++) {
@@ -3264,7 +3299,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
             }
 
             appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-
+            packCount_textwidget.setText(String.valueOf(no_of_packs));
             try{
                 totalPhoneMarkupPercentageValue  = Double.parseDouble(decimalFormat.format(totalPhoneMarkupPercentageValue));
             }
@@ -3355,7 +3390,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
             for(int i=0; i < jsonArray.length(); i++) {
                 //Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
-
+                no_of_packs = no_of_packs +1;
                 JSONObject json = jsonArray.getJSONObject(i);
                 //Log.d(Constants.TAG, "this json" +json.toString());
                 boolean isItemFoundinMenu = false;
@@ -3475,6 +3510,18 @@ public class Phone_Sales_Report extends AppCompatActivity {
                     }
                     double tmcprice = Double.parseDouble(String.valueOf(json.get("tmcprice")));
                     int quantity = Integer.parseInt(String.valueOf(json.get("quantity")));
+
+                    try{
+                        if (quantity > 1) {
+                            no_of_packs = (no_of_packs - 1);
+                            no_of_packs = (no_of_packs +((int) quantity));
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
                     try {
                         newweight = Double.parseDouble(String.valueOf(newOrderWeightInGrams));
 
@@ -3975,6 +4022,7 @@ public class Phone_Sales_Report extends AppCompatActivity {
 
     private List<String> getSortedIdFromHashMap(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
         totalPhoneMarkupPercentageValue =0;
+        no_of_packs=0;
         Order_Item_List.clear();
         array_of_orderId.clear();
         order_item_list.addAll(orderItem_hashmap.keySet());

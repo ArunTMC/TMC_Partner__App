@@ -50,6 +50,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
@@ -122,7 +123,7 @@ public class Mobile_ManageOrders1 extends Fragment {
     WebSocket webSocket;
     private Context mContext;
     BottomNavigationView bottomNavigationView;
-
+    static BottomSheetDialog bottomSheetDialog;
 
     boolean isSearchButtonClicked = false;
     boolean isnewOrdersSyncButtonClicked = false;
@@ -165,7 +166,7 @@ public class Mobile_ManageOrders1 extends Fragment {
     VendorOrdersTableInterface mResultCallback = null;
     VendorOrdersTableService mVolleyService;
     boolean orderdetailsnewschema = false, localDBcheck = false;
-    boolean  isVendorOrdersTableServiceCalled = false;
+    boolean  isVendorOrdersTableServiceCalled = false;boolean isDeliveryPartnerMethodCalled = false;
     TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
 
 
@@ -249,12 +250,12 @@ public class Mobile_ManageOrders1 extends Fragment {
             SharedPreferences shared2 = requireContext().getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
             DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
 
-            if(deliveryPartnerList.equals("")){
-                getDeliveryPartnerList();
+            if(DeliveryPersonList.equals("")){
+                getDeliveryPartnerList(false,"","","","","");
 
             }
             else{
-                ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+               ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
 
             }
         }
@@ -946,7 +947,13 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
 
-    private void getDeliveryPartnerList() {
+    public void getDeliveryPartnerList(boolean openBottomSheet, String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        if(isDeliveryPartnerMethodCalled){
+            return;
+        }
+        isDeliveryPartnerMethodCalled = true;
+
+
         SharedPreferences preferences =mContext.getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
@@ -960,7 +967,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                         try {
                             //converting jsonSTRING into array
                             String DeliveryPersonListString = response.toString();
-                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonListString);
 
                             SharedPreferences sharedPreferences
                                     = mContext.getSharedPreferences("DeliveryPersonList",
@@ -974,9 +981,12 @@ public class Mobile_ManageOrders1 extends Fragment {
                                     "DeliveryPersonListString",
                                     DeliveryPersonListString);
                             myEdit.apply();
-
-
+                            isDeliveryPartnerMethodCalled = false;
+                            if(openBottomSheet){
+                                showBottomSheetDialog(orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                            }
                         } catch (Exception e) {
+                            isDeliveryPartnerMethodCalled = false;
                             e.printStackTrace();
                         }
 
@@ -1006,7 +1016,7 @@ public class Mobile_ManageOrders1 extends Fragment {
                     errorCode = "Parse Error";
                 }
                 Toast.makeText(mContext,"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
-
+                isDeliveryPartnerMethodCalled = false;
 
 
                 error.printStackTrace();
@@ -1040,8 +1050,147 @@ public class Mobile_ManageOrders1 extends Fragment {
 
 
 
+    public void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+    Adjusting_Widgets_Visibility(true);
+        if(deliveryPartnerList.size()>0) {
+            try {
 
-    private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
+                bottomSheetDialog = new BottomSheetDialog(mContext);
+                bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
+                ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
+                TextView deliverypersonList_instructiontextview = bottomSheetDialog.findViewById(R.id.deliverypersonList_instructiontextview);
+                TextView deliveryPersonName_TextView = bottomSheetDialog.findViewById(R.id.deliveryPersonName_TextView);
+                ImageView searchicon = bottomSheetDialog.findViewById(R.id.searchicon);
+                ImageView closeicon = bottomSheetDialog.findViewById(R.id.closeicon);
+                EditText deliveryPersonName_editText = bottomSheetDialog.findViewById(R.id.deliveryPersonName_editText);
+
+                deliveryPersonName_TextView.setVisibility(View.VISIBLE);
+                searchicon.setVisibility(View.VISIBLE);
+                closeicon.setVisibility(View.GONE);
+                deliveryPersonName_editText.setVisibility(View.GONE);
+                deliverypersonList_instructiontextview.setVisibility(View.VISIBLE);
+                deliverypersonList_instructiontextview.setText("Loading...");
+                ListView1.setVisibility(View.GONE);
+
+
+                try {
+
+                    searchicon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryPersonName_TextView.setVisibility(View.GONE);
+                            searchicon.setVisibility(View.GONE);
+                            closeicon.setVisibility(View.VISIBLE);
+                            deliveryPersonName_editText.setVisibility(View.VISIBLE);
+                            showKeyboard(deliveryPersonName_editText);
+
+                        }
+                    });
+
+
+                    deliveryPersonName_TextView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryPersonName_TextView.setVisibility(View.GONE);
+                            searchicon.setVisibility(View.GONE);
+                            closeicon.setVisibility(View.VISIBLE);
+                            deliveryPersonName_editText.setVisibility(View.VISIBLE);
+                            showKeyboard(deliveryPersonName_editText);
+                        }
+                    });
+
+                    closeicon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryPersonName_TextView.setVisibility(View.VISIBLE);
+                            searchicon.setVisibility(View.VISIBLE);
+                            closeicon.setVisibility(View.GONE);
+                            deliveryPersonName_editText.setVisibility(View.GONE);
+                            hideKeyboard(deliveryPersonName_editText);
+
+
+                            deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                            ListView1.setVisibility(View.VISIBLE);
+                            deliverypersonList_instructiontextview.setText("");
+                            deliveryPersonName_editText.setText("");
+                            Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, deliveryPartnerList, orderkey, "MobileManageOrders", deliverypartnerName, orderid, customerMobileNo, vendorkey);
+                            ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+                        }
+                    });
+
+                    deliveryPersonName_editText.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                            String deliveryPersonNameFromListener = String.valueOf(s);
+                            if (!deliveryPersonNameFromListener.equals("")) {
+                                try {
+                                    List<AssignDeliveryPartner_PojoClass> sorteddeliveryPartnerList = new ArrayList<>();
+
+                                    for (int i = 0; i < deliveryPartnerList.size(); i++) {
+
+                                        AssignDeliveryPartner_PojoClass assignDeliveryPartner_pojoClass = new AssignDeliveryPartner_PojoClass();
+                                        assignDeliveryPartner_pojoClass = deliveryPartnerList.get(i);
+                                        if (assignDeliveryPartner_pojoClass.getDeliveryPartnerName().toUpperCase().contains(deliveryPersonNameFromListener.toUpperCase())) {
+                                            sorteddeliveryPartnerList.add(assignDeliveryPartner_pojoClass);
+                                        }
+
+                                        if (i == (deliveryPartnerList.size() - 1)) {
+                                            if (sorteddeliveryPartnerList.size() > 0) {
+
+                                                deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                                                ListView1.setVisibility(View.VISIBLE);
+                                                deliverypersonList_instructiontextview.setText("");
+
+                                                Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, sorteddeliveryPartnerList, orderkey, "MobileManageOrders", deliverypartnerName, orderid, customerMobileNo, vendorkey);
+                                                ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+                                            } else {
+                                                deliverypersonList_instructiontextview.setVisibility(View.VISIBLE);
+                                                ListView1.setVisibility(View.GONE);
+                                                deliverypersonList_instructiontextview.setText("There is no delivery person in this name");
+                                            }
+                                        }
+
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+                    Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, deliveryPartnerList, orderkey, "MobileManageOrders", deliverypartnerName, orderid, customerMobileNo, vendorkey);
+                    ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+                    deliverypersonList_instructiontextview.setVisibility(View.GONE);
+                    ListView1.setVisibility(View.VISIBLE);
+                    Adjusting_Widgets_Visibility(false);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
+
+                bottomSheetDialog.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+
+            getDeliveryPartnerList(true , orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+
+        }
+    }
+
+
+    public void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
         if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
             try {
                 String ordertype = "#", orderid = "";
@@ -1054,6 +1203,10 @@ public class Mobile_ManageOrders1 extends Fragment {
                 int i1 = 0;
                 int arrayLength = JArray.length();
                 //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
+
+                if(arrayLength==0){
+                    Toast.makeText(mContext, "There is no delivery person for this vendor", Toast.LENGTH_SHORT).show();
+                }
 
 
                 for (; i1 < (arrayLength); i1++) {
@@ -1379,6 +1532,9 @@ public class Mobile_ManageOrders1 extends Fragment {
         mobile_search_close_btn.setVisibility(View.VISIBLE);
         mobile_search_barEditText.setVisibility(View.VISIBLE);
     }
+
+
+
     private void showKeyboard(final EditText editText) {
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -3699,6 +3855,29 @@ public class Mobile_ManageOrders1 extends Fragment {
                 BluetoothPrintDriver.BT_Write("\r");
                 BluetoothPrintDriver.LF();
             }
+            else if(vendorKey.equals("vendor_6")){
+
+                Title = "New NS Bismillah";
+
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString(Title);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+/*
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+ */
+            }
+
             else {
                 Title = "The Meat Chop";
 

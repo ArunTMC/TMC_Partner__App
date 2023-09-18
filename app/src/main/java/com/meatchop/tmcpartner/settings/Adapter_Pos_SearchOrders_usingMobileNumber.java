@@ -88,7 +88,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
     String AdapterCalledFrom ="AppSearchOrders";
     public searchOrdersUsingMobileNumber searchOrdersUsingMobileNumber;
     Phone_Orders_List phone_orders_list ;
-
+    Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class_ForPOSPrint ;
     String deliverytype="",vendorKey ="", vendorname = "";
 
     String StoreAddressLine1 = "No 57, Rajendra Prasad Road,";
@@ -288,7 +288,14 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         this.mContext=mContext;
         this.ordersList=sorted_ordersList;
         this.AdapterCalledFrom = "PhoneSearchOrders";
-        getMenuItemArrayFromSharedPreferences();
+        SharedPreferences shared = mContext.getSharedPreferences("VendorLoginData", MODE_PRIVATE);
+        localDBcheck = (shared.getBoolean("localdbcheck", false));
+        if(localDBcheck){
+            connectSQLDB();
+        }
+        else{
+            getMenuItemArrayFromSharedPreferences();
+        }
 
         this.orderStatus="DELIVERED";
     }
@@ -683,7 +690,8 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                     //     orderDetails_text_widget.setText(String.format(itemDesp));
 
-                } else {
+                }
+                else {
 
                     ////Log.i("tag", "array.lengrh(i" + json.length());
                     try {
@@ -2696,9 +2704,13 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
             new_to_pay_Amount =  (old_total_Amount + old_taxes_and_charges_Amount);
-            int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+           // int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
 
-            setOrderAmountDetails.setTotalAmountWithGst(String.valueOf(decimalFormat.format(new_totalAmount_withGst)));
+
+
+           double new_totalAmount_withGst = Double.parseDouble(decimalFormat.format(new_to_pay_Amount));
+
+            setOrderAmountDetails.setTotalAmountWithGst(String.valueOf((new_totalAmount_withGst)));
 
         }
 //find total payable Amount
@@ -2734,11 +2746,11 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         Currenttime = getDate_and_time();
 
-        Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = selectedBillDetails.get(0);
-        String orderid = manageOrders_pojo_class.getOrderid();
-        double total_subtotal_double = Double.parseDouble(String.valueOf(manageOrders_pojo_class.getPayableamount()));
+         modal_manageOrders_pojo_class_ForPOSPrint = selectedBillDetails.get(0);
+        String orderid = modal_manageOrders_pojo_class_ForPOSPrint.getOrderid();
+        double total_subtotal_double = Double.parseDouble(String.valueOf(modal_manageOrders_pojo_class_ForPOSPrint.getPayableamount()));
 
-        int total_subtotalint = (int) Math.round(total_subtotal_double);
+      //  int total_subtotalint = (int) Math.round(total_subtotal_double);
         double total_subtotal = 0;
         String payment_mode = "";
         String userMobile = "";
@@ -2762,7 +2774,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
         try {
-            orderPlacedTime = manageOrders_pojo_class.getOrderplacedtime().toString();
+            orderPlacedTime = modal_manageOrders_pojo_class_ForPOSPrint.getOrderplacedtime().toString();
 
         }catch (Exception e ){
             e.printStackTrace();
@@ -2772,13 +2784,13 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
         try {
-            payment_mode = manageOrders_pojo_class.getPaymentmode();
+            payment_mode = modal_manageOrders_pojo_class_ForPOSPrint.getPaymentmode();
 
         }catch (Exception e ){
             e.printStackTrace();
         }
         try{
-            SlotDate = manageOrders_pojo_class.getSlotdate();
+            SlotDate = modal_manageOrders_pojo_class_ForPOSPrint.getSlotdate();
 
         }catch (Exception e){
             e.printStackTrace();
@@ -2786,7 +2798,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
 
         try {
-            notes = manageOrders_pojo_class.getNotes();
+            notes = modal_manageOrders_pojo_class_ForPOSPrint.getNotes();
 
         }
         catch (Exception e){
@@ -2795,7 +2807,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
 
         try {
-            deliverydistance = manageOrders_pojo_class.getDeliverydistance();
+            deliverydistance = modal_manageOrders_pojo_class_ForPOSPrint.getDeliverydistance();
 
         }
         catch (Exception e){
@@ -2805,7 +2817,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
 
         try {
-            SlotName = manageOrders_pojo_class.getSlotname();
+            SlotName = modal_manageOrders_pojo_class_ForPOSPrint.getSlotname();
 
         }
         catch (Exception e){
@@ -2813,20 +2825,20 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         }
         try{
-            SlotTimeInRange = manageOrders_pojo_class.getSlottimerange();
+            SlotTimeInRange = modal_manageOrders_pojo_class_ForPOSPrint.getSlottimerange();
 
         }catch (Exception e){
             e.printStackTrace();
         }
         try{
-            OrderType = manageOrders_pojo_class.getOrderType();
+            OrderType = modal_manageOrders_pojo_class_ForPOSPrint.getOrderType();
 
         }catch (Exception e){
             e.printStackTrace();
         }
 
         try {
-            deliverytype = manageOrders_pojo_class.getDeliverytype();
+            deliverytype = modal_manageOrders_pojo_class_ForPOSPrint.getDeliverytype();
 
         }catch (Exception e ){
             e.printStackTrace();
@@ -2834,7 +2846,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
         try {
-            DeliveryAmount = manageOrders_pojo_class.getDeliveryamount();
+            DeliveryAmount = modal_manageOrders_pojo_class_ForPOSPrint.getDeliveryamount();
 
         }catch (Exception e ){
             e.printStackTrace();
@@ -2842,19 +2854,19 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
 
         try{
-            useraddress = manageOrders_pojo_class.getUseraddress();
+            useraddress = modal_manageOrders_pojo_class_ForPOSPrint.getUseraddress();
 
         }catch (Exception e){
             e.printStackTrace();
         }
         try{
-            tokenno = manageOrders_pojo_class.getTokenno();
+            tokenno = modal_manageOrders_pojo_class_ForPOSPrint.getTokenno();
 
         }catch (Exception e){
             e.printStackTrace();
         }
         try{
-            userMobile = manageOrders_pojo_class.getUsermobile();
+            userMobile = modal_manageOrders_pojo_class_ForPOSPrint.getUsermobile();
 
         }catch (Exception e){
             e.printStackTrace();
@@ -2865,7 +2877,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         double couponDiscount_double = 0;
         try {
             if ((OrderType.equals(Constants.APPORDER)) || (OrderType.equals(Constants.PhoneOrder)))  {
-                couponDiscount_double = Double.parseDouble(String.valueOf(manageOrders_pojo_class.getCoupondiscamount()));
+                couponDiscount_double = Double.parseDouble(String.valueOf(modal_manageOrders_pojo_class_ForPOSPrint.getCoupondiscamount()));
 
             }
         }
@@ -2876,7 +2888,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         try {
             if (OrderType.equals(Constants.POSORDER)) {
-                couponDiscount_double = Double.parseDouble(String.valueOf(manageOrders_pojo_class.getCoupondiscamount()));
+                couponDiscount_double = Double.parseDouble(String.valueOf(modal_manageOrders_pojo_class_ForPOSPrint.getCoupondiscamount()));
             }
         }
         catch (Exception e){
@@ -2887,7 +2899,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         String itemwithoutGst = "", taxAmount = "";
         try {
-            JSONArray jsonArray = manageOrders_pojo_class.getItemdesp();
+            JSONArray jsonArray = modal_manageOrders_pojo_class_ForPOSPrint.getItemdesp();
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
                 if (json.has("marinadeitemdesp")) {
@@ -2947,7 +2959,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
                     if (marinadesObject.has("netweight")) {
                         marinades_manageOrders_pojo_class.ItemFinalWeight = String.valueOf(marinadesObject.get("netweight"));
-                        manageOrders_pojo_class.netweight = String.valueOf(marinadesObject.getString("netweight"));
+                        modal_manageOrders_pojo_class_ForPOSPrint.netweight = String.valueOf(marinadesObject.getString("netweight"));
 
                     } else {
                         marinades_manageOrders_pojo_class.ItemFinalWeight = " - ";
@@ -2968,7 +2980,7 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
                 Modal_ManageOrders_Pojo_Class manageOrders_pojo_classs = new Modal_ManageOrders_Pojo_Class();
                 if (json.has("netweight")) {
                     manageOrders_pojo_classs.ItemFinalWeight = String.valueOf(json.get("netweight"));
-                    manageOrders_pojo_class.netweight = String.valueOf(json.get("netweight"));
+                    modal_manageOrders_pojo_class_ForPOSPrint.netweight = String.valueOf(json.get("netweight"));
 
 
                 } else {
@@ -3182,83 +3194,84 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             String subtotal = String.valueOf(decimalFormat.format(subtotal_double));
             String quantity = modal_newOrderItems.getQuantity();
             double price_double = Double.parseDouble(String.valueOf(modal_newOrderItems.getSubTotal_PerItemWithoutGst()));
-
             String price = String.valueOf(decimalFormat.format(price_double));
             String weight = modal_newOrderItems.getItemFinalWeight();
             taxAmount = modal_newOrderItems.getTotalGstAmount();
             itemwithoutGst = modal_newOrderItems.getTotalAmountWithoutGst();
             String netweight = modal_newOrderItems.getNetweight();
             String grossweight = modal_newOrderItems.getGrossweight();
+            String portionsize = modal_newOrderItems.getPortionsize();
 
 
 
 
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 130);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 1, 0, 0,"TokenNo: "+tokenno + "\n");
+            if ((OrderType.equals(Constants.APPORDER)) || (OrderType.equals(Constants.PhoneOrder)))  {
 
 
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Orderid : "+orderid + "\n");
-            if(tmcSubCtgyKey.equals("tmcsubctgy_16")) {
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 130);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, "Grill House "+fullitemName + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 1, 0, 0, "TokenNo: " + tokenno + "\n");
 
-
-            }
-            else if(tmcSubCtgyKey.equals("tmcsubctgy_15")) {
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, "Ready to Cook "+fullitemName + "\n");
-
-            }
-            else  {
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
-
-            }
-            if((cutname.length()>0) && (!cutname.equals("null")) && (!cutname.equals(null))) {
-
-
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
-                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0,  (cutname.toUpperCase()) + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Orderid : " + orderid + "\n");
+                if (tmcSubCtgyKey.equals("tmcsubctgy_16")) {
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, "Grill House " + fullitemName + "\n");
 
-                PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+
+                } else if (tmcSubCtgyKey.equals("tmcsubctgy_15")) {
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, "Ready to Cook " + fullitemName + "\n");
+
+                } else {
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 100);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, fullitemName + "\n");
+
+                }
+                if ((cutname.length() > 0) && (!cutname.equals("null")) && (!cutname.equals(null))) {
+
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 1, 0, 30, 0, (cutname.toUpperCase()) + "\n");
+
+                    PrinterFunctions.SetLineSpacing(portName, portSettings, 40);
+                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+
+
+                }
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
                 PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "----------------------------------------" + "\n");
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Grossweight : " + grossweight + "\n");
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Netweight  : " + weight + "\n");
 
 
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0, "Quantity : " + quantity + "\n");
+                PrinterFunctions.PreformCut(portName, portSettings, 1);
             }
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Grossweight : "+ grossweight + "\n");
 
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Netweight  : "+weight + "\n");
-
-
-            PrinterFunctions.SetLineSpacing(portName, portSettings, 70);
-            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 1, 0, 0, 0, 30, 0,"Quantity : "+quantity +"\n");
-            PrinterFunctions.PreformCut(portName,portSettings,1);
-
-
-            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal, cutname);
+            Printer_POJO_ClassArray[i] = new Printer_POJO_Class(grossweight, quantity, orderid, fullitemName, weight, price, "0.00", Gst, subtotal, cutname, "priceperkg_unitprice", "pricetypeforpos", "priceSuffix");
 
         }
         total_subtotal = Double.parseDouble(itemwithoutGst) + Double.parseDouble(taxAmount);
-        int new_total_subtotal = (int) Math.round(total_subtotal);
+      //  int new_total_subtotal = (int) Math.round(total_subtotal);
+        double new_total_subtotal = Double.parseDouble(decimalFormat.format(total_subtotal));
 
         String couponDiscount_string = String.valueOf(couponDiscount_double);
         String totalSubtotal_string = String.valueOf(new_total_subtotal);
@@ -3285,6 +3298,19 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
             PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
 
         }
+        if((vendorKey.equals("vendor_6"))) {
+
+
+            PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+            PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "New NS Bismillah" + "\n");
+
+         //   PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+       //     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+         //   PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+        }
+
         else {
 
             PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
@@ -3516,7 +3542,19 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
 
         String totalRate = "Rs." + Printer_POJO_ClassArraytotal.getTotalRate();
         String totalGst = "Rs." + Printer_POJO_ClassArraytotal.getTotalGST();
-        String totalSubtotal = "Rs." + Printer_POJO_ClassArraytotal.getTotalsubtotal();
+        String totalSubtotal = "";
+        try{
+            if(modal_manageOrders_pojo_class_ForPOSPrint.getOrderType().toUpperCase().equals(Constants.APPORDER)){
+                totalSubtotal = "Rs."+(decimalFormat.format(Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal())));
+            }
+            else{
+                totalSubtotal = "Rs."+String.valueOf((Math.round(Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal()))));
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+       // String totalSubtotal = "Rs." + Printer_POJO_ClassArraytotal.getTotalsubtotal();
         if (totalRate.length() == 7) {
             //18spaces
             totalRate = totalRate + "                  ";
@@ -3717,7 +3755,19 @@ public class Adapter_Pos_SearchOrders_usingMobileNumber extends ArrayAdapter<Mod
         }
         PrinterFunctions.SetLineSpacing(portName, portSettings, 50);
         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-        double netTotalDouble =Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal());
+        double netTotalDouble = 0;
+        try{
+            if(modal_manageOrders_pojo_class_ForPOSPrint.getOrderType().toUpperCase().equals(Constants.APPORDER)){
+                netTotalDouble = Double.parseDouble(decimalFormat.format(Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal())));
+            }
+            else{
+                netTotalDouble = (Math.round(Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal())));
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+     //   double netTotalDouble =Double.parseDouble(Printer_POJO_ClassArraytotal.getTotalsubtotal());
         double CouponDiscount_doublee = Double.parseDouble(Printer_POJO_ClassArraytotal.getCouponDiscount());
         netTotalDouble = netTotalDouble-CouponDiscount_doublee;
 

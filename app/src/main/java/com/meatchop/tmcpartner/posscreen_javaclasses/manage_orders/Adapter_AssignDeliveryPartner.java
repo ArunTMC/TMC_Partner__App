@@ -28,6 +28,7 @@ import com.meatchop.tmcpartner.customerorder_trackingdetails.Update_CustomerOrde
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.posscreen_javaclasses.other_java_classes.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.settings.DeliveryPartnerSettlementReport;
 import com.meatchop.tmcpartner.settings.Phone_Orders_List;
 import com.meatchop.tmcpartner.settings.searchOrdersUsingMobileNumber;
 
@@ -111,27 +112,98 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                 String deliveryPartnerName = assignDeliveryPartner_pojoClass.getDeliveryPartnerName();
 
                 //Log.i(Constants.TAG,"deliveryPartnerKey"+deliveryPartnerKey);
+            if (fromActivityName.equals("DeliveryPartnerSettlementReport")) {
 
+                assignPartner_widget.setText("Select Delivery Person");
+
+            }
 
                 assignPartner_widget.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        String deliveryPartnerKey = deliveryPartnerList.get(pos).getDeliveryPartnerKey();
+                        String deliveryPartnerMobileNo = deliveryPartnerList.get(pos).getDeliveryPartnerMobileNo();
+                        String deliveryPartnerName = deliveryPartnerList.get(pos).getDeliveryPartnerName();
+                        String deliveryPartnerStatus = deliveryPartnerList.get(pos).getDeliveryPartnerStatus();
+                        if (fromActivityName.equals("DeliveryPartnerSettlementReport")) {
+                           try {
+                               DeliveryPartnerSettlementReport.deliveryPersonName_textview.setText(deliveryPartnerName);
+                               DeliveryPartnerSettlementReport.deliveryPersonMobileno_textview.setText(deliveryPartnerMobileNo);
+                               DeliveryPartnerSettlementReport.deliveryPartnerName = deliveryPartnerName;
+                               DeliveryPartnerSettlementReport.deliveryPartnerKey = deliveryPartnerKey;
+                               DeliveryPartnerSettlementReport.deliveryPartnerMobileNo = deliveryPartnerMobileNo;
+                               DeliveryPartnerSettlementReport.deliveryPartnerStatus = deliveryPartnerStatus;
+
+                               Intent intent = new Intent(mContext, DeliveryPartnerSettlementReport.class);
+                               intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                               mContext.startActivity(intent);
+                           }
+                           catch (Exception e){
+                               e.printStackTrace();
+                           }
+
+                        }
+                        else {
+                            JSONObject jsonObject = new JSONObject();
+                            String Api_toChangeOrderDetailsUsingOrderid = "";
+
+                            try {
 
 
-                        JSONObject jsonObject = new JSONObject();
-                        String Api_toChangeOrderDetailsUsingOrderid = "";
-
-                        try {
+                                if (orderdetailsnewschema) {
+                                    if (orderid.length() > 1 && vendorkey.length() > 1 && customerMobileNo.length() > 1) {
 
 
-                            if(orderdetailsnewschema){
-                                if(orderid.length()>1 && vendorkey.length()>1 && customerMobileNo.length()>1){
+                                        try {
+                                            jsonObject.put("vendorkey", vendorkey);
+                                            jsonObject.put("orderid", orderid);
+                                            jsonObject.put("deliveryuserkey", deliveryPartnerKey);
+                                            jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
+                                            jsonObject.put("deliveryusername", deliveryPartnerName);
 
 
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+                                        }
+
+
+                                        Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorTrackingOrderDetails + "?vendorkey=" + vendorkey + "&orderid=" + orderid;
+                                        JSONObject customerDetails_JsonObject = new JSONObject();
+
+
+                                        try {
+                                            customerDetails_JsonObject.put("usermobileno", customerMobileNo);
+                                            customerDetails_JsonObject.put("orderid", orderid);
+                                            customerDetails_JsonObject.put("deliveryuserkey", deliveryPartnerKey);
+                                            customerDetails_JsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
+                                            customerDetails_JsonObject.put("deliveryusername", deliveryPartnerName);
+
+
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                            Log.d(Constants.TAG, "JSONOBJECT: " + e);
+
+                                        }
+
+                                        String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerTrackingOrderDetails + "?usermobileno=" + customerMobileNo + "&orderid=" + orderid;
+
+                                        initUpdateCustomerOrderDetailsInterface(mContext);
+                                        Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update = new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface, customerDetails_JsonObject, apiToUpdateCustomerOrderDetails);
+                                        asyncTask_TO_update.execute();
+
+
+                                    } else {
+                                        Toast.makeText(mContext, "orderid :" + orderid + " , vendorkey: " + vendorkey + " , customerMobileNo : " + customerMobileNo, Toast.LENGTH_SHORT).show();
+                                    }
+
+                                } else {
+
+                                    Api_toChangeOrderDetailsUsingOrderid = Constants.api_updateTrackingOrderTable;
 
                                     try {
-                                        jsonObject.put("vendorkey", vendorkey);
-                                        jsonObject.put("orderid", orderid);
+                                        jsonObject.put("key", OrderKey);
                                         jsonObject.put("deliveryuserkey", deliveryPartnerKey);
                                         jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
                                         jsonObject.put("deliveryusername", deliveryPartnerName);
@@ -142,81 +214,24 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
                                         Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
                                     }
+                                }
 
 
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                //Log.d(Constants.TAG, "JSONOBJECT: " + e);
 
-                                    Api_toChangeOrderDetailsUsingOrderid = Constants.api_UpdateVendorTrackingOrderDetails+ "?vendorkey="+vendorkey+"&orderid="+orderid;
-                                    JSONObject customerDetails_JsonObject = new JSONObject();
+                            }
 
 
-
-
-
+                            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Api_toChangeOrderDetailsUsingOrderid,
+                                    jsonObject, new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(@NonNull JSONObject response) {
                                     try {
-                                        customerDetails_JsonObject.put("usermobileno", customerMobileNo);
-                                        customerDetails_JsonObject.put("orderid", orderid);
-                                        customerDetails_JsonObject.put("deliveryuserkey", deliveryPartnerKey);
-                                        customerDetails_JsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
-                                        customerDetails_JsonObject.put("deliveryusername", deliveryPartnerName);
-
-
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                        Log.d(Constants.TAG, "JSONOBJECT: " + e);
-
-                                    }
-
-                                    String apiToUpdateCustomerOrderDetails = Constants.api_UpdateCustomerTrackingOrderDetails +"?usermobileno="+customerMobileNo+"&orderid="+orderid;
-
-                                    initUpdateCustomerOrderDetailsInterface(mContext);
-                                    Update_CustomerOrderDetails_TrackingTable_AsyncTask asyncTask_TO_update =new Update_CustomerOrderDetails_TrackingTable_AsyncTask(mContext, mResultCallback_UpdateCustomerOrderDetailsTableInterface,customerDetails_JsonObject,apiToUpdateCustomerOrderDetails );
-                                    asyncTask_TO_update.execute();
-
-
-                                }
-                                else{
-                                    Toast.makeText(mContext, "orderid :"+orderid+" , vendorkey: "+vendorkey+" , customerMobileNo : "+ customerMobileNo, Toast.LENGTH_SHORT).show();
-                                }
-
-                            }
-                            else {
-
-                                Api_toChangeOrderDetailsUsingOrderid = Constants.api_updateTrackingOrderTable;
-
-                                try {
-                                    jsonObject.put("key", OrderKey);
-                                    jsonObject.put("deliveryuserkey", deliveryPartnerKey);
-                                    jsonObject.put("deliveryusermobileno", deliveryPartnerMobileNo);
-                                    jsonObject.put("deliveryusername", deliveryPartnerName);
-
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    Log.d(Constants.TAG, "JSONOBJECT: " + e);
-
-                                }
-                            }
-
-
-
-
-
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            //Log.d(Constants.TAG, "JSONOBJECT: " + e);
-
-                        }
-
-
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Api_toChangeOrderDetailsUsingOrderid,
-                            jsonObject, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(@NonNull JSONObject response) {
-                            try {
-                                String msg = String.valueOf(response.get("message"));
-                                //Log.d(Constants.TAG, "Response: " + msg);
-                                if(msg.equals("success")){
+                                        String msg = String.valueOf(response.get("message"));
+                                        //Log.d(Constants.TAG, "Response: " + msg);
+                                        if (msg.equals("success")) {
                                  /*   Intent intent =new Intent(mContext, Pos_Dashboard_Screen.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -224,153 +239,142 @@ public class Adapter_AssignDeliveryPartner extends ArrayAdapter<AssignDeliveryPa
 
                                   */
 
-                                      try {
-                                        Intent intent = new Intent();
-                                        if (fromActivityName.equals("PosManageOrders")) {
-
-
-                                            for(int i = 0; i< Pos_ManageOrderFragment.sorted_OrdersList.size(); i++){
-                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Pos_ManageOrderFragment.sorted_OrdersList.get(i);
-                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                                                if(TrackingTableorderid.equals(orderid)){
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
-
-                                                }
-                                            }
-                                            for(int i = 0; i< Pos_ManageOrderFragment.ordersList.size(); i++){
-                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Pos_ManageOrderFragment.ordersList.get(i);
-                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                                                if(TrackingTableorderid.equals(orderid)){
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
-
-                                                }
-                                            }
                                             try {
-                                                Pos_ManageOrderFragment.manageOrdersListViewAdapter.notifyDataSetChanged();
-                                            }
-                                            catch (Exception e){
+                                                Intent intent = new Intent();
+                                                if (fromActivityName.equals("PosManageOrders")) {
+
+
+                                                    for (int i = 0; i < Pos_ManageOrderFragment.sorted_OrdersList.size(); i++) {
+                                                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Pos_ManageOrderFragment.sorted_OrdersList.get(i);
+                                                        String TrackingTableorderid = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                        if (TrackingTableorderid.equals(orderid)) {
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                        }
+                                                    }
+                                                    for (int i = 0; i < Pos_ManageOrderFragment.ordersList.size(); i++) {
+                                                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Pos_ManageOrderFragment.ordersList.get(i);
+                                                        String TrackingTableorderid = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                        if (TrackingTableorderid.equals(orderid)) {
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                        }
+                                                    }
+                                                    try {
+                                                        Pos_ManageOrderFragment.manageOrdersListViewAdapter.notifyDataSetChanged();
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    intent = new Intent(mContext, Pos_Dashboard_Screen.class);
+
+
+                                                } else if (fromActivityName.equals("AppSearchOrders") || fromActivityName.equals("AppSearchOrders")) {
+
+
+                                                    for (int i = 0; i < searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++) {
+                                                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
+                                                        String TrackingTableorderid = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                        if (TrackingTableorderid.equals(orderid)) {
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                        }
+                                                    }
+                                                    for (int i = 0; i < searchOrdersUsingMobileNumber.ordersList.size(); i++) {
+                                                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.ordersList.get(i);
+                                                        String TrackingTableorderid = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                        if (TrackingTableorderid.equals(orderid)) {
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                        }
+                                                    }
+                                                    try {
+                                                        searchOrdersUsingMobileNumber.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    intent = new Intent(mContext, searchOrdersUsingMobileNumber.class);
+
+                                                } else if (fromActivityName.equals("PhoneSearchOrders")) {
+
+
+                                                    for (int i = 0; i < Phone_Orders_List.sorted_OrdersList.size(); i++) {
+                                                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.sorted_OrdersList.get(i);
+                                                        String TrackingTableorderid = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                        if (TrackingTableorderid.equals(orderid)) {
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                        }
+                                                    }
+                                                    for (int i = 0; i < Phone_Orders_List.ordersList.size(); i++) {
+                                                        final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.ordersList.get(i);
+                                                        String TrackingTableorderid = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
+                                                        if (TrackingTableorderid.equals(orderid)) {
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
+                                                            modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
+
+                                                        }
+                                                    }
+                                                    try {
+                                                        Phone_Orders_List.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    intent = new Intent(mContext, Phone_Orders_List.class);
+
+                                                } else {
+                                                    intent = new Intent(mContext, Pos_Dashboard_Screen.class);
+
+                                                }
+                                                intent.putExtra("key", OrderKey);
+                                                intent.putExtra("deliveryusermobileno", deliveryPartnerMobileNo);
+                                                intent.putExtra("deliveryuserkey", deliveryPartnerKey);
+                                                intent.putExtra("deliveryusername", deliveryPartnerName);
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                                mContext.startActivity(intent);
+                                            } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
-                                            intent = new Intent(mContext, Pos_Dashboard_Screen.class);
-
 
                                         }
-                                        else if(fromActivityName.equals("AppSearchOrders") || fromActivityName.equals("AppSearchOrders")){
-
-
-                                            for(int i = 0; i< searchOrdersUsingMobileNumber.sorted_OrdersList.size(); i++){
-                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.sorted_OrdersList.get(i);
-                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                                                if(TrackingTableorderid.equals(orderid)){
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
-
-                                                }
-                                            }
-                                            for(int i = 0; i< searchOrdersUsingMobileNumber.ordersList.size(); i++){
-                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = searchOrdersUsingMobileNumber.ordersList.get(i);
-                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                                                if(TrackingTableorderid.equals(orderid)){
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
-
-                                                }
-                                            }
-                                            try {
-                                                searchOrdersUsingMobileNumber.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
-                                            }
-                                            catch (Exception e){
-                                                e.printStackTrace();
-                                            }
-                                            intent = new Intent(mContext, searchOrdersUsingMobileNumber.class);
-
-                                        }
-
-
-                                        else if(fromActivityName.equals("PhoneSearchOrders")){
-
-
-                                            for(int i = 0; i< Phone_Orders_List.sorted_OrdersList.size(); i++){
-                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.sorted_OrdersList.get(i);
-                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                                                if(TrackingTableorderid.equals(orderid)){
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
-
-                                                }
-                                            }
-                                            for(int i = 0; i< Phone_Orders_List.ordersList.size(); i++){
-                                                final Modal_ManageOrders_Pojo_Class modal_manageOrders_forOrderDetailList1 = Phone_Orders_List.ordersList.get(i);
-                                                String TrackingTableorderid  = modal_manageOrders_forOrderDetailList1.getOrderid().toString();
-                                                if(TrackingTableorderid.equals(orderid)){
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerName(deliveryPartnerName);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerKey(deliveryPartnerKey);
-                                                    modal_manageOrders_forOrderDetailList1.setDeliveryPartnerMobileNo(deliveryPartnerMobileNo);
-
-                                                }
-                                            }
-                                            try {
-                                                Phone_Orders_List.adapter_PosSearchOrders_usingMobileNumber_listView.notifyDataSetChanged();
-                                            }
-                                            catch (Exception e){
-                                                e.printStackTrace();
-                                            }
-                                            intent = new Intent(mContext, Phone_Orders_List.class);
-
-                                        }
-
-
-                                        else {
-                                            intent = new Intent(mContext, Pos_Dashboard_Screen.class);
-
-                                        }
-                                          intent.putExtra("key", OrderKey);
-                                          intent.putExtra("deliveryusermobileno", deliveryPartnerMobileNo);
-                                          intent.putExtra("deliveryuserkey", deliveryPartnerKey);
-                                          intent.putExtra("deliveryusername", deliveryPartnerName);
-                                          intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                                        mContext.startActivity(intent);
-                                    }
-                                    catch (Exception e){
+                                    } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-
+                                    //Log.d(Constants.TAG, "Response: " + response);
                                 }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            //Log.d(Constants.TAG, "Response: " + response);
-                        }
-                    }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(@NonNull VolleyError error) {
-                            //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
-                            //Log.d(Constants.TAG, "Error: " + error.getMessage());
-                            //Log.d(Constants.TAG, "Error: " + error.toString());
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(@NonNull VolleyError error) {
+                                    //Log.d(Constants.TAG, "Error1: " + error.getLocalizedMessage());
+                                    //Log.d(Constants.TAG, "Error: " + error.getMessage());
+                                    //Log.d(Constants.TAG, "Error: " + error.toString());
 
-                            error.printStackTrace();
-                        }
-                    }) {
-                        @NonNull
-                        @Override
-                        public Map<String, String> getHeaders() throws AuthFailureError {
-                            final Map<String, String> params = new HashMap<>();
-                            params.put("Content-Type", "application/json");
-                            return params;
-                        }
-                    };
-                        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                                    error.printStackTrace();
+                                }
+                            }) {
+                                @NonNull
+                                @Override
+                                public Map<String, String> getHeaders() throws AuthFailureError {
+                                    final Map<String, String> params = new HashMap<>();
+                                    params.put("Content-Type", "application/json");
+                                    return params;
+                                }
+                            };
+                            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                    // Make the request
-        Volley.newRequestQueue(mContext).add(jsonObjectRequest);
-
+                            // Make the request
+                            Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+                        }
                 }
                 });
 

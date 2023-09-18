@@ -1,102 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
+    android:orientation="vertical"
 
-    android:orientation="vertical">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="0dp"
+    android:padding="10dp">
 
-        android:orientation="vertical">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible"
-        android:padding="0dp"
-
-        android:id="@+id/paymentMode_selectionLayout"
-        android:orientation="vertical">
     <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/paymentMode_selectionLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible"
+            >
 
-        >
+            <LinearLayout
+                android:layout_width="500dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
 
-        <LinearLayout
-            android:layout_width="500dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
+                android:orientation="vertical">
 
-            android:orientation="vertical">
+                <Button
+                    android:id="@+id/via_cash"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/button_background"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="Paid Via Cash"
+                    android:textAllCaps="false"
+                    android:textColor="@color/TMC_White"
+                    android:textSize="25dp" />
 
-            <Button
-                android:id="@+id/via_cash"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/button_background"
-                android:textColor="@color/TMC_White"
-                android:textSize="25dp"
-                android:textAllCaps="false"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:fontFamily="@font/open_sans_semibold"
-                android:text="Paid Via Cash" />
+                <Button
+                    android:id="@+id/via_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/button_background"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="Paid Via Card"
+                    android:textAllCaps="false"
+                    android:textColor="@color/TMC_White"
 
-            <Button
-                android:id="@+id/via_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/button_background"
-                android:textColor="@color/TMC_White"
-                android:textSize="25dp"
-                android:textAllCaps="false"
-                android:fontFamily="@font/open_sans_semibold"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                    android:textSize="25dp" />
 
-                android:text="Paid Via Card" />
+                <Button
+                    android:id="@+id/via_upi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/button_background"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="Paid Via Upi"
+                    android:textAllCaps="false"
+                    android:textColor="@color/TMC_White"
 
-            <Button
-                android:id="@+id/via_upi"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/button_background"
-                android:textColor="@color/TMC_White"
-                android:textSize="25dp"
-                android:textAllCaps="false"
-                android:fontFamily="@font/open_sans_semibold"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                    android:textSize="25dp" />
 
-                android:text="Paid Via Upi" />
-            <Button
-                android:id="@+id/via_credit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/button_background"
-                android:textColor="@color/TMC_White"
-                android:textSize="25dp"
-                android:textAllCaps="false"
-                android:fontFamily="@font/open_sans_semibold"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
+                <Button
+                    android:id="@+id/via_credit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/button_background"
+                    android:fontFamily="@font/open_sans_semibold"
+                    android:text="CREDIT"
+                    android:textAllCaps="false"
+                    android:textColor="@color/TMC_White"
 
-                android:text="CREDIT" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-    </LinearLayout>
+                    android:textSize="25dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
     <LinearLayout
-        android:layout_width="680dp"
-        android:layout_height="match_parent"
         android:id="@+id/balanceAmountCalculate_Layout"
+        android:layout_width="680dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
         android:padding="40dp"
         android:visibility="gone"
-        android:layout_gravity="center"
-        android:orientation="vertical">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+
+      >
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -106,56 +106,55 @@
             android:orientation="horizontal">
 
             <TextView
-            android:layout_width="350dp"
-            android:layout_height="match_parent"
-            android:textColor="@color/TMC_Primary_Text_Color"
-            android:layout_marginEnd="15dp"
-            android:gravity="center_vertical"
-               android:fontFamily="@font/open_sans_bold"
-                android:textSize="22sp"
-            android:text="Total Billing Amount"/>
+                android:layout_width="350dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="15dp"
+                android:fontFamily="@font/open_sans_bold"
+                android:gravity="center_vertical"
+                android:text="Total Billing Amount"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/totalbillAmount"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:textColor="@color/TMC_Primary_Text_Color"
-            android:layout_marginEnd="6dp"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="6dp"
                 android:fontFamily="@font/open_sans_bold"
-                android:textSize="22sp"
                 android:gravity="center"
-            android:text="0"/>
+                android:text="0"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="22sp" />
 
 
             <TextView
-            android:layout_width="wrap_content"
-                android:gravity="center_vertical"
-            android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:fontFamily="@font/open_sans_semibold"
-                android:textSize="22sp"
-            android:textColor="@color/TMC_Primary_Text_Color"
-            android:text="rs"/>
-    </LinearLayout>
-
+                android:gravity="center_vertical"
+                android:text="rs"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="22sp" />
+        </LinearLayout>
 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-
             android:layout_marginTop="20dp"
+
+            android:gravity="center"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="350dp"
                 android:layout_height="match_parent"
-                android:textColor="@color/TMC_Primary_Text_Color"
                 android:layout_marginEnd="15dp"
                 android:fontFamily="@font/open_sans_bold"
-                android:textSize="22sp"
                 android:gravity="center_vertical"
-                android:text="Amount Given by Customer"/>
+                android:text="Amount Given by Customer"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="22sp" />
 
 
             <EditText
@@ -163,26 +162,24 @@
                 android:layout_width="100dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="6dp"
+                android:digits="0123456789"
                 android:fontFamily="@font/open_sans_bold"
                 android:gravity="center"
                 android:hint="0"
                 android:inputType="number"
                 android:text=""
-                android:digits="0123456789"
 
                 android:textColor="@color/TMC_Primary_Text_Color"
                 android:textSize="22sp" />
 
             <TextView
                 android:layout_width="wrap_content"
-                android:gravity="center_vertical"
                 android:layout_height="match_parent"
                 android:fontFamily="@font/open_sans_bold"
-                android:textSize="18sp"
+                android:gravity="center_vertical"
+                android:text="rs"
                 android:textColor="@color/TMC_Primary_Text_Color"
-                android:text="rs"/>
-
-
+                android:textSize="18sp" />
 
 
         </LinearLayout>
@@ -193,18 +190,18 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:orientation="vertical">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="  Calculate Balance Amount  "
-            android:id="@+id/CalculateBalanceAmount"
-            android:textAllCaps="false"
-            android:textSize="22sp"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:textColor="@color/TMC_White"
-            android:background="@drawable/orange_selected_button_background"
-            />
+
+            <Button
+                android:id="@+id/CalculateBalanceAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:background="@drawable/orange_selected_button_background"
+                android:gravity="center"
+                android:text="  Calculate Balance Amount  "
+                android:textAllCaps="false"
+                android:textColor="@color/TMC_White"
+                android:textSize="22sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -218,36 +215,34 @@
             <TextView
                 android:layout_width="350dp"
                 android:layout_height="match_parent"
-                android:textColor="@color/TMC_Primary_Text_Color"
                 android:layout_marginEnd="15dp"
                 android:fontFamily="@font/open_sans_bold"
-                android:textSize="25sp"
                 android:gravity="center_vertical"
-                android:text="Balance Amount "/>
+                android:text="Balance Amount "
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="25sp" />
 
             <TextView
-                android:layout_width="100dp"
                 android:id="@+id/balance_Amount"
+                android:layout_width="100dp"
                 android:layout_height="match_parent"
-                android:textColor="@color/TMC_Primary_Text_Color"
                 android:layout_marginEnd="6dp"
-                android:gravity="center"
                 android:fontFamily="@font/open_sans_bold"
-                android:textSize="25sp"
-                android:text="0"/>
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/TMC_Primary_Text_Color"
+                android:textSize="25sp" />
 
 
             <TextView
                 android:layout_width="wrap_content"
-                android:gravity="center_vertical"
                 android:layout_height="match_parent"
                 android:fontFamily="@font/open_sans_bold"
-                android:textSize="22sp"
+                android:gravity="center_vertical"
+                android:text="rs"
                 android:textColor="@color/TMC_Primary_Text_Color"
-                android:text="rs"/>
+                android:textSize="22sp" />
         </LinearLayout>
-
-
 
 
         <LinearLayout
@@ -255,24 +250,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:orientation="vertical">
+
             <Button
+                android:id="@+id/checkOut"
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
-                android:text=" Check Out "
-                android:id="@+id/checkOut"
-                android:textAllCaps="false"
-                android:textSize="22sp"
                 android:layout_gravity="center"
-                android:gravity="center"
-                android:textColor="@color/TMC_White"
                 android:background="@drawable/normal_state_button_background"
-                />
+                android:gravity="center"
+                android:text=" Check Out "
+                android:textAllCaps="false"
+                android:textColor="@color/TMC_White"
+                android:textSize="22sp" />
         </LinearLayout>
 
 
-
     </LinearLayout>
 
 
-    </LinearLayout>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

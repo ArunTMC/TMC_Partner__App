@@ -1813,14 +1813,22 @@ public class Pos_Orders_List extends AppCompatActivity {
 
             text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
+        if((vendorKey.equals("vendor_6")) ) {
+
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah</b>\n\n";
+           // text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Chicken and Mutton \n";
+        }
+
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
      //   text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+
         text_to_Print = text_to_Print + "[c]    <font size='normal'>" + StoreAddressLine1 ;
         text_to_Print = text_to_Print + "<font size='normal'>" + StoreAddressLine2 + " \n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine3 + " \n";
@@ -3478,6 +3486,27 @@ public class Pos_Orders_List extends AppCompatActivity {
             if((vendorKey.equals("vendor_4")) ||  (vendorKey.equals("wholesalesvendor_1"))) {
 
                 Title = "MK Proteins";
+
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString(Title);
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+
+
+                BluetoothPrintDriver.Begin();
+                BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                BluetoothPrintDriver.SetAlignMode((byte) 49);
+                BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                BluetoothPrintDriver.BT_Write("\r");
+                BluetoothPrintDriver.LF();
+            }
+
+            if((vendorKey.equals("vendor_6"))) {
+
+                Title = "New NS Bismillah";
 
                 BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
                 BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);

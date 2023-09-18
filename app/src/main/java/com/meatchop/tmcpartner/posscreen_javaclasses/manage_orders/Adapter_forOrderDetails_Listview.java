@@ -7,11 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class Adapter_forOrderDetails_Listview extends ArrayAdapter<Modal_ManageOrders_Pojo_Class> {
@@ -65,7 +68,12 @@ public class Adapter_forOrderDetails_Listview extends ArrayAdapter<Modal_ManageO
         double subtotal = (Double.parseDouble(modal_manageOrders_pojo_class.getItemFinalPrice()));
         double quantity = (Double.parseDouble(modal_manageOrders_pojo_class.getQuantity()));
         subtotal= subtotal*quantity;
-        itemSubtotal_widget.setText(String.valueOf(Math.round(subtotal)));
+        //Toast.makeText(mContext, String.valueOf(modal_manageOrders_pojo_class.getOrdertype()), Toast.LENGTH_SHORT).show();
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+        subtotal = Double.parseDouble(decimalFormat.format(subtotal));
+
+        itemSubtotal_widget.setText(String.valueOf((subtotal)));
         return  listViewItem ;
     }
 

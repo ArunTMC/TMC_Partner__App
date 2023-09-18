@@ -241,7 +241,7 @@
                                     android:layout_marginTop="15dp"
                                     android:layout_weight="1"
                                     android:background="@color/TMC_PaleOrange"
-                                    android:digits="0123456789"
+                                    android:digits="0123456789."
                                     android:focusedByDefault="false"
                                     android:fontFamily="@font/open_sans_semibold"
                                     android:gravity="center_vertical|center"

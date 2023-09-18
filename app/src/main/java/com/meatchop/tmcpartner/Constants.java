@@ -2,7 +2,7 @@ package com.meatchop.tmcpartner;
 
 public class Constants {
 
-    public static double default_mobileScreenSize  = 6.6;
+    public static double default_mobileScreenSize  = 7;
 
     public static final String AppName_in_AppUserAccess ="TMCPARTNERAPP";
     public static final String Enter_the_mobile_no_text ="Enter the Mobile Number";
@@ -50,6 +50,7 @@ public class Constants {
 
     public static final String WeightCantBeLeftEdited  ="Before Checkout ! Please make sure you click enter after editing the weight of the item , To Change its Price & Weight ";
     public static final String PriceCantBeLeftEdited  ="Before Checkout ! Please make sure you click enter after editing the Price of the item , To Change its Price & Weight ";
+    public static final String QuantityCantBeLeftEdited  ="Before Checkout ! Please make sure you click enter after editing the quantity of the item , When change its quantity ";
 
 
 
@@ -129,15 +130,15 @@ public class Constants {
     public static final String RAZORPAY_SUCCESSSTATUS ="paid";
     public static final String CREDIT_AMOUNT_ADDED ="AMOUNT_ADDED";
     public static final String CREDIT_AMOUNT_PAID ="AMOUNT_PAID";
-
+    public static final String CREDIT_AMOUNT_CANCELLED ="AMOUNT_CANCELLED";
 
     public static final String USERSTATUS_FLAGGED ="FLAGGED";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //API"S
-    public static String isNewSbCtgyTable_APIUsed ="NO";
+    public static String isNewSbCtgyTable_APIUsed ="YES";
     public static final String YES ="YES";
-    public static final String NO ="NO";
+    public static final String NO ="YES";
 
 
     public static final String api_checkUserhaveForPartnerApp = "https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/appuseraccessusingmobileno";
@@ -364,6 +365,13 @@ public class Constants {
 
 
     // NOT USING IT    public static final String api_GetVendorOrderDetailsUsingslotDate_vendorkey_POSOrdertype ="https://l5tqeb0rof.execute-api.ap-south-1.amazonaws.com/dev/get/vendororderdetailsforvendorkeyslotdateordertype";
+
+
+    //OrderPlacingModuleHandler
+
+    public static final String api_OrderPlacingHandlerApi ="https://vc2vpgk2sb.execute-api.ap-south-1.amazonaws.com/dev/orderplacinghandler";
+
+
 
     //CustomerOrderDetails API's :
 

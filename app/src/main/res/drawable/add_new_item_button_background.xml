@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <item android:state_pressed="true"
+            android:drawable="@drawable/normal_state_button_background"/>
+        <item android:drawable="@drawable/normal_state_button_background"/>
+
+    <item>
+        <bitmap
+            android:src="@mipmap/plus_icon"
+            android:tileMode="disabled" />
+    </item>
+
+</layer-list>

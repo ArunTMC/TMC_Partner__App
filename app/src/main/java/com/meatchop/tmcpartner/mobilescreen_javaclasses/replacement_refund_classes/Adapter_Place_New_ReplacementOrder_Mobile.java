@@ -96,7 +96,7 @@ try{
             //Log.e("TAG", "adapter 1" + recylerviewPojoClass.getTmcpriceperkg());
 
             holder.mobile_itemPrice_Widget.setText("");
-            holder.mobile_itemWeight_widget.setText("");
+            holder.mobile_weight_editwidget.setText("");
             holder.mobile_itemQuantity_widget.setText("0");
             holder.mobile_barcode_widget.setText("");
 
@@ -120,7 +120,7 @@ try{
 
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    holder.mobile_itemWeight_widget.setFocusedByDefault(false);
+                    holder.mobile_weight_editwidget.setFocusedByDefault(false);
                 }
                 holder.mobile_barcode_widget.setText(recylerviewPojoClass.getItemuniquecode());
                 if (!holder.mobile_barcode_widget.getText().toString().equals("") && holder.mobile_barcode_widget.getText().length() > 3) {
@@ -135,21 +135,21 @@ try{
                 holder.mobile_itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
                 //  taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
                 addReplacement_refund_ordersScreen.add_amount_ForBillDetails();
-                holder.mobile_itemWeight_widget.setBackground(getDrawable(context, R.drawable.grey_color_textview_backgrounf));
-                holder.mobile_itemWeight_widget.setKeyListener(null);
+                holder.mobile_weight_editwidget.setBackground(getDrawable(context, R.drawable.grey_color_textview_backgrounf));
+                holder.mobile_weight_editwidget.setKeyListener(null);
 
                 try {
                     if (recylerviewPojoClass.getGrossweight().equals("")) {
                         if (recylerviewPojoClass.getNetweight().equals("")) {
 
-                            holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getPortionsize()));
+                            holder.mobile_weight_editwidget.setText(String.valueOf(recylerviewPojoClass.getPortionsize()));
 
                         } else {
-                            holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getNetweight()));
+                            holder.mobile_weight_editwidget.setText(String.valueOf(recylerviewPojoClass.getNetweight()));
 
                         }
                     } else {
-                        holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
+                        holder.mobile_weight_editwidget.setText(String.valueOf(recylerviewPojoClass.getGrossweight()));
 
                     }
 
@@ -187,7 +187,7 @@ try{
                 holder.mobile_itemPrice_Widget.setText(String.valueOf(recylerviewPojoClass.getItemFinalPrice()));
 
                 //taxes_and_charges = Integer.parseInt(recylerviewPojoClass.getGstpercentage());
-                holder.mobile_itemWeight_widget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
+                holder.mobile_weight_editwidget.setText(String.valueOf(recylerviewPojoClass.getItemFinalWeight()));
                 holder.mobile_itemQuantity_widget.setText(String.valueOf(recylerviewPojoClass.getQuantity()));
                 addReplacement_refund_ordersScreen.add_amount_ForBillDetails();
             }
@@ -204,7 +204,7 @@ try{
 
 
 
-        holder.mobile_itemWeight_widget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        holder.mobile_weight_editwidget.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
                     //do what you want on the press of 'done'
@@ -225,7 +225,7 @@ try{
                     catch (Exception e){
                         e.printStackTrace();
                     }
-                    String itemWeight = holder.mobile_itemWeight_widget.getText().toString();
+                    String itemWeight = holder.mobile_weight_editwidget.getText().toString();
                     itemWeight =itemWeight .replaceAll("[^\\d.]", "");
                     addReplacement_refund_ordersScreen.isanyProducthaveZeroAsweight=false;
                     if(itemWeight.equals("")){
@@ -307,7 +307,7 @@ try{
                             }
 
                             if (weight > 1000) {
-                                priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
+                          //      priceperKg = Integer.parseInt(newItem_newOrdersPojoClass.getTmcpriceperkg());
 
                                 //Log.e("TAG", "Cart adapter price_per_kg +" + priceperKg);
 
@@ -353,7 +353,7 @@ try{
 
                    */
 
-                    holder.mobile_itemWeight_widget.clearFocus();
+                    holder.mobile_weight_editwidget.clearFocus();
                 }
                 return false;
             }
@@ -386,7 +386,7 @@ try{
                             });
                 }
                 else {
-                    if (!holder.mobile_autoComplete_widget.getText().toString().equals("") && (!holder.mobile_itemWeight_widget.getText().toString().equals("") || !holder.mobile_itemQuantity_widget.getText().toString().equals(""))) {
+                    if (!holder.mobile_autoComplete_widget.getText().toString().equals("") && (!holder.mobile_weight_editwidget.getText().toString().equals("") || !holder.mobile_itemQuantity_widget.getText().toString().equals(""))) {
 
 
                         addReplacement_refund_ordersScreen.createEmptyRowInListView("empty");
@@ -601,7 +601,7 @@ try{
 
         TextView mobile_itemPrice_Widget;
 
-        EditText mobile_itemWeight_widget;
+        EditText mobile_weight_editwidget,mobile_price_editwidget;
 
         ImageView mobile_delete_to_remove_item_widget,barcodescannerIcon;
         LinearLayout mobile_removeItem_fromCart_widget, mobile_addNewItem_layout,parentLayout;
@@ -615,15 +615,16 @@ try{
             this.mobile_delete_to_remove_item_widget = itemView.findViewById(R.id.mobile_delete_to_remove_item_widget);
             this.mobile_barcode_widget = itemView.findViewById(R.id.mobile_barcode_textwidget);
             this.mobile_itemPrice_Widget = itemView.findViewById(R.id.mobile_PriceWidget);
-            this.mobile_itemWeight_widget = itemView.findViewById(R.id.mobile_weight_textwidget);
+            this.mobile_weight_editwidget = itemView.findViewById(R.id.mobile_weight_editwidget);
             this.mobile_itemQuantity_widget = itemView.findViewById(R.id.mobile_itemQuantity_widget);
             this.mobile_tmcUnitprice_weightAdd_layout = itemView.findViewById(R.id.mobile_tmcUnitprice_weightAdd_layout);
             this.mobile_tmcUnitprice_weightMinus_layout = itemView.findViewById(R.id.mobile_tmcUnitprice_weightMinus_layout);
             this.mobile_itemIndex = itemView.findViewById(R.id.mobile_itemIndex);
+            this.mobile_price_editwidget = itemView.findViewById(R.id.mobile_price_editwidget);
             this.barcodescannerLayout = itemView.findViewById(R.id.barcodescannerLayout);
             this.barcodescannerLayout.setVisibility(View.GONE);
-
-
+            this.mobile_price_editwidget.setVisibility(View.GONE);
+            this.mobile_itemPrice_Widget.setVisibility(View.VISIBLE);
 
             adapter = new Adapter_AutoCompleteMenuItem_ReplacementScreen(context, Menulist,getPosition(),ordertype_Old,addReplacement_refund_ordersScreen,MenuItemArray,localDBCheck);
             adapter.setHandler(newHandler());

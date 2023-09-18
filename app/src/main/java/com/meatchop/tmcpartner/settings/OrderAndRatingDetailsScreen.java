@@ -1136,9 +1136,10 @@ public class OrderAndRatingDetailsScreen extends AppCompatActivity {
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+       // int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        double new_totalAmount_withGst = Double.parseDouble(decimalFormat.format(new_to_pay_Amount));
 
-        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
+        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst));
         old_total_Amount=0;
         old_taxes_and_charges_Amount=0;
         new_to_pay_Amount=0;

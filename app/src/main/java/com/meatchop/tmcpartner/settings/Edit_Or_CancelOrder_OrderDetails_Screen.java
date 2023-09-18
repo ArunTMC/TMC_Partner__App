@@ -49,6 +49,7 @@ import com.meatchop.tmcpartner.customerorder_trackingdetails.Update_CustomerOrde
 import com.meatchop.tmcpartner.mobilescreen_javaclasses.manage_orders.Adapter_Mobile_AssignDeliveryPartner1;
 import com.meatchop.tmcpartner.mobilescreen_javaclasses.manage_orders.Adapter_Mobile_orderDetails_itemDesp_listview1;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.mobilescreen_javaclasses.manage_orders.MobileScreen_OrderDetails1;
 import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.posscreen_javaclasses.other_java_classes.Modal_vendor;
@@ -131,7 +132,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     int itemDetailLength = 0;
     int itemDetailLoopCount = 0;
     boolean isUpdateItemDetailsCompleted = false;
-    boolean isUpdateOrderTrackingCompleted = false;
+    boolean isUpdateOrderTrackingCompleted = false , isDeliveryPartnerMethodCalled = false;
     ArrayList<String> VendorName_arrayList=new ArrayList<>();;
     private JSONArray result;
     private String pos_vendorMobileNumber;
@@ -150,7 +151,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     Context mContext;
     double totalamountUserHaveAsCredit = 0;
    TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
-
+   boolean iscancelOrderButtonClicked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,11 +229,20 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
         try {
             SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
             DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
+            if(DeliveryPersonList.equals("")){
+                getDeliveryPartnerList(false,"","","","","");
 
-            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+            }
+            else{
+                ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+            }
+            //ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -407,7 +417,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
 
-            changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
+        changeDeliveryPartner.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
@@ -447,6 +457,10 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                             @Override
                             public void onYes() {
                                 CurrentTime = getDate_and_time();
+
+
+                                iscancelOrderButtonClicked = true;
+
 
                                 try{
                                     Adjusting_Widgets_Visibility(true);
@@ -592,12 +606,18 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                 }
                                 //GetStockOutGoingDetailsEntries(orderid);
 
-                                String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
-                                String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
-                                String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                                 orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
+                                 customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
+                                vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
+                              String   paymentMode = (String.format("%s", modal_manageOrders_pojo_class.getPaymentmode()));
 
+                                if(paymentMode.toUpperCase().equals(Constants.CREDIT)){
+                                    GetDatafromCreditOrderDetailsTable(orderid,getDate_and_time(),customerMobileNo);
+                                }
+                                else{
+                                    ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
 
-                                ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
+                                }
                             }
 
                             @Override
@@ -608,6 +628,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
             }
         });
+
+
+
         changePaymentMode_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -2057,7 +2080,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
                                                 currentTimeAndDate = getDate_and_time();
 
-                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKeyFromMenuItem, stockincomingKeyAvlDetails[0], receivedstock_avlDetails[0], currentTimeAndDate, menuitemkey_avlDetails[0], barcode_avlDetails[0], key_avlDetails[0]);
+                                              getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKeyFromMenuItem, stockincomingKeyAvlDetails[0], receivedstock_avlDetails[0], currentTimeAndDate, menuitemkey_avlDetails[0], barcode_avlDetails[0], key_avlDetails[0]);
 
 
 
@@ -4639,7 +4662,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             if(ordertype.equals(Constants.APPORDER) || ordertype.equals(Constants.PhoneOrder)) {
                 if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME)) || (UserRole.equals(Constants.ADMIN_ROLENAME))) {
                     if ((UserRole.equals(Constants.CASHIER_ROLENAME)) || (UserRole.equals(Constants.STOREMANAGER_ROLENAME))) {
-                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+917010623119")) || (UserPhoneNumber.equals("+918939887159")) )
+                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128")) || (UserPhoneNumber.equals("+917010623119"))  )
                         {
                             cancelOrder_button.setVisibility(View.VISIBLE);
                         }
@@ -4648,7 +4671,7 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
                         }
 
-                        if ((UserPhoneNumber.equals("+916380050384")) ||(UserPhoneNumber.equals("+919597580128"))  )
+                        if ((UserPhoneNumber.equals("+916380050384")) || (UserPhoneNumber.equals("+917010623119")) || (UserPhoneNumber.equals("+918939887159")) ||(UserPhoneNumber.equals("+919597580128"))  )
                         {
                             changePaymentMode_button.setVisibility(View.VISIBLE);
                         }
@@ -4669,13 +4692,13 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 }
             }
             else{
-                cancelOrder_button.setVisibility(View.GONE);
-                if ((UserRole.equals(Constants.ADMIN_ROLENAME)) || (UserPhoneNumber.equals("+916380050384")) || (UserPhoneNumber.equals("+917010623119")) || (UserPhoneNumber.equals("+918939887159"))) {
+                 cancelOrder_button.setVisibility(View.GONE);
+                if ((UserRole.equals(Constants.ADMIN_ROLENAME)) || (UserPhoneNumber.equals("+916380050384")) || (UserPhoneNumber.equals("+917010623119")) ) {
                     cancelOrder_button.setVisibility(View.VISIBLE);
                 }
             }
 
-            changePaymentMode_button.setVisibility(View.VISIBLE);
+           // changePaymentMode_button.setVisibility(View.VISIBLE);
         }
         if (ordertype.equals(Constants.POSORDER)) {
             showlocation.setVisibility(View.GONE);
@@ -5190,7 +5213,8 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
     }
 
     private void showBottomSheetDialog_deliveryPartnerList(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
-
+        Adjusting_Widgets_Visibility(true);
+        if(deliveryPartnerList.size()>0) {
         String fromActivityName="";
         bottomSheetDialog = new BottomSheetDialog(Edit_Or_CancelOrder_OrderDetails_Screen.this);
         bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
@@ -5203,6 +5227,12 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 
         bottomSheetDialog.show();
+        }
+        else{
+
+            getDeliveryPartnerList(true , orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+
+        }
     }
 
     private void showBottomSheetDialog(String paymentmode, String ordertype ,String orderid) {
@@ -5479,6 +5509,113 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
 
     }
+
+
+
+
+    public void getDeliveryPartnerList(boolean openBottomSheet, String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        if(isDeliveryPartnerMethodCalled){
+            return;
+        }
+        isDeliveryPartnerMethodCalled = true;
+
+
+        SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorkey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+                            //converting jsonSTRING into array
+                            String DeliveryPersonListString = response.toString();
+                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonListString);
+
+                            SharedPreferences sharedPreferences
+                                    = getSharedPreferences("DeliveryPersonList",
+                                    MODE_PRIVATE);
+
+                            SharedPreferences.Editor myEdit
+                                    = sharedPreferences.edit();
+
+
+                            myEdit.putString(
+                                    "DeliveryPersonListString",
+                                    DeliveryPersonListString);
+                            myEdit.apply();
+                            isDeliveryPartnerMethodCalled = false;
+                            if(openBottomSheet){
+                                showBottomSheetDialog_deliveryPartnerList(orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                            }
+                        } catch (Exception e) {
+                            isDeliveryPartnerMethodCalled = false;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                String errorCode = "";
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(getApplicationContext(),"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
+                isDeliveryPartnerMethodCalled = false;
+
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorkey);
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(Edit_Or_CancelOrder_OrderDetails_Screen.this).add(jsonObjectRequest);
+    }
+
+
+
+
 
     private void ConvertStringintoDeliveryPartnerListArray(String deliveryPersonList) {
         if ((!deliveryPersonList.equals("") )|| (!deliveryPersonList.equals(null))) {
@@ -5822,6 +5959,9 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
                                 }
                                 else{
+
+
+
                                     GetDatafromCreditOrderDetailsTable(orderid,getDate_and_time(),customerMobileNo);
 
                                 }
@@ -6080,7 +6220,16 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                                             e.printStackTrace();
                                         }
                                         double newamountUserHaveAsCredit =0;
-                                        newamountUserHaveAsCredit = totalamountUserHaveAsCredit + payableAmountDouble;
+
+
+                                        if(iscancelOrderButtonClicked){
+                                            newamountUserHaveAsCredit = totalamountUserHaveAsCredit - payableAmountDouble;
+                                        }
+                                        else{
+                                            newamountUserHaveAsCredit = totalamountUserHaveAsCredit + payableAmountDouble;
+                                        }
+
+
 
                                         AddOrUpdateDatainCreditOrderDetailsTable(newamountUserHaveAsCredit, orderid,customerMobileNo,currenttime,"ADD",payableAmountDouble);
 
@@ -6185,16 +6334,38 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
                 try {
                     String message = response.getString("message");
                     if (message.equals("success")) {
-                        Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
                         addCreditOrdersTransactionDetails(orderid,usermobileno,vendorKey,totalamountUserHaveAsCredit,payableAmountDouble,newamountUserHaveAsCredit,orderplacedTime,transactionType);
+
+                        if(iscancelOrderButtonClicked){
+                            ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
+                        }
+                        else{
+                            Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                        }
+
+
+
+
+
+
                     }
                     else{
-                        Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                        if(iscancelOrderButtonClicked){
+                            ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
+                        }
+                        else{
+                            Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                        }
                         Toast.makeText(mContext,"Can't add this Order to Credit Account ", Toast.LENGTH_LONG).show();
 
                     }
                 } catch (JSONException e) {
-                    Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                    if(iscancelOrderButtonClicked){
+                        ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
+                    }
+                    else{
+                        Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                    }
 
                     Toast.makeText(mContext,"Can't add this Order to Credit Account ", Toast.LENGTH_LONG).show();
 
@@ -6206,7 +6377,12 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
             public void onErrorResponse(@NonNull VolleyError error) {
 
                 Toast.makeText(mContext,"Can't add this Order to Credit Account ", Toast.LENGTH_LONG).show();
-                Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                if(iscancelOrderButtonClicked){
+                    ChangeStatusOftheOrder(Constants.CANCELLED_ORDER_STATUS,orderTrackingDetailskey,CurrentTime,orderid,customerMobileNo,vendorkey);
+                }
+                else{
+                    Change_Payment_Mode_Of_the_Order(orderdetailsKey,paymentModeString,orderid,customerMobileNo,vendorkey);
+                }
 
                 error.printStackTrace();
             }
@@ -6240,7 +6416,16 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
 
             jsonObject.put("usermobileno", usermobileno);
             jsonObject.put("transactiontime", orderplacedTime);
-            jsonObject.put("transactiontype", Constants.CREDIT_AMOUNT_ADDED);
+
+
+            if(iscancelOrderButtonClicked){
+                jsonObject.put("transactiontype", Constants.CREDIT_AMOUNT_CANCELLED);
+            }
+            else{
+                jsonObject.put("transactiontype", Constants.CREDIT_AMOUNT_ADDED);
+            }
+
+
             jsonObject.put("orderid", orderid);
             jsonObject.put("oldamountincredit", oldamountUserHaveAsCredit);
             jsonObject.put("transactionvalue", Math.round(payableAmountDouble));
@@ -6400,10 +6585,21 @@ public class Edit_Or_CancelOrder_OrderDetails_Screen extends AppCompatActivity {
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+      //  int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        double new_totalAmount_withGst = 0;
+        try {
+            if (modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.APPORDER)) {
+                new_totalAmount_withGst = Double.parseDouble(decimalFormat.format(new_to_pay_Amount));
+            } else {
+                new_totalAmount_withGst = Math.round(new_to_pay_Amount);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
-        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
+        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst));
         old_total_Amount=0;
         old_taxes_and_charges_Amount=0;
         new_to_pay_Amount=0;

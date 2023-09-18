@@ -959,7 +959,7 @@ public class Mobile_Vendor_Selection_Screen extends AppCompatActivity implements
 
                             loadingPanel_dailyItemWisereport.setVisibility(View.INVISIBLE);
                             loadingpanelmask_dailyItemWisereport.setVisibility(View.INVISIBLE);
-                            Constants.default_mobileScreenSize = Double.parseDouble(minimumscreensizeforpos);
+                          //  Constants.default_mobileScreenSize = Double.parseDouble(minimumscreensizeforpos);
 
                             Intent i;
                             if(screenInches < Constants.default_mobileScreenSize ){

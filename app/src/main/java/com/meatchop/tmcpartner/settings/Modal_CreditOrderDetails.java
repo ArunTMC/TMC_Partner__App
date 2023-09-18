@@ -4,7 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Modal_CreditOrderDetails implements Parcelable {
-    String  usermobileno, totalamountincredityettobepaid,lastupdatedtime,vendorkey,totalAddedAmount="0",totalPaidAmount ="0", totalAmountGivenAsCredit;
+    String  usermobileno, totalamountincredityettobepaid,lastupdatedtime,vendorkey,totalAddedAmount="0",totalPaidAmount ="0", totalCancelledAmount = "0",
+            totalAmountGivenAsCredit;
 
     protected Modal_CreditOrderDetails(Parcel in) {
         usermobileno = in.readString();
@@ -13,6 +14,7 @@ public class Modal_CreditOrderDetails implements Parcelable {
         vendorkey = in.readString();
         totalAddedAmount = in.readString();
         totalPaidAmount = in.readString();
+        totalCancelledAmount = in.readString();
         totalAmountGivenAsCredit = in.readString();
     }
 
@@ -93,6 +95,14 @@ public class Modal_CreditOrderDetails implements Parcelable {
         return 0;
     }
 
+    public String getTotalCancelledAmount() {
+        return totalCancelledAmount;
+    }
+
+    public void setTotalCancelledAmount(String totalCancelledAmount) {
+        this.totalCancelledAmount = totalCancelledAmount;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(usermobileno);
@@ -101,6 +111,7 @@ public class Modal_CreditOrderDetails implements Parcelable {
         dest.writeString(vendorkey);
         dest.writeString(totalAddedAmount);
         dest.writeString(totalPaidAmount);
+        dest.writeString(totalCancelledAmount);
         dest.writeString(totalAmountGivenAsCredit);
     }
 }

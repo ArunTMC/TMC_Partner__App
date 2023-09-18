@@ -101,8 +101,8 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
     boolean isMenuListSavedLocally = false;
 
     boolean isinventorycheck = false ,isweighteditable = false;
-    boolean orderdetailsnewschema  = false , updateweightforonlineorders =false;
-
+    boolean orderdetailsnewschema  = false , updateweightforonlineorders =false , enableorderplacingmicroservice = false;
+    boolean isFetchMenuItemCalled = false , isFetchTmcSubCtgyCalled = false , isFetchVendorCalled = false , isFetchPOSAppDataCalled = false , isFetchMenuItemStockAvlCalled = false;
     boolean localDBcheck = false,isweightmachineconnected = false , isCalledFromSQLtimeSync = false , isbarcodescannerconnected = true;
 
     String addressline1 ="" , addressline2 ="",locationlat ="", locationlong ="",name ="",pincode ="", vendorfssaino ="", vendormobile ="";
@@ -169,7 +169,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         Adjusting_Widgets_Visibility();
 
 
-        if(vendorkey.equals("vendor_4") || vendorkey.equals("vendor_5")){
+        if(vendorkey.equals("vendor_4") || vendorkey.equals("vendor_5")  || vendorkey.equals("vendor_6")){
             Constants.isNewSbCtgyTable_APIUsed = Constants.YES;
         }
         else{
@@ -236,25 +236,34 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                     public void run() {
                         try {
                             if(dialog.isShowing()){
+                                try{
+                                    title.setText("Poor Internet Connection .Please Try Again !!!! ");
+                                    restartAgain.setText("Click to Retry !!!");
 
+
+                                }
+                                catch (Exception e){
+
+                                }
                             }
                             else {
                                 title.setText("Poor Internet Connection .Please Try Again !!!! ");
                                 restartAgain.setText("Click to Retry !!!");
 
-                                restartAgain.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        dialog.cancel();
-
-                                        checkForInternetConnectionAndGetMenuItemAndMobileAppData();
-
-                                    }
-                                });
 
 
                                 dialog.show();
                             }
+                            restartAgain.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    dialog.cancel();
+
+                                    checkForInternetConnectionAndGetMenuItemAndMobileAppData();
+
+                                }
+                            });
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -557,6 +566,13 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
     private void getDatafromVendorTable(String vendorEntryKey) {
 
+
+        if(isFetchVendorCalled){
+            return;
+        }
+        isFetchVendorCalled = true;
+
+
         Log.i("SQL / DB Log"," IN FetchVendorData from db::  ");
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetVendorUsingUserKey +vendorEntryKey,null,
                 new Response.Listener<JSONObject>() {
@@ -834,6 +850,7 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                     Modal_vendor modal_vendor = new Modal_vendor();
                                     modal_vendor.setInventorycheckpos(String.valueOf(isinventorycheck));
                                     modal_vendor.setLocaldbcheck(String.valueOf(localDBcheck));
+                                    modal_vendor.setIsweighteditable(String.valueOf(isweighteditable));
                                     modal_vendor.setIsweightmachineconnected(String.valueOf(isweightmachineconnected));
                                     modal_vendor.setDefaultprintertype(String.valueOf(defaultprintertype));
                                     modal_vendor.setMinimumscreensizeforpos(String.valueOf(minimumscreensizeforpos));
@@ -847,9 +864,9 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                     modal_vendor.setVendorfssaino(String.valueOf(vendorfssaino));
                                     modal_vendor.setVendormobile(String.valueOf(vendormobile));
 
-
                                     try{
                                         if(localDBcheck){
+
                                             try {
 
 
@@ -1050,6 +1067,12 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
         myEdit.putBoolean(
                 "isbarcodescannerconnected",
                 isbarcodescannerconnected
+        );
+
+
+        myEdit.putBoolean(
+                "enableorderplacingmicroservice",
+                enableorderplacingmicroservice
         );
 
 
@@ -1425,6 +1448,14 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
 
 
     private void getDatafromMobileApp() {
+
+
+        if(isFetchPOSAppDataCalled){
+            return;
+        }
+        isFetchPOSAppDataCalled = true;
+
+
         Log.i("SQL / DB Log"," IN FetchAppData from db::  ");
 
         SharedPreferences preferences =getSharedPreferences("RedeemData",Context.MODE_PRIVATE);
@@ -1480,10 +1511,13 @@ public class Pos_Dashboard_Screen extends AppCompatActivity implements OnNavigat
                                             orderdetailsnewschema = (json.getBoolean("orderdetailsnewschema"));
                                          ///  orderdetailsnewschema= true;
                                                updateweightforonlineorders = (json.getBoolean("updateweightforonlineorders"));
-                                            //updateweightforonlineorders = true;
+                                            //updateweightforonlineorders = true
+
+                                            enableorderplacingmicroservice =  (json.getBoolean("enableorderplacingmicroservice"));
 
                                             modal_posAppMobileData.setOrderdetailsnewschema(String.valueOf(orderdetailsnewschema));
                                             modal_posAppMobileData.setUpdateweightforonlineorders(String.valueOf(updateweightforonlineorders));
+                                            modal_posAppMobileData.setEnableorderplacingmicroservice(String.valueOf(enableorderplacingmicroservice));
 
 
 
@@ -2066,818 +2100,781 @@ catch (Exception e){
     }
 
     private String getMenuItemusingStoreId(String vendorkey) {
-        Log.i("SQL / DB Log"," IN FetchMenuData from db::  ");
+        Log.i("SQL / DB Log", " IN FetchMenuData from db::  ");
 
-        completemenuItem="";
+
+        if (isFetchMenuItemCalled) {
+            return completemenuItem;
+        }
+        isFetchMenuItemCalled = true;
+
+
+        completemenuItem = "";
         MenuList.clear();
-        SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences("MenuList", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         editor.apply();
         ////Log.d(TAG, "starting:getfullMenuItemUsingStoreID ");
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems+"?storeid="+vendorkey,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItems + "?storeid=" + vendorkey,
                 null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
             public void onResponse(@NonNull JSONObject response) {
-           try {
-               try{
-
-                   Log.i("SQL / DB Log"," FetchMenuData from db::  ");
-
-               gettingMenuItemRetryCount = 0;
-               completemenuItem="";
-               MenuList.clear();
-               SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
-               SharedPreferences.Editor editor = preferences.edit();
-               editor.clear();
-               editor.apply();
-
-               }
-               catch (Exception e){
-                   e.printStackTrace();
-               }
-               ////Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
-
-               ////Log.d(TAG, "starting:onResponse ");
-
-               ////Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
-
-               try {
-                 //     completemenuItem = new String(String.valueOf(response));
-
-                   JSONArray JArray = response.getJSONArray("content");
-                   //completemenuItem = new String(String.valueOf(JArray));
+                try {
+                    try {
 
-                   ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
-                   int i1 = 0;
-                   int arrayLength = JArray.length();
-                   ////Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
-
+                        Log.i("SQL / DB Log", " FetchMenuData from db::  ");
 
-                   for (; i1 < (arrayLength); i1++) {
+                        gettingMenuItemRetryCount = 0;
+                        completemenuItem = "";
+                        MenuList.clear();
+                        SharedPreferences preferences = getSharedPreferences("MenuList", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.clear();
+                        editor.apply();
 
-                       try {
-                           boolean showinPOS = false;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    ////Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
 
-                           JSONObject json = JArray.getJSONObject(i1);
-                           Modal_MenuItem modal_menuItem = new Modal_MenuItem();
-                           try {
-                               if (json.has("showinpos")) {
-                                   String showinPOS_String = "";
-                                   showinPOS_String = String.valueOf(json.get("showinpos").toString().toUpperCase());
-                                   if (showinPOS_String.equals("")) {
-                                       showinPOS = true;
+                    ////Log.d(TAG, "starting:onResponse ");
 
-                                   }
-                                   else if (showinPOS_String.equals("TRUE")) {
-                                       showinPOS = true;
-                                   }
-                                   else if (showinPOS_String.equals("FALSE")) {
-                                       showinPOS = false;
+                    ////Log.d(TAG, "response for addMenuListAdaptertoListView: " + response.length());
 
-                                   }
-                                   else if (showinPOS_String.equals("NULL")) {
-                                       showinPOS = true;
-                                   }
-                               } else {
-                                   showinPOS = true;
-                                   //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
+                    try {
+                        //     completemenuItem = new String(String.valueOf(response));
 
+                        JSONArray JArray = response.getJSONArray("content");
+                        //completemenuItem = new String(String.valueOf(JArray));
 
-                               }
-                           }
-                           catch (Exception e){
-                               showinPOS = true;
+                        ////Log.d(Constants.TAG, "convertingJsonStringintoArray Response: " + JArray);
+                        int i1 = 0;
+                        int arrayLength = JArray.length();
+                        ////Log.d(TAG, "convertingJsonStringintoArray Response: " + arrayLength);
 
-                               e.printStackTrace();
-                           }
-                           if (showinPOS){
-                               if (json.has("key")) {
-                                   modal_menuItem.key = String.valueOf(json.get("key"));
-                                   MenuItemKey = String.valueOf(json.get("key"));
-                               } else {
-                                   modal_menuItem.key = "";
-                                   ////Log.d(Constants.TAG, "There is no key for this Menu: " );
 
+                        for (; i1 < (arrayLength); i1++) {
 
-                               }
+                            try {
+                                boolean showinPOS = false;
 
-                           if (json.has("key")) {
-                               modal_menuItem.menuItemId = String.valueOf(json.get("key"));
-                           } else {
-                               modal_menuItem.menuItemId = "";
-                               ////Log.d(Constants.TAG, "There is no key for this Menu: " );
+                                JSONObject json = JArray.getJSONObject(i1);
+                                Modal_MenuItem modal_menuItem = new Modal_MenuItem();
+                                try {
+                                    if (json.has("showinpos")) {
+                                        String showinPOS_String = "";
+                                        showinPOS_String = String.valueOf(json.get("showinpos").toString().toUpperCase());
+                                        if (showinPOS_String.equals("")) {
+                                            showinPOS = true;
 
+                                        } else if (showinPOS_String.equals("TRUE")) {
+                                            showinPOS = true;
+                                        } else if (showinPOS_String.equals("FALSE")) {
+                                            showinPOS = false;
 
-                           }
+                                        } else if (showinPOS_String.equals("NULL")) {
+                                            showinPOS = true;
+                                        }
+                                    } else {
+                                        showinPOS = true;
+                                        //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
 
-                           try {
-                               if (json.has("appmarkuppercentage")) {
-                                   modal_menuItem.appmarkuppercentage = String.valueOf(json.get("appmarkuppercentage"));
-                               } else {
-                                   modal_menuItem.appmarkuppercentage = "0";
-                                  // Toast.makeText(getApplicationContext(),"There is no appmarkuppercentage entry on dashboard",Toast.LENGTH_LONG).show();
-                                   Log.d(Constants.TAG, "There is no appmarkuppercentage for this Menu: " +MenuItemKey );
 
+                                    }
+                                } catch (Exception e) {
+                                    showinPOS = true;
 
-                               }
-                           }
-                           catch (Exception e){
-                               modal_menuItem.appmarkuppercentage = "0";
-                               Toast.makeText(getApplicationContext(),"Error in getting appmarkuppercentage entry on dashboard",Toast.LENGTH_LONG).show();
+                                    e.printStackTrace();
+                                }
+                                if (showinPOS) {
+                                    if (json.has("key")) {
+                                        modal_menuItem.key = String.valueOf(json.get("key"));
+                                        MenuItemKey = String.valueOf(json.get("key"));
+                                    } else {
+                                        modal_menuItem.key = "";
+                                        ////Log.d(Constants.TAG, "There is no key for this Menu: " );
 
-                               e.printStackTrace();
-                           }
-                           if (json.has("applieddiscountpercentage")) {
-                               modal_menuItem.applieddiscountpercentage = String.valueOf(json.get("applieddiscountpercentage"));
 
-                           } else {
-                               modal_menuItem.applieddiscountpercentage = "0";
-                               ////Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
+                                    }
 
+                                    if (json.has("key")) {
+                                        modal_menuItem.menuItemId = String.valueOf(json.get("key"));
+                                    } else {
+                                        modal_menuItem.menuItemId = "";
+                                        ////Log.d(Constants.TAG, "There is no key for this Menu: " );
 
-                           }
-                           if (json.has("barcode")) {
-                               modal_menuItem.barcode = String.valueOf(json.get("barcode"));
 
-                           } else {
-                               modal_menuItem.barcode = "";
-                               ////Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
+                                    }
 
+                                    try {
+                                        if (json.has("appmarkuppercentage")) {
+                                            modal_menuItem.appmarkuppercentage = String.valueOf(json.get("appmarkuppercentage"));
+                                        } else {
+                                            modal_menuItem.appmarkuppercentage = "0";
+                                            // Toast.makeText(getApplicationContext(),"There is no appmarkuppercentage entry on dashboard",Toast.LENGTH_LONG).show();
+                                            Log.d(Constants.TAG, "There is no appmarkuppercentage for this Menu: " + MenuItemKey);
 
-                           }
-                           if (json.has("swiggyprice")) {
-                               modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice"));
-                               if (String.valueOf(json.get("swiggyprice")).contains("\r")) {
 
-                                   modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice")).replaceAll("\\r\\n|\\r|\\n", "");
-                                   ;
+                                        }
+                                    } catch (Exception e) {
+                                        modal_menuItem.appmarkuppercentage = "0";
+                                        Toast.makeText(getApplicationContext(), "Error in getting appmarkuppercentage entry on dashboard", Toast.LENGTH_LONG).show();
 
-                               }
-                               if (String.valueOf(modal_menuItem.getSwiggyprice()).equals("")) {
-                                   modal_menuItem.swiggyprice = "0";
+                                        e.printStackTrace();
+                                    }
+                                    if (json.has("applieddiscountpercentage")) {
+                                        modal_menuItem.applieddiscountpercentage = String.valueOf(json.get("applieddiscountpercentage"));
 
-                               }
+                                    } else {
+                                        modal_menuItem.applieddiscountpercentage = "0";
+                                        ////Log.d(Constants.TAG, "There is no applieddiscountpercentage for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.swiggyprice = "0";
-                               //Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " + MenuItemKey);
-                           }
 
+                                    }
+                                    if (json.has("barcode")) {
+                                        modal_menuItem.barcode = String.valueOf(json.get("barcode"));
 
-                           if (json.has("bigbasketprice")) {
-                               modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice"));
+                                    } else {
+                                        modal_menuItem.barcode = "";
+                                        ////Log.d(Constants.TAG, "There is no barcode for this Menu: " +MenuItemKey );
 
-                               if (String.valueOf(json.get("bigbasketprice")).contains("\r")) {
 
-                                   modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice")).replaceAll("\\r\\n|\\r|\\n", "");
-                                   ;
+                                    }
+                                    if (json.has("swiggyprice")) {
+                                        modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice"));
+                                        if (String.valueOf(json.get("swiggyprice")).contains("\r")) {
 
-                               }
-                               if (String.valueOf(modal_menuItem.getBigbasketprice()).equals("")) {
-                                   modal_menuItem.bigbasketprice = "0";
+                                            modal_menuItem.swiggyprice = String.valueOf(json.get("swiggyprice")).replaceAll("\\r\\n|\\r|\\n", "");
+                                            ;
 
-                               }
+                                        }
+                                        if (String.valueOf(modal_menuItem.getSwiggyprice()).equals("")) {
+                                            modal_menuItem.swiggyprice = "0";
 
-                           } else {
-                               modal_menuItem.bigbasketprice = "0";
-                               //Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " + MenuItemKey);
+                                        }
 
+                                    } else {
+                                        modal_menuItem.swiggyprice = "0";
+                                        //Log.d(Constants.TAG, "There is no swiggyprice for this Menu: " + MenuItemKey);
+                                    }
 
-                           }
 
+                                    if (json.has("bigbasketprice")) {
+                                        modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice"));
 
-                           if (json.has("dunzoprice")) {
-                               modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice"));
-                               if (String.valueOf(json.get("dunzoprice")).contains("\r")) {
+                                        if (String.valueOf(json.get("bigbasketprice")).contains("\r")) {
 
-                                   modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice")).replaceAll("\\r\\n|\\r|\\n", "");
-                                   ;
+                                            modal_menuItem.bigbasketprice = String.valueOf(json.get("bigbasketprice")).replaceAll("\\r\\n|\\r|\\n", "");
+                                            ;
 
-                               }
-                               if (String.valueOf(modal_menuItem.getDunzoprice()).equals("")) {
-                                   modal_menuItem.dunzoprice = "0";
+                                        }
+                                        if (String.valueOf(modal_menuItem.getBigbasketprice()).equals("")) {
+                                            modal_menuItem.bigbasketprice = "0";
 
-                               }
-                           } else {
-                               modal_menuItem.dunzoprice = "0";
-                               //Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " + MenuItemKey);
+                                        }
 
+                                    } else {
+                                        modal_menuItem.bigbasketprice = "0";
+                                        //Log.d(Constants.TAG, "There is no bigbasketprice for this Menu: " + MenuItemKey);
 
-                           }
 
+                                    }
 
-                           if (json.has("wholesaleprice")) {
-                               modal_menuItem.wholesaleprice = String.valueOf(json.get("wholesaleprice"));
-                               if (String.valueOf(json.get("wholesaleprice")).contains("\r")) {
 
-                                   modal_menuItem.wholesaleprice = String.valueOf(json.get("wholesaleprice")).replaceAll("\\r\\n|\\r|\\n", "");
-                                   ;
+                                    if (json.has("dunzoprice")) {
+                                        modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice"));
+                                        if (String.valueOf(json.get("dunzoprice")).contains("\r")) {
 
-                               }
-                               if (String.valueOf(modal_menuItem.getWholesaleprice()).equals("")) {
-                                   modal_menuItem.wholesaleprice = "0";
+                                            modal_menuItem.dunzoprice = String.valueOf(json.get("dunzoprice")).replaceAll("\\r\\n|\\r|\\n", "");
+                                            ;
 
-                               }
-                           } else {
-                               modal_menuItem.wholesaleprice = "0";
-                               //Log.d(Constants.TAG, "There is no wholesaleprice for this Menu: " + MenuItemKey);
+                                        }
+                                        if (String.valueOf(modal_menuItem.getDunzoprice()).equals("")) {
+                                            modal_menuItem.dunzoprice = "0";
 
+                                        }
+                                    } else {
+                                        modal_menuItem.dunzoprice = "0";
+                                        //Log.d(Constants.TAG, "There is no dunzoprice for this Menu: " + MenuItemKey);
 
-                           }
 
+                                    }
 
-                           if (json.has("grossweightingrams")) {
-                               modal_menuItem.grossweightingrams = String.valueOf(json.get("grossweightingrams"));
 
-                           } else {
-                               modal_menuItem.grossweightingrams = "";
-                               ////Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
+                                    if (json.has("wholesaleprice")) {
+                                        modal_menuItem.wholesaleprice = String.valueOf(json.get("wholesaleprice"));
+                                        if (String.valueOf(json.get("wholesaleprice")).contains("\r")) {
 
+                                            modal_menuItem.wholesaleprice = String.valueOf(json.get("wholesaleprice")).replaceAll("\\r\\n|\\r|\\n", "");
+                                            ;
 
-                           }
+                                        }
+                                        if (String.valueOf(modal_menuItem.getWholesaleprice()).equals("")) {
+                                            modal_menuItem.wholesaleprice = "0";
 
+                                        }
+                                    } else {
+                                        modal_menuItem.wholesaleprice = "0";
+                                        //Log.d(Constants.TAG, "There is no wholesaleprice for this Menu: " + MenuItemKey);
 
-                           if (json.has("displayno")) {
-                               modal_menuItem.displayno = String.valueOf(json.get("displayno"));
 
-                           } else {
-                               modal_menuItem.displayno = "";
-                               ////Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
+                                    }
 
 
-                           }
-                           if (json.has("gstpercentage")) {
-                               modal_menuItem.gstpercentage = String.valueOf(json.get("gstpercentage"));
+                                    if (json.has("grossweightingrams")) {
+                                        modal_menuItem.grossweightingrams = String.valueOf(json.get("grossweightingrams"));
 
-                           } else {
-                               modal_menuItem.gstpercentage = "";
-                               ////Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
+                                    } else {
+                                        modal_menuItem.grossweightingrams = "";
+                                        ////Log.d(Constants.TAG, "There is no grossweightingrams for this Menu: " +MenuItemKey );
 
 
-                           }
-                           if (json.has("itemavailability")) {
-                               modal_menuItem.itemavailability = String.valueOf(json.get("itemavailability"));
+                                    }
 
-                           } else {
-                               modal_menuItem.itemavailability = "";
-                               ////Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
+                                    if (json.has("displayno")) {
+                                        modal_menuItem.displayno = String.valueOf(json.get("displayno"));
 
-                           }
-                           if (json.has("itemname")) {
-                               modal_menuItem.itemname = String.valueOf(json.get("itemname"));
+                                    } else {
+                                        modal_menuItem.displayno = "";
+                                        ////Log.d(Constants.TAG, "There is no displayno for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.itemname = "";
-                               ////Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
+                                    }
+                                    if (json.has("gstpercentage")) {
+                                        modal_menuItem.gstpercentage = String.valueOf(json.get("gstpercentage"));
 
-                           }
+                                    } else {
+                                        modal_menuItem.gstpercentage = "";
+                                        ////Log.d(Constants.TAG, "There is no gstpercentage for this Menu: " +MenuItemKey );
 
-                           if (json.has("pricetypeforpos")) {
-                               modal_menuItem.pricetypeforpos = String.valueOf(json.get("pricetypeforpos"));
 
-                           } else {
-                               modal_menuItem.pricetypeforpos = "";
-                               ////Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
+                                    }
+                                    if (json.has("itemavailability")) {
+                                        modal_menuItem.itemavailability = String.valueOf(json.get("itemavailability"));
 
+                                    } else {
+                                        modal_menuItem.itemavailability = "";
+                                        ////Log.d(Constants.TAG, "There is no itemavailability for this Menu: " +MenuItemKey );
 
-                           }
 
+                                    }
+                                    if (json.has("itemname")) {
+                                        modal_menuItem.itemname = String.valueOf(json.get("itemname"));
 
-                           if (json.has("itemuniquecode")) {
-                               modal_menuItem.itemuniquecode = String.valueOf(json.get("itemuniquecode"));
+                                    } else {
+                                        modal_menuItem.itemname = "";
+                                        ////Log.d(Constants.TAG, "There is no ItemName for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.itemuniquecode = "";
-                               ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
+                                    }
 
-                           }
+                                    if (json.has("pricetypeforpos")) {
+                                        modal_menuItem.pricetypeforpos = String.valueOf(json.get("pricetypeforpos"));
 
+                                    } else {
+                                        modal_menuItem.pricetypeforpos = "";
+                                        ////Log.d(Constants.TAG, "There is no pricetypeforpos for this Menu: " +MenuItemKey );
 
-                           if (json.has("reportname")) {
-                               modal_menuItem.reportname = String.valueOf(json.get("reportname"));
 
-                           } else {
-                               modal_menuItem.reportname = "";
-                               ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
+                                    }
 
 
-                           }
+                                    if (json.has("itemuniquecode")) {
+                                        modal_menuItem.itemuniquecode = String.valueOf(json.get("itemuniquecode"));
 
-                           if (json.has("menuboarddisplayname")) {
-                               modal_menuItem.menuboarddisplayname = String.valueOf(json.get("menuboarddisplayname"));
+                                    } else {
+                                        modal_menuItem.itemuniquecode = "";
+                                        ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.menuboarddisplayname = "";
-                               ////Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
+                                    }
 
-                           }
 
-                           if (json.has("showinmenuboard")) {
-                               modal_menuItem.showinmenuboard = String.valueOf(json.get("showinmenuboard"));
+                                    if (json.has("reportname")) {
+                                        modal_menuItem.reportname = String.valueOf(json.get("reportname"));
 
-                           } else {
-                               modal_menuItem.showinmenuboard = "";
-                               ////Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
+                                    } else {
+                                        modal_menuItem.reportname = "";
+                                        ////Log.d(Constants.TAG, "There is no itemuniquecode for this Menu: " +MenuItemKey );
 
 
-                           }
-                           if (json.has("grossweight")) {
-                               modal_menuItem.grossweight = String.valueOf(json.get("grossweight"));
+                                    }
 
-                           } else {
-                               modal_menuItem.grossweight = "";
-                               ////Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
+                                    if (json.has("menuboarddisplayname")) {
+                                        modal_menuItem.menuboarddisplayname = String.valueOf(json.get("menuboarddisplayname"));
 
+                                    } else {
+                                        modal_menuItem.menuboarddisplayname = "";
+                                        ////Log.d(Constants.TAG, "There is no menuboarddisplayname for this Menu: " +MenuItemKey );
 
-                           }
-                           if (json.has("tmcctgykey")) {
-                               modal_menuItem.tmcctgykey = String.valueOf(json.get("tmcctgykey"));
 
-                           } else {
-                               modal_menuItem.tmcctgykey = "";
-                               ////Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
+                                    }
 
+                                    if (json.has("showinmenuboard")) {
+                                        modal_menuItem.showinmenuboard = String.valueOf(json.get("showinmenuboard"));
 
-                           }
-                           if (json.has("tmcprice")) {
-                               modal_menuItem.tmcprice = String.valueOf(json.get("tmcprice"));
+                                    } else {
+                                        modal_menuItem.showinmenuboard = "";
+                                        ////Log.d(Constants.TAG, "There is no showinmenuboard for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.tmcprice = "";
-                               ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
+                                    }
+                                    if (json.has("grossweight")) {
+                                        modal_menuItem.grossweight = String.valueOf(json.get("grossweight"));
 
-                           }
-                           if (json.has("tmcpriceperkg")) {
-                               modal_menuItem.tmcpriceperkg = String.valueOf(json.get("tmcpriceperkg"));
+                                    } else {
+                                        modal_menuItem.grossweight = "";
+                                        ////Log.d(Constants.TAG, "There is no grossweight for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.tmcpriceperkg = "";
-                               ////Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
+                                    }
+                                    if (json.has("tmcctgykey")) {
+                                        modal_menuItem.tmcctgykey = String.valueOf(json.get("tmcctgykey"));
 
-                           }
-                           if (json.has("tmcsubctgykey")) {
-                               modal_menuItem.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
+                                    } else {
+                                        modal_menuItem.tmcctgykey = "";
+                                        ////Log.d(Constants.TAG, "There is no tmcctgykey for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.tmcsubctgykey = "";
-                               ////Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
+                                    }
+                                    if (json.has("tmcprice")) {
+                                        modal_menuItem.tmcprice = String.valueOf(json.get("tmcprice"));
 
-                           }
+                                    } else {
+                                        modal_menuItem.tmcprice = "";
+                                        ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
 
-                           if (json.has("key")) {
-                               modal_menuItem.key = String.valueOf(json.get("key"));
 
-                           } else {
-                               modal_menuItem.key = "";
-                               ////Log.d(Constants.TAG, "There is no key for this Menu: "  );
+                                    }
+                                    if (json.has("tmcpriceperkg")) {
+                                        modal_menuItem.tmcpriceperkg = String.valueOf(json.get("tmcpriceperkg"));
 
+                                    } else {
+                                        modal_menuItem.tmcpriceperkg = "";
+                                        ////Log.d(Constants.TAG, "There is no tmcpriceperkg for this Menu: " +MenuItemKey );
 
-                           }
 
+                                    }
+                                    if (json.has("tmcsubctgykey")) {
+                                        modal_menuItem.tmcsubctgykey = String.valueOf(json.get("tmcsubctgykey"));
 
-                           if (json.has("netweight")) {
-                               modal_menuItem.netweight = String.valueOf(json.get("netweight"));
+                                    } else {
+                                        modal_menuItem.tmcsubctgykey = "";
+                                        ////Log.d(Constants.TAG, "There is no tmcsubctgykey for this Menu: " +MenuItemKey );
 
-                           } else {
-                               modal_menuItem.netweight = "";
-                               ////Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
+                                    }
 
-                           }
-                           if (json.has("portionsize")) {
-                               modal_menuItem.portionsize = String.valueOf(json.get("portionsize"));
+                                    if (json.has("key")) {
+                                        modal_menuItem.key = String.valueOf(json.get("key"));
 
-                           } else {
-                               modal_menuItem.portionsize = "";
-                               ////Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
+                                    } else {
+                                        modal_menuItem.key = "";
+                                        ////Log.d(Constants.TAG, "There is no key for this Menu: "  );
 
 
-                           }
+                                    }
 
 
-                           if (json.has("itemweightdetails")) {
-                               try {
-                                   modal_menuItem.itemweightdetails = String.valueOf(json.get("itemweightdetails"));
+                                    if (json.has("netweight")) {
+                                        modal_menuItem.netweight = String.valueOf(json.get("netweight"));
 
-                               } catch (Exception e) {
-                                   modal_menuItem.itemweightdetails = "nil";
+                                    } else {
+                                        modal_menuItem.netweight = "";
+                                        ////Log.d(Constants.TAG, "There is no netweight for this Menu: "  );
 
-                                   e.printStackTrace();
-                               }
 
-                           } else {
-                               modal_menuItem.itemweightdetails = "nil";
-                               //Log.d(Constants.TAG, "There is no key for this Menu: ");
+                                    }
+                                    if (json.has("portionsize")) {
+                                        modal_menuItem.portionsize = String.valueOf(json.get("portionsize"));
 
+                                    } else {
+                                        modal_menuItem.portionsize = "";
+                                        ////Log.d(Constants.TAG, "There is no portionsize for this Menu: "  );
 
-                           }
-                           if (json.has("showinpos")) {
-                               modal_menuItem.showinpos = String.valueOf(json.get("showinpos").toString().toUpperCase());
 
-                           } else {
-                               modal_menuItem.showinpos = "TRUE";
-                               //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
+                                    }
 
 
-                           }
+                                    if (json.has("itemweightdetails")) {
+                                        try {
+                                            modal_menuItem.itemweightdetails = String.valueOf(json.get("itemweightdetails"));
 
-                           if (json.has("showinapp")) {
-                               modal_menuItem.showinapp = String.valueOf(json.get("showinapp").toString().toUpperCase());
+                                        } catch (Exception e) {
+                                            modal_menuItem.itemweightdetails = "nil";
 
-                           } else {
-                               modal_menuItem.showinapp = "TRUE";
-                               //Log.d(Constants.TAG, "There is no showinapp for this Menu: " + MenuItemKey);
+                                            e.printStackTrace();
+                                        }
 
+                                    } else {
+                                        modal_menuItem.itemweightdetails = "nil";
+                                        //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
-                           }
 
+                                    }
+                                    if (json.has("showinpos")) {
+                                        modal_menuItem.showinpos = String.valueOf(json.get("showinpos").toString().toUpperCase());
 
-                              ////// for TMCPrice
-                               try{
-                                   double tmcprice_double =0 ,  tmcpriceWithAppMarkupValue = 0 , appMarkupPercn_value =0;
-                                   try {
-                                       if (json.has("tmcprice")) {
-                                           tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
+                                    } else {
+                                        modal_menuItem.showinpos = "TRUE";
+                                        //Log.d(Constants.TAG, "There is no showinpos for this Menu: " + MenuItemKey);
 
-                                       } else {
-                                           tmcprice_double = 0;
-                                           ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
-                                       }
-                                   }
-                                   catch (Exception e){
-                                       e.printStackTrace();
-                                       tmcprice_double =0;
-                                   }
-                                   if(json.has("appmarkuppercentage")) {
-                                       int markupPercentageInt = 0;
-                                       try {
-                                           markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
 
-                                       } catch (Exception e) {
-                                           e.printStackTrace();
-                                       }
-                                       if (markupPercentageInt > 0) {
+                                    }
 
-                                           try {
-                                               appMarkupPercn_value = (markupPercentageInt * tmcprice_double) / 100;
-                                           } catch (Exception e) {
-                                               e.printStackTrace();
-                                           }
+                                    if (json.has("showinapp")) {
+                                        modal_menuItem.showinapp = String.valueOf(json.get("showinapp").toString().toUpperCase());
 
+                                    } else {
+                                        modal_menuItem.showinapp = "TRUE";
+                                        //Log.d(Constants.TAG, "There is no showinapp for this Menu: " + MenuItemKey);
 
-                                           try {
-                                               tmcpriceWithAppMarkupValue = appMarkupPercn_value + tmcprice_double;
-                                           } catch (Exception e) {
-                                               e.printStackTrace();
-                                           }
-                                           modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(String.valueOf(Math.ceil(tmcpriceWithAppMarkupValue)));
-                                       }
-                                       else{
-                                           modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
 
-                                       }
-                                   }
-                                   else{
-                                       modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
+                                    }
 
-                                   }
 
+                                    ////// for TMCPrice
+                                    try {
+                                        double tmcprice_double = 0, tmcpriceWithAppMarkupValue = 0, appMarkupPercn_value = 0;
+                                        try {
+                                            if (json.has("tmcprice")) {
+                                                tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
 
-
-
-                                   try{
-
-                                       if(tmcpriceWithAppMarkupValue<=0){
+                                            } else {
+                                                tmcprice_double = 0;
+                                                ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
                                             tmcprice_double = 0;
-                                           tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
+                                        }
+                                        if (json.has("appmarkuppercentage")) {
+                                            int markupPercentageInt = 0;
+                                            try {
+                                                markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            if (markupPercentageInt > 0) {
+
+                                                try {
+                                                    appMarkupPercn_value = (markupPercentageInt * tmcprice_double) / 100;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
 
-                                           modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
-                                       }
 
-                                   }
-                                   catch (Exception e){
-                                       e.printStackTrace();
-                                   }
+                                                try {
+                                                    tmcpriceWithAppMarkupValue = appMarkupPercn_value + tmcprice_double;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                                modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(String.valueOf(Math.ceil(tmcpriceWithAppMarkupValue)));
+                                            } else {
+                                                modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
 
+                                            }
+                                        } else {
+                                            modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
 
-                               }
-                               catch (Exception e){
+                                        }
 
-                                   try {
 
-                                       double tmcprice_double = 0;
-                                       tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
+                                        try {
 
-                                       modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
-                                   }
-                                   catch (Exception er) {
-                                       Toast.makeText(getApplicationContext(),"Error 1 in getting tmcprice_double entry on dashboard",Toast.LENGTH_LONG).show();
+                                            if (tmcpriceWithAppMarkupValue <= 0) {
+                                                tmcprice_double = 0;
+                                                tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
 
-                                       er.printStackTrace();
-                                   }
-                                   Toast.makeText(getApplicationContext(),"Error 2 in getting tmcprice_double entry on dashboard",Toast.LENGTH_LONG).show();
+                                                modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
+                                            }
 
-                                   e.printStackTrace();
-                               }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
 
 
+                                    } catch (Exception e) {
 
+                                        try {
 
+                                            double tmcprice_double = 0;
+                                            tmcprice_double = Double.parseDouble(String.valueOf(json.get("tmcprice")));
 
+                                            modal_menuItem.tmcpriceWithMarkupValue = String.valueOf(tmcprice_double);
+                                        } catch (Exception er) {
+                                            Toast.makeText(getApplicationContext(), "Error 1 in getting tmcprice_double entry on dashboard", Toast.LENGTH_LONG).show();
 
-                               ////// for TMCPrice PerKG
+                                            er.printStackTrace();
+                                        }
+                                        Toast.makeText(getApplicationContext(), "Error 2 in getting tmcprice_double entry on dashboard", Toast.LENGTH_LONG).show();
 
-                               try{
-                                   double tmcpriceperkg_double =0 ,  tmcpriceperkgWithAppMarkupValue = 0 , appMarkupPercn_value =0;
-                                   try {
-                                       if (json.has("tmcpriceperkg")) {
-                                           tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
+                                        e.printStackTrace();
+                                    }
 
-                                       } else {
-                                           tmcpriceperkg_double = 0;
-                                           ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
-                                       }
-                                   }
-                                   catch (Exception e){
-                                       e.printStackTrace();
-                                       tmcpriceperkg_double =0;
-                                   }
-                                   if(json.has("appmarkuppercentage")) {
-                                       int markupPercentageInt = 0;
-                                       try {
-                                           markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
 
-                                       } catch (Exception e) {
-                                           e.printStackTrace();
-                                       }
-                                       if (markupPercentageInt > 0) {
+                                    ////// for TMCPrice PerKG
 
-                                           try {
-                                               appMarkupPercn_value = (markupPercentageInt * tmcpriceperkg_double) / 100;
-                                           } catch (Exception e) {
-                                               e.printStackTrace();
-                                           }
+                                    try {
+                                        double tmcpriceperkg_double = 0, tmcpriceperkgWithAppMarkupValue = 0, appMarkupPercn_value = 0;
+                                        try {
+                                            if (json.has("tmcpriceperkg")) {
+                                                tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
 
+                                            } else {
+                                                tmcpriceperkg_double = 0;
+                                                ////Log.d(Constants.TAG, "There is no tmcprice for this Menu: " +MenuItemKey );
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            tmcpriceperkg_double = 0;
+                                        }
+                                        if (json.has("appmarkuppercentage")) {
+                                            int markupPercentageInt = 0;
+                                            try {
+                                                markupPercentageInt = Integer.parseInt(String.valueOf(json.get("appmarkuppercentage")));
 
-                                           try {
-                                               tmcpriceperkgWithAppMarkupValue = appMarkupPercn_value + tmcpriceperkg_double;
-                                           } catch (Exception e) {
-                                               e.printStackTrace();
-                                           }
-                                           modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue)));
-                                       }
-                                       else{
-                                           modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            if (markupPercentageInt > 0) {
 
-                                       }
-                                   }
-                                   else{
-                                       modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+                                                try {
+                                                    appMarkupPercn_value = (markupPercentageInt * tmcpriceperkg_double) / 100;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
 
-                                   }
 
+                                                try {
+                                                    tmcpriceperkgWithAppMarkupValue = appMarkupPercn_value + tmcpriceperkg_double;
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                                modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(String.valueOf(Math.round(tmcpriceperkgWithAppMarkupValue)));
+                                            } else {
+                                                modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
 
+                                            }
+                                        } else {
+                                            modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
 
+                                        }
 
-                                   try{
 
-                                       if(tmcpriceperkgWithAppMarkupValue<=0){
-                                           tmcpriceperkg_double = 0;
-                                           tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
+                                        try {
 
-                                           modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
-                                       }
+                                            if (tmcpriceperkgWithAppMarkupValue <= 0) {
+                                                tmcpriceperkg_double = 0;
+                                                tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
 
-                                   }
-                                   catch (Exception e){
-                                       e.printStackTrace();
-                                   }
+                                                modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+                                            }
 
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
 
 
+                                    } catch (Exception e) {
+                                        try {
+                                            double tmcpriceperkg_double = 0;
+                                            tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
+                                            modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
+                                        } catch (Exception er) {
+                                            Toast.makeText(getApplicationContext(), "Error 1 in getting tmcpriceperkg_double entry on dashboard", Toast.LENGTH_LONG).show();
 
+                                            er.printStackTrace();
+                                        }
 
+                                        Toast.makeText(getApplicationContext(), "Error 2 in getting tmcpriceperkg_double entry on dashboard", Toast.LENGTH_LONG).show();
 
 
-                               }
-                               catch (Exception e){
-                                   try {
-                                       double tmcpriceperkg_double = 0;
-                                       tmcpriceperkg_double = Double.parseDouble(String.valueOf(json.get("tmcpriceperkg")));
-                                       modal_menuItem.tmcpriceperkgWithMarkupValue = String.valueOf(tmcpriceperkg_double);
-                                   }
-                                   catch (Exception er){
-                                       Toast.makeText(getApplicationContext(),"Error 1 in getting tmcpriceperkg_double entry on dashboard",Toast.LENGTH_LONG).show();
+                                        e.printStackTrace();
 
-                                       er.printStackTrace();
-                                   }
+                                    }
 
-                                   Toast.makeText(getApplicationContext(),"Error 2 in getting tmcpriceperkg_double entry on dashboard",Toast.LENGTH_LONG).show();
 
+                                    if (json.has("itemcutdetails")) {
+                                        try {
+                                            modal_menuItem.itemcutdetails = String.valueOf(json.get("itemcutdetails"));
 
-                                   e.printStackTrace();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            modal_menuItem.itemcutdetails = "nil";
 
-                               }
+                                        }
 
+                                    } else {
+                                        modal_menuItem.itemcutdetails = "nil";
+                                        //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
 
+                                    }
 
 
+                                    if (json.has("inventorydetails")) {
+                                        try {
+                                            modal_menuItem.inventorydetails = String.valueOf(json.get("inventorydetails"));
 
-                           if (json.has("itemcutdetails")) {
-                               try {
-                                   modal_menuItem.itemcutdetails = String.valueOf(json.get("itemcutdetails"));
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            modal_menuItem.inventorydetails = "nil";
 
-                               } catch (Exception e) {
-                                   e.printStackTrace();
-                                   modal_menuItem.itemcutdetails = "nil";
+                                        }
 
-                               }
+                                    } else {
+                                        modal_menuItem.inventorydetails = "nil";
+                                        //Log.d(Constants.TAG, "There is no inventorydetails for this Menu: ");
 
-                           } else {
-                               modal_menuItem.itemcutdetails = "nil";
-                               //Log.d(Constants.TAG, "There is no key for this Menu: ");
 
+                                    }
 
-                           }
+                                    if (!isinventorycheck) {
 
+                                        String barcode_AvlDetails = "nil", itemavailability_AvlDetails = "nil", key_AvlDetails = "nil", lastupdatedtime_AvlDetails = "nil", menuitemkey_AvlDetails = "nil",
+                                                receivedstock_AvlDetails = "nil", stockbalance_AvlDetails = "nil", stockincomingkey_AvlDetails = "nil", vendorkey_AvlDetails = "nil", allownegativestock_AvlDetails = "nil";
 
-                           if (json.has("inventorydetails")) {
-                               try {
-                                   modal_menuItem.inventorydetails = String.valueOf(json.get("inventorydetails"));
 
-                               } catch (Exception e) {
-                                   e.printStackTrace();
-                                   modal_menuItem.inventorydetails = "nil";
+                                        modal_menuItem.setBarcode_AvlDetails(barcode_AvlDetails);
+                                        modal_menuItem.setItemavailability_AvlDetails(itemavailability_AvlDetails);
+                                        modal_menuItem.setKey_AvlDetails(key_AvlDetails);
+                                        modal_menuItem.setLastupdatedtime_AvlDetails(lastupdatedtime_AvlDetails);
+                                        modal_menuItem.setMenuitemkey_AvlDetails(menuitemkey_AvlDetails);
+                                        modal_menuItem.setReceivedstock_AvlDetails(receivedstock_AvlDetails);
+                                        modal_menuItem.setStockbalance_AvlDetails(stockbalance_AvlDetails);
+                                        modal_menuItem.setStockincomingkey_AvlDetails(stockincomingkey_AvlDetails);
+                                        modal_menuItem.setVendorkey_AvlDetails(vendorkey_AvlDetails);
+                                        modal_menuItem.setAllownegativestock(allownegativestock_AvlDetails);
 
-                               }
 
-                           } else {
-                               modal_menuItem.inventorydetails = "nil";
-                               //Log.d(Constants.TAG, "There is no inventorydetails for this Menu: ");
+                                        Modal_MenuItemStockAvlDetails modal_menuItemStockAvlDetails = new Modal_MenuItemStockAvlDetails();
+                                        modal_menuItemStockAvlDetails.setBarcode(barcode_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setItemavailability(itemavailability_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setKey(key_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setMenuitemkey(menuitemkey_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setStockincomingkey(stockincomingkey_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setVendorkey(vendorkey_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setStockbalance(stockbalance_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setAllownegativestock(allownegativestock_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setLastupdatedtime(lastupdatedtime_AvlDetails);
+                                        modal_menuItemStockAvlDetails.setReceivedstock(receivedstock_AvlDetails);
+                                        MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
 
 
-                           }
+                                    }
 
-                           if (!isinventorycheck) {
+                                    if (localDBcheck) {
 
-                               String barcode_AvlDetails = "nil", itemavailability_AvlDetails = "nil", key_AvlDetails = "nil", lastupdatedtime_AvlDetails = "nil", menuitemkey_AvlDetails = "nil",
-                                       receivedstock_AvlDetails = "nil", stockbalance_AvlDetails = "nil", stockincomingkey_AvlDetails = "nil", vendorkey_AvlDetails = "nil", allownegativestock_AvlDetails = "nil";
 
+                                        try {
+                                            if (tmcMenuItemSQL_db_manager == null) {
+                                                tmcMenuItemSQL_db_manager = new TMCMenuItemSQL_DB_Manager(getApplicationContext());
+                                                try {
+                                                    tmcMenuItemSQL_db_manager.open();
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
 
-                               modal_menuItem.setBarcode_AvlDetails(barcode_AvlDetails);
-                               modal_menuItem.setItemavailability_AvlDetails(itemavailability_AvlDetails);
-                               modal_menuItem.setKey_AvlDetails(key_AvlDetails);
-                               modal_menuItem.setLastupdatedtime_AvlDetails(lastupdatedtime_AvlDetails);
-                               modal_menuItem.setMenuitemkey_AvlDetails(menuitemkey_AvlDetails);
-                               modal_menuItem.setReceivedstock_AvlDetails(receivedstock_AvlDetails);
-                               modal_menuItem.setStockbalance_AvlDetails(stockbalance_AvlDetails);
-                               modal_menuItem.setStockincomingkey_AvlDetails(stockincomingkey_AvlDetails);
-                               modal_menuItem.setVendorkey_AvlDetails(vendorkey_AvlDetails);
-                               modal_menuItem.setAllownegativestock(allownegativestock_AvlDetails);
+                                            long id = tmcMenuItemSQL_db_manager.insert(modal_menuItem);
+                                            modal_menuItem.setLocalDB_id(String.valueOf(id));
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        } finally {
+                                            try {
+                                                if (arrayLength - i1 == 1) {
+                                                    if (tmcMenuItemSQL_db_manager != null) {
+                                                        tmcMenuItemSQL_db_manager.close();
+                                                        tmcMenuItemSQL_db_manager = null;
+                                                    }
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
 
+                                    }
 
-                               Modal_MenuItemStockAvlDetails modal_menuItemStockAvlDetails = new Modal_MenuItemStockAvlDetails();
-                               modal_menuItemStockAvlDetails.setBarcode(barcode_AvlDetails);
-                               modal_menuItemStockAvlDetails.setItemavailability(itemavailability_AvlDetails);
-                               modal_menuItemStockAvlDetails.setKey(key_AvlDetails);
-                               modal_menuItemStockAvlDetails.setMenuitemkey(menuitemkey_AvlDetails);
-                               modal_menuItemStockAvlDetails.setStockincomingkey(stockincomingkey_AvlDetails);
-                               modal_menuItemStockAvlDetails.setVendorkey(vendorkey_AvlDetails);
-                               modal_menuItemStockAvlDetails.setStockbalance(stockbalance_AvlDetails);
-                               modal_menuItemStockAvlDetails.setAllownegativestock(allownegativestock_AvlDetails);
-                               modal_menuItemStockAvlDetails.setLastupdatedtime(lastupdatedtime_AvlDetails);
-                               modal_menuItemStockAvlDetails.setReceivedstock(receivedstock_AvlDetails);
-                               MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
 
+                                    MenuList.add(modal_menuItem);
 
-                           }
+                                    ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
+                                }
 
-                               if(localDBcheck) {
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
+                                ////Log.d(Constants.TAG, "e: " + e.getMessage());
+                                ////Log.d(Constants.TAG, "e: " + e.toString());
 
+                            }
+                            if (arrayLength - i1 == 1) {
 
-                                   try {
-                                       if (tmcMenuItemSQL_db_manager == null) {
-                                           tmcMenuItemSQL_db_manager = new TMCMenuItemSQL_DB_Manager(getApplicationContext());
-                                           try {
-                                               tmcMenuItemSQL_db_manager.open();
-                                           } catch (Exception e) {
-                                               e.printStackTrace();
-                                           }
-                                       }
 
-                                       long id = tmcMenuItemSQL_db_manager.insert(modal_menuItem);
-                                       modal_menuItem.setLocalDB_id(String.valueOf(id));
-                                   }
-                                   catch (Exception e){
-                                       e.printStackTrace();
-                                   }
-                                   finally {
-                                       try {
-                                           if(arrayLength-i1 == 1 ) {
-                                               if (tmcMenuItemSQL_db_manager != null) {
-                                                   tmcMenuItemSQL_db_manager.close();
-                                                   tmcMenuItemSQL_db_manager = null;
-                                               }
-                                           }
-                                       }
-                                       catch (Exception e){
-                                           e.printStackTrace();
-                                       }
-                                   }
+                                if (isinventorycheck) {
+                                    completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
+                                } else {
+                                    saveMenuIteminSharedPreference(MenuList);
+                                    saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
-                               }
+                                    String MenuList_String = new Gson().toJson(MenuList);
+                                    //  completemenuItem = MenuList_String;
+                                }
+                                //  completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
 
 
-                           MenuList.add(modal_menuItem);
+                                if (localDBcheck) {
+                                    SharedPreferences sharedPreferences
+                                            = getSharedPreferences("SqlDbSyncDetails",
+                                            MODE_PRIVATE);
 
-                           ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
-                       }
+                                    SharedPreferences.Editor myEdit
+                                            = sharedPreferences.edit();
+                                    myEdit.putString(
+                                            "menuitem_SqlDb_SyncTime",
+                                            menuitemupdationtime
+                                    );
 
-                       } catch (JSONException e) {
-                           e.printStackTrace();
-                           ////Log.d(Constants.TAG, "e: " + e.getLocalizedMessage());
-                           ////Log.d(Constants.TAG, "e: " + e.getMessage());
-                           ////Log.d(Constants.TAG, "e: " + e.toString());
 
-                       }
-                       if(arrayLength - i1 ==1){
+                                    myEdit.apply();
 
+                                }
 
-                           if(isinventorycheck) {
-                               completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
-                           }
-                           else{
-                               saveMenuIteminSharedPreference(MenuList);
-                               saveMenuItemStockAvlDetailsinSharedPreference(MenuItemStockAvlDetails);
 
-                               String MenuList_String = new Gson().toJson(MenuList);
-                             //  completemenuItem = MenuList_String;
-                           }
-                         //  completemenuItem = getMenuAvlDetailsUsingVendorkey(vendorkey);
+                            }
 
 
-                           if(localDBcheck) {
-                               SharedPreferences sharedPreferences
-                                       = getSharedPreferences("SqlDbSyncDetails",
-                                       MODE_PRIVATE);
+                        }
 
-                               SharedPreferences.Editor myEdit
-                                       = sharedPreferences.edit();
-                               myEdit.putString(
-                                       "menuitem_SqlDb_SyncTime",
-                                       menuitemupdationtime
-                               );
+                        ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
 
 
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    //saveMenuIteminSharedPreference(MenuList);
 
-                               myEdit.apply();
 
-                           }
+                    ////Log.d(TAG, "sending :Response " + completemenuItem);
 
 
-
-                       }
-
-
-                   }
-
-                   ////Log.d(Constants.TAG, "convertingJsonStringintoArray menuListFull: " + MenuList);
-
-
-               } catch (JSONException e) {
-                   e.printStackTrace();
-               }
-               //saveMenuIteminSharedPreference(MenuList);
-
-
-               ////Log.d(TAG, "sending :Response " + completemenuItem);
-
-
-               ////Log.d(TAG, "MenuItems: " + completemenuItem.toString());
-           }
-           catch (Exception e){
-               e.printStackTrace();
-           }
-
-
+                    ////Log.d(TAG, "MenuItems: " + completemenuItem.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
 
             }
         }, new com.android.volley.Response.ErrorListener() {
             @Override
             public void onErrorResponse(@NonNull VolleyError error) {
-                if (gettingMenuItemRetryCount>0){
-                    gettingMenuItemRetryCount = gettingMenuItemRetryCount-1;
-               //     getMenuItemusingStoreId();
+                if (gettingMenuItemRetryCount > 0) {
+                    gettingMenuItemRetryCount = gettingMenuItemRetryCount - 1;
+                    //     getMenuItemusingStoreId();
                     Log.d(TAG, "gettingMenuItemRetryCount: " + gettingMenuItemRetryCount);
 
 
@@ -2886,9 +2883,9 @@ catch (Exception e){
                 Log.d(TAG, "Error: " + error.getMessage());
                 Log.d(TAG, "Error: " + error.toString());
                 Log.d("RVA", "error:" + error);
-                completemenuItem="";
+                completemenuItem = "";
                 MenuList.clear();
-                SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                SharedPreferences preferences = getSharedPreferences("MenuList", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.clear();
                 editor.apply();
@@ -2907,23 +2904,22 @@ catch (Exception e){
                 } else if (error instanceof ParseError) {
                     errorCode = "Parse Error";
                 }
-                Toast.makeText(Pos_Dashboard_Screen.this,"Error in Getting  Menu Item error code :  "+errorCode,Toast.LENGTH_LONG).show();
+                Toast.makeText(Pos_Dashboard_Screen.this, "Error in Getting  Menu Item error code :  " + errorCode, Toast.LENGTH_LONG).show();
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            if(dialog.isShowing()){
+                            if (dialog.isShowing()) {
 
-                            }
-                            else {
+                            } else {
                                 title.setText(new StringBuilder().append("").append(errorCode).append(" .  Please Try Again !!!! ").toString());
                                 restartAgain.setText("Click to Retry !!!");
 
                                 restartAgain.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
-                                        SharedPreferences preferences =getSharedPreferences("MenuList",Context.MODE_PRIVATE);
+                                        SharedPreferences preferences = getSharedPreferences("MenuList", Context.MODE_PRIVATE);
                                         SharedPreferences.Editor editor = preferences.edit();
                                         editor.clear();
                                         editor.apply();
@@ -2944,7 +2940,6 @@ catch (Exception e){
                         }
                     }
                 });
-
 
 
                 error.printStackTrace();
@@ -2974,7 +2969,15 @@ catch (Exception e){
 
 
 
+
     private String  getMenuAvlDetailsUsingVendorkey(String vendorKey) {
+
+        if (isFetchMenuItemStockAvlCalled) {
+            return completemenuItem;
+        }
+        isFetchMenuItemStockAvlCalled = true;
+
+
 
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getListofMenuItemStockAvlDetails+vendorKey,
@@ -3014,6 +3017,10 @@ catch (Exception e){
                                     String menuItemKeyFromMenuAvlDetails = json.getString("menuitemkey");
 
                                     if(menuItemKeyFromMenuAvlDetails.equals(menuitemKeyFromArray)){
+                                        if(modal_menuItem.getItemuniquecode().equals("1100")){
+
+                                            Toast.makeText(Pos_Dashboard_Screen.this, modal_menuItem.getBarcode_AvlDetails(), Toast.LENGTH_SHORT).show();
+                                        }
                                         if(json.has("barcode")){
                                             barcode_AvlDetails = json.getString("barcode");
 
@@ -3121,7 +3128,9 @@ catch (Exception e){
                                         else{
                                             allownegativestock_AvlDetails ="";
                                         }
-
+                                        if(String.valueOf(barcode_AvlDetails).equals("999001100")){
+                                            Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                                        }
                                         MenuList.get(i).setBarcode_AvlDetails(barcode_AvlDetails);
                                         MenuList.get(i).setItemavailability_AvlDetails(itemavailability_AvlDetails);
                                         MenuList.get(i).setKey_AvlDetails(key_AvlDetails);
@@ -3132,7 +3141,9 @@ catch (Exception e){
                                         MenuList.get(i).setStockincomingkey_AvlDetails(stockincomingkey_AvlDetails);
                                         MenuList.get(i).setVendorkey_AvlDetails(vendorkey_AvlDetails);
                                         MenuList.get(i).setAllownegativestock(allownegativestock_AvlDetails);
-
+                                        if(String.valueOf(MenuList.get(i).getBarcode()).equals("999001100")){
+                                      //      Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                                        }
 
 
                                         if(localDBcheck) {
@@ -3341,6 +3352,7 @@ catch (Exception e){
     private void ConnectSqlDb(String ProcessToDo) {
 
 
+
         if(tmcMenuItemSQL_db_manager== null) {
             tmcMenuItemSQL_db_manager = new TMCMenuItemSQL_DB_Manager(this);
             try {
@@ -3406,7 +3418,7 @@ catch (Exception e){
 
         try{
             if(ProcessToDo.equals("FetchMenuItemData")){
-
+                Log.i("menuitem_SqlDblong sync", String.valueOf("SQL Connected"));
                 Log.i("SQL / DB Log"," FetchMenuItemData from sql::  ");
 
                 Cursor cursor = tmcMenuItemSQL_db_manager.Fetch();
@@ -3516,6 +3528,9 @@ catch (Exception e){
                                     modal_menuItem.setVendorkey_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.vendorkey_AvlDetails)));
                                     modal_menuItem.setAllownegativestock(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.allowNegativeStock_AvlDetails)));
 
+                                    if(String.valueOf(modal_menuItem.getBarcode().toString()).equals("999001100")){
+                                        Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                                    }
 
                                 }
 
@@ -3531,7 +3546,7 @@ catch (Exception e){
                     }
                     else{
                         Log.i("SQL / DB Log"," FetchMenuItemData No data in sql::  ");
-
+                        Log.i("menuitem_SqlDblong sync", String.valueOf("DB Connected"));
                         isOnlineSyncNeededForMenu = true;
                         isAnyOnlineSyncNeeded = true;
                         completemenuItem = getMenuItemusingStoreId(vendorkey);
@@ -3560,6 +3575,8 @@ catch (Exception e){
                             do {
                                 orderdetailsnewschema = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.orderdetailsnewschema))));
                                 updateweightforonlineorders = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.updateweightforonlineorders))));
+                                enableorderplacingmicroservice = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.enableorderplacingmicroservice))));
+
                                 maxpointsinaday  = (cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.redeemdata_maxpointsinaday)));
                                 minordervalueforredeem = (cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.redeemdata_minordervalueforredeem)));
                                 pointsfor100rs  = (cursor.getString(cursor.getColumnIndex(PosAppMobileDataSQL_DB_Manager.redeemdata_pointsfor100rs)));
@@ -3698,6 +3715,16 @@ catch (Exception e){
                                     e.printStackTrace();
                                 }
 
+                                try{
+                                    isweighteditable = Boolean.parseBoolean((cursor.getString(cursor.getColumnIndex(VendorSQL_DB_Manager.isweighteditable))));
+
+
+                                }
+                                catch (Exception e){
+
+                                    isweighteditable =     false;
+                                    e.printStackTrace();
+                                }
 
 
                                 try{
@@ -4004,7 +4031,17 @@ catch (Exception e){
 
 
     private void getTMCSubCtgy() {
+        if (isFetchTmcSubCtgyCalled) {
+            return ;
+        }
+        isFetchTmcSubCtgyCalled = true;
+
+
         String Api_to_Call = "";
+
+
+
+
         if(Constants.isNewSbCtgyTable_APIUsed.equals(Constants.YES)) {
             Api_to_Call = Constants.api_getListofTMCTileForVendorkey+vendorkey;
         }
@@ -4545,6 +4582,8 @@ catch (Exception e){
 
 
                                 dialog.show();
+
+
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -4624,12 +4663,6 @@ catch (Exception e){
             e.printStackTrace();
         }
     }
-
-
-
-
-
-
 
 
 

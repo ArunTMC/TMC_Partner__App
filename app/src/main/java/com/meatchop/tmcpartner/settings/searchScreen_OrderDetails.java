@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -14,9 +15,17 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -37,7 +46,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class searchScreen_OrderDetails extends AppCompatActivity {
     public static TextView mobileNotext_widget,ordertypetext_widget,orderplacedtime_textwidget,orderConfirmedtime_textwidget,orderReaytime_textwidget,orderpickeduptime_textwidget,orderDeliveredtime_textwidget,orderIdtext_widget,orderStatustext_widget,paymentTypetext_widget,slotNametext_widget,slotDatetext_widget
@@ -55,7 +66,8 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
     double screenInches;
     LinearLayout showlocation,deliveryPartnerAssignLayout;
     public static BottomSheetDialog bottomSheetDialog;
-
+    public static Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class;
+    boolean isDeliveryPartnerMethodCalled = false;
      List<AssignDeliveryPartner_PojoClass> deliveryPartnerList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +120,15 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         try {
             SharedPreferences shared2 = getSharedPreferences("DeliveryPersonList", MODE_PRIVATE);
             DeliveryPersonList = (shared2.getString("DeliveryPersonListString", ""));
+            if(DeliveryPersonList.equals("")){
+                getDeliveryPartnerList(false,"","","","","");
 
-            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+            }
+            else{
+                ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
+
+            }
+           // ConvertStringintoDeliveryPartnerListArray(DeliveryPersonList);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -141,7 +160,7 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
         }
 
         Bundle bundle = getIntent().getExtras();
-        Modal_ManageOrders_Pojo_Class modal_manageOrders_pojo_class = bundle.getParcelable("data");
+         modal_manageOrders_pojo_class = bundle.getParcelable("data");
         try{
 
             String order_status = modal_manageOrders_pojo_class.getOrderstatus().toUpperCase();
@@ -294,7 +313,7 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
                 String orderid = (String.format("%s", modal_manageOrders_pojo_class.getOrderid()));
                 String customerMobileNo = (String.format("%s", modal_manageOrders_pojo_class.getUsermobile()));
                 String vendorkey = (String.format("%s", modal_manageOrders_pojo_class.getVendorkey()));
-
+                deliverypartnerName = modal_manageOrders_pojo_class .getDeliveryPartnerName();
                 String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
                 showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
@@ -481,18 +500,124 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
 
 
 
+    public void getDeliveryPartnerList(boolean openBottomSheet, String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        if(isDeliveryPartnerMethodCalled){
+            return;
+        }
+        isDeliveryPartnerMethodCalled = true;
+
+
+        SharedPreferences preferences =getSharedPreferences("DeliveryPersonList", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.apply();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getDeliveryPartnerList+vendorkey, null,
+                new com.android.volley.Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(@NonNull JSONObject response) {
+
+
+                        try {
+                            //converting jsonSTRING into array
+                            String DeliveryPersonListString = response.toString();
+                            ConvertStringintoDeliveryPartnerListArray(DeliveryPersonListString);
+
+                            SharedPreferences sharedPreferences
+                                    = getSharedPreferences("DeliveryPersonList",
+                                    MODE_PRIVATE);
+
+                            SharedPreferences.Editor myEdit
+                                    = sharedPreferences.edit();
+
+
+                            myEdit.putString(
+                                    "DeliveryPersonListString",
+                                    DeliveryPersonListString);
+                            myEdit.apply();
+                            isDeliveryPartnerMethodCalled = false;
+                            if(openBottomSheet){
+                                showBottomSheetDialog(orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                            }
+                        } catch (Exception e) {
+                            isDeliveryPartnerMethodCalled = false;
+                            e.printStackTrace();
+                        }
+
+
+                    }
+
+                }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(@NonNull VolleyError error) {
+                SharedPreferences preferences =getSharedPreferences("DeliveryPersonList",Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.clear();
+                editor.apply();
+                String errorCode = "";
+                if (error instanceof TimeoutError) {
+                    errorCode = "Time Out Error";
+                } else if (error instanceof NoConnectionError) {
+                    errorCode = "No Connection Error";
+
+                } else if (error instanceof AuthFailureError) {
+                    errorCode = "Auth_Failure Error";
+                } else if (error instanceof ServerError) {
+                    errorCode = "Server Error";
+                } else if (error instanceof NetworkError) {
+                    errorCode = "Network Error";
+                } else if (error instanceof ParseError) {
+                    errorCode = "Parse Error";
+                }
+                Toast.makeText(getApplicationContext(),"Error in Delivery Partner list :  "+errorCode,Toast.LENGTH_LONG).show();
+                isDeliveryPartnerMethodCalled = false;
+
+
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getParams() throws AuthFailureError {
+                final Map<String, String> params = new HashMap<>();
+                params.put("vendorkey", vendorkey);
+                //params.put("orderplacedtime", "12/26/2020");
+
+                return params;
+            }
+
+
+            @NonNull
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                final Map<String, String> header = new HashMap<>();
+                header.put("Content-Type", "application/json");
+
+                return header;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        // Make the request
+        Volley.newRequestQueue(searchScreen_OrderDetails.this).add(jsonObjectRequest);
+    }
+
+
     private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
+        if(deliveryPartnerList.size()>0) {
+            bottomSheetDialog = new BottomSheetDialog(searchScreen_OrderDetails.this);
+            bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
 
-        bottomSheetDialog = new BottomSheetDialog(searchScreen_OrderDetails.this);
-        bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
+            ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
 
-        ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
+            Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(searchScreen_OrderDetails.this, deliveryPartnerList, orderkey, "AppOrdersListOrderDetails", deliverypartnerName, orderid, customerMobileNo, vendorkey);
 
-        Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(searchScreen_OrderDetails.this, deliveryPartnerList,orderkey,"AppOrdersListOrderDetails", deliverypartnerName,orderid,customerMobileNo,vendorkey);
+            ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
 
-        ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
+            bottomSheetDialog.show();
+        }
+        else{
+            getDeliveryPartnerList(true , orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
-        bottomSheetDialog.show();
+        }
     }
 
     private void CalculateDistanceviaApi(TextView distancebetweencustomer_vendortext_widget) throws JSONException {
@@ -663,15 +788,18 @@ public class searchScreen_OrderDetails extends AppCompatActivity {
             e.printStackTrace();
         }
         new_to_pay_Amount = new_to_pay_Amount-couponDiscount;
-        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+       // int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        double new_totalAmount_withGst = Double.parseDouble(decimalFormat.format(new_to_pay_Amount));
 
-        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
+        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst));
         old_total_Amount=0;
         old_taxes_and_charges_Amount=0;
         new_to_pay_Amount=0;
-
-
     }
+
+
+
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();

@@ -107,7 +107,9 @@ import static android.os.Build.VERSION.SDK_INT;
 public class PosSalesReport extends AppCompatActivity {
     LinearLayout fetchData_Layout,PrintReport_Layout,generateReport_Layout, dateSelectorLayout, loadingpanelmask, loadingPanel;
     DatePickerDialog datepicker;
-    TextView appOrdersCount_textwidget,instruction_textview,refundAmount_textwidget,replacementAmount_textwidget,vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView packCount_textwidget ,appOrdersCount_textwidget,instruction_textview,refundAmount_textwidget,replacementAmount_textwidget,vendorName,bigBasketSales,dunzoSales,swiggySales,creditSales,
+            phoneordercreditSales,phoneordercashSales,phoneordercardSales,phoneorderupiSales,totalSales_headingText,cashSales, cardSales,upiSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt,
+            totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
     String replacementOrderDetailsString,startDateString_forReplacementransaction ="",endDateString_forReplacementransaction ="",vendorKey,vendorname;
 
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
@@ -209,6 +211,7 @@ public class PosSalesReport extends AppCompatActivity {
     boolean orderdetailsnewschema = false;
     boolean  isVendorOrdersTableServiceCalled = false;
 
+    int no_of_packs=0;
 
 
     TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
@@ -220,6 +223,8 @@ public class PosSalesReport extends AppCompatActivity {
 
         new NukeSSLCerts();
         NukeSSLCerts.nuke();
+
+        packCount_textwidget  = findViewById(R.id.packCount_textwidget);
         vendorName = findViewById(R.id.vendorName);
         fetchData_Layout = findViewById(R.id.fetchData_Layout);
         instruction_textview = findViewById(R.id.instruction_textview);
@@ -271,7 +276,8 @@ public class PosSalesReport extends AppCompatActivity {
         dunzoOrderpaymentMode_DiscountOrderid = new ArrayList<>();
         array_of_orderId = new ArrayList<>();
 
-
+        no_of_packs =0;
+        no_of_packs =0;
         Order_Item_List.clear();
         array_of_orderId.clear();
         OrderItem_hashmap.clear();
@@ -410,10 +416,12 @@ public class PosSalesReport extends AppCompatActivity {
 
                     scrollView.setVisibility(View.VISIBLE);
                     instruction_textview.setVisibility(View.GONE);
-
+                    isgetReplacementOrderForSelectedDateCalled =false;
+                    isReplacementTransacDetailsResponseReceivedForSelectedDate  = false;
                     replacementTransactiontypeHashmap.clear();
                     replacementTransactiontypeArray.clear();
-                   Order_Item_List.clear();
+                   no_of_packs =0;
+                     Order_Item_List.clear();
                     array_of_orderId.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
@@ -857,16 +865,23 @@ public class PosSalesReport extends AppCompatActivity {
 
             text_to_Print = "[c]<b><font size='big'>Bismillah Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        }
+        else if((vendorKey.equals("vendor_6"))) {
 
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah </b>\n\n";
+           // text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Chicken and Mutton \n";
         }
 
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
 
         //text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n";
-        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
@@ -1582,6 +1597,20 @@ public class PosSalesReport extends AppCompatActivity {
                 PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
 
             }
+            else if((vendorKey.equals("vendor_6"))) {
+
+
+                PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "New NS Bismillah" + "\n");
+
+              // PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+             //   PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+            //    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+            }
+
+
             else {
 
                 PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
@@ -2534,7 +2563,8 @@ public class PosSalesReport extends AppCompatActivity {
 
                             replacementTransactiontypeHashmap.clear();
                             replacementTransactiontypeArray.clear();
-                            Order_Item_List.clear();
+                            no_of_packs =0;
+        Order_Item_List.clear();
                             array_of_orderId.clear();
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
@@ -2623,7 +2653,8 @@ public class PosSalesReport extends AppCompatActivity {
             return;
         }
         isgetOrderForSelectedDateCalled = true;
-       Order_Item_List.clear();
+        no_of_packs =0;
+        Order_Item_List.clear();
         array_of_orderId.clear();
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
@@ -3343,7 +3374,8 @@ public class PosSalesReport extends AppCompatActivity {
                             }
 
                             else{
-                               Order_Item_List.clear();
+                               no_of_packs =0;
+        Order_Item_List.clear();
                                 array_of_orderId.clear();
                                 OrderItem_hashmap.clear();
                                 finalBillDetails.clear();
@@ -3433,7 +3465,8 @@ public class PosSalesReport extends AppCompatActivity {
                 else {
                     Toast.makeText(PosSalesReport.this, "There is no Order On this Date ", Toast.LENGTH_LONG).show();
                     Adjusting_Widgets_Visibility(false);
-                   Order_Item_List.clear();
+                   no_of_packs =0;
+        Order_Item_List.clear();
                     array_of_orderId.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
@@ -3895,7 +3928,8 @@ public class PosSalesReport extends AppCompatActivity {
                     instruction_textview.setText("There is no Order On this Date");
                     replacementTransactiontypeHashmap.clear();
                     replacementTransactiontypeArray.clear();
-                    Order_Item_List.clear();
+                    no_of_packs =0;
+        Order_Item_List.clear();
                     array_of_orderId.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
@@ -3953,7 +3987,8 @@ public class PosSalesReport extends AppCompatActivity {
                 instruction_textview.setText("There is some error"+String.valueOf(error));
                 replacementTransactiontypeHashmap.clear();
                 replacementTransactiontypeArray.clear();
-                Order_Item_List.clear();
+                no_of_packs =0;
+        Order_Item_List.clear();
                 array_of_orderId.clear();
                 OrderItem_hashmap.clear();
                 finalBillDetails.clear();
@@ -4612,7 +4647,8 @@ public class PosSalesReport extends AppCompatActivity {
                             runthread();
 
                         } else {
-                            Order_Item_List.clear();
+                            no_of_packs =0;
+        Order_Item_List.clear();
                             array_of_orderId.clear();
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
@@ -4947,7 +4983,7 @@ public class PosSalesReport extends AppCompatActivity {
            double totalRefundAmount = 0;
            double totalReplacementAmount = 0;
            appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-
+           packCount_textwidget.setText(String.valueOf(no_of_packs));
            try{
                for (String transactionType : replacementTransactiontypeArray) {
 
@@ -5206,7 +5242,7 @@ public class PosSalesReport extends AppCompatActivity {
                e.printStackTrace();
            }
            appOrdersCount_textwidget.setText(String.valueOf(array_of_orderId.size()));
-
+           packCount_textwidget.setText(String.valueOf(no_of_packs));
 
            try{
                replacementAmount_textwidget.setText(String.valueOf(decimalFormat.format(totalReplacementAmount)));
@@ -5345,7 +5381,7 @@ public class PosSalesReport extends AppCompatActivity {
 
             for(int i=0; i < jsonArray.length(); i++) {
                 //Log.d(Constants.TAG, "this  jsonArray.length()" +jsonArray.length());
-
+                no_of_packs = no_of_packs+1;
                 JSONObject json = jsonArray.getJSONObject(i);
                 //Log.d(Constants.TAG, "this json" +json.toString());
                 boolean isItemFoundinMenu = false;
@@ -5465,6 +5501,18 @@ public class PosSalesReport extends AppCompatActivity {
                          }
                     double tmcprice = Double.parseDouble(String.valueOf(json.get("tmcprice")));
                     int quantity = Integer.parseInt(String.valueOf(json.get("quantity")));
+
+                    try{
+                        if (quantity > 1) {
+                            no_of_packs = (no_of_packs - 1);
+                            no_of_packs = (no_of_packs +((int) quantity));
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
                     try {
                          newweight = Double.parseDouble(String.valueOf(newOrderWeightInGrams));
 
@@ -6261,7 +6309,8 @@ public class PosSalesReport extends AppCompatActivity {
 
 
     private List<String> getSortedIdFromHashMap(List<String> order_item_list, HashMap<String, Modal_OrderDetails> orderItem_hashmap) {
-       Order_Item_List.clear();
+       no_of_packs =0;
+        Order_Item_List.clear();
         array_of_orderId.clear();
         order_item_list.addAll(orderItem_hashmap.keySet());
         return order_item_list;

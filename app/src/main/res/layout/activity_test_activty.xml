@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     tools:context=".settings.testActivty">
+
+
     <RelativeLayout
         android:layout_width="match_parent"
+        android:visibility="visible"
         android:layout_height="match_parent">
 
         <LinearLayout
@@ -15,166 +18,166 @@
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             android:orientation="horizontal">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
+                android:layout_height="match_parent"
                 android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/uploadNotes"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="paymnttranckey" />
+                    android:layout_centerInParent="true"
+                    android:orientation="vertical">
 
-                <Button
-                android:id="@+id/kalyanNotes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
+                    <Button
+                        android:id="@+id/uploadNotes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="paymnttranckey" />
 
-                android:text="orderdetailsorderid"
-                 />
-                <Button
-                    android:id="@+id/orderdetailsorderidold"
+                    <Button
+                        android:id="@+id/kalyanNotes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+
+                        android:text="orderdetailsorderid"
+                        />
+                    <Button
+                        android:id="@+id/orderdetailsorderidold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:text="orderdetailsorderidold"
+                        />
+                    <Button
+                        android:id="@+id/ACNotes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="orderdetailsmobileno"
+                        android:visibility="gone"
+
+                        />
+                    <Button
+                        android:id="@+id/orderdetailsmobilenoold"
+                        android:layout_width="match_parent"
+                        android:visibility="gone"
+
+                        android:layout_height="wrap_content"
+                        android:text="orderdetailsmobienoold"
+                        />
+                    <TextView
+                        android:id="@+id/ponits_redeemed_text_widget"
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+                        android:layout_height="wrap_content"
+                        android:text="" />
+
+                    <TextView
+                        android:id="@+id/end_text_widget"
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+
+                        android:layout_height="wrap_content"
+                        android:text="" />
+
+                    <TextView
+                        android:id="@+id/result_text_widget"
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+
+                        android:layout_height="wrap_content"
+                        android:text="" />
+
+                    <TextView
+                        android:id="@+id/error_text_widget"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:gravity="center"
+
+                        android:text="c" />
+
+                    <Button
+                        android:id="@+id/redeemPoints_widget"
+                        android:layout_width="match_parent"
+                        android:visibility="gone"
+
+                        android:layout_height="wrap_content"
+                        android:text="open redeem dialog" />
+                </LinearLayout>
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:text="orderdetailsorderidold"
-                    />
-            <Button
-                android:id="@+id/ACNotes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="orderdetailsmobileno"
-                android:visibility="gone"
+                    android:layout_centerInParent="true"
+                    android:orientation="vertical">
+                    <Button
+                        android:id="@+id/uploadNotesnew"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="paymnttranscAll" />
+                    <Button
+                        android:id="@+id/kalyanNotesnew"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="orderTrackmobileno"
+                        android:visibility="gone"
 
-                />
-                <Button
-                    android:id="@+id/orderdetailsmobilenoold"
-                    android:layout_width="match_parent"
-                    android:visibility="gone"
+                        />
+                    <Button
+                        android:id="@+id/ordertrackdetailsmobilenoold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
 
-                    android:layout_height="wrap_content"
-                    android:text="orderdetailsmobienoold"
-                    />
-            <TextView
-                android:id="@+id/ponits_redeemed_text_widget"
-                android:layout_width="match_parent"
-                android:gravity="center"
-                android:layout_height="wrap_content"
-                android:text="" />
+                        android:text="ordertrackdetailsmobilenoold"
+                        />
+                    <Button
+                        android:id="@+id/ACNotesnew"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="visible"
+                        android:text="print pos"
 
-            <TextView
-                android:id="@+id/end_text_widget"
-                android:layout_width="match_parent"
-                android:gravity="center"
+                        />
+                    <TextView
+                        android:id="@+id/ponits_redeemed_text_widgetnew"
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+                        android:layout_height="wrap_content"
+                        android:text="" />
 
-                android:layout_height="wrap_content"
-                android:text="" />
+                    <TextView
+                        android:id="@+id/end_text_widgetnew"
+                        android:layout_width="match_parent"
+                        android:gravity="center"
 
-            <TextView
-                android:id="@+id/result_text_widget"
-                android:layout_width="match_parent"
-                android:gravity="center"
+                        android:layout_height="wrap_content"
+                        android:text="" />
 
-                android:layout_height="wrap_content"
-                android:text="" />
+                    <TextView
+                        android:id="@+id/result_text_widgetnew"
+                        android:layout_width="match_parent"
+                        android:gravity="center"
 
-            <TextView
-                android:id="@+id/error_text_widget"
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:gravity="center"
+                        android:layout_height="wrap_content"
+                        android:text="" />
 
-                android:text="c" />
+                    <TextView
+                        android:id="@+id/error_text_widgetnew"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
 
-            <Button
-                android:id="@+id/redeemPoints_widget"
-                android:layout_width="match_parent"
-                android:visibility="gone"
+                        android:text="" />
 
-                android:layout_height="wrap_content"
-                android:text="open redeem dialog" />
+                    <Button
+                        android:id="@+id/redeemPoints_widgetnew"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:text="open redeem dialog" />
+                </LinearLayout>
+
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:orientation="vertical">
-                <Button
-                    android:id="@+id/uploadNotesnew"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="paymnttranscAll" />
-                <Button
-                    android:id="@+id/kalyanNotesnew"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="orderTrackmobileno"
-                    android:visibility="gone"
-
-                    />
-                <Button
-                    android:id="@+id/ordertrackdetailsmobilenoold"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-
-                    android:text="ordertrackdetailsmobilenoold"
-                    />
-                <Button
-                    android:id="@+id/ACNotesnew"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:text="7010779096"
-
-                    />
-                <TextView
-                    android:id="@+id/ponits_redeemed_text_widgetnew"
-                    android:layout_width="match_parent"
-                    android:gravity="center"
-                    android:layout_height="wrap_content"
-                    android:text="" />
-
-                <TextView
-                    android:id="@+id/end_text_widgetnew"
-                    android:layout_width="match_parent"
-                    android:gravity="center"
-
-                    android:layout_height="wrap_content"
-                    android:text="" />
-
-                <TextView
-                    android:id="@+id/result_text_widgetnew"
-                    android:layout_width="match_parent"
-                    android:gravity="center"
-
-                    android:layout_height="wrap_content"
-                    android:text="" />
-
-                <TextView
-                    android:id="@+id/error_text_widgetnew"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-
-                    android:text="" />
-
-                <Button
-                    android:id="@+id/redeemPoints_widgetnew"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:text="open redeem dialog" />
-            </LinearLayout>
-
-        </LinearLayout>
             <Button
                 android:id="@+id/checkout_widget"
                 android:layout_width="match_parent"
@@ -200,38 +203,43 @@
                 android:layout_height="wrap_content"
                 android:text="Connect printer" />
         </LinearLayout>
-    <LinearLayout
-        android:id="@+id/loadingpanelmask"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:alpha="0.85"
-        android:background="@color/TMC_ProgressBar_Color"
-        android:orientation="vertical"
-        android:visibility="gone" />
+        <LinearLayout
+            android:id="@+id/loadingpanelmask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:alpha="0.85"
+            android:background="@color/TMC_ProgressBar_Color"
+            android:orientation="vertical"
+            android:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/loadingPanel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.wang.avi.AVLoadingIndicatorView
-            android:id="@+id/loadinganim_layout"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
+        <LinearLayout
+            android:id="@+id/loadingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:orientation="vertical"
             android:visibility="visible"
-            app:indicatorColor="@color/TMC_Orange"
-            app:indicatorName="BallPulseIndicator" />
-    </LinearLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.wang.avi.AVLoadingIndicatorView
+                android:id="@+id/loadinganim_layout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:visibility="visible"
+                app:indicatorColor="@color/TMC_Orange"
+                app:indicatorName="BallPulseIndicator" />
+        </LinearLayout>
     </RelativeLayout>
 
-</LinearLayout>
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

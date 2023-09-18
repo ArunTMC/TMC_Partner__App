@@ -36,7 +36,10 @@
     <string name="Vendor_logoutInstruction">Are you sure you want to Logout from this Vendor </string>
     <string name="Cant_Refresh_OrderStatus_Instruction">Can`t Refresh !!! Please Refresh Again</string>
     <string name="Weight_cant_be_empty">You Cant Leave weight of the Product Empty</string>
+
     <string name="Weight_cant_be_Zero">You Cant Leave weight of the Product Zero</string>
+    <string name="Quantity_cant_be_empty">You Cant Leave quantity of the Product Empty</string>
+    <string name="Quantity_cant_be_Zero">You Cant Leave quantity of the Product Zero</string>
 
     <string name="CreditedOrdersIrrespectiveofDate">Showing Credit Orders Irrespective of Date</string>
     <string name="Showing_Tickets_That_Not_Closed_Yet">Showing Tickets thats not Closed Yet</string>
@@ -44,8 +47,9 @@
     <string name="grossweightChangingInstruction"> Grossweight should be with in the above Range </string>
     <string name="Error_in_updating_GrossWeight">Error in Updating Grossweight . Please try Again !!!!</string>
     <string name="checkGrossweightCheckboxInstruction">Please check is Correct Grossweight Check box for all item</string>
-    <string name="PriceCannotbeEdited_When_EditingWeight">Please Finish Editing Weight Of this item first</string>
-    <string name="WeightCannotbeEdited_When_EditingPrice">Please Finish Editing Price Of this item first</string>
+    <string name="CannotbeEdited_When_EditingWeight">Please Finish Editing Weight Of this item first</string>
+    <string name="CannotbeEdited_When_EditingQuantity">Please Finish Editing Price Of this item first</string>
+    <string name="CannotbeEdited_When_EditingPrice">Please Finish Editing Price Of this item first</string>
     <string name="Price_cant_be_empty">Cant Leave Price of the Product Empty</string>
     <string name="Price_cant_be_Zero">Cant Leave Price of the Product to Zero</string>
     <string name="ShowCreditedOrdersOnly">Show Credit Orders Only </string>
@@ -328,13 +332,13 @@
 
     //
     <string name="UserInstructionText">Please Enter the 6-Digit Code which sent to you at </string>
-    <string name="Version_No">Version No : 1.9.9 (9)  </string>
+    <string name="Version_No">Version No : 1.10.2(2)  </string>
     <string name="scanning">scanning for devices....</string>
     <string name="select_device">select a device to connect</string>
     <string name="none_found">No devices found</string>
     <string name="none_paired">No devices have been paired</string>
 
-    <string name="title_connecting">connecting...</string>
+    <string name="title_connecting">connecting…</string>
     <string name="title_connected_to">connected - </string>
     <string name="title_not_connected">not connected</string>
     <string name="WeightCantBeLeftEditedWhenCheckout">Weight &amp; Price of the item you try to change is not changed yet ! Do you still want to Checkout.</string>

@@ -21,12 +21,14 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -78,10 +80,16 @@ import com.meatchop.tmcpartner.add_updateinventorydetailentries.Add_UpdateInvent
 import com.meatchop.tmcpartner.add_updateinventorydetailentries.Add_UpdateInventoryDetailsEntries_Interface;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
+import com.meatchop.tmcpartner.asynctaskforprinter.AsyncTakWithServiceForPrintReceipt;
+import com.meatchop.tmcpartner.asynctaskforprinter.AsyncTaskListener_forPrintReceipt;
+import com.meatchop.tmcpartner.asynctaskforprinter.BackgroundServiceForPrintingReceipt;
+import com.meatchop.tmcpartner.asynctaskforprinter.Modal_forPrintReceipt;
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Add_CustomerOrder_TrackingTableInterface;
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.mobilescreen_javaclasses.mobile_neworders.Adapter_AddressList;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.orderplacing_microservice_architectures.OrderPlacingModuleHandler_AsyncTask;
+import com.meatchop.tmcpartner.orderplacing_microservice_architectures.OrderPlacingModuleHandler_Interface;
 import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.Printer_POJO_Class;
 import com.meatchop.tmcpartner.R;
@@ -121,6 +129,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.pos.printer.AsyncEscPosPrint;
 import com.pos.printer.AsyncUsbEscPosPrint;
@@ -174,7 +184,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     String ordertype;
     int new_totalAmount_withGst;
     int netTotaL;
-    LinearLayout loadingPanel,loadingpanelmask,discountAmountLayout,redeemPointsLayout,wholesalecustomernameParentLayout,selectedAddress_showingLayout;
+   public LinearLayout loadingPanel,loadingpanelmask,discountAmountLayout,redeemPointsLayout,wholesalecustomernameParentLayout,selectedAddress_showingLayout;
 
     boolean ispointsApplied_redeemClicked=false;
     boolean isProceedtoCheckoutinRedeemdialogClicked =false;
@@ -191,7 +201,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     private  boolean isOrderDetailsMethodCalled =false;
     private  boolean isOrderTrackingDetailsMethodCalled =false;
     private  boolean isPaymentDetailsMethodCalled =false;
-    boolean isproceedtoPay_Clicked =false, ispaymentMode_Clicked =false,isPrintedSecondTime=false;
+    boolean isproceedtoPay_Clicked =false, ispaymentMode_Clicked =false,isPrintedSecondTime=true;
     Spinner orderTypeSpinner;
 
     String balanceAmount_String= "0",amountRecieved_String= "0";
@@ -242,6 +252,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
     boolean  isCustomerOrdersTableServiceCalled = false;
 
+    AsyncTaskListener_forPrintReceipt callBackAsyncTaskListener_forPrintReceipt = null ;
+    boolean isPrintReceiptAsyncTaskCalled = false;
+
+
     static boolean isPhoneOrderSelected = false ;
     Button select_address_button_widget;
 
@@ -255,8 +269,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     boolean isUsertype_AlreadyPhone = false;
     boolean isUsertype_AlreadyPos = false;
     boolean updateUserName = false;
-    boolean userFetchedManually = false;
-
+    boolean userFetched_ForPOS_or_Manually = false;
+    boolean isfetchUserButtonClicked = false;
 
     String user_key_toAdd_Address = "",uniqueUserkeyFromDB ="";
     ListView address_listView;
@@ -297,6 +311,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     RequestQueue commonGETRequestQueue = null;
 
     int orderplacedCount =0;
+    boolean  isOrderPlacingMicroserviceisActive = false;
+
+    OrderPlacingModuleHandler_Interface orderPlacingModuleHandler_interface = null;
+    OrderPlacingModuleHandler_AsyncTask orderPlacingModuleHandler_asyncTask = null;
     Add_UpdateInventoryDetailsEntries_Interface mResultCallback_Add_UpdateInventoryEntriesInterface = null;
     Add_UpdateInventoryDetailsEntries_AsyncTask add_UpdateInventoryDetailsEntries_AsyncTask = null;
     int stockUpdatedItemsCount =0 , stockDetailsFetchedItemCount =0;
@@ -310,6 +328,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     SerialInputOutputManager usbIoManager;
     boolean isConnectUSBSerialPort = false;
     private Handler handler;
+
+
+    MyThreadPool threadPool ;
+    Modal_forPrintReceipt modal_forPrintReceipt = new Modal_forPrintReceipt();
+    Intent serviceIntent ;
+    JSONObject redeemPointsJson = new JSONObject();
+
+
+
+
 
 
     public NewOrders_MenuItem_Fragment() {
@@ -345,6 +373,30 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.neworders_menu_item_fragment, container, false);
+        rootView.setTag("RecyclerViewFragment");
+        //Log.d(TAG, "onCreateView: ");
+        listview = rootView.findViewById(R.id.listview);
+
+        recyclerView = rootView.findViewById(R.id.recyclerView);
+
+
+
+        createEmptyRowInListView("empty");
+
+        CallAdapter();
+
+        return rootView;
+
+
+    }
+
+
+
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this.getActivity().getWindow().getContext();
@@ -371,6 +423,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         loadingpanelmask = view.findViewById(R.id.loadingpanelmask);
         loadingPanel = view.findViewById(R.id.loadingPanel);
         orderTypeSpinner = view.findViewById(R.id.orderTypeSpinner);
@@ -418,11 +471,9 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         */
         user_key_toAdd_Address ="";
         uniqueUserkeyFromDB ="";
-
-
         selectedAddress_textWidget.setText("");
         autoComplete_customerNameText_widget.setText("");
-
+        redeemPointsJson  = new JSONObject();
         selected_Address_modal = new Modal_Address();
         isPhoneOrderSelected = false;
         updateUserName = false;
@@ -431,11 +482,17 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         isAddressForPhoneOrderSelected = false;
         isUsertype_AlreadyPhone = false;
         isUsertype_AlreadyPos = false;
-        userFetchedManually = false;
+        userFetched_ForPOS_or_Manually = false;
 
 
 
+        try{
+            serviceIntent = new Intent(mContext, BackgroundServiceForPrintingReceipt.class);
 
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
 
         try {
@@ -497,6 +554,9 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             StoreAddressLine2 = (shared.getString("VendorAddressline2", ""));
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
+            isOrderPlacingMicroserviceisActive = (shared.getBoolean("enableorderplacingmicroservice", false));
+              //  isOrderPlacingMicroserviceisActive = false;
+
             isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
             orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
            // orderdetailsnewschema = true;
@@ -600,7 +660,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             public void afterTextChanged(Editable s) {
                 String defaultStoreNumber = "";
                 if(vendorKey.equals("vendor_1")){
-                    defaultStoreNumber =  ("8939189102");
+                    defaultStoreNumber =  ("6380050384");
 
                 }
                 else if(vendorKey.equals("vendor_2")){
@@ -622,7 +682,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 deliveryAmount_for_this_order ="0";
                 isAddressForPhoneOrderSelected = false;
                 isUsertype_AlreadyPhone= false;
-                userFetchedManually = false;
+                isfetchUserButtonClicked = false;
+                userFetched_ForPOS_or_Manually = false;
                 updateUserName = false;
                 isNewUser = false;
                 selected_Address_modal = new Modal_Address();
@@ -635,6 +696,22 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 for(int i =0 ; i< userAddressArrayList.size(); i++){
                     userAddressArrayList.get(i).setAddressSelected(false);
                 }
+                add_amount_ForBillDetails();
+            }
+            if(isProceedtoCheckoutinRedeemdialogClicked){
+                redeemPoints_String ="0";
+                totalpointsredeemedalreadybyuser="0";
+                totalredeempointsuserhave="0";
+                pointsalreadyredeemDouble=0;
+                isProceedtoCheckoutinRedeemdialogClicked=false;
+                //discountlayout visible
+                discountAmountLayout.setVisibility(View.GONE);
+                redeemPointsLayout.setVisibility(View.GONE);
+
+                discount_textview_labelwidget.setVisibility(View.VISIBLE);
+                discount_rs_text_widget.setVisibility(View.VISIBLE);
+                redeemedpoints_Labeltextwidget.setVisibility(View.GONE);
+                ponits_redeemed_text_widget.setVisibility(View.GONE);
                 add_amount_ForBillDetails();
             }
             }
@@ -653,6 +730,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 }
             }
         });
+        //for ns bismillah
+        if(vendorKey.equals("vendor_6")){
+            useStoreNumberCheckBox.setChecked(true);
+        }
+        else{
+            useStoreNumberCheckBox.setChecked(false);
+        }
 
         useStoreNumberCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -660,7 +744,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                 if(isChecked){
                     if(vendorKey.equals("vendor_1")){
-                        Objects.requireNonNull(mobileNo_Edit_widget).setText("8939189102");
+                        Objects.requireNonNull(mobileNo_Edit_widget).setText("6380050384");
 
                     }
                     else if(vendorKey.equals("vendor_2")){
@@ -682,7 +766,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         fetchUser_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                userFetchedManually = true;
+                userFetched_ForPOS_or_Manually = true;
+                isfetchUserButtonClicked= true;
                 String mobileno = String.valueOf(mobileNo_Edit_widget.getText().toString());
 
 
@@ -863,7 +948,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             @Override
             public void onClick(View view) {
                 String deliveryUserMobileNumber ="+91"+mobileNo_Edit_widget.getText().toString();
-
+                String currentDate = getDate();
                 if (deliveryUserMobileNumber.length() == 13) {
                     String deliveryUserMobileNumberEncoded  = deliveryUserMobileNumber;
                     try {
@@ -872,7 +957,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         e.printStackTrace();
                     }
                     showProgressBar(true);
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetRedeemPointsDetailsFortheUser+"?transactiondate="+CurrentDate+"&mobileno="+deliveryUserMobileNumberEncoded, null,
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetRedeemPointsDetailsFortheUser+"?transactiondate="+currentDate+"&mobileno="+deliveryUserMobileNumberEncoded, null,
                             new com.android.volley.Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(@NonNull JSONObject response) {
@@ -1059,7 +1144,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 if (discountAmount_StringGlobal.equals("") || discountAmount_StringGlobal.equals("0")) {
                    //  totalAmounttopay = Double.parseDouble(total_Rs_to_Pay_text_widget.getText().toString());
                     String deliveryUserMobileNumber ="+91"+mobileNo_Edit_widget.getText().toString();
-
+                   String currentDate = getDate();
                     if (totalAmounttopay >= minordervalueforredeem_double) {
                         if (deliveryUserMobileNumber.length() == 13) {
                             String deliveryUserMobileNumberEncoded  = deliveryUserMobileNumber;
@@ -1069,7 +1154,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                 e.printStackTrace();
                             }
                             showProgressBar(true);
-                            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetRedeemPointsDetailsFortheUser+"?transactiondate="+CurrentDate+"&mobileno="+deliveryUserMobileNumberEncoded, null,
+                            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetRedeemPointsDetailsFortheUser+"?transactiondate="+currentDate+"&mobileno="+deliveryUserMobileNumberEncoded, null,
                                     new com.android.volley.Response.Listener<JSONObject>() {
                                         @Override
                                         public void onResponse(@NonNull JSONObject response) {
@@ -1165,7 +1250,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                     }
                                                     else{
                                                         isProceedtoCheckoutinRedeemdialogClicked = false;
-                                                        ispointsApplied_redeemClicked = false;
+                                                        ispointsApplied_redeemClicked = false;redeemPoints_String ="0";
                                                         AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsTryAgainInstruction , 0);
                                                         showProgressBar(false);
 
@@ -1175,7 +1260,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                                 else{
                                                     isProceedtoCheckoutinRedeemdialogClicked = false;
-                                                    ispointsApplied_redeemClicked = false;
+                                                    ispointsApplied_redeemClicked = false;redeemPoints_String ="0";
                                                     AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsIsNotExistedInstruction , 0);
                                                     showProgressBar(false);
 
@@ -1184,7 +1269,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                                             } catch (Exception e) {
+                                                isProceedtoCheckoutinRedeemdialogClicked = false;
+                                                ispointsApplied_redeemClicked = false;redeemPoints_String ="0";
+                                                AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsIsNotExistedInstruction , 0);
                                                 showProgressBar(false);
+
 
                                                 e.printStackTrace();
                                             }
@@ -1197,7 +1286,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                 public void onErrorResponse(@NonNull VolleyError error) {
                                     //Log.d(Constants.TAG, " response: onMobileAppData error " + error.getLocalizedMessage());
                                     isProceedtoCheckoutinRedeemdialogClicked = false;
-                                    ispointsApplied_redeemClicked = false;
+                                    ispointsApplied_redeemClicked = false;redeemPoints_String ="0";
                                     AlertDialogClass.showDialog(getActivity(), Constants.RedeemPointsDetailsTryAgainInstruction , 0);
                                     showProgressBar(false);
 
@@ -1445,306 +1534,48 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                     //GetStockBalanceForEachIteminCart();
                                     long sTime = System.currentTimeMillis();
                                     Currenttime = getDate_and_time();
-
+                                    boolean isQuantityLeftEdited = false;
                                     //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
-                                    if (isWeightCanBeEdited || isWeightMachineConnected) {
-                                        boolean isWeightLeftEdited = false;
-                                        boolean isPriceLeftEdited = false;
 
-                                        for (int i = 0; i < cart_Item_List.size(); i++) {
-                                            String barcode = cart_Item_List.get(i);
-                                            Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+                                    if(vendorKey.equals("vendor_1")){
+                                        if(NewOrders_MenuItem_Fragment.cart_Item_List.contains("1612")){
+                                            for (int i = 0; i < cart_Item_List.size(); i++) {
+                                                String barcode = cart_Item_List.get(i);
+                                                Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
 
-                                            if (modal_newOrderItems.getisWeightEdited()) {
-                                                isWeightLeftEdited = true;
+                                                if (modal_newOrderItems.getisQuantityEdited()) {
+                                                    isQuantityLeftEdited = true;
+                                                }
+
+
+
+
+
                                             }
-
-
-                                            if (modal_newOrderItems.getisPriceEdited()) {
-                                                isPriceLeftEdited = true;
-                                            }
-
 
                                         }
+                                        if (isWeightCanBeEdited || isWeightMachineConnected) {
+                                            boolean isWeightLeftEdited = false;
+                                            boolean isPriceLeftEdited = false;
 
-                                        if (isWeightLeftEdited) {
+                                            for (int i = 0; i < cart_Item_List.size(); i++) {
+                                                String barcode = cart_Item_List.get(i);
+                                                Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
 
-
-
-                                    /*new TMCAlertDialogClass(mContext, R.string.app_name, R.string.WeightCantBeLeftEditedWhenCheckout,
-                                            R.string.Yes_Text,R.string.No_Text,
-                                            new TMCAlertDialogClass.AlertListener() {
-                                                @Override
-                                                public void onYes() {
-
-                                                    runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            try {
-                                                                Dialog dialog = new Dialog(getActivity());
-                                                                dialog.setContentView(R.layout.select_payment_mode_layout);
-                                                                dialog.setTitle("Select the Payment Mode ");
-                                                                dialog.setCanceledOnTouchOutside(true);
-
-                                                                Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
-
-                                                                Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
-                                                                Button via_card = (Button) dialog.findViewById(R.id.via_card);
-                                                                Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
-                                                                TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
-                                                                TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
-                                                                EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
-                                                                Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
-                                                                Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
-                                                                LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
-                                                                LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
-                                                                paymentMode_selectionLayout.setVisibility(View.VISIBLE);
-                                                                balanceAmountCalculate_Layout.setVisibility(View.GONE);
-                                                                //Log.d(TAG, "Currenttime: " + Currenttime);
-
-                                                                //Log.i(TAG, "date and time " + sTime);
-                                                                String totalAmount_String  =  total_Rs_to_Pay_text_widget.getText().toString();
-                                                                double totalAmount_double = Double.parseDouble(totalAmount_String);
-                                                                totalbillAmount .setText(totalAmount_String);
-
-                                                                if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
-                                                                    Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
-
-                                                                }
-
-                                                                calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(View v) {
-                                                                        balanceAmount_String = "0";
-                                                                        amountRecieved_String = "0";
-                                                                        balanceAmount_double = 0;
-                                                                        amountRecieved_double = 0;
-                                                                        try {
-                                                                            amountRecieved_String = amount_Recieved_EditText.getText().toString();
-                                                                        } catch (Exception e) {
-                                                                            e.printStackTrace();
-                                                                            amountRecieved_String = "0";
-                                                                            Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
-                                                                        }
-                                                                        if (amountRecieved_String.length() > 0) {
-                                                                            try {
-                                                                                amountRecieved_double = Double.parseDouble(amountRecieved_String);
-                                                                            } catch (Exception e) {
-                                                                                Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
-                                                                                amountRecieved_double = 0;
-
-                                                                                e.printStackTrace();
-                                                                            }
-                                                                            if (amountRecieved_double > 0) {
-                                                                                try {
-                                                                                    balanceAmount_double = amountRecieved_double - totalAmount_double;
-                                                                                } catch (Exception e) {
-                                                                                    Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
-
-                                                                                    e.printStackTrace();
-                                                                                }
-                                                                                try {
-                                                                                    balanceAmount_String = String.valueOf(balanceAmount_double);
-                                                                                } catch (Exception e) {
-                                                                                    Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
-
-                                                                                    e.printStackTrace();
-                                                                                }
-                                                                                try {
-                                                                                    if (balanceAmount_double < 0) {
-                                                                                        balance_Amount.setTextColor(Color.RED);
-                                                                                    } else {
-                                                                                        balance_Amount.setTextColor(Color.BLACK);
-
-                                                                                    }
-                                                                                } catch (Exception e) {
-                                                                                    e.printStackTrace();
-                                                                                    Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
-
-                                                                                }
-                                                                                try {
-                                                                                    balance_Amount.setText(balanceAmount_String);
-                                                                                } catch (Exception e) {
-                                                                                    e.printStackTrace();
-                                                                                    Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
-
-                                                                                }
-                                                                            }
-                                                                            else{
-                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
-
-                                                                            }
-                                                                        }
-                                                                        else {
-                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty , 0);
-
-                                                                        }
-                                                                    }
-                                                                });
-                                                                checkOut.setOnClickListener(new View.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(View v) {
-                                                                        if (amountRecieved_String.length() > 0) {
-                                                                            if (amountRecieved_double > 0) {
-
-                                                                                if (balanceAmount_double < 0) {
-                                                                                    //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
-                                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount , 0);
-
-                                                                                } else {
-                                                                                    dialog.dismiss();
-                                                                                    if(isPhoneOrderSelected){
-                                                                                        if(isAddressForPhoneOrderSelected) {
-                                                                                            generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-                                                                                        }
-                                                                                        else {
-                                                                                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                                        }
-                                                                                        //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-                                                                                    }
-                                                                                    else{
-                                                                                        PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-                                                                                    }
-
-
-                                                                                }
-                                                                            }
-                                                                            else{
-                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
-
-                                                                            }
-                                                                        } else {
-                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
-
-                                                                        }
-                                                                    }
-                                                                });
-
-                                                                via_card.setOnClickListener(new View.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(View view) {
-                                                                        dialog.dismiss();
-                                                                        if(isPhoneOrderSelected){
-
-                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-                                                                            if(isAddressForPhoneOrderSelected) {
-                                                                                generateTokenNo(vendorKey,"CARD", sTime, Currenttime, cart_Item_List);
-                                                                            }
-                                                                            else {
-                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                            }
-                                                                        }
-                                                                        else{
-                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime, cart_Item_List);
-
-                                                                        }
-
-
-
-                                                                    }
-                                                                });
-
-
-                                                                via_credit.setOnClickListener(new View.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(View view) {
-                                                                        dialog.dismiss();
-                                                                        if(isPhoneOrderSelected){
-                                                                            if(isAddressForPhoneOrderSelected) {
-                                                                                generateTokenNo(vendorKey,"CREDIT", sTime, Currenttime, cart_Item_List);
-                                                                            }
-                                                                            else {
-                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                            }
-                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-                                                                        }
-                                                                        else{
-                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime, cart_Item_List);
-
-                                                                        }
-
-
-                                                                    }
-                                                                });
-
-
-                                                                via_cash.setOnClickListener(new View.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(View view) {
-                                                                        //  dialog.dismiss();
-
-                                                                        paymentMode_selectionLayout.setVisibility(View.GONE);
-                                                                        balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
-                                                                        //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-
-                                                                    }
-                                                                });
-
-
-                                                                via_upi.setOnClickListener(new View.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(View view) {
-                                                                        dialog.dismiss();
-                                                                        if(isPhoneOrderSelected){
-                                                                            if(isAddressForPhoneOrderSelected) {
-                                                                                generateTokenNo(vendorKey,"UPI", sTime, Currenttime, cart_Item_List);
-                                                                            }
-                                                                            else {
-                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                            }
-                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-                                                                        }
-                                                                        else{
-                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
-
-                                                                        }
-
-
-                                                                    }
-                                                                });
-
-
-                                                                dialog.show();
-                                                                showProgressBar(false);
-
-                                                            } catch (WindowManager.BadTokenException e) {
-                                                                showProgressBar(false);
-
-                                                                e.printStackTrace();
-                                                            }
-                                                        }
-                                                    });
-
+                                                if (modal_newOrderItems.getisWeightEdited()) {
+                                                    isWeightLeftEdited = true;
                                                 }
 
-                                                @Override
-                                                public void onNo() {
 
+                                                if (modal_newOrderItems.getisPriceEdited()) {
+                                                    isPriceLeftEdited = true;
                                                 }
-                                            });
-
-                                     */
-                                           runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-
-                                                    showProgressBar(false);
-                                                    AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
-                                                }
-                                           });
-                                        } else {
 
 
-                                            if (isPriceLeftEdited) {
+                                            }
+
+                                            if (isWeightLeftEdited) {
+
 
 
                                     /*new TMCAlertDialogClass(mContext, R.string.app_name, R.string.WeightCantBeLeftEditedWhenCheckout,
@@ -2012,13 +1843,559 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
+
                                                         showProgressBar(false);
-                                                        AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                                        AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
                                                     }
                                                 });
-                                            } else {
+                                            }
+                                            else if(isQuantityLeftEdited){
+
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+
+                                                        showProgressBar(false);
+                                                        AlertDialogClass.showDialog(getActivity(), Constants.QuantityCantBeLeftEdited, 0);
+                                                    }
+                                                });
+                                            }
+                                            else {
 
 
+                                                if (isPriceLeftEdited) {
+
+
+                                    /*new TMCAlertDialogClass(mContext, R.string.app_name, R.string.WeightCantBeLeftEditedWhenCheckout,
+                                            R.string.Yes_Text,R.string.No_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            try {
+                                                                Dialog dialog = new Dialog(getActivity());
+                                                                dialog.setContentView(R.layout.select_payment_mode_layout);
+                                                                dialog.setTitle("Select the Payment Mode ");
+                                                                dialog.setCanceledOnTouchOutside(true);
+
+                                                                Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
+
+                                                                Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                                                Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                                                Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+                                                                TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                                                TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                                                EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                                                Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                                                Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                                                LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                                LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                                                paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                                                balanceAmountCalculate_Layout.setVisibility(View.GONE);
+                                                                //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                                                //Log.i(TAG, "date and time " + sTime);
+                                                                String totalAmount_String  =  total_Rs_to_Pay_text_widget.getText().toString();
+                                                                double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                                                totalbillAmount .setText(totalAmount_String);
+
+                                                                if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                                    Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
+
+                                                                }
+
+                                                                calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+                                                                        try {
+                                                                            amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            amountRecieved_String = "0";
+                                                                            Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            try {
+                                                                                amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                                            } catch (Exception e) {
+                                                                                Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                                                amountRecieved_double = 0;
+
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                            if (amountRecieved_double > 0) {
+                                                                                try {
+                                                                                    balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    if (balanceAmount_double < 0) {
+                                                                                        balance_Amount.setTextColor(Color.RED);
+                                                                                    } else {
+                                                                                        balance_Amount.setTextColor(Color.BLACK);
+
+                                                                                    }
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                                try {
+                                                                                    balance_Amount.setText(balanceAmount_String);
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                            }
+                                                                            else{
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                                            }
+                                                                        }
+                                                                        else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty , 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+                                                                checkOut.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            if (amountRecieved_double > 0) {
+
+                                                                                if (balanceAmount_double < 0) {
+                                                                                    //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount , 0);
+
+                                                                                } else {
+                                                                                    dialog.dismiss();
+                                                                                    if(isPhoneOrderSelected){
+                                                                                        if(isAddressForPhoneOrderSelected) {
+                                                                                            generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                                        }
+                                                                                        else {
+                                                                                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                                        }
+                                                                                        //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    }
+                                                                                    else{
+                                                                                        PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    }
+
+
+                                                                                }
+                                                                            }
+                                                                            else{
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                                via_card.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"CARD", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_credit.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"CREDIT", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_cash.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        //  dialog.dismiss();
+
+                                                                        paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                                        balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                                        //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_upi.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"UPI", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                dialog.show();
+                                                                showProgressBar(false);
+
+                                                            } catch (WindowManager.BadTokenException e) {
+                                                                showProgressBar(false);
+
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    });
+
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+
+                                     */
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            showProgressBar(false);
+                                                            AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                                        }
+                                                    });
+                                                }
+                                                else {
+
+
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            try {
+                                                                Dialog dialog = new Dialog(getActivity());
+                                                                dialog.setContentView(R.layout.select_payment_mode_layout);
+                                                                dialog.setTitle("Select the Payment Mode ");
+                                                                dialog.setCanceledOnTouchOutside(true);
+
+                                                                Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
+
+                                                                Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                                                Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                                                Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+                                                                TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                                                TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                                                EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                                                Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                                                Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                                                CardView  paymentMode_selectionLayout = (CardView) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                                LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                                                paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                                                balanceAmountCalculate_Layout.setVisibility(View.GONE);
+                                                                //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                                                //Log.i(TAG, "date and time " + sTime);
+                                                                String totalAmount_String = total_Rs_to_Pay_text_widget.getText().toString();
+                                                                double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                                                totalbillAmount.setText(totalAmount_String);
+
+                                                                if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                                    Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
+
+                                                                }
+
+                                                                calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+                                                                        try {
+                                                                            amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            amountRecieved_String = "0";
+                                                                            Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            try {
+                                                                                amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                                            } catch (Exception e) {
+                                                                                Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                                                amountRecieved_double = 0;
+
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                            if (amountRecieved_double > 0) {
+                                                                                try {
+                                                                                    balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    if (balanceAmount_double < 0) {
+                                                                                        balance_Amount.setTextColor(Color.RED);
+                                                                                    } else {
+                                                                                        balance_Amount.setTextColor(Color.BLACK);
+
+                                                                                    }
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                                try {
+                                                                                    balance_Amount.setText(balanceAmount_String);
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+                                                                checkOut.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            if (amountRecieved_double > 0) {
+
+                                                                                if (balanceAmount_double < 0) {
+                                                                                    //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount, 0);
+
+                                                                                } else {
+                                                                                    dialog.dismiss();
+                                                                                    if (isPhoneOrderSelected) {
+                                                                                        if (isAddressForPhoneOrderSelected) {
+                                                                                            generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime);
+                                                                                        } else {
+                                                                                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                                        }
+                                                                                        //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    } else {
+                                                                                        PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime);
+
+                                                                                    }
+
+
+                                                                                }
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                                via_card.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if (isPhoneOrderSelected) {
+
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                            if (isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey, "CARD", sTime, Currenttime);
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                        } else {
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_credit.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if (isPhoneOrderSelected) {
+                                                                            if (isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey, "CREDIT", sTime, Currenttime);
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        } else {
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_cash.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        //  dialog.dismiss();
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+                                                                         paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                                        balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                                        //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_upi.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if (isPhoneOrderSelected) {
+                                                                            if (isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey, "UPI", sTime, Currenttime);
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        } else {
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                dialog.show();
+                                                                showProgressBar(false);
+
+                                                            } catch (WindowManager.BadTokenException e) {
+                                                                showProgressBar(false);
+
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    });
+
+
+                                                }
+                                            }
+
+
+                                        }
+                                        else {
+                                            if(isQuantityLeftEdited){
+
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+
+                                                        showProgressBar(false);
+                                                        AlertDialogClass.showDialog(getActivity(), Constants.QuantityCantBeLeftEdited, 0);
+                                                    }
+                                                });
+                                            }
+                                            else {
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
@@ -2038,7 +2415,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                             EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
                                                             Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
                                                             Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
-                                                            LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                            CardView paymentMode_selectionLayout = (CardView) dialog.findViewById(R.id.paymentMode_selectionLayout);
                                                             LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
                                                             paymentMode_selectionLayout.setVisibility(View.VISIBLE);
                                                             balanceAmountCalculate_Layout.setVisibility(View.GONE);
@@ -2211,6 +2588,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                                 public void onClick(View view) {
                                                                     //  dialog.dismiss();
 
+                                                                    balanceAmount_String = "0";
+                                                                    amountRecieved_String = "0";
+                                                                    balanceAmount_double = 0;
+                                                                    amountRecieved_double = 0;
+
+
                                                                     paymentMode_selectionLayout.setVisibility(View.GONE);
                                                                     balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
                                                                     //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
@@ -2253,131 +2636,754 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                         }
                                                     }
                                                 });
+                                            }
+                                        }
+                                    }
+                                    else {
+
+                                        if (isWeightCanBeEdited || isWeightMachineConnected) {
+                                            boolean isWeightLeftEdited = false;
+                                            boolean isPriceLeftEdited = false;
+
+                                            for (int i = 0; i < cart_Item_List.size(); i++) {
+                                                String barcode = cart_Item_List.get(i);
+                                                Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+                                                if (modal_newOrderItems.getisWeightEdited()) {
+                                                    isWeightLeftEdited = true;
+                                                }
+
+
+                                                if (modal_newOrderItems.getisPriceEdited()) {
+                                                    isPriceLeftEdited = true;
+                                                }
 
 
                                             }
-                                        }
+
+                                            if (isWeightLeftEdited) {
 
 
-                                    }
-                                    else {
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                try {
-                                                    Dialog dialog = new Dialog(getActivity());
-                                                    dialog.setContentView(R.layout.select_payment_mode_layout);
-                                                    dialog.setTitle("Select the Payment Mode ");
-                                                    dialog.setCanceledOnTouchOutside(true);
 
-                                                    Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
+                                    /*new TMCAlertDialogClass(mContext, R.string.app_name, R.string.WeightCantBeLeftEditedWhenCheckout,
+                                            R.string.Yes_Text,R.string.No_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
 
-                                                    Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
-                                                    Button via_card = (Button) dialog.findViewById(R.id.via_card);
-                                                    Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
-                                                    TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
-                                                    TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
-                                                    EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
-                                                    Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
-                                                    Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
-                                                    LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
-                                                    LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
-                                                    paymentMode_selectionLayout.setVisibility(View.VISIBLE);
-                                                    balanceAmountCalculate_Layout.setVisibility(View.GONE);
-                                                    //Log.d(TAG, "Currenttime: " + Currenttime);
-
-                                                    //Log.i(TAG, "date and time " + sTime);
-                                                    String totalAmount_String = total_Rs_to_Pay_text_widget.getText().toString();
-                                                    double totalAmount_double = Double.parseDouble(totalAmount_String);
-                                                    totalbillAmount.setText(totalAmount_String);
-
-                                                    if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
-                                                        Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
-
-                                                    }
-
-                                                    calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                    runOnUiThread(new Runnable() {
                                                         @Override
-                                                        public void onClick(View v) {
-                                                            balanceAmount_String = "0";
-                                                            amountRecieved_String = "0";
-                                                            balanceAmount_double = 0;
-                                                            amountRecieved_double = 0;
+                                                        public void run() {
                                                             try {
-                                                                amountRecieved_String = amount_Recieved_EditText.getText().toString();
-                                                            } catch (Exception e) {
-                                                                e.printStackTrace();
-                                                                amountRecieved_String = "0";
-                                                                Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
-                                                            }
-                                                            if (amountRecieved_String.length() > 0) {
-                                                                try {
-                                                                    amountRecieved_double = Double.parseDouble(amountRecieved_String);
-                                                                } catch (Exception e) {
-                                                                    Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
-                                                                    amountRecieved_double = 0;
+                                                                Dialog dialog = new Dialog(getActivity());
+                                                                dialog.setContentView(R.layout.select_payment_mode_layout);
+                                                                dialog.setTitle("Select the Payment Mode ");
+                                                                dialog.setCanceledOnTouchOutside(true);
 
-                                                                    e.printStackTrace();
+                                                                Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
+
+                                                                Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                                                Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                                                Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+                                                                TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                                                TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                                                EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                                                Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                                                Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                                                LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                                LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                                                paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                                                balanceAmountCalculate_Layout.setVisibility(View.GONE);
+                                                                //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                                                //Log.i(TAG, "date and time " + sTime);
+                                                                String totalAmount_String  =  total_Rs_to_Pay_text_widget.getText().toString();
+                                                                double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                                                totalbillAmount .setText(totalAmount_String);
+
+                                                                if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                                    Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
+
                                                                 }
-                                                                if (amountRecieved_double > 0) {
-                                                                    try {
-                                                                        balanceAmount_double = amountRecieved_double - totalAmount_double;
-                                                                    } catch (Exception e) {
-                                                                        Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
 
-                                                                        e.printStackTrace();
-                                                                    }
-                                                                    try {
-                                                                        balanceAmount_String = String.valueOf(balanceAmount_double);
-                                                                    } catch (Exception e) {
-                                                                        Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+                                                                calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+                                                                        try {
+                                                                            amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            amountRecieved_String = "0";
+                                                                            Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            try {
+                                                                                amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                                            } catch (Exception e) {
+                                                                                Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                                                amountRecieved_double = 0;
 
-                                                                        e.printStackTrace();
-                                                                    }
-                                                                    try {
-                                                                        if (balanceAmount_double < 0) {
-                                                                            balance_Amount.setTextColor(Color.RED);
-                                                                        } else {
-                                                                            balance_Amount.setTextColor(Color.BLACK);
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                            if (amountRecieved_double > 0) {
+                                                                                try {
+                                                                                    balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    if (balanceAmount_double < 0) {
+                                                                                        balance_Amount.setTextColor(Color.RED);
+                                                                                    } else {
+                                                                                        balance_Amount.setTextColor(Color.BLACK);
+
+                                                                                    }
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                                try {
+                                                                                    balance_Amount.setText(balanceAmount_String);
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                            }
+                                                                            else{
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                                            }
+                                                                        }
+                                                                        else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty , 0);
 
                                                                         }
-                                                                    } catch (Exception e) {
-                                                                        e.printStackTrace();
-                                                                        Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+                                                                    }
+                                                                });
+                                                                checkOut.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            if (amountRecieved_double > 0) {
+
+                                                                                if (balanceAmount_double < 0) {
+                                                                                    //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount , 0);
+
+                                                                                } else {
+                                                                                    dialog.dismiss();
+                                                                                    if(isPhoneOrderSelected){
+                                                                                        if(isAddressForPhoneOrderSelected) {
+                                                                                            generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                                        }
+                                                                                        else {
+                                                                                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                                        }
+                                                                                        //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    }
+                                                                                    else{
+                                                                                        PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    }
+
+
+                                                                                }
+                                                                            }
+                                                                            else{
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                                via_card.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"CARD", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
 
                                                                     }
-                                                                    try {
-                                                                        balance_Amount.setText(balanceAmount_String);
-                                                                    } catch (Exception e) {
-                                                                        e.printStackTrace();
-                                                                        Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+                                                                });
+
+
+                                                                via_credit.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"CREDIT", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
 
                                                                     }
-                                                                } else {
-                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+                                                                });
 
-                                                                }
-                                                            } else {
-                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
 
+                                                                via_cash.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        //  dialog.dismiss();
+
+                                                                        paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                                        balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                                        //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_upi.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"UPI", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                dialog.show();
+                                                                showProgressBar(false);
+
+                                                            } catch (WindowManager.BadTokenException e) {
+                                                                showProgressBar(false);
+
+                                                                e.printStackTrace();
                                                             }
                                                         }
                                                     });
-                                                    checkOut.setOnClickListener(new View.OnClickListener() {
+
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+
+                                     */
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+
+                                                        showProgressBar(false);
+                                                        AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
+                                                    }
+                                                });
+                                            } else {
+
+
+                                                if (isPriceLeftEdited) {
+
+
+                                    /*new TMCAlertDialogClass(mContext, R.string.app_name, R.string.WeightCantBeLeftEditedWhenCheckout,
+                                            R.string.Yes_Text,R.string.No_Text,
+                                            new TMCAlertDialogClass.AlertListener() {
+                                                @Override
+                                                public void onYes() {
+
+                                                    runOnUiThread(new Runnable() {
                                                         @Override
-                                                        public void onClick(View v) {
-                                                            if (amountRecieved_String.length() > 0) {
-                                                                if (amountRecieved_double > 0) {
+                                                        public void run() {
+                                                            try {
+                                                                Dialog dialog = new Dialog(getActivity());
+                                                                dialog.setContentView(R.layout.select_payment_mode_layout);
+                                                                dialog.setTitle("Select the Payment Mode ");
+                                                                dialog.setCanceledOnTouchOutside(true);
 
-                                                                    if (balanceAmount_double < 0) {
-                                                                        //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
-                                                                        AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount, 0);
+                                                                Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
 
-                                                                    } else {
+                                                                Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                                                Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                                                Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+                                                                TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                                                TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                                                EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                                                Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                                                Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                                                LinearLayout paymentMode_selectionLayout = (LinearLayout) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                                LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                                                paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                                                balanceAmountCalculate_Layout.setVisibility(View.GONE);
+                                                                //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                                                //Log.i(TAG, "date and time " + sTime);
+                                                                String totalAmount_String  =  total_Rs_to_Pay_text_widget.getText().toString();
+                                                                double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                                                totalbillAmount .setText(totalAmount_String);
+
+                                                                if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                                    Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
+
+                                                                }
+
+                                                                calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+                                                                        try {
+                                                                            amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            amountRecieved_String = "0";
+                                                                            Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            try {
+                                                                                amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                                            } catch (Exception e) {
+                                                                                Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                                                amountRecieved_double = 0;
+
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                            if (amountRecieved_double > 0) {
+                                                                                try {
+                                                                                    balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    if (balanceAmount_double < 0) {
+                                                                                        balance_Amount.setTextColor(Color.RED);
+                                                                                    } else {
+                                                                                        balance_Amount.setTextColor(Color.BLACK);
+
+                                                                                    }
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                                try {
+                                                                                    balance_Amount.setText(balanceAmount_String);
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                            }
+                                                                            else{
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                                            }
+                                                                        }
+                                                                        else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty , 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+                                                                checkOut.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            if (amountRecieved_double > 0) {
+
+                                                                                if (balanceAmount_double < 0) {
+                                                                                    //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount , 0);
+
+                                                                                } else {
+                                                                                    dialog.dismiss();
+                                                                                    if(isPhoneOrderSelected){
+                                                                                        if(isAddressForPhoneOrderSelected) {
+                                                                                            generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                                        }
+                                                                                        else {
+                                                                                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                                        }
+                                                                                        //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    }
+                                                                                    else{
+                                                                                        PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    }
+
+
+                                                                                }
+                                                                            }
+                                                                            else{
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero , 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                                via_card.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"CARD", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_credit.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"CREDIT", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_cash.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        //  dialog.dismiss();
+
+                                                                        paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                                        balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                                        //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_upi.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if(isPhoneOrderSelected){
+                                                                            if(isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey,"UPI", sTime, Currenttime, cart_Item_List);
+                                                                            }
+                                                                            else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+                                                                        else{
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime, cart_Item_List);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                dialog.show();
+                                                                showProgressBar(false);
+
+                                                            } catch (WindowManager.BadTokenException e) {
+                                                                showProgressBar(false);
+
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    });
+
+                                                }
+
+                                                @Override
+                                                public void onNo() {
+
+                                                }
+                                            });
+
+                                     */
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            showProgressBar(false);
+                                                            AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                                        }
+                                                    });
+                                                } else {
+
+
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            try {
+                                                                Dialog dialog = new Dialog(getActivity());
+                                                                dialog.setContentView(R.layout.select_payment_mode_layout);
+                                                                dialog.setTitle("Select the Payment Mode ");
+                                                                dialog.setCanceledOnTouchOutside(true);
+
+                                                                Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
+
+                                                                Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                                                Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                                                Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+                                                                TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                                                TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                                                EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                                                Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                                                Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                                                CardView paymentMode_selectionLayout = (CardView) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                                LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                                                paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                                                balanceAmountCalculate_Layout.setVisibility(View.GONE);
+                                                                //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                                                //Log.i(TAG, "date and time " + sTime);
+                                                                String totalAmount_String = total_Rs_to_Pay_text_widget.getText().toString();
+                                                                double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                                                totalbillAmount.setText(totalAmount_String);
+
+                                                                if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                                    Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
+
+                                                                }
+
+                                                                calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+                                                                        try {
+                                                                            amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            amountRecieved_String = "0";
+                                                                            Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            try {
+                                                                                amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                                            } catch (Exception e) {
+                                                                                Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                                                amountRecieved_double = 0;
+
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                            if (amountRecieved_double > 0) {
+                                                                                try {
+                                                                                    balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                                                } catch (Exception e) {
+                                                                                    Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                                                    e.printStackTrace();
+                                                                                }
+                                                                                try {
+                                                                                    if (balanceAmount_double < 0) {
+                                                                                        balance_Amount.setTextColor(Color.RED);
+                                                                                    } else {
+                                                                                        balance_Amount.setTextColor(Color.BLACK);
+
+                                                                                    }
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                                try {
+                                                                                    balance_Amount.setText(balanceAmount_String);
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
+                                                                                    Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                                                }
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+                                                                checkOut.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View v) {
+                                                                        if (amountRecieved_String.length() > 0) {
+                                                                            if (amountRecieved_double > 0) {
+
+                                                                                if (balanceAmount_double < 0) {
+                                                                                    //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount, 0);
+
+                                                                                } else {
+                                                                                    dialog.dismiss();
+                                                                                    if (isPhoneOrderSelected) {
+                                                                                        if (isAddressForPhoneOrderSelected) {
+                                                                                            generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime);
+                                                                                        } else {
+                                                                                            AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                                        }
+                                                                                        //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                                    } else {
+                                                                                        PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime);
+
+                                                                                    }
+
+
+                                                                                }
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+
+                                                                            }
+                                                                        } else {
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                                via_card.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if (isPhoneOrderSelected) {
+
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                            if (isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey, "CARD", sTime, Currenttime);
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                        } else {
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_credit.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
                                                                         dialog.dismiss();
                                                                         if (isPhoneOrderSelected) {
                                                                             if (isAddressForPhoneOrderSelected) {
-                                                                                generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime);
+                                                                                generateTokenNo(vendorKey, "CREDIT", sTime, Currenttime);
                                                                             } else {
                                                                                 AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
 
@@ -2385,119 +3391,319 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                                             //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
 
                                                                         } else {
-                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime);
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime);
 
                                                                         }
 
 
                                                                     }
-                                                                } else {
-                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+                                                                });
 
-                                                                }
-                                                            } else {
-                                                                AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
 
+                                                                via_cash.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        //  dialog.dismiss();
+
+                                                                        balanceAmount_String = "0";
+                                                                        amountRecieved_String = "0";
+                                                                        balanceAmount_double = 0;
+                                                                        amountRecieved_double = 0;
+
+
+
+                                                                        paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                                        balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                                        //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+
+                                                                    }
+                                                                });
+
+
+                                                                via_upi.setOnClickListener(new View.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(View view) {
+                                                                        dialog.dismiss();
+                                                                        if (isPhoneOrderSelected) {
+                                                                            if (isAddressForPhoneOrderSelected) {
+                                                                                generateTokenNo(vendorKey, "UPI", sTime, Currenttime);
+                                                                            } else {
+                                                                                AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                            }
+                                                                            //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                        } else {
+                                                                            PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime);
+
+                                                                        }
+
+
+                                                                    }
+                                                                });
+
+
+                                                                dialog.show();
+                                                                showProgressBar(false);
+
+                                                            } catch (WindowManager.BadTokenException e) {
+                                                                showProgressBar(false);
+
+                                                                e.printStackTrace();
                                                             }
                                                         }
                                                     });
 
-                                                    via_card.setOnClickListener(new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(View view) {
-                                                            dialog.dismiss();
-                                                            if (isPhoneOrderSelected) {
 
-                                                                //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-                                                                if (isAddressForPhoneOrderSelected) {
-                                                                    generateTokenNo(vendorKey, "CARD", sTime, Currenttime);
-                                                                } else {
-                                                                    AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                }
-                                                            } else {
-                                                                PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime);
-
-                                                            }
-
-
-                                                        }
-                                                    });
-
-
-                                                    via_credit.setOnClickListener(new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(View view) {
-                                                            dialog.dismiss();
-                                                            if (isPhoneOrderSelected) {
-                                                                if (isAddressForPhoneOrderSelected) {
-                                                                    generateTokenNo(vendorKey, "CREDIT", sTime, Currenttime);
-                                                                } else {
-                                                                    AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                }
-                                                                //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-                                                            } else {
-                                                                PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime);
-
-                                                            }
-
-
-                                                        }
-                                                    });
-
-
-                                                    via_cash.setOnClickListener(new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(View view) {
-                                                            //  dialog.dismiss();
-
-                                                            paymentMode_selectionLayout.setVisibility(View.GONE);
-                                                            balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
-                                                            //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-
-                                                        }
-                                                    });
-
-
-                                                    via_upi.setOnClickListener(new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(View view) {
-                                                            dialog.dismiss();
-                                                            if (isPhoneOrderSelected) {
-                                                                if (isAddressForPhoneOrderSelected) {
-                                                                    generateTokenNo(vendorKey, "UPI", sTime, Currenttime);
-                                                                } else {
-                                                                    AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
-
-                                                                }
-                                                                //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
-
-                                                            } else {
-                                                                PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime);
-
-                                                            }
-
-
-                                                        }
-                                                    });
-
-
-                                                    dialog.show();
-                                                    showProgressBar(false);
-
-                                                } catch (WindowManager.BadTokenException e) {
-                                                    showProgressBar(false);
-
-                                                    e.printStackTrace();
                                                 }
                                             }
-                                        });
 
+
+                                        } else {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    try {
+                                                        Dialog dialog = new Dialog(getActivity());
+                                                        dialog.setContentView(R.layout.select_payment_mode_layout);
+                                                        dialog.setTitle("Select the Payment Mode ");
+                                                        dialog.setCanceledOnTouchOutside(true);
+
+                                                        Button via_credit = (Button) dialog.findViewById(R.id.via_credit);
+
+                                                        Button via_cash = (Button) dialog.findViewById(R.id.via_cash);
+                                                        Button via_card = (Button) dialog.findViewById(R.id.via_card);
+                                                        Button via_upi = (Button) dialog.findViewById(R.id.via_upi);
+                                                        TextView totalbillAmount = (TextView) dialog.findViewById(R.id.totalbillAmount);
+                                                        TextView balance_Amount = (TextView) dialog.findViewById(R.id.balance_Amount);
+                                                        EditText amount_Recieved_EditText = (EditText) dialog.findViewById(R.id.amount_Recieved_EditText);
+                                                        Button calculateBalanceAmount = (Button) dialog.findViewById(R.id.CalculateBalanceAmount);
+                                                        Button checkOut = (Button) dialog.findViewById(R.id.checkOut);
+                                                        CardView paymentMode_selectionLayout = (CardView) dialog.findViewById(R.id.paymentMode_selectionLayout);
+                                                        LinearLayout balanceAmountCalculate_Layout = (LinearLayout) dialog.findViewById(R.id.balanceAmountCalculate_Layout);
+                                                        paymentMode_selectionLayout.setVisibility(View.VISIBLE);
+                                                        balanceAmountCalculate_Layout.setVisibility(View.GONE);
+                                                        //Log.d(TAG, "Currenttime: " + Currenttime);
+
+                                                        //Log.i(TAG, "date and time " + sTime);
+                                                        String totalAmount_String = total_Rs_to_Pay_text_widget.getText().toString();
+                                                        double totalAmount_double = Double.parseDouble(totalAmount_String);
+                                                        totalbillAmount.setText(totalAmount_String);
+
+                                                        if ((!isProceedtoCheckoutinRedeemdialogClicked) && (isRedeemDialogboxOpened)) {
+                                                            Toast.makeText(mContext, "Redeem Points Not Applied", Toast.LENGTH_LONG).show();
+
+                                                        }
+
+                                                        calculateBalanceAmount.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View v) {
+                                                                balanceAmount_String = "0";
+                                                                amountRecieved_String = "0";
+                                                                balanceAmount_double = 0;
+                                                                amountRecieved_double = 0;
+                                                                try {
+                                                                    amountRecieved_String = amount_Recieved_EditText.getText().toString();
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                    amountRecieved_String = "0";
+                                                                    Toast.makeText(mContext, "can't get amountRecieved_String", Toast.LENGTH_LONG).show();
+                                                                }
+                                                                if (amountRecieved_String.length() > 0) {
+                                                                    try {
+                                                                        amountRecieved_double = Double.parseDouble(amountRecieved_String);
+                                                                    } catch (Exception e) {
+                                                                        Toast.makeText(mContext, "can't get amountRecieved_double", Toast.LENGTH_LONG).show();
+                                                                        amountRecieved_double = 0;
+
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                    if (amountRecieved_double > 0) {
+                                                                        try {
+                                                                            balanceAmount_double = amountRecieved_double - totalAmount_double;
+                                                                        } catch (Exception e) {
+                                                                            Toast.makeText(mContext, "can't get balanceAmount_double", Toast.LENGTH_LONG).show();
+
+                                                                            e.printStackTrace();
+                                                                        }
+                                                                        try {
+                                                                            balanceAmount_String = String.valueOf(balanceAmount_double);
+                                                                        } catch (Exception e) {
+                                                                            Toast.makeText(mContext, "can't get balanceAmount_String", Toast.LENGTH_LONG).show();
+
+                                                                            e.printStackTrace();
+                                                                        }
+                                                                        try {
+                                                                            if (balanceAmount_double < 0) {
+                                                                                balance_Amount.setTextColor(Color.RED);
+                                                                            } else {
+                                                                                balance_Amount.setTextColor(Color.BLACK);
+
+                                                                            }
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            Toast.makeText(mContext, "can't change balance_Amount color ", Toast.LENGTH_LONG).show();
+
+                                                                        }
+                                                                        try {
+                                                                            balance_Amount.setText(balanceAmount_String);
+                                                                        } catch (Exception e) {
+                                                                            e.printStackTrace();
+                                                                            Toast.makeText(mContext, "can't get balance_Amount", Toast.LENGTH_LONG).show();
+
+                                                                        }
+                                                                    } else {
+                                                                        AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+
+                                                                    }
+                                                                } else {
+                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                }
+                                                            }
+                                                        });
+                                                        checkOut.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View v) {
+                                                                if (amountRecieved_String.length() > 0) {
+                                                                    if (amountRecieved_double > 0) {
+
+                                                                        if (balanceAmount_double < 0) {
+                                                                            //  Toast.makeText(mContext, "Recieved Amount Should not be Less than total Amount", Toast.LENGTH_LONG).show();
+                                                                            AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanTotalAmount, 0);
+
+                                                                        } else {
+                                                                            dialog.dismiss();
+                                                                            if (isPhoneOrderSelected) {
+                                                                                if (isAddressForPhoneOrderSelected) {
+                                                                                    generateTokenNo(vendorKey, "CASH ON DELIVERY", sTime, Currenttime);
+                                                                                } else {
+                                                                                    AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                                }
+                                                                                //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                            } else {
+                                                                                PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime);
+
+                                                                            }
+
+
+                                                                        }
+                                                                    } else {
+                                                                        AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountShouldBeGreaterthanZero, 0);
+
+                                                                    }
+                                                                } else {
+                                                                    AlertDialogClass.showDialog(getActivity(), Constants.RecievedAmountCantbeEmpty, 0);
+
+                                                                }
+                                                            }
+                                                        });
+
+                                                        via_card.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View view) {
+                                                                dialog.dismiss();
+                                                                if (isPhoneOrderSelected) {
+
+                                                                    //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+                                                                    if (isAddressForPhoneOrderSelected) {
+                                                                        generateTokenNo(vendorKey, "CARD", sTime, Currenttime);
+                                                                    } else {
+                                                                        AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                    }
+                                                                } else {
+                                                                    PlaceOrdersinDatabaseaAndPrintRecipt("CARD", sTime, Currenttime);
+
+                                                                }
+
+
+                                                            }
+                                                        });
+
+
+                                                        via_credit.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View view) {
+                                                                dialog.dismiss();
+                                                                if (isPhoneOrderSelected) {
+                                                                    if (isAddressForPhoneOrderSelected) {
+                                                                        generateTokenNo(vendorKey, "CREDIT", sTime, Currenttime);
+                                                                    } else {
+                                                                        AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                    }
+                                                                    //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                } else {
+                                                                    PlaceOrdersinDatabaseaAndPrintRecipt("CREDIT", sTime, Currenttime);
+
+                                                                }
+
+
+                                                            }
+                                                        });
+
+
+                                                        via_cash.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View view) {
+                                                                //  dialog.dismiss();
+
+                                                                balanceAmount_String = "0";
+                                                                amountRecieved_String = "0";
+                                                                balanceAmount_double = 0;
+                                                                amountRecieved_double = 0;
+
+
+                                                                paymentMode_selectionLayout.setVisibility(View.GONE);
+                                                                balanceAmountCalculate_Layout.setVisibility(View.VISIBLE);
+                                                                //PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+
+                                                            }
+                                                        });
+
+
+                                                        via_upi.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View view) {
+                                                                dialog.dismiss();
+                                                                if (isPhoneOrderSelected) {
+                                                                    if (isAddressForPhoneOrderSelected) {
+                                                                        generateTokenNo(vendorKey, "UPI", sTime, Currenttime);
+                                                                    } else {
+                                                                        AlertDialogClass.showDialog(getActivity(), R.string.Select_an_address);
+
+                                                                    }
+                                                                    //   PlaceOrdersinDatabaseaAndPrintRecipt("CASH ON DELIVERY", sTime, Currenttime, cart_Item_List);
+
+                                                                } else {
+                                                                    PlaceOrdersinDatabaseaAndPrintRecipt("UPI", sTime, Currenttime);
+
+                                                                }
+
+
+                                                            }
+                                                        });
+
+
+                                                        dialog.show();
+                                                        showProgressBar(false);
+
+                                                    } catch (WindowManager.BadTokenException e) {
+                                                        showProgressBar(false);
+
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            });
+
+                                        }
                                     }
-
 
                                 } else {
                                     showProgressBar(false);
@@ -2532,6 +3738,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
     }
+
 
     private void switch_between_Pos_to_PhoneOrders(String orderType) {
         if(Constants.PhoneOrder.equals(orderType)){
@@ -2661,7 +3868,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             userAddressArrayList.clear();
             userAddressKeyArrayList.clear();
 
-            if (!userFetchedManually) {
+            if (!userFetched_ForPOS_or_Manually) {
 
                 getUserDetailsUsingMobileNo(mobileno);
 
@@ -2670,6 +3877,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     getAddressUsingUserKey(uniqueUserkeyFromDB);
 
                 } else {
+
                     loadingpanelmask_Addressdialog.setVisibility(View.GONE);
                     loadingPanel_Addressdialog.setVisibility(View.GONE);
 
@@ -2705,7 +3913,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     userAddressArrayList.clear();
                     userAddressKeyArrayList.clear();
 
-                    if (!userFetchedManually) {
+                    if (!userFetched_ForPOS_or_Manually) {
 
                         getUserDetailsUsingMobileNo(mobileno);
 
@@ -2775,8 +3983,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 if(isNewUser){
                     String userKey = "";
                     try{
-                       // userKey =  String.valueOf(UUID.randomUUID())+"-"+String.valueOf(System.currentTimeMillis());
-                        userKey =String.valueOf(String.valueOf(System.currentTimeMillis()));
+                        userKey =  String.valueOf(UUID.randomUUID());
+                       // userKey =String.valueOf(String.valueOf(System.currentTimeMillis()));
 
 
                     }
@@ -2795,7 +4003,23 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                 }
+                else{
+                    if((String.valueOf(uniqueUserkeyFromDB).equals("")) || (String.valueOf(uniqueUserkeyFromDB).toUpperCase().equals("NULL"))){
+                        String userKey = "";
+                        try{
+                            userKey =  String.valueOf(UUID.randomUUID());
+                            // userKey =String.valueOf(String.valueOf(System.currentTimeMillis()));
 
+
+                        }
+                        catch (Exception e){
+                            userKey = "";
+                            e.printStackTrace();
+                        }
+                        uniqueUserkeyFromDB =  String.valueOf(userKey);
+
+                    }
+                }
                 selectAddress_ParentLayout_addressdialog.setVisibility(View.GONE);
                 addNewAddress_ParentLayout_addressdialog.setVisibility(View.VISIBLE);
 
@@ -2813,7 +4037,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     public void onClick(View v) {
     String addressKey = "";
     try {
-    addressKey = String.valueOf(UUID.randomUUID()) + "-" + String.valueOf(System.currentTimeMillis());
+    addressKey = String.valueOf(UUID.randomUUID());
     } catch (Exception e) {
     addressKey = "";
     e.printStackTrace();
@@ -2850,7 +4074,39 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 if(pincode.length()>0){
                 if(deliveryDistance.length()>0) {
                     if (type.length() > 0) {
+                    try{
 
+                                for(int i2 =0 ; i2 < userAddressKeyArrayList.size() ; i2++){
+
+                                    userAddressArrayList.get(i2).setAddressSelected(false);
+
+
+                                    try{
+                                        selectedAddress_textWidget.setText("");
+                                        isAddressForPhoneOrderSelected = false;
+
+                                        selectedAddress_textWidget.setHint("Please select an Address");
+                                        selected_Address_modal = new Modal_Address();
+                                        selected_Address_modal.setDeliverydistance(String.valueOf("0"));
+                                        deliveryChargestext_widget.setText(String.valueOf("0"));
+                                        deliveryAmount_for_this_order = "0";
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                    if(userAddressArrayList.get(i2).getisNewAddress()){
+                                        userAddressArrayList.remove(i2);
+
+                                    }
+                                    adapter_addressList.notifyDataSetChanged();
+                                    add_amount_ForBillDetails();
+                                }
+
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
                         Modal_Address modal_address = new Modal_Address();
                         modal_address.setContactpersonname(contactPersonName);
                         modal_address.setContactpersonmobileno(contactPersonMobileNo);
@@ -3223,49 +4479,54 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     }
 
     public void setAddressListAdapter() {
-        if(userAddressArrayList.size()>0) {
+        try {
+            if (userAddressArrayList.size() > 0) {
 //            id_addressInstruction.setVisibility(View.GONE);
 
-            Collections.sort(userAddressArrayList, new Comparator<Modal_Address>() {
-                public int compare(final Modal_Address object1, final Modal_Address object2) {
-                    int first =0;  int second =0;
-                    if(object1.getisNewAddress()){
-                        first = 1;
-                        object1.setDisplayno(String.valueOf(first));
+                Collections.sort(userAddressArrayList, new Comparator<Modal_Address>() {
+                    public int compare(final Modal_Address object1, final Modal_Address object2) {
+                        int first = 0;
+                        int second = 0;
+                        if (object1.getisNewAddress()) {
+                            first = 1;
+                            object1.setDisplayno(String.valueOf(first));
+                        } else {
+                            first = 0;
+                            object1.setDisplayno(String.valueOf(first));
+
+                        }
+
+                        if (object2.getisNewAddress()) {
+                            second = 1;
+                            object2.setDisplayno(String.valueOf(second));
+
+                        } else {
+                            second = 0;
+                            object2.setDisplayno(String.valueOf(second));
+
+                        }
+
+                        return object2.getDisplayno().compareTo(object1.getDisplayno());
                     }
-                    else{
-                        first =0;
-                        object1.setDisplayno(String.valueOf(first));
+                });
 
-                    }
+                adapter_addressList = new Adapter_AddressList(mContext, userAddressArrayList, NewOrders_MenuItem_Fragment.this, true);
 
-                    if(object2.getisNewAddress()){
-                        second = 1;
-                        object2.setDisplayno(String.valueOf(second));
+                address_listView.setAdapter(adapter_addressList);
+                ReportListviewSizeHelper.getListViewSize(address_listView, screenInches);
+            } else {
+                // id_addressInstruction.setVisibility(View.VISIBLE);
 
-                    }
-                    else{
-                        second =0;
-                        object2.setDisplayno(String.valueOf(second));
-
-                    }
-
-                    return object2.getDisplayno().compareTo(object1.getDisplayno());
-                }
-            });
-
-            adapter_addressList = new Adapter_AddressList(mContext, userAddressArrayList,NewOrders_MenuItem_Fragment.this,true);
-
-            address_listView.setAdapter(adapter_addressList);
-            ReportListviewSizeHelper.getListViewSize(address_listView, screenInches);
+            }
+            loadingPanel_Addressdialog.setVisibility(View.GONE);
+            loadingpanelmask_Addressdialog.setVisibility(View.GONE);
         }
-        else{
-           // id_addressInstruction.setVisibility(View.VISIBLE);
-
+        catch(Exception e){
+            e.printStackTrace();
         }
-        loadingpanelmask_Addressdialog.setVisibility(View.GONE);
-        loadingPanel_Addressdialog.setVisibility(View.GONE);
+
         showProgressBar(false);
+
     }
 
     private void checkIfNewUser(Dialog finalDialog, TextView couponDiscount_detailsTextWidget, TextView storeDiscount_detailsTextWidget, TextView usermobileno_textwidget, TextView orderid_count_textwidget) {
@@ -3621,11 +4882,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     double itemTotalDouble =0;
 
                     try{
-                        itemTotalDouble = Double.parseDouble(total_item_Rs_text_widget.getText().toString());
+                      //  itemTotalDouble = Double.parseDouble(total_item_Rs_text_widget.getText().toString());
+                        itemTotalDouble = totalAmounttopay;
                     }
                     catch (Exception e){
                         try{
-                            itemTotalDouble = totalAmounttopay - (Double.parseDouble(deliveryAmount_for_this_order) + discountAmount_DoubleGlobal);
+//                            itemTotalDouble = totalAmounttopay - (Double.parseDouble(deliveryAmount_for_this_order) + discountAmount_DoubleGlobal);
+                            itemTotalDouble = totalAmounttopay - ( discountAmount_DoubleGlobal);
 
                         }
                         catch (Exception e1){
@@ -3732,7 +4995,9 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                 }
 
                                 try{
-                                    finalamounttoPay = finaltoPayAmountwithRedeemPoints_double + deliveryChargeDouble;
+                                   // finalamounttoPay = finaltoPayAmountwithRedeemPoints_double + deliveryChargeDouble;
+                                    finalamounttoPay = finaltoPayAmountwithRedeemPoints_double;
+
                                 }
                                 catch (Exception e){
                                     finalamounttoPay = finaltoPayAmountwithRedeemPoints_double;
@@ -4110,6 +5375,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         }
         else {
 
+            threadPool = new MyThreadPool();
+
             isOrderPlacedinOrderdetails = false;
             String customermobileno = "";
             String customerNamee = "";
@@ -4130,6 +5397,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 e.printStackTrace();
 
             }
+            usermobileNo = "+91" + mobileNo_Edit_widget.getText().toString();
             if(vendorType.equals(Constants.WholeSales_VendorType)) {
 
                 if (wholeSaleCustomersMobileNoStringHashmap.containsKey(String.valueOf(customermobileno))) {
@@ -4147,12 +5415,150 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 }
             }
 
-            usermobileNo = "+91" + mobileNo_Edit_widget.getText().toString();
 
-            ispaymentMode_Clicked = true;
+
+
+
+
+            try{
+                if(isPhoneOrderSelected) {
+                    if (!isUsertype_AlreadyPhone || updateUserName) {
+
+                        threadPool.runTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if (isNewUser) {
+                                            if (user_key_toAdd_Address.equals("")) {
+                                                String userKey = "";
+                                                try {
+                                                    userKey = String.valueOf(UUID.randomUUID());
+                                                } catch (Exception e) {
+                                                    userKey = "";
+                                                    e.printStackTrace();
+                                                }
+
+                                                if ((!String.valueOf(userKey).equals("")) || (!String.valueOf(userKey).toUpperCase().equals("NULL"))) {
+                                                    user_key_toAdd_Address = String.valueOf(userKey);
+                                                    Add_OR_Update_Entry_inTMCUserTable("PHONE", user_key_toAdd_Address);
+
+                                                } else {
+                                                    Add_OR_Update_Entry_inTMCUserTable("PHONE", "");
+                                                    Toast.makeText(mContext, "User Key is Empty", Toast.LENGTH_SHORT).show();
+                                                }
+                                            } else {
+                                                Add_OR_Update_Entry_inTMCUserTable("PHONE", user_key_toAdd_Address);
+                                            }
+
+
+
+                                    } else {
+                                            if(uniqueUserkeyFromDB.equals("")) {
+                                                Add_OR_Update_Entry_inTMCUserTable("PHONE", user_key_toAdd_Address);
+                                            }
+                                            else{
+                                                Add_OR_Update_Entry_inTMCUserTable("PHONE", uniqueUserkeyFromDB);
+                                            }
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+
+                                }
+
+                            }
+                        });
+
+
+                    }
+                }
+                else
+                {
+                    if(userFetched_ForPOS_or_Manually) {
+                        if(!isUsertype_AlreadyPos|| updateUserName) {
+
+                            threadPool.runTask(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    try {
+                                        if(isNewUser) {
+                                            String userKey = "";
+                                            try {
+                                                userKey = String.valueOf(UUID.randomUUID());
+                                            } catch (Exception e) {
+                                                userKey = "";
+                                                e.printStackTrace();
+
+                                            }
+                                            uniqueUserkeyFromDB = userKey;
+                                            Add_OR_Update_Entry_inTMCUserTable("WALKIN", userKey);
+                                        }
+                                        else{
+                                            Add_OR_Update_Entry_inTMCUserTable("WALKIN", uniqueUserkeyFromDB);
+                                        }
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+
+                                    }
+
+                                }
+                            });
+
+
+
+
+                        }
+                        else{
+                            Toast.makeText(mContext, "Old User", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+                    else{
+
+
+                        threadPool.runTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if(isNewUser) {
+                                        String userKey = "";
+                                        try {
+                                            userKey = String.valueOf(UUID.randomUUID());
+                                        } catch (Exception e) {
+                                            userKey = "";
+                                            e.printStackTrace();
+
+                                        }
+                                        uniqueUserkeyFromDB = userKey;
+                                        Add_OR_Update_Entry_inTMCUserTable("WALKIN", userKey);
+                                    }
+                                    else{
+                                        Add_OR_Update_Entry_inTMCUserTable("WALKIN", uniqueUserkeyFromDB);
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+                            }});
+
+
+
+
+
+                    }
+
+                }
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
             String payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
-
-
 
             if(isPhoneOrderSelected){
                 if(userAddressKeyArrayList.size()>0 && userAddressArrayList.size()>0){
@@ -4300,7 +5706,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                             jsonObject.put("addressline1", addressline1);
                                             jsonObject.put("addressline2", addressline2);
                                             jsonObject.put("addresstype", addresstype);
-                                            if(contactpersonmobileno.length()!=10){
+                                            if(contactpersonmobileno.length()==10){
                                                 jsonObject.put("contactpersonmobileno", "+91" + contactpersonmobileno);
                                             }
                                             jsonObject.put("contactpersonname", contactpersonname);
@@ -4344,33 +5750,17 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 }
 
 
-               if( !isUsertype_AlreadyPhone || updateUserName){
-                   Add_OR_Update_Entry_inTMCUserTable("PHONE");
-
-               }
 
 
             }
-            else
-            {
-                if(userFetchedManually ) {
-                    if(!isUsertype_AlreadyPos|| updateUserName) {
-                        Add_OR_Update_Entry_inTMCUserTable("WALKIN");
-                    }
-                    else{
-                        Toast.makeText(mContext, "Old User", Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-                else{
-                    Add_OR_Update_Entry_inTMCUserTable("WALKIN");
-                }
-
+            else{
+             //   isfetchUserButtonClicked = false;
+           //     userFetched_ForPOS_or_Manually = true;
+           //     getUserDetailsUsingMobileNo(mobileNo_Edit_widget.getText().toString());
             }
 
 
-
-
+            showProgressBar(true);
             if(payableAmount.equals("")||payableAmount.equals("0")||payableAmount.equals("0.00")||payableAmount.equals("0.0")){
 
 
@@ -4422,8 +5812,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                     isAddressForPhoneOrderSelected = false;
                                     isUsertype_AlreadyPhone = false;
                                     isUsertype_AlreadyPos = false;
-                                    userFetchedManually = false;
-
+                                    userFetched_ForPOS_or_Manually = false;
+                                    isfetchUserButtonClicked= false;
 
                                     StockBalanceChangedForThisItemList.clear();
                                     cart_Item_List.clear();
@@ -4500,87 +5890,379 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                             dialog.show();
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                 });
 
             }
+
+
+
+
+            if(isProceedtoCheckoutinRedeemdialogClicked){
+                if((!redeemPoints_String.equals(""))&&(!redeemPoints_String.equals("0"))){
+                    String transactiontime = getDate_and_time();
+                    double totalredeempointsusergetfromorderr=0;
+                    double redeempointsuserapplied=Double.parseDouble(redeemPoints_String);
+                    double finalamountwithredeempointsint = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
+                    double totalpointredeembyuserint =  Double.parseDouble(totalpointsredeemedalreadybyuser);
+                    double totalordervalue_tillnowint =  Double.parseDouble(totalordervalue_tillnow);
+                    double totalredeempointsuserhaveint =  Double.parseDouble(totalredeempointsuserhave);
+
+                    double finalamountwithredeempointsdouble = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
+                    double pointsfor100rs_double = Double.parseDouble(pointsfor100rs_String);
+
+                    try {
+                        totalordervalue_tillnowint = totalordervalue_tillnowint + finalamountwithredeempointsint;
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    try {
+
+                        totalordervalue_tillnow = String.valueOf(totalordervalue_tillnowint);
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        totalredeempointsusergetfromorderr =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        totalredeempointsuserhaveint = totalredeempointsuserhaveint+totalredeempointsusergetfromorderr;
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        totalredeempointsuserhave = String.valueOf(totalredeempointsuserhaveint);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        totalpointredeembyuserint = totalpointredeembyuserint+redeempointsuserapplied;
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        totalpointsredeemedalreadybyuser=String.valueOf(totalpointredeembyuserint);
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+                        double finalTotalpointredeembyuserint = totalpointredeembyuserint;
+                        double finalTotalordervalue_tillnowint = totalordervalue_tillnowint;
+                        double finalTotalredeempointsuserhaveint = totalredeempointsuserhaveint;
+
+
+                        if(isOrderPlacingMicroserviceisActive){
+                            redeemPointsJson = new JSONObject();
+                            redeemPointsJson.put("mobileno",customermobileno);
+                            redeemPointsJson.put("totalordervalue",finalTotalordervalue_tillnowint);
+                            redeemPointsJson.put("totalredeempoints",finalTotalredeempointsuserhaveint);
+                            redeemPointsJson.put("vendorname",vendorName);
+                            redeemPointsJson.put("pointsredeemed",totalpointredeembyuserint);
+                            redeemPointsJson.put("key",redeemKey);
+                            redeemPointsJson.put("havetodocalculation",false);
+
+
+
+                        }
+                        else{
+
+                            threadPool.runTask(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateRedeemPointsDetailsInDBWithkey(redeemKey, finalTotalpointredeembyuserint, finalTotalordervalue_tillnowint, finalTotalredeempointsuserhaveint);
+                                }
+                            });
+
+
+                        }
+
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    try {
+
+
+                        if(isOrderPlacingMicroserviceisActive){
+                            //addCouponTransactionwillfrom order placing handler lambda
+                        }
+                        else{
+
+                            threadPool.runTask(new Runnable() {
+                                @Override
+                                public void run() {
+                                   String  currentDate  = getDate();
+                                    addDatatoCouponTransactioninDB(redeemPoints_String,"REDEEM",mobileno_redeemKey,String.valueOf(sTime),currentDate,transactiontime,vendorKey);
+                                }
+                            });
+
+
+                        }
+
+
+
+
+
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
+
+
+
+                }
+            }
+            else{
+
+                try{
+                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                String UserMobile = "+91" + mobileNo_Edit_widget.getText().toString();
+
+                //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
+                //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
+
+
+                if(isOrderPlacingMicroserviceisActive){
+                    redeemPointsJson = new JSONObject();
+                    try {
+                        redeemPointsJson.put("mobileno",UserMobile);
+                        redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                        redeemPointsJson.put("havetodocalculation",true);
+                        redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                        redeemPointsJson.put("vendorname",vendorName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+                else{
+
+                    threadPool.runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);                    }
+                    });
+                }
+
+
+
+            }
+
+
+
+
+
             if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
                 GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
             }
             else{
 
-
-                if(!isCustomerOrdersTableServiceCalled){
-                    try{
-                        if(orderdetailsnewschema){
+                if(isOrderPlacingMicroserviceisActive){
+                    try {
                             String customerMobileNo = mobileNo_Edit_widget.getText().toString();
-                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
 
-                            String  payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
 
-                            if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+                            String payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
+
+
+
+                            if ((OrderTypefromSpinner.equals(Constants.PhoneOrder))) {
 
                                 ordertype = Constants.PhoneOrder;
                             }
-                            else{
+                            else {
                                 ordertype = Constants.POSORDER;
 
                             }
                             try {
-                                if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                                if (!discountAmount_StringGlobal.equals("") && (!discountAmount_StringGlobal.equals("0"))) {
                                     discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
-                                    discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
-                                }
-                                else{
-                                    discountAmount_DoubleGlobal =0;
+                                    discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                } else {
+                                    discountAmount_DoubleGlobal = 0;
                                 }
 
 
-                            }
-                            catch (Exception e){
-                                discountAmount_DoubleGlobal =0;
+                            } catch (Exception e) {
+                                discountAmount_DoubleGlobal = 0;
                                 e.printStackTrace();
                             }
 
 
+                            try {
+                            if (!redeemPoints_String.equals("") && (!redeemPoints_String.equals("0"))) {
+                                redeemPoints_String = (redeemPoints_String.replaceAll("[^\\d.]", ""));
+                            } else {
+                                redeemPoints_String = "0";
+                            }
 
-                            isCustomerOrdersTableServiceCalled =true;
 
-                            String customerName_String ="";
-                            try{
+                            } catch (Exception e) {
+                                redeemPoints_String = "0";
+                            e.printStackTrace();
+                            }
+
+
+
+
+                            String customerName_String = "";
+                            try {
                                 customerName_String = autoComplete_customerNameText_widget.getText().toString();
-                            }
-                            catch (Exception e){
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
 
 
 
 
-                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode,discountAmount_StringGlobal,Currenttime,customerMobileNo,ordertype,vendorKey,vendorName, sTime,payableAmountt,selected_Address_modal,tokenNo,userStatus,customerName_String,redeemPoints_String);
-                            asyncTask.execute();
+                            initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String , isinventorycheck, 0, 0);
 
-                        }
 
-                    }
-                    catch (Exception e){
+
+                    } catch (Exception e) {
                         e.printStackTrace();
 
                     }
                 }
+                else {
+                    if (!isCustomerOrdersTableServiceCalled) {
+                        try {
+                            if (orderdetailsnewschema) {
+                                String customerMobileNo = mobileNo_Edit_widget.getText().toString();
 
 
-                if (!isOrderDetailsMethodCalled) {
+                                String payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
 
-                    PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
-                }
-                if (!isOrderTrackingDetailsMethodCalled) {
+                                if ((OrderTypefromSpinner.equals(Constants.PhoneOrder))) {
 
-                    PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
-                }
+                                    ordertype = Constants.PhoneOrder;
+                                } else {
+                                    ordertype = Constants.POSORDER;
+
+                                }
+                                try {
+                                    if (!discountAmount_StringGlobal.equals("") && (!discountAmount_StringGlobal.equals("0"))) {
+                                        discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                                        discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                    } else {
+                                        discountAmount_DoubleGlobal = 0;
+                                    }
+
+
+                                } catch (Exception e) {
+                                    discountAmount_DoubleGlobal = 0;
+                                    e.printStackTrace();
+                                }
+
+
+                                isCustomerOrdersTableServiceCalled = true;
+
+                                String customerName_String = "";
+                                try {
+                                    customerName_String = autoComplete_customerNameText_widget.getText().toString();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+
+                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String, redeemPoints_String);
+                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String, redeemPoints_String);
+                                asyncTask.execute();
+
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+
+
+                    if (!isOrderDetailsMethodCalled) {
+
+                        threadPool.runTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+
+                            }
+                        });
+
+
+                    }
+                    if (!isOrderTrackingDetailsMethodCalled) {
+
+
+                        threadPool.runTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+
+                            }
+                        });
+
+
+                    }
 
 
                 /*
@@ -4841,145 +6523,316 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                  */
-
+                }
             }
 
 
-            
-            if(isProceedtoCheckoutinRedeemdialogClicked){
-                if((!redeemPoints_String.equals(""))&&(!redeemPoints_String.equals("0"))){
-                    String transactiontime = getDate_and_time();
-                    double totalredeempointsusergetfromorderr=0;
-                    double redeempointsuserapplied=Double.parseDouble(redeemPoints_String);
-                    double finalamountwithredeempointsint = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
-                    double totalpointredeembyuserint =  Double.parseDouble(totalpointsredeemedalreadybyuser);
-                    double totalordervalue_tillnowint =  Double.parseDouble(totalordervalue_tillnow);
-                    double totalredeempointsuserhaveint =  Double.parseDouble(totalredeempointsuserhave);
-
-                    double finalamountwithredeempointsdouble = Double.parseDouble(finaltoPayAmountwithRedeemPoints);
-                    double pointsfor100rs_double = Double.parseDouble(pointsfor100rs_String);
-
-                    try {
-                        totalordervalue_tillnowint = totalordervalue_tillnowint + finalamountwithredeempointsint;
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    try {
-
-                        totalordervalue_tillnow = String.valueOf(totalordervalue_tillnowint);
-
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-                        totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
-
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-                        totalredeempointsusergetfromorderr =   Math.round((pointsfor100rs_double*finalamountwithredeempointsdouble)/100);
-
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-                        totalredeempointsuserhaveint = totalredeempointsuserhaveint+totalredeempointsusergetfromorderr;
-
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-
-                        totalredeempointsuserhave = String.valueOf(totalredeempointsuserhaveint);
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-
-                        totalpointredeembyuserint = totalpointredeembyuserint+redeempointsuserapplied;
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-
-                        totalpointsredeemedalreadybyuser=String.valueOf(totalpointredeembyuserint);
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-
-                        updateRedeemPointsDetailsInDBWithkey(redeemKey,totalpointredeembyuserint,totalordervalue_tillnowint,totalredeempointsuserhaveint);
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                    try {
-
-
-                        addDatatoCouponTransactioninDB(redeemPoints_String,"REDEEM",mobileno_redeemKey,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
-
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
 
 
 
 
+        }
+
+
+    }
+
+    private void    initAndCallingOrderPlacingModuleHandlerInterface(Context mContext, String Payment_mode, String discountAmount_stringGlobal, String orderplacedTime, String UserMobile, String ordertype, String vendorKey, String vendorName, long sTime, String payableAmount, Modal_Address selected_address_modal, String tokenNo, String userStatus, String customerName_string, boolean isinventorycheck, double newamountUserHaveAsCredit, double oldamountUserHaveAsCredit) {
+        String itemTotalwithoutGst = total_item_Rs_text_widget.getText().toString();
+        String taxAmount = taxes_and_Charges_rs_text_widget.getText().toString();
+
+        JSONArray itemDespArray = new JSONArray();
+/*
+        for (int i = 0; i < cart_Item_List.size(); i++) {
+            String itemUniqueCode = cart_Item_List.get(i);
+            Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(itemUniqueCode);
+            String itemName =
+                    String.valueOf(Objects.requireNonNull(modal_newOrderItems).getItemname());
+
+            if(itemName.contains("Grill House")){
+                itemName =  itemName.replace("Grill House ","");
+            }
+            else if(itemName.contains("Ready to Cook")){
+                itemName =  itemName.replace("Ready to Cook","");
+            }
+            else{
+                itemName=itemName;
+            }
+            String price = "";
+            if( modal_newOrderItems.getItemPrice_quantityBased()!=null){
+                price =  modal_newOrderItems.getItemPrice_quantityBased();
+            }
+            else{
+                price ="";
+            }
+            //  modal_newOrderItems.getItemPrice_quantityBased();
+            String weight = "";
+            if(modal_newOrderItems.getItemFinalWeight()!=null){
+                weight = modal_newOrderItems.getItemFinalWeight();
+
+            }
+            else{
+                weight = "";
+            }
+            String quantity = "";
+            if( modal_newOrderItems.getQuantity()!=null){
+                quantity =  modal_newOrderItems.getQuantity();;
+
+            }
+            else{
+                quantity = "";
+            }
+
+            String GstAmount = "";
+            if(modal_newOrderItems.getGstAmount()!=null){
+                GstAmount = (modal_newOrderItems.getGstAmount());
+            }
+            else{
+                GstAmount ="";
+            }
+
+            String menuItemId ="";
+            if( modal_newOrderItems.getMenuItemId()!=null) {
+                menuItemId =    modal_newOrderItems.getMenuItemId();
+            }
+            else{
+                menuItemId ="";
+            }
+            String netweight ="";
+            if( modal_newOrderItems.getNetweight()!=null){
+                netweight = modal_newOrderItems.getNetweight();
+            }
+            else{
+                netweight ="";
+            }
+
+            String portionsize = "";
+            if(modal_newOrderItems.getPortionsize()!=null){
+                portionsize = modal_newOrderItems.getPortionsize();
+            }
+            else{
+                portionsize = "";
+            }
+
+            String grossweight ="";
+            if(modal_newOrderItems.getGrossweight()!=null){
+                grossweight    = modal_newOrderItems.getGrossweight();
+
+            }
+            else{
+                grossweight ="";
+            }
+            String subCtgyKey = "";
+            if(modal_newOrderItems.getTmcsubctgykey()!=null){
+                subCtgyKey =   modal_newOrderItems.getTmcsubctgykey();
+            }
+            else{
+                subCtgyKey = "";
+            }
+
+            String grossWeightingrams = "";
+            try {
+                if (!grossweight.equals("")) {
+                    grossWeightingrams = grossweight.replaceAll("[^\\d.]", "");
 
                 }
             }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+            double grossweightingrams_double =0;
+            try{
+                if(!grossWeightingrams.equals("")) {
+                    grossweightingrams_double = Double.parseDouble(grossWeightingrams);
+                }
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+
+
+
+
+            if(modal_newOrderItems.getApplieddiscountpercentage()!=null){
+                applieddiscountpercentage =   modal_newOrderItems.getApplieddiscountpercentage();
+                applieddiscountpercentage = applieddiscountpercentage.replaceAll("[^\\d. ]", "");
+            }
             else{
+                applieddiscountpercentage = "0";
+            }
+            try{
+                if(modal_newOrderItems.getAppmarkuppercentage()!=null){
+                    appMarkupPercentage =   modal_newOrderItems.getAppmarkuppercentage();
+                    appMarkupPercentage = appMarkupPercentage.replaceAll("[^\\d. ]", "");
+                }
+                else{
+                    appMarkupPercentage = "0";
+                }
+            }
+            catch (Exception e){
+                appMarkupPercentage = "0";
+                e.printStackTrace();
+            }
 
-                try{
-                    totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
 
+
+            JSONObject itemdespObject = new JSONObject();
+            try {
+
+                try {
+                    if ((!applieddiscountpercentage.equals("0")) && (!applieddiscountpercentage.equals("")) && (!applieddiscountpercentage.equals("null")) && (!applieddiscountpercentage.equals(null))) {
+                        itemdespObject.put("applieddiscpercentage", applieddiscountpercentage);
+                    }
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                if(isPhoneOrderSelected) {
+                    itemdespObject.put("appmarkuppercentage", appMarkupPercentage);
+
+                }
+
+                itemdespObject.put("menuitemid", menuItemId);
+                itemdespObject.put("itemname", itemName);
+                itemdespObject.put("tmcprice", Double.parseDouble(price));
+                itemdespObject.put("quantity", Integer.parseInt(quantity));
+                itemdespObject.put("checkouturl", "");
+                itemdespObject.put("gstamount", Double.parseDouble(GstAmount));
+                itemdespObject.put("netweight", netweight);
+                itemdespObject.put("portionsize", portionsize);
+                itemdespObject.put("tmcsubctgykey", subCtgyKey);
+                try {
+                    if (weight.equals("") || weight == (null)) {
+                        itemdespObject.put("grossweight", grossweight);
+
+                        if(grossweight.equals("")){
+                            itemdespObject.put("netweight", netweight);
+
+                        }
+                        else
+                        {
+                            itemdespObject.put("netweight", grossweight);
+                            if(grossweightingrams_double!=0) {
+                                itemdespObject.put("grossweightingrams", grossweightingrams_double);
+                            }
+
+
+                        }
+                        itemdespObject.put("weightingrams", grossweight);
+
+                    } else {
+                        itemdespObject.put("grossweight", weight);
+                        if(grossweight.equals("")){
+                            itemdespObject.put("netweight", netweight);
+
+                        }
+                        else
+                        {
+                            itemdespObject.put("netweight", weight);
+                            if(grossweightingrams_double!=0) {
+                                itemdespObject.put("grossweightingrams", grossweightingrams_double);
+                            }
+                        }
+                        itemdespObject.put("weightingrams", weight);
+
+                    }
                 }
                 catch (Exception e){
                     e.printStackTrace();
                 }
 
-                String UserMobile = "+91" + mobileNo_Edit_widget.getText().toString();
 
-              //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
-             //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
-
-
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+            itemDespArray.put(itemdespObject);
+
+
         }
+
+
+ */
+
+
+        orderPlacingModuleHandler_interface = new OrderPlacingModuleHandler_Interface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try {
+
+                        try {
+                            if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
+                                //removethisaftertesting
+                                PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, UserMobile, tokenNo, itemTotalwithoutGst, taxAmount, payableAmount, String.valueOf(sTime), cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype,itemDespArray);
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
+                                //removethisaftertesting
+                                //   turnoffProgressBarAndResetArray();
+                                printReciptUsingBluetoothPrinter(orderplacedTime, UserMobile, tokenNo, itemTotalwithoutGst, taxAmount, payableAmount, String.valueOf(sTime), cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype,itemDespArray);
+
+                            }
+                            else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
+                                printReceiptUsingAsyncTak(UserMobile,  itemTotalwithoutGst, taxAmount, payableAmount, String.valueOf(sTime),  Payment_mode, discountAmount_StringGlobal,ordertype,orderplacedTime,tokenNo);
+                            //    Log.i("Printer function status", String.valueOf(PrinterFunctions.CheckStatus( portName, portSettings,2)));
+
+
+                            }
+                            else {
+                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.OrderPlaced_Printer_is_Disconnected,
+                                        R.string.OK_Text,R.string.Empty_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+                                                isPrintedSecondTimeDialogGotClicked = true;
+
+                                                if (!isinventorycheck) {
+                                                    turnoffProgressBarAndResetArray();
+                                                }
+                                                else{
+                                                    if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                                                        turnoffProgressBarAndResetArray();
+                                                    }
+                                                }
+
+
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+
+                                            }
+                                        });
+                            }
+
+                        }
+                        catch(Exception e ){
+                            e.printStackTrace();
+                        }
+                } catch (Exception e) {
+                    showProgressBar(false);
+                    isOrderDetailsMethodCalled = false;
+
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+
+                isOrderDetailsMethodCalled = false;
+                showProgressBar(false);
+                Toast.makeText(mContext,"OrderDetails is not updated in DB",Toast.LENGTH_SHORT).show();
+
+                turnoffProgressBarAndResetArray();
+            }
+
+        };
+        if(uniqueUserkeyFromDB.equals("") || uniqueUserkeyFromDB.equals("null") || uniqueUserkeyFromDB.equals(null) || uniqueUserkeyFromDB.equals("NULL")) {
+            orderPlacingModuleHandler_asyncTask = new OrderPlacingModuleHandler_AsyncTask(mContext, orderPlacingModuleHandler_interface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, redeemPoints_String, orderplacedTime, UserMobile, ordertype, vendorKey, vendorName, sTime, payableAmount, isinventorycheck, user_key_toAdd_Address,redeemPointsJson , newamountUserHaveAsCredit , oldamountUserHaveAsCredit,selected_address_modal,tokenNo);
+        }
+        else {
+            orderPlacingModuleHandler_asyncTask = new OrderPlacingModuleHandler_AsyncTask(mContext, orderPlacingModuleHandler_interface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, Payment_mode, discountAmount_StringGlobal,redeemPoints_String, orderplacedTime, UserMobile, ordertype, vendorKey, vendorName, sTime, payableAmount, isinventorycheck, uniqueUserkeyFromDB,redeemPointsJson , newamountUserHaveAsCredit , oldamountUserHaveAsCredit,selected_address_modal,tokenNo);
+        }
+
+        orderPlacingModuleHandler_asyncTask.execute();
 
 
     }
@@ -5040,7 +6893,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
     private void Add_Address_For_this_User(JSONObject jsonObject) {
 
-        Toast.makeText(mContext, "add zaddress json", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, "add address json", Toast.LENGTH_SHORT).show();
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_addAddress ,
                 jsonObject, new Response.Listener<JSONObject>() {
@@ -5098,34 +6951,33 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     }
 
 
-    private void Add_OR_Update_Entry_inTMCUserTable(String usertype) {
+    private void Add_OR_Update_Entry_inTMCUserTable(String usertype  , String uniquekey ) {
 
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("mobileno",usermobileNo);
-            jsonObject.put("email","");
+        if(!useStoreNumberCheckBox.isChecked()) {
 
-            if(updateUserName){
-                customerName = autoComplete_customerNameText_widget.getText().toString();
 
-                jsonObject.put("name",customerName);
+            usermobileNo = "+91" + mobileNo_Edit_widget.getText().toString();
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("mobileno", usermobileNo);
+                jsonObject.put("email", "");
 
-            }
-            else{
-                jsonObject.put("name","");
+                if (updateUserName) {
+                    customerName = autoComplete_customerNameText_widget.getText().toString();
 
-            }
+                    jsonObject.put("name", customerName);
 
+                } else {
+                    jsonObject.put("name", "");
+
+                }
+/*
             if(isNewUser) {
-                jsonObject.put("uniquekey", user_key_toAdd_Address);
-
-            }
-            else{
-                if (!isPhoneOrderSelected) {
+                if (isPhoneOrderSelected) {
                     if (user_key_toAdd_Address.equals("")) {
                         String userKey = "";
                         try {
-                            userKey = String.valueOf(UUID.randomUUID()) + "-" + String.valueOf(System.currentTimeMillis());
+                            userKey = String.valueOf(UUID.randomUUID());
                         } catch (Exception e) {
                             userKey = "";
                             e.printStackTrace();
@@ -5138,80 +6990,91 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         } else {
                             Toast.makeText(mContext, "User Key is Empty", Toast.LENGTH_SHORT).show();
                         }
-                        }
+                    }
+                    else{
+                        jsonObject.put("uniquekey", user_key_toAdd_Address);
+                    }
 
 
 
+                }
+                else {
 
-                } else {
+                    jsonObject.put("uniquekey", user_key_toAdd_Address);
+                }
+            }
+            else{
+                if (isPhoneOrderSelected) {
+
                     jsonObject.put("uniquekey", uniqueUserkeyFromDB);
 
                 }
             }
-            jsonObject.put("authorizationcode","");
-            jsonObject.put("appversion","");
-            jsonObject.put("fcmtoken","");
-            jsonObject.put("createddate",getDate());
-            jsonObject.put("createdtime",getDate_and_time());
-            jsonObject.put("updatedtime",getDate_and_time());
-            jsonObject.put("usertype",usertype);
-            jsonObject.put("deviceos","");
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+ */
+                jsonObject.put("uniquekey", uniquekey);
 
+                jsonObject.put("authorizationcode", "");
+                jsonObject.put("appversion", "");
+                jsonObject.put("fcmtoken", "");
+                jsonObject.put("createddate", getDate());
+                jsonObject.put("createdtime", getDate_and_time());
+                jsonObject.put("updatedtime", getDate_and_time());
+                jsonObject.put("usertype", usertype);
+                jsonObject.put("deviceos", "");
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,Constants.api_add_update_TMCUserTable ,
-                jsonObject, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(@NonNull JSONObject response) {
-
-                ////Log.d(Constants.TAG, "Response: " + response);
-                try {
-                    String message = response.getString("message");
-                    if (message.equals("success")) {
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
 
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Constants.api_add_update_TMCUserTable,
+                    jsonObject, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(@NonNull JSONObject response) {
+
+                    ////Log.d(Constants.TAG, "Response: " + response);
+                    try {
+                        String message = response.getString("message");
+                        if (message.equals("success")) {
+
+
+                        }
+
+                    } catch (JSONException e) {
+
+                        e.printStackTrace();
                     }
-
-                } catch (JSONException e) {
-
-                    e.printStackTrace();
                 }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(@NonNull VolleyError error) {
+
+                    error.printStackTrace();
+                }
+            }) {
+                @NonNull
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    final Map<String, String> params = new HashMap<>();
+                    params.put("Content-Type", "application/json");
+
+                    return params;
+                }
+            };
+            // Make the request
+
+
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+            // Volley.newRequestQueue(mContext).add(jsonObjectRequest);
+            if (commonPOSTRequestQueue == null) {
+                commonPOSTRequestQueue = Volley.newRequestQueue(mContext);
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(@NonNull VolleyError error) {
-
-                error.printStackTrace();
-            }
-        }) {
-            @NonNull
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                final Map<String, String> params = new HashMap<>();
-                params.put("Content-Type", "application/json");
-
-                return params;
-            }
-        };
-        // Make the request
+            commonPOSTRequestQueue.add(jsonObjectRequest);
 
 
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(40000, 1, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-       // Volley.newRequestQueue(mContext).add(jsonObjectRequest);
-        if (commonPOSTRequestQueue == null) {
-            commonPOSTRequestQueue = Volley.newRequestQueue(mContext);
         }
-        commonPOSTRequestQueue.add(jsonObjectRequest);
-
-
-
-
-
-
 
 
 
@@ -5264,53 +7127,142 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                 e.printStackTrace();
                                                 totalamountUserHaveAsCredit = 0;
                                             }
+                                            if(isOrderPlacingMicroserviceisActive){
+                                                try {
+                                                    String customerMobileNo = mobileNo_Edit_widget.getText().toString();
 
-                                            if(!isCustomerOrdersTableServiceCalled){
-                                                try{
-                                                    if(orderdetailsnewschema){
+
+                                                    String payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
+
+
+
+                                                    if ((OrderTypefromSpinner.equals(Constants.PhoneOrder))) {
+
+                                                        ordertype = Constants.PhoneOrder;
+                                                    }else {
+                                                        ordertype = Constants.POSORDER;
+
+                                                    }
+                                                    try {
+                                                        if (!discountAmount_StringGlobal.equals("") && (!discountAmount_StringGlobal.equals("0"))) {
+                                                            discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                                                            discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                                        } else {
+                                                            discountAmount_DoubleGlobal = 0;
+                                                        }
+
+
+                                                    } catch (Exception e) {
+                                                        discountAmount_DoubleGlobal = 0;
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    try {
+                                                        if (!redeemPoints_String.equals("") && (!redeemPoints_String.equals("0"))) {
+                                                            redeemPoints_String = (redeemPoints_String.replaceAll("[^\\d.]", ""));
+                                                        } else {
+                                                            redeemPoints_String = "0";
+                                                        }
+
+
+                                                    } catch (Exception e) {
+                                                        redeemPoints_String = "0";
+                                                        e.printStackTrace();
+                                                    }
+
+
+
+
+                                                    String customerName_String = "";
+                                                    try {
+                                                        customerName_String = autoComplete_customerNameText_widget.getText().toString();
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    double newamountUserHaveAsCredit = 0;
+
+                                                    try {
+                                                        double payableAmount_double = 0;
+                                                        String usermobileno = "";
+                                                        try {
+                                                            usermobileno = "+91" + mobileNo_Edit_widget.getText().toString();
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+
+                                                        try {
+                                                            if ((!payableAmountt.equals("null")) && (!payableAmountt.equals("")) && (!payableAmountt.equals(null))) {
+                                                                payableAmount_double = Double.parseDouble(payableAmountt);
+
+                                                            }
+
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                        double finalPayableAmount_double = payableAmount_double;
+                                                        String finalUsermobileno = usermobileno;
+                                                        double finalPayableAmount_double1 = payableAmount_double;
+                                                        newamountUserHaveAsCredit = finalPayableAmount_double + totalamountUserHaveAsCredit;
+                                                    }
+                                                    catch(Exception e){
+                                                        e.printStackTrace();
+                                                    }
+                                                    initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String , isinventorycheck , newamountUserHaveAsCredit ,totalamountUserHaveAsCredit);
+
+
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+
+                                                }
+
+                                            }
+                                            else {
+                                            if (!isCustomerOrdersTableServiceCalled) {
+                                                try {
+                                                    if (orderdetailsnewschema) {
                                                         String customerMobileNo = mobileNo_Edit_widget.getText().toString();
-                                                        String  payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
+                                                        String payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
 
-                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
 
-                                                        if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+                                                        if ((OrderTypefromSpinner.equals(Constants.PhoneOrder))) {
 
                                                             ordertype = Constants.PhoneOrder;
-                                                        }
-                                                        else{
+                                                        } else {
                                                             ordertype = Constants.POSORDER;
 
                                                         }
                                                         try {
-                                                            if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                                                            if (!discountAmount_StringGlobal.equals("") && (!discountAmount_StringGlobal.equals("0"))) {
                                                                 discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
-                                                                discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
-                                                            }
-                                                            else{
-                                                                discountAmount_DoubleGlobal =0;
+                                                                discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                                            } else {
+                                                                discountAmount_DoubleGlobal = 0;
                                                             }
 
 
-                                                        }
-                                                        catch (Exception e){
-                                                            discountAmount_DoubleGlobal =0;
+                                                        } catch (Exception e) {
+                                                            discountAmount_DoubleGlobal = 0;
                                                             e.printStackTrace();
                                                         }
-                                                        isCustomerOrdersTableServiceCalled =true;
-                                                        String customerName_String ="";
-                                                        try{
+                                                        isCustomerOrdersTableServiceCalled = true;
+                                                        String customerName_String = "";
+                                                        try {
                                                             customerName_String = autoComplete_customerNameText_widget.getText().toString();
-                                                        }
-                                                        catch (Exception e){
+                                                        } catch (Exception e) {
                                                             e.printStackTrace();
                                                         }
-                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode,discountAmount_StringGlobal,Currenttime,customerMobileNo,ordertype,vendorKey,vendorName, sTime,payableAmountt,selected_Address_modal,tokenNo,userStatus,customerName_String,redeemPoints_String);
+
+
+                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String, redeemPoints_String);
+
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String, redeemPoints_String);
                                                         asyncTask.execute();
 
                                                     }
 
-                                                }
-                                                catch (Exception e){
+                                                } catch (Exception e) {
                                                     e.printStackTrace();
 
                                                 }
@@ -5319,13 +7271,30 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                             if (!isOrderDetailsMethodCalled) {
 
-                                                PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+                                                threadPool.runTask(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+
+                                                    }
+                                                });
+
+
                                             }
                                             if (!isOrderTrackingDetailsMethodCalled) {
 
-                                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
-                                            }
 
+                                                threadPool.runTask(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+
+                                                    }
+                                                });
+
+
+                                            }
+                                        }
                                         } catch (Exception e) {
                                             Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
                                             totalamountUserHaveAsCredit = 0;
@@ -5333,54 +7302,145 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                         }
                                     }
                             }
-                                else{
+                                else {
                                     totalamountUserHaveAsCredit = 0;
-                                    if(!isCustomerOrdersTableServiceCalled){
-                                        try{
-                                            if(orderdetailsnewschema){
-                                                String customerMobileNo = mobileNo_Edit_widget.getText().toString();
-                                                String  payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
 
-                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
+                                    if (isOrderPlacingMicroserviceisActive) {
+
+                                        try {
+                                            String customerMobileNo = mobileNo_Edit_widget.getText().toString();
+
+
+                                            String payableAmountt = total_Rs_to_Pay_text_widget.getText().toString();
+                                            double payableAmount_double = 0;
+
+
+                                            if ((OrderTypefromSpinner.equals(Constants.PhoneOrder))) {
+
+                                                ordertype = Constants.PhoneOrder;
+                                            }else {
+                                                ordertype = Constants.POSORDER;
+
+                                            }
+                                            try {
+                                                if (!discountAmount_StringGlobal.equals("") && (!discountAmount_StringGlobal.equals("0"))) {
+                                                    discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
+                                                    discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                                } else {
+                                                    discountAmount_DoubleGlobal = 0;
+                                                }
+
+
+                                            } catch (Exception e) {
+                                                discountAmount_DoubleGlobal = 0;
+                                                e.printStackTrace();
+                                            }
+
+
+                                            try {
+                                                if (!redeemPoints_String.equals("") && (!redeemPoints_String.equals("0"))) {
+                                                    redeemPoints_String = (redeemPoints_String.replaceAll("[^\\d.]", ""));
+                                                } else {
+                                                    redeemPoints_String = "0";
+                                                }
+
+
+                                            } catch (Exception e) {
+                                                redeemPoints_String = "0";
+                                                e.printStackTrace();
+                                            }
+
+
+
+
+                                            String customerName_String = "";
+                                            try {
+                                                customerName_String = autoComplete_customerNameText_widget.getText().toString();
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            double newamountUserHaveAsCredit = 0;
+
+                                            try {
+
+                                                String usermobileno = "";
+                                                try {
+                                                    usermobileno = "+91" + mobileNo_Edit_widget.getText().toString();
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                try {
+                                                    if ((!payableAmountt.equals("null")) && (!payableAmountt.equals("")) && (!payableAmountt.equals(null))) {
+                                                        payableAmount_double = Double.parseDouble(payableAmountt);
+
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                                 }
+                                            catch(Exception e){
+                                                e.printStackTrace();
+                                            }
+                                            initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmountt, selected_Address_modal, tokenNo, userStatus, customerName_String , isinventorycheck , payableAmount_double ,0);
+
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+
+                                        }
+
+
+                                    }
+                                    else {
+
+
+
+
+                                    if (!isCustomerOrdersTableServiceCalled) {
+                                        try {
+                                            if (orderdetailsnewschema) {
+                                                String customerMobileNo = mobileNo_Edit_widget.getText().toString();
+                                                String payableAmount = total_Rs_to_Pay_text_widget.getText().toString();
+
+                                                if ((OrderTypefromSpinner.equals(Constants.PhoneOrder))) {
 
                                                     ordertype = Constants.PhoneOrder;
-                                                }
-                                                else{
+                                                } else {
                                                     ordertype = Constants.POSORDER;
 
                                                 }
                                                 try {
-                                                    if (!discountAmount_StringGlobal.equals("")&&(!discountAmount_StringGlobal.equals("0"))) {
+                                                    if (!discountAmount_StringGlobal.equals("") && (!discountAmount_StringGlobal.equals("0"))) {
                                                         discountAmount_StringGlobal = (discountAmount_StringGlobal.replaceAll("[^\\d.]", ""));
-                                                        discountAmount_DoubleGlobal= Double.parseDouble(discountAmount_StringGlobal);
-                                                    }
-                                                    else{
-                                                        discountAmount_DoubleGlobal =0;
+                                                        discountAmount_DoubleGlobal = Double.parseDouble(discountAmount_StringGlobal);
+                                                    } else {
+                                                        discountAmount_DoubleGlobal = 0;
                                                     }
 
 
-                                                }
-                                                catch (Exception e){
-                                                    discountAmount_DoubleGlobal =0;
+                                                } catch (Exception e) {
+                                                    discountAmount_DoubleGlobal = 0;
                                                     e.printStackTrace();
                                                 }
-                                                isCustomerOrdersTableServiceCalled =true;
-                                                String customerName_String ="";
-                                                try{
+                                                isCustomerOrdersTableServiceCalled = true;
+                                                String customerName_String = "";
+                                                try {
                                                     customerName_String = autoComplete_customerNameText_widget.getText().toString();
-                                                }
-                                                catch (Exception e){
+                                                } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
 
-                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode,discountAmount_StringGlobal,Currenttime,customerMobileNo,ordertype,vendorKey,vendorName, sTime,payableAmount,selected_Address_modal,tokenNo,userStatus,customerName_String,redeemPoints_String);
+                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmount, selected_Address_modal, tokenNo, userStatus, customerName_String, redeemPoints_String);
+
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrders_MenuItem_Fragment.cart_Item_List, NewOrders_MenuItem_Fragment.cartItem_hashmap, paymentMode, discountAmount_StringGlobal, Currenttime, customerMobileNo, ordertype, vendorKey, vendorName, sTime, payableAmount, selected_Address_modal, tokenNo, userStatus, customerName_String, redeemPoints_String);
                                                 asyncTask.execute();
 
                                             }
 
-                                        }
-                                        catch (Exception e){
+                                        } catch (Exception e) {
                                             e.printStackTrace();
 
                                         }
@@ -5388,12 +7448,29 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                     if (!isOrderDetailsMethodCalled) {
 
-                                        PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+                                        threadPool.runTask(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                PlaceOrder_in_OrderDetails(NewOrders_MenuItem_Fragment.cart_Item_List, paymentMode, sTime);
+
+                                            }
+                                        });
+
+
                                     }
                                     if (!isOrderTrackingDetailsMethodCalled) {
 
-                                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+                                        threadPool.runTask(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime);
+
+                                            }
+                                        });
+
+
                                     }
+                                }
                                 }
                             } catch (Exception e) {
                                 Toast.makeText(mContext,"Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
@@ -5579,7 +7656,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         public void onYes() {
                             //ConnectPrinter();
                             isOrderPlacedinOrderdetails = true;
-
                             if (!isinventorycheck) {
                                 turnoffProgressBarAndResetArray();
                             }
@@ -5613,7 +7689,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                             public void onYes() {
                                // ConnectPrinter();
                                 isOrderPlacedinOrderdetails = true;
-
                                 if (!isinventorycheck) {
                                     turnoffProgressBarAndResetArray();
                                 }
@@ -5734,8 +7809,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                         }
 
-                                        if (fullitemName.length() > 21) {
-                                            itemName = fullitemName.substring(0, 21);
+                                        if (fullitemName.length() > 15) {
+                                            itemName = fullitemName.substring(0, 15);
                                             itemName = itemName + "...";
 
 
@@ -5992,8 +8067,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                     }
 
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 15) {
+                                        itemName = fullitemName.substring(0, 15);
                                         itemName = itemName + "...";
 
 
@@ -6282,6 +8357,30 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                     }
+                    else if((vendorKey.equals("vendor_6")) ) {
+
+                        Title = "New NS Bismillah ";
+
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString(Title);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                    /*    BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                     */
+
+                    }
                     else {
                         Title = "The Meat Chop";
                         BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
@@ -6447,14 +8546,14 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                     }
 
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 15) {
+                                        itemName = fullitemName.substring(0, 15);
                                         itemName = itemName + "...";
 
-                                        fullitemName = fullitemName.substring(0, 21);
+                                        fullitemName = fullitemName.substring(0, 15);
                                         fullitemName = fullitemName + "...";
                                     }
-                                    if (fullitemName.length() < 21) {
+                                    if (fullitemName.length() < 15) {
                                         itemName = fullitemName;
 
                                         fullitemName = fullitemName;
@@ -6466,11 +8565,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                         itemName = fullitemName.substring(0, indexofbraces);
 
                                     }
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 15) {
+                                        itemName = fullitemName.substring(0, 15);
                                         itemName = itemName + "...";
                                     }
-                                    if (fullitemName.length() < 21) {
+                                    if (fullitemName.length() < 15) {
                                         itemName = fullitemName;
 
                                     }
@@ -7398,7 +9497,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         else {
                             isOrderPlacedinOrderdetails = true;
 
-
                             if (!isinventorycheck) {
                                 turnoffProgressBarAndResetArray();
                             }
@@ -7472,7 +9570,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                             @Override
                                             public void onNo() {
                                                 isOrderPlacedinOrderdetails = true;
-
 
                                                 isPrintedSecondTimeDialogGotClicked = true;
                                                 if (!isinventorycheck) {
@@ -7585,12 +9682,31 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
     }
 
      private void turnoffProgressBarAndResetArray() {
+
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
               //  Toast.makeText(mContext, "in turn off progress bar", Toast.LENGTH_SHORT).show();
 
 
+                try{
+                    mContext.unregisterReceiver(myReceiverforPrintingService);
+
+                }
+                catch (Exception e){
+                  //  e.printStackTrace();
+                }
+
+                try{
+                    Intent serviceIntent = new Intent(mContext, BackgroundServiceForPrintingReceipt.class);
+                    mContext.stopService(serviceIntent);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                 }
+
+                modal_forPrintReceipt = new Modal_forPrintReceipt();
                 customerMobileno_global="";
                 customerName ="";
                 userAddressArrayList.clear();
@@ -7599,14 +9715,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 isPrintedSecondTimeDialogGotClicked = false;
                 stockUpdatedItemsCount = 0;
 
-                /*
-                selectedAddressKey = String.valueOf("");
-                selectedAddress = String.valueOf("");
-                userLatitude = String.valueOf("0");
-                userLongitude = String.valueOf("0");
-                deliveryDistance ="";
 
-                 */
 
                 user_key_toAdd_Address ="";
                 uniqueUserkeyFromDB ="";
@@ -7626,8 +9735,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 isAddressForPhoneOrderSelected = false;
                 isUsertype_AlreadyPhone = false;
                 isUsertype_AlreadyPos = false;
-                userFetchedManually = false;
-
+                userFetched_ForPOS_or_Manually = false;
+                isfetchUserButtonClicked= false;
 
 
                 StockBalanceChangedForThisItemList.clear();
@@ -7649,7 +9758,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 old_taxes_and_charges_Amount = 0;
                 old_total_Amount = 0;
                 createEmptyRowInListView("empty");
-                CallAdapter();
+                 CallAdapter();
                 discountAmount_StringGlobal = "0";
                 isDiscountApplied = false;
                 discount_Edit_widget.setText("0");
@@ -7663,7 +9772,14 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
                 total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
                 isPrintedSecondTime = false;
-                useStoreNumberCheckBox.setChecked(false);
+                //for ns bismillah
+                if(vendorKey.equals("vendor_6")){
+                    useStoreNumberCheckBox.setChecked(true);
+                }
+                else{
+                    useStoreNumberCheckBox.setChecked(false);
+                }
+               // useStoreNumberCheckBox.setChecked(false);
                 updateUserNameCheckBox.setChecked(false);
                 updateUserNameCheckBox.setChecked(false);
                 ispointsApplied_redeemClicked=false;
@@ -7697,6 +9813,21 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 //discountlayout visible
                 discountAmountLayout.setVisibility(View.GONE);
                 showProgressBar(false);
+                try{
+                    if(!threadPool.equals(null)) {
+                        threadPool.shutdown();
+                        threadPool = null;
+                    }
+                }
+                catch (Exception e){
+                   // e.printStackTrace();
+                }
+                try{
+                    System.gc();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
                 return;
 
             }
@@ -7808,14 +9939,14 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                     }
 
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 15) {
+                                        itemName = fullitemName.substring(0, 15);
                                         itemName = itemName + "...";
 
-                                        fullitemName = fullitemName.substring(0, 21);
+                                        fullitemName = fullitemName.substring(0, 15);
                                         fullitemName = fullitemName + "...";
                                     }
-                                    if (fullitemName.length() <= 21) {
+                                    if (fullitemName.length() <= 15) {
                                         itemName = fullitemName;
 
                                         fullitemName = fullitemName;
@@ -8018,7 +10149,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     Printer_POJO_Class[] Printer_POJO_ClassArray = new Printer_POJO_Class[cart_Item_List.size()];
                     double oldSavedAmount = 0;
                     // String CouponDiscount = "0";
-                    String Gstt="",subtotall="",quantity="",price="",weight="",netweight= "";
+                    String Gstt="",subtotall="",quantity="",price="",weight="",netweight= "" , priceperkg_unitprice ="" , priceSuffix ="",pricetypeforpos ="";
                     double gst_double=0,subtotal_double=0,price_double=0;
 
                     ///// Full bill
@@ -8033,8 +10164,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                             itemName = itemName.substring(0, indexofbraces);
 
                         }
-                        if (itemName.length() > 21) {
-                            itemName = itemName.substring(0, 21);
+                        if (itemName.length() > 15) {
+                            itemName = itemName.substring(0, 15);
                             itemName = itemName + "...";
                         }
                         try{
@@ -8045,6 +10176,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         }
                         catch(Exception e){
                             price  = "0";
+                            e.printStackTrace();
+                        }
+
+                        try {
+                            priceperkg_unitprice = String.valueOf(modal_newOrderItems.getTmcpriceperkg());
+                            if (priceperkg_unitprice.equals("null")) {
+                                priceperkg_unitprice = "  ";
+                            }
+                        } catch (Exception e) {
+                            priceperkg_unitprice = "0";
                             e.printStackTrace();
                         }
 
@@ -8104,9 +10245,25 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                             e.printStackTrace();
                         }
 
+                        try {
+                            pricetypeforpos = modal_newOrderItems.getPricetypeforpos();
+                        } catch (Exception e) {
+                            pricetypeforpos = "0";
+                            e.printStackTrace();
+                        }
 
 
-                        Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gstt, subtotall, "cutname");
+                        if(String.valueOf(pricetypeforpos).toUpperCase().equals("TMCPRICE")){
+
+                            if(modal_newOrderItems.getNetweight().equals("")){
+                                priceSuffix =  modal_newOrderItems.getPortionsize();
+                            }
+                            else{
+                                priceSuffix = modal_newOrderItems.getNetweight();
+                            }
+                        }
+
+                        Printer_POJO_ClassArray[i] = new Printer_POJO_Class("", quantity, orderid, itemName, weight, price, "0.00", Gstt, subtotall, "cutname", priceperkg_unitprice, pricetypeforpos, priceSuffix);
 
                     }
 
@@ -8129,6 +10286,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
 
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
+
                     }
                     else if((vendorKey.equals("vendor_5"))) {
 
@@ -8140,6 +10301,30 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
+
+                    }
+                    else if((vendorKey.equals("vendor_6"))) {
+
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 180);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "New NS Bismillah" + "\n");
+
+                     /*   PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Powered by the The Meat Chop" + "\n");
+
+
+                      */
+
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Chicken and Mutton" + "\n");
+
+
 
                     }
 
@@ -8149,12 +10334,15 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
                         PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 2, 1, 0, 1, "The Meat Chop" + "\n");
 
+                        PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
+                        PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
+                        PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
+
+
+
                     }
 
 
-                    PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
-                    PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
-                    PrinterFunctions.PrintText(portName, portSettings, 0, 0, 0, 0, 0, 0, 0, 1, "Fresh Meat and SeaFood" + "\n");
 
                     PrinterFunctions.SetLineSpacing(portName, portSettings, 60);
                     PrinterFunctions.SelectCharacterFont(portName, portSettings, 0);
@@ -9049,8 +11237,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                             public void onNo() {
                                                                 //Toast.makeText(mContext, String.valueOf(stockUpdatedItemsCount)+" stockUpdatedItemsCount on no", Toast.LENGTH_SHORT).show();
                                                                 //Toast.makeText(mContext, String.valueOf(StockBalanceChangedForThisItemList.size())+" StockBalanceChangedForThisItemList on no", Toast.LENGTH_SHORT).show();
-
-
                                                                 isPrintedSecondTimeDialogGotClicked = true;
                                                                 if (!isinventorycheck) {
                                                                     turnoffProgressBarAndResetArray();
@@ -9443,7 +11629,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                 }
                 catch (Exception e){
-
                     if (!isinventorycheck) {
                         turnoffProgressBarAndResetArray();
                     }
@@ -9645,7 +11830,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         try {
             jsonObject.put("orderid", orderid);
 
-            jsonObject.put("vendordiscountamount", Double.parseDouble(coupondiscountamount));
+           // jsonObject.put("vendordiscountamount", Double.parseDouble(coupondiscountamount));
 
             jsonObject.put("coupondiscountamount", Double.parseDouble(coupondiscountamount));
             jsonObject.put("coupontype", coupontype);
@@ -9783,13 +11968,19 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
         }
-    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext) {
+
+
+
+    private void initAndPlaceOrderinCustomerOrder_TrackingInterface(Context mContext, String paymentMode, String discountAmount_StringGlobal, String currenttime, String customerMobileNo, String ordertype, String vendorKey, String vendorName, long sTime, String payableAmountt, Modal_Address selected_Address_modal, String tokenNo, String userStatus, String customerName_String, String redeemPoints_String) {
         mResultCallback_Add_CustomerOrder_TrackingTableInterface = new Add_CustomerOrder_TrackingTableInterface() {
 
 
             @Override
             public void notifySuccess(String requestType, String success) {
                 isCustomerOrdersTableServiceCalled = false;
+               // printRecipt(customerMobileNo,  total_item_Rs_text_widget.getText().toString(), taxes_and_Charges_rs_text_widget.getText().toString(), payableAmountt, String.valueOf(sTime),  paymentMode, discountAmount_StringGlobal, ordertype,currenttime);
+              //  turnoffProgressBarAndResetArray();
+
             }
 
             @Override
@@ -9799,7 +11990,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 // Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
             }
         };
-
 
     }
 
@@ -9833,7 +12023,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-
+        Log.d(Constants.TAG, "getUserDetailsUsingMobileNo api_getTMCUserDetailsWithMobileNo: " + (Constants.api_getTMCUserDetailsWithMobileNo+"?usermobileno="+encodedMobileNo).toString());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_getTMCUserDetailsWithMobileNo+"?usermobileno="+encodedMobileNo, null,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
@@ -9846,6 +12036,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                             JSONArray JArray = response.getJSONArray("content");
                             int i1 = 0;
                             int arrayLength = JArray.length();
+
+                            Log.d(Constants.TAG, "getUserDetailsUsingMobileNo response: " + response);
+
+
                             if (arrayLength < 1) {
                                 Toast.makeText(mContext, "This mobileno is a new User" +
                                         "", Toast.LENGTH_LONG).show();
@@ -9866,10 +12060,21 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                 isNewUser = true;
                                 isAddress_Added_ForUser = false;
                             try {
-                                showProgressBar(false);
-                                loadingpanelmask_Addressdialog.setVisibility(View.GONE);
-                                loadingPanel_Addressdialog.setVisibility(View.GONE);
-                            }
+                                if(isfetchUserButtonClicked) {
+                                    showProgressBar(false);
+                                    loadingpanelmask_Addressdialog.setVisibility(View.GONE);
+                                    loadingPanel_Addressdialog.setVisibility(View.GONE);
+                                }
+                                else{
+                                    if(!userFetched_ForPOS_or_Manually){
+                                    if(isPhoneOrderSelected){
+                                        showProgressBar(false);
+                                        loadingpanelmask_Addressdialog.setVisibility(View.GONE);
+                                        loadingPanel_Addressdialog.setVisibility(View.GONE);
+                                    }
+                                    }
+                                }
+                                }
                             catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -9882,9 +12087,15 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                     JSONObject json = JArray.getJSONObject(i1);
                                     try {
                                         if (json.has("key")) {
-                                            uniqueUserkeyFromDB = json.getString("key");
+                                            if(!json.getString("key").equals("")){
+                                                uniqueUserkeyFromDB = json.getString("key");
+                                            }
+
                                         } else {
-                                            uniqueUserkeyFromDB = json.getString("uniquekey");
+                                            if(!json.getString("uniquekey").equals("")){
+                                                uniqueUserkeyFromDB = json.getString("uniquekey");
+                                            }
+
 
 
                                         }
@@ -9952,15 +12163,22 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                     }
 
-                                        if(userFetchedManually){
-                                            showProgressBar(false);
-
+                                        if(userFetched_ForPOS_or_Manually){
+                                            if(isfetchUserButtonClicked) {
+                                                showProgressBar(false);
+                                            }
                                         }
                                         else{
                                             if(!uniqueUserkeyFromDB.equals("")){
                                                 getAddressUsingUserKey(uniqueUserkeyFromDB);
 
-                                            }                                        }
+                                            }
+                                            else{
+                                                showProgressBar(false);
+                                                loadingpanelmask_Addressdialog.setVisibility(View.GONE);
+                                                loadingPanel_Addressdialog.setVisibility(View.GONE);
+                                            }
+                                        }
 
 
                                 }
@@ -9974,7 +12192,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         } catch (JSONException e) {
                             //setAddressListAdapter();
                             Toast.makeText(mContext, " Error in getting user" +String.valueOf(e), Toast.LENGTH_LONG).show();
-
+                            Log.d(Constants.TAG, "getUserDetailsUsingMobileNo try error: " + response);
                             e.printStackTrace();
 
                         }
@@ -9990,7 +12208,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     error.printStackTrace();
                     showProgressBar(false);
                    // setAddressListAdapter();
-
+                    Log.d(Constants.TAG, "getUserDetailsUsingMobileNo err response: " + error.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -10038,6 +12256,9 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     loadingpanelmask.setVisibility(View.VISIBLE);
 
                 } else {
+
+
+
                     loadingpanelmask.setVisibility(View.GONE);
                     loadingPanel.setVisibility(View.GONE);
 
@@ -10045,26 +12266,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 }
             }
         });
-    }
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.neworders_menu_item_fragment, container, false);
-        rootView.setTag("RecyclerViewFragment");
-        //Log.d(TAG, "onCreateView: ");
-        listview = rootView.findViewById(R.id.listview);
-
-        recyclerView = rootView.findViewById(R.id.recyclerView);
-
-
-
-        createEmptyRowInListView("empty");
-
-        CallAdapter();
-
-        return rootView;
-
-
     }
 
     @SuppressLint("Range")
@@ -10166,6 +12367,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                             }
                             else{
+                                
+                                
+                                if(String.valueOf(modal_newOrderItems.getBarcode().toString()).equals("999001100")){
+                                    Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
+                                }
 
                                 modal_newOrderItems.setBarcode_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.barcode_AvlDetails)));
                                 modal_newOrderItems.setItemavailability_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.itemavailability_AvlDetails)));
@@ -11097,8 +13303,448 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
     }
 
+    public boolean newRowCanBeCreated(){
+
+        if(cart_Item_List.size()>0) {
+            boolean isQuantityLeftEdited = false;
+            //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
+            boolean isWeightLeftEdited = false;
+            boolean isPriceLeftEdited = false;
+            if (vendorKey.equals("vendor_1")) {
+                if (NewOrders_MenuItem_Fragment.cart_Item_List.contains("1612")) {
+                    for (int i = 0; i < cart_Item_List.size(); i++) {
+                        String barcode = cart_Item_List.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+                        if (modal_newOrderItems.getisQuantityEdited()) {
+                            isQuantityLeftEdited = true;
+                        }
+
+                        if (modal_newOrderItems.getisWeightEdited()) {
+                            isWeightLeftEdited = true;
+                        }
+
+
+                        if (modal_newOrderItems.getisPriceEdited()) {
+                            isPriceLeftEdited = true;
+                        }
+
+
+                    }
+
+                }
+                else {
+                    for (int i = 0; i < cart_Item_List.size(); i++) {
+                        String barcode = cart_Item_List.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+
+                        if (modal_newOrderItems.getisWeightEdited()) {
+                            isWeightLeftEdited = true;
+                        }
+
+
+                        if (modal_newOrderItems.getisPriceEdited()) {
+                            isPriceLeftEdited = true;
+                        }
+
+
+                    }
+                }
+
+
+                if (isWeightCanBeEdited || isWeightMachineConnected) {
+
+                    if (isWeightLeftEdited) {
+
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
+                            }
+                        });
+                        return false;
+                    } else if (isQuantityLeftEdited) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.QuantityCantBeLeftEdited, 0);
+                            }
+                        });
+                        return false;
+                    } else {
+
+
+                        if (isPriceLeftEdited) {
+
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showProgressBar(false);
+                                    AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                }
+                            });
+                            return false;
+                        } else {
+                            return true;
+
+
+                        }
+                    }
+
+
+                } else {
+                    if (isQuantityLeftEdited) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.QuantityCantBeLeftEdited, 0);
+                            }
+                        });
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+            else {
+
+                if (isWeightCanBeEdited || isWeightMachineConnected) {
+
+                    for (int i = 0; i < cart_Item_List.size(); i++) {
+                        String barcode = cart_Item_List.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+                        if (modal_newOrderItems.getisWeightEdited()) {
+                            isWeightLeftEdited = true;
+                        }
+
+                        if (modal_newOrderItems.getisPriceEdited()) {
+                            isPriceLeftEdited = true;
+                        }
+
+
+                    }
+
+                    if (isWeightLeftEdited) {
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
+                            }
+                        });
+                        return false;
+                    }
+                    else {
+
+
+                        if (isPriceLeftEdited) {
+
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showProgressBar(false);
+                                    AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                }
+                            });
+                            return false;
+                        } else {
+
+                            return true;
+
+                        }
+                    }
+
+
+                } else {
+                    return true;
+                }
+            }
+        }
+        else{
+            return true;
+        }
+
+
+    }
 
     void createEmptyRowInListView(String empty) {
+        /*
+        if(cart_Item_List.size()>0) {
+            boolean isQuantityLeftEdited = false;
+            //Log.i(TAG, "call adapter cart_Item " + cart_Item_List.size());
+            boolean isWeightLeftEdited = false;
+            boolean isPriceLeftEdited = false;
+            if (vendorKey.equals("vendor_1")) {
+                if (NewOrders_MenuItem_Fragment.cart_Item_List.contains("1612")) {
+                    for (int i = 0; i < cart_Item_List.size(); i++) {
+                        String barcode = cart_Item_List.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+                        if (modal_newOrderItems.getisQuantityEdited()) {
+                            isQuantityLeftEdited = true;
+                        }
+
+                        if (modal_newOrderItems.getisWeightEdited()) {
+                            isWeightLeftEdited = true;
+                        }
+
+
+                        if (modal_newOrderItems.getisPriceEdited()) {
+                            isPriceLeftEdited = true;
+                        }
+
+
+                    }
+
+                } else {
+                    for (int i = 0; i < cart_Item_List.size(); i++) {
+                        String barcode = cart_Item_List.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+
+                        if (modal_newOrderItems.getisWeightEdited()) {
+                            isWeightLeftEdited = true;
+                        }
+
+
+                        if (modal_newOrderItems.getisPriceEdited()) {
+                            isPriceLeftEdited = true;
+                        }
+
+
+                    }
+                }
+
+
+                if (isWeightCanBeEdited || isWeightMachineConnected) {
+
+                    if (isWeightLeftEdited) {
+
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
+                            }
+                        });
+                    } else if (isQuantityLeftEdited) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.QuantityCantBeLeftEdited, 0);
+                            }
+                        });
+                    } else {
+
+
+                        if (isPriceLeftEdited) {
+
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showProgressBar(false);
+                                    AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                }
+                            });
+                        } else {
+                            Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
+                            newOrdersPojoClass.itemname = "";
+                            newOrdersPojoClass.tmcpriceperkg = "";
+                            newOrdersPojoClass.grossweight = "";
+                            newOrdersPojoClass.netweight = "";
+                            newOrdersPojoClass.tmcprice = "";
+                            newOrdersPojoClass.gstpercentage = "";
+                            newOrdersPojoClass.portionsize = "";
+                            newOrdersPojoClass.pricetypeforpos = "";
+                            newOrdersPojoClass.itemFinalWeight = "";
+                            newOrdersPojoClass.pricePerItem = "";
+                            newOrdersPojoClass.quantity = "";
+                            newOrdersPojoClass.itemFinalPrice = "0";
+                            newOrdersPojoClass.gstpercentage = "0";
+                            newOrdersPojoClass.discountpercentage = "0";
+                            newOrdersPojoClass.applieddiscountpercentage = "0";
+                            newOrdersPojoClass.itemuniquecode = empty;
+                            cart_Item_List.add(empty);
+                            cartItem_hashmap.put(empty, newOrdersPojoClass);
+
+
+                        }
+                    }
+
+
+                } else {
+                    if (isQuantityLeftEdited) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.QuantityCantBeLeftEdited, 0);
+                            }
+                        });
+                    } else {
+                        Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
+                        newOrdersPojoClass.itemname = "";
+                        newOrdersPojoClass.tmcpriceperkg = "";
+                        newOrdersPojoClass.grossweight = "";
+                        newOrdersPojoClass.netweight = "";
+                        newOrdersPojoClass.tmcprice = "";
+                        newOrdersPojoClass.gstpercentage = "";
+                        newOrdersPojoClass.portionsize = "";
+                        newOrdersPojoClass.pricetypeforpos = "";
+                        newOrdersPojoClass.itemFinalWeight = "";
+                        newOrdersPojoClass.pricePerItem = "";
+                        newOrdersPojoClass.quantity = "";
+                        newOrdersPojoClass.itemFinalPrice = "0";
+                        newOrdersPojoClass.gstpercentage = "0";
+                        newOrdersPojoClass.discountpercentage = "0";
+                        newOrdersPojoClass.applieddiscountpercentage = "0";
+                        newOrdersPojoClass.itemuniquecode = empty;
+                        cart_Item_List.add(empty);
+                        cartItem_hashmap.put(empty, newOrdersPojoClass);
+                    }
+                }
+            } else {
+
+                if (isWeightCanBeEdited || isWeightMachineConnected) {
+
+                    for (int i = 0; i < cart_Item_List.size(); i++) {
+                        String barcode = cart_Item_List.get(i);
+                        Modal_NewOrderItems modal_newOrderItems = cartItem_hashmap.get(barcode);
+
+                        if (modal_newOrderItems.getisWeightEdited()) {
+                            isWeightLeftEdited = true;
+                        }
+
+                        if (modal_newOrderItems.getisPriceEdited()) {
+                            isPriceLeftEdited = true;
+                        }
+
+
+                    }
+
+                    if (isWeightLeftEdited) {
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                showProgressBar(false);
+                                AlertDialogClass.showDialog(getActivity(), Constants.WeightCantBeLeftEdited, 0);
+                            }
+                        });
+                    } else {
+
+
+                        if (isPriceLeftEdited) {
+
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showProgressBar(false);
+                                    AlertDialogClass.showDialog(getActivity(), Constants.PriceCantBeLeftEdited, 0);
+                                }
+                            });
+                        } else {
+
+                            Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
+                            newOrdersPojoClass.itemname = "";
+                            newOrdersPojoClass.tmcpriceperkg = "";
+                            newOrdersPojoClass.grossweight = "";
+                            newOrdersPojoClass.netweight = "";
+                            newOrdersPojoClass.tmcprice = "";
+                            newOrdersPojoClass.gstpercentage = "";
+                            newOrdersPojoClass.portionsize = "";
+                            newOrdersPojoClass.pricetypeforpos = "";
+                            newOrdersPojoClass.itemFinalWeight = "";
+                            newOrdersPojoClass.pricePerItem = "";
+                            newOrdersPojoClass.quantity = "";
+                            newOrdersPojoClass.itemFinalPrice = "0";
+                            newOrdersPojoClass.gstpercentage = "0";
+                            newOrdersPojoClass.discountpercentage = "0";
+                            newOrdersPojoClass.applieddiscountpercentage = "0";
+                            newOrdersPojoClass.itemuniquecode = empty;
+                            cart_Item_List.add(empty);
+                            cartItem_hashmap.put(empty, newOrdersPojoClass);
+
+                        }
+                    }
+
+
+                } else {
+                    Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
+                    newOrdersPojoClass.itemname = "";
+                    newOrdersPojoClass.tmcpriceperkg = "";
+                    newOrdersPojoClass.grossweight = "";
+                    newOrdersPojoClass.netweight = "";
+                    newOrdersPojoClass.tmcprice = "";
+                    newOrdersPojoClass.gstpercentage = "";
+                    newOrdersPojoClass.portionsize = "";
+                    newOrdersPojoClass.pricetypeforpos = "";
+                    newOrdersPojoClass.itemFinalWeight = "";
+                    newOrdersPojoClass.pricePerItem = "";
+                    newOrdersPojoClass.quantity = "";
+                    newOrdersPojoClass.itemFinalPrice = "0";
+                    newOrdersPojoClass.gstpercentage = "0";
+                    newOrdersPojoClass.discountpercentage = "0";
+                    newOrdersPojoClass.applieddiscountpercentage = "0";
+                    newOrdersPojoClass.itemuniquecode = empty;
+                    cart_Item_List.add(empty);
+                    cartItem_hashmap.put(empty, newOrdersPojoClass);
+                }
+            }
+        }
+        else{
+            Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
+            newOrdersPojoClass.itemname = "";
+            newOrdersPojoClass.tmcpriceperkg = "";
+            newOrdersPojoClass.grossweight = "";
+            newOrdersPojoClass.netweight = "";
+            newOrdersPojoClass.tmcprice = "";
+            newOrdersPojoClass.gstpercentage = "";
+            newOrdersPojoClass.portionsize = "";
+            newOrdersPojoClass.pricetypeforpos = "";
+            newOrdersPojoClass.itemFinalWeight = "";
+            newOrdersPojoClass.pricePerItem = "";
+            newOrdersPojoClass.quantity = "";
+            newOrdersPojoClass.itemFinalPrice = "0";
+            newOrdersPojoClass.gstpercentage = "0";
+            newOrdersPojoClass.discountpercentage = "0";
+            newOrdersPojoClass.applieddiscountpercentage = "0";
+            newOrdersPojoClass.itemuniquecode = empty;
+            cart_Item_List.add(empty);
+            cartItem_hashmap.put(empty, newOrdersPojoClass);
+        }
+
+        */
+
         Modal_NewOrderItems newOrdersPojoClass = new Modal_NewOrderItems();
         newOrdersPojoClass.itemname = "";
         newOrdersPojoClass.tmcpriceperkg = "";
@@ -11108,16 +13754,16 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         newOrdersPojoClass.gstpercentage = "";
         newOrdersPojoClass.portionsize = "";
         newOrdersPojoClass.pricetypeforpos = "";
-        newOrdersPojoClass.itemFinalWeight="";
-        newOrdersPojoClass.pricePerItem ="";
-        newOrdersPojoClass.quantity="";
+        newOrdersPojoClass.itemFinalWeight = "";
+        newOrdersPojoClass.pricePerItem = "";
+        newOrdersPojoClass.quantity = "";
         newOrdersPojoClass.itemFinalPrice = "0";
         newOrdersPojoClass.gstpercentage = "0";
         newOrdersPojoClass.discountpercentage = "0";
         newOrdersPojoClass.applieddiscountpercentage = "0";
-        newOrdersPojoClass.itemuniquecode=empty;
+        newOrdersPojoClass.itemuniquecode = empty;
         cart_Item_List.add(empty);
-        cartItem_hashmap.put(empty,newOrdersPojoClass);
+        cartItem_hashmap.put(empty, newOrdersPojoClass);
     }
 
     private Handler newHandler() {
@@ -11209,10 +13855,36 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
 
+
+
+    public class MyThreadPool {
+
+        private ExecutorService executor;
+
+        public MyThreadPool() {
+            // Create a thread pool with 5 threads
+            executor = Executors.newFixedThreadPool(5);
+        }
+
+        public void runTask(Runnable task) {
+            // Submit the task to the executor
+            executor.submit(task);
+        }
+
+        public void shutdown() {
+            // Shut down the executor
+            executor.shutdown();
+        }
+    }
+
+
+
+
     private void PlaceOrder_in_OrderDetails(List<String> cart_Item_List, String Payment_mode, long sTime) {
       if(isOrderDetailsMethodCalled){
           return;
       }
+
 
         isOrderDetailsMethodCalled = true;
         String newOrderId = String.valueOf(sTime);
@@ -11243,7 +13915,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             if((OrderTypefromSpinner.equals(Constants.PhoneOrder))){
                 ordertype = OrderTypefromSpinner;
                 deliverytype = Constants.HOME_DELIVERY_DELIVERYTYPE;
-                slotdate  = CurrentDate;
+                slotdate  = getDate();
             }
         String slotname = "";
         if(orderdetailsnewschema){
@@ -11262,7 +13934,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             slotname = "EXPRESSDELIVERY";
             slottimerange ="120 mins";
 
-            slotdate  = CurrentDate;
+            slotdate  = getDate();
         }
 
 
@@ -11328,8 +14000,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                       isAddressForPhoneOrderSelected = false;
                                       isUsertype_AlreadyPhone = false;
                                       isUsertype_AlreadyPos = false;
-                                      userFetchedManually = false;
-
+                                      userFetched_ForPOS_or_Manually = false;
+                                      isfetchUserButtonClicked= false;
 
 
                                       autoComplete_customerNameText_widget.setText("");
@@ -11387,7 +14059,14 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                       totalpointsredeemedalreadybyuser="";
                                       totalordervalue_tillnow="";
                                       totalredeempointsuserhave="";
-                                      useStoreNumberCheckBox.setChecked(false);
+                                      //for ns bismillah
+                                      if(vendorKey.equals("vendor_6")){
+                                          useStoreNumberCheckBox.setChecked(true);
+                                      }
+                                      else{
+                                          useStoreNumberCheckBox.setChecked(false);
+                                      }
+                                      //useStoreNumberCheckBox.setChecked(false);
                                       updateUserNameCheckBox.setChecked(false);
                                       StockBalanceChangedForThisItemList.clear();
                                       isStockOutGoingAlreadyCalledForthisItem =false;
@@ -11423,9 +14102,19 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             String taxAmount = taxes_and_Charges_rs_text_widget.getText().toString();
 
 
+        threadPool.runTask(new Runnable() {
+            @Override
+            public void run() {
+                // Code to run in the background thread
+                PlaceOrder_in_PaymentTransactionDetails(sTime, Payment_mode, payableAmount, UserMobile);
+            }
+        });
 
 
-            PlaceOrder_in_PaymentTransactionDetails(sTime, Payment_mode, payableAmount, UserMobile);
+
+
+
+
 
 
 
@@ -12145,12 +14834,69 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                             // } catch (Exception e) {
                                             //       e.printStackTrace();
                                             //  }
+                                            String finalTmcCtgy = tmcCtgy;
+                                            String finalTmcSubCtgyKey = tmcSubCtgyKey;
+                                            boolean finalIsitemAvailable = isitemAvailable;
+                                            boolean finalAllowNegativeStock2 = allowNegativeStock;
+                                            String finalPriceTypeForPOS1 = priceTypeForPOS;
+                                            String finalBarcode = barcode;
+                                            String finalItemName = itemName;
+                                            String finalReceivedStock_AvlDetails1 = receivedStock_AvlDetails;
+                                            double finalTotalgrossweightingrams_doubleFromLoop1 = totalgrossweightingrams_doubleFromLoop;
+                                            String finalMenuItemKey1 = menuItemKey;
+                                            String finalKey_AvlDetails1 = key_AvlDetails;
+                                            String finalStockIncomingKey_AvlDetails1 = stockIncomingKey_AvlDetails;
+                                            threadPool.runTask(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    // Code to run in the background thread
+                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(finalStockIncomingKey_AvlDetails1, finalKey_AvlDetails1, finalMenuItemKey1, finalReceivedStock_AvlDetails1, finalTotalgrossweightingrams_doubleFromLoop1, finalItemName, finalBarcode, orderid, finalPriceTypeForPOS1, finalTmcCtgy, finalTmcSubCtgyKey, finalIsitemAvailable, finalAllowNegativeStock2);
+
+                                                }
+                                            });
 
 
-                                            getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, totalgrossweightingrams_doubleFromLoop, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
+
+
+
 
                                         } else {
-                                            getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_AvlDetails, key_AvlDetails, menuItemKey, receivedStock_AvlDetails, grossWeightWithQuantity_double, itemName, barcode, orderid, priceTypeForPOS, tmcCtgy, tmcSubCtgyKey, isitemAvailable, allowNegativeStock);
+                                            String finalStockIncomingKey_AvlDetails = stockIncomingKey_AvlDetails;
+                                            String finalKey_AvlDetails = key_AvlDetails;
+                                            String finalMenuItemKey = menuItemKey;
+                                            String finalReceivedStock_AvlDetails = receivedStock_AvlDetails;
+                                            String finalPriceTypeForPOS = priceTypeForPOS;
+                                            double finalGrossWeightWithQuantity_double1 = grossWeightWithQuantity_double;
+                                            String finalItemName1 = itemName;
+                                            String finalTmcCtgy1 = tmcCtgy;
+                                            String finalTmcSubCtgyKey1 = tmcSubCtgyKey;
+                                            boolean finalIsitemAvailable1 = isitemAvailable;
+                                            boolean finalAllowNegativeStock3 = allowNegativeStock;
+                                            String finalBarcode1 = barcode;
+                                            threadPool.runTask(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    // Code to run in the background thread
+                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(finalStockIncomingKey_AvlDetails,
+                                                            finalKey_AvlDetails,
+                                                            finalMenuItemKey,
+                                                            finalReceivedStock_AvlDetails,
+                                                            finalGrossWeightWithQuantity_double1,
+                                                            finalItemName1,
+                                                            finalBarcode1,
+                                                            orderid,
+                                                            finalPriceTypeForPOS,
+                                                            finalTmcCtgy1,
+                                                            finalTmcSubCtgyKey1,
+                                                            finalIsitemAvailable1,
+                                                            finalAllowNegativeStock3);
+
+                                                }
+                                            });
+
+
+
+
 
                                         }
 
@@ -12704,13 +15450,58 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                                     // } catch (Exception e) {
                                                                     //      e.printStackTrace();
                                                                     //  }
+                                                                    String finalStockIncomingKey_avlDetail = stockIncomingKey_avlDetail;
+                                                                    String finalKey_avlDetail = Key_avlDetail;
+                                                                    String finalReceivedStock_avlDetail = receivedStock_avlDetail;
+                                                                    double finalTotalgrossweightingrams_doubleFromLoop = totalgrossweightingrams_doubleFromLoop;
+                                                                    String finalBarcode_avlDetail = barcode_avlDetail;
+                                                                    String finalItemName_avlDetail_inventoryDetails = itemName_avlDetail_inventoryDetails;
+                                                                    String finalPriceTypeForPOS_avlDetail = priceTypeForPOS_avlDetail;
+                                                                    String finalTmcCtgy_avlDetail = tmcCtgy_avlDetail;
+                                                                    String finalTmcSubCtgy_avlDetail = tmcSubCtgy_avlDetail;
+                                                                    boolean finalItemAvailability_avlDetail = itemAvailability_avlDetail;
+                                                                    boolean finalAllowNegativeStock = allowNegativeStock;
+                                                                    threadPool.runTask(new Runnable() {
+                                                                        @Override
+                                                                        public void run() {
+                                                                            // Code to run in the background thread
+                                                                            getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(finalStockIncomingKey_avlDetail, finalKey_avlDetail, menuItemKeyFromMenuAvlDetails, finalReceivedStock_avlDetail, finalTotalgrossweightingrams_doubleFromLoop, finalItemName_avlDetail_inventoryDetails, finalBarcode_avlDetail, orderid, finalPriceTypeForPOS_avlDetail, finalTmcCtgy_avlDetail, finalTmcSubCtgy_avlDetail, finalItemAvailability_avlDetail, finalAllowNegativeStock);
+
+                                                                        }
+                                                                    });
 
 
-                                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, totalgrossweightingrams_doubleFromLoop, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
+
+
+
 
 
                                                                 } else {
-                                                                    getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(stockIncomingKey_avlDetail, Key_avlDetail, menuItemKeyFromMenuAvlDetails, receivedStock_avlDetail, grossWeightWithQuantity_double, itemName_avlDetail_inventoryDetails, barcode_avlDetail, orderid, priceTypeForPOS_avlDetail, tmcCtgy_avlDetail, tmcSubCtgy_avlDetail, itemAvailability_avlDetail, allowNegativeStock);
+
+                                                                    String finalStockIncomingKey_avlDetail1 = stockIncomingKey_avlDetail;
+                                                                    String finalKey_avlDetail1 = Key_avlDetail;
+                                                                    String finalReceivedStock_avlDetail1 = receivedStock_avlDetail;
+                                                                    double finalGrossWeightWithQuantity_double = grossWeightWithQuantity_double;
+                                                                    String finalItemName_avlDetail_inventoryDetails1 = itemName_avlDetail_inventoryDetails;
+                                                                    String finalPriceTypeForPOS_avlDetail1 = priceTypeForPOS_avlDetail;
+                                                                    String finalBarcode_avlDetail1 = barcode_avlDetail;
+                                                                    String finalTmcCtgy_avlDetail1 = tmcCtgy_avlDetail;
+                                                                    String finalTmcSubCtgy_avlDetail1 = tmcSubCtgy_avlDetail;
+                                                                    boolean finalItemAvailability_avlDetail1 = itemAvailability_avlDetail;
+                                                                    boolean finalAllowNegativeStock1 = allowNegativeStock;
+                                                                    threadPool.runTask(new Runnable() {
+                                                                        @Override
+                                                                        public void run() {
+                                                                            // Code to run in the background thread
+                                                                            getStockItemOutGoingDetailsAndUpdateMenuItemStockAvlDetails(finalStockIncomingKey_avlDetail1, finalKey_avlDetail1, menuItemKeyFromMenuAvlDetails, finalReceivedStock_avlDetail1, finalGrossWeightWithQuantity_double, finalItemName_avlDetail_inventoryDetails1, finalBarcode_avlDetail1, orderid, finalPriceTypeForPOS_avlDetail1, finalTmcCtgy_avlDetail1, finalTmcSubCtgy_avlDetail1, finalItemAvailability_avlDetail1, finalAllowNegativeStock1);
+
+                                                                        }
+                                                                    });
+
+
+
+
+
 
                                                                 }
 
@@ -13255,8 +16046,28 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
             e.printStackTrace();
         }
 
+                String finalSubCtgyKey = subCtgyKey;
+                String finalItemName2 = itemName;
+                String finalGrossweight = grossweight;
+                String finalNetweight = netweight;
+                String finalWeight = weight;
+                String finalQuantity = quantity;
+                String finalGstAmount = GstAmount;
+                String finalPrice = price;
+                String finalGrossWeightingrams = grossWeightingrams;
+                double finalGrossweightingrams_double = grossweightingrams_double;
+                threadPool.runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Code to run in the background thread
+                        PlaceOrder_in_OrderItemDetails(finalSubCtgyKey, finalItemName2, finalGrossweight, finalWeight, finalNetweight, finalQuantity, finalPrice, "", finalGstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName, finalGrossWeightingrams, finalGrossweightingrams_double);
 
-                PlaceOrder_in_OrderItemDetails(subCtgyKey,itemName,grossweight, weight,netweight, quantity, price, "", GstAmount, vendorkey, Currenttime, sTime, vendorkey, vendorName,grossWeightingrams,grossweightingrams_double);
+                    }
+                });
+
+
+
+
 
 
 
@@ -13370,8 +16181,9 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         if(StoreCoupon.equals("STORECOUPON")){
             String transactiontime = getDate_and_time();
 
+            String  currentDate  = getDate();
 
-            addDatatoCouponTransactioninDB(discountAmount_StringGlobal,"STORECOUPON",UserMobile,String.valueOf(sTime),CurrentDate,transactiontime,vendorKey);
+            addDatatoCouponTransactioninDB(discountAmount_StringGlobal,"STORECOUPON",UserMobile,String.valueOf(sTime),currentDate,transactiontime,vendorKey);
 
 
         }
@@ -13396,23 +16208,38 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                         catch (Exception e){
                             e.printStackTrace();
                         }
+                double finalPayableAmount_double = payableAmount_double;
+                String finalUsermobileno = usermobileno;
+                double finalPayableAmount_double1 = payableAmount_double;
 
+                threadPool.runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Code to run in the background thread
                         try {
                             if(totalamountUserHaveAsCredit == 0){
-                                AddOrUpdateDatainCreditOrderDetailsTable(payableAmount_double, orderid,usermobileno,orderplacedTime,"ADD",payableAmount_double);
+                                AddOrUpdateDatainCreditOrderDetailsTable(finalPayableAmount_double, orderid, finalUsermobileno,orderplacedTime,"ADD", finalPayableAmount_double1);
 
                             }
                             else{
                                 double newamountUserHaveAsCredit =0;
-                                newamountUserHaveAsCredit = payableAmount_double + totalamountUserHaveAsCredit;
-                                AddOrUpdateDatainCreditOrderDetailsTable(newamountUserHaveAsCredit, orderid,usermobileno,orderplacedTime,"UPDATE",payableAmount_double);
+                                newamountUserHaveAsCredit = finalPayableAmount_double + totalamountUserHaveAsCredit;
+                                AddOrUpdateDatainCreditOrderDetailsTable(newamountUserHaveAsCredit, orderid, finalUsermobileno,orderplacedTime,"UPDATE", finalPayableAmount_double);
                             }
                         }
                         catch (Exception e){
                             e.printStackTrace();
 
 
+                        }
+
                     }
+                });
+
+
+
+
+
 
 
             }
@@ -13561,23 +16388,35 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                             try {
                                 if(printerType_sharedPreference.equals(Constants.USB_PrinterType)){
                                     //removethisaftertesting
-                                 //   turnoffProgressBarAndResetArray();
-                                    PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype,itemDespArray);
+                                    PrintReciptForNewItemUsingUSBPrinter(orderplacedTime, UserMobile, tokenNo, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype,itemDespArray);
                                 }
                                 else if(printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)){
                                     //removethisaftertesting
                                  //   turnoffProgressBarAndResetArray();
-                                      printReciptUsingBluetoothPrinter(orderplacedTime, UserMobile, tokenno, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype,itemDespArray);
+                                      printReciptUsingBluetoothPrinter(orderplacedTime, UserMobile, tokenNo, itemTotalwithoutGst, taxAmount, payableAmount, orderid, cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount_StringGlobal, ordertype,itemDespArray);
 
                                 }
                                 else if(printerType_sharedPreference.equals(Constants.POS_PrinterType)){
-                                    int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
+                                    printReceiptUsingAsyncTak(UserMobile,  itemTotalwithoutGst, taxAmount, payableAmount, orderid,  Payment_mode, discountAmount_StringGlobal,ordertype,orderplacedTime,tokenNo);
+
+
+
+
+
+                                   /* int i = (PrinterFunctions.CheckStatus(portName,portSettings,1));
                                     if(i != -1){
-                                        //removethisaftertesting
-                                        //turnoffProgressBarAndResetArray();
-                                     printRecipt(UserMobile,  itemTotalwithoutGst, taxAmount, payableAmount, orderid,  Payment_mode, discountAmount_StringGlobal,ordertype,orderplacedTime);
+                                        //removethisaftertestingsdfghj
+                                       // turnoffProgressBarAndResetArray();
 
 
+
+
+
+//                                        printRecipt(UserMobile,  itemTotalwithoutGst, taxAmount, payableAmount, orderid,  Payment_mode, discountAmount_StringGlobal,ordertype,orderplacedTime);
+
+
+
+                                        printReceiptUsingAsyncTak(UserMobile,  itemTotalwithoutGst, taxAmount, payableAmount, orderid,  Payment_mode, discountAmount_StringGlobal,ordertype,orderplacedTime);
                                     }
                                     else{
                                         isOrderPlacedinOrderdetails = true;
@@ -13588,7 +16427,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                         @Override
                                                         public void onYes() {
                                                             isPrintedSecondTimeDialogGotClicked = true;
-
                                                             if (!isinventorycheck) {
                                                                 turnoffProgressBarAndResetArray();
                                                             }
@@ -13598,103 +16436,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                                 }
                                                             }
                                                         }
-                                                           /* customerMobileno_global="";
-                                                            customerName ="";
-                                                            userAddressArrayList.clear();
-                                                            userAddressKeyArrayList.clear();
 
-                                                           //selectedAddressKey = String.valueOf("");
-                                                           // selectedAddress = String.valueOf("");
-                                                            //userLatitude = String.valueOf("0");
-                                                           /// userLongitude = String.valueOf("0");
-                                                           // deliveryDistance ="";
-
-
-                                                            user_key_toAdd_Address ="";
-                                                            uniqueUserkeyFromDB ="";
-                                                            selectedAddress_textWidget.setText("");
-                                                            autoComplete_customerNameText_widget.setText("");
-                                                            autoComplete_customerNameText_widget.dismissDropDown();
-
-                                                            selected_Address_modal = new Modal_Address();
-                                                            isPhoneOrderSelected = false;
-                                                            updateUserName = false;
-                                                            isNewUser = false;
-                                                            isAddress_Added_ForUser = false;
-                                                            isAddressForPhoneOrderSelected = false;
-                                                            isUsertype_AlreadyPhone = false;
-                                                            isUsertype_AlreadyPos = false;
-                                                            userFetchedManually = false;
-
-
-                                                            StockBalanceChangedForThisItemList.clear();
-                                                            isStockOutGoingAlreadyCalledForthisItem =false;
-                                                            autoComplete_customerNameText_widget.setText("");
-                                                            autoComplete_customerNameText_widget.dismissDropDown();
-                                                            NewOrders_MenuItem_Fragment.cart_Item_List.clear();
-                                                            NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
-
-                                                            ispaymentMode_Clicked = false;
-                                                            isOrderDetailsMethodCalled = false;
-                                                            isCustomerOrdersTableServiceCalled  = false;
-                                                            isPaymentDetailsMethodCalled = false;
-                                                            isOrderTrackingDetailsMethodCalled = false;
-                                                            new_to_pay_Amount = 0;
-                                                            new_totalAmount_withGst =0;
-                                                            old_taxes_and_charges_Amount = 0;
-                                                            old_total_Amount = 0;
-                                                            createEmptyRowInListView("empty");
-                                                            CallAdapter();
-                                                            discountAmount_StringGlobal = "0";
-                                                            discountAmount_DoubleGlobal=0;
-                                                            isDiscountApplied = false;
-                                                            discount_Edit_widget.setText("0");
-                                                             finaltoPayAmount = "0";
-                                                            deliveryAmount_for_this_order="0";
-                                                            tokenNo="0";
-                                                            discount_rs_text_widget.setText(discountAmount_StringGlobal);
-                                                            OrderTypefromSpinner = "POS Order";
-                                                            orderTypeSpinner.setSelection(0);
-                                                            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                                                            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                                                            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-                                                            mobileNo_Edit_widget.setText("");
-                                                            isPrintedSecondTime = false;
-                                                            showProgressBar(false);
-                                                            useStoreNumberCheckBox.setChecked(false);
-                                                            updateUserNameCheckBox.setChecked(false);
-                                                            ispointsApplied_redeemClicked=false;
-                                                            isProceedtoCheckoutinRedeemdialogClicked =false;
-                                                            isRedeemDialogboxOpened=false;
-                                                            isUpdateRedeemPointsMethodCalled=false;
-                                                            isUpdateCouponTransactionMethodCalled=false;
-                                                            isUpdateRedeemPointsWithoutKeyMethodCalled=false;
-                                                            totalAmounttopay=0;
-                                                            finalamounttoPay=0;
-                                                            pointsalreadyredeemDouble=0;
-                                                            totalpointsuserhave_afterapplypoints=0;
-                                                            pointsenteredToredeem_double=0;
-                                                            pointsenteredToredeem="";
-                                                            finaltoPayAmountwithRedeemPoints="";
-
-                                                            redeemPoints_String="";
-                                                            redeemKey="";
-                                                            mobileno_redeemKey="";
-                                                            discountAmountalreadyusedtoday="";
-                                                            totalpointsredeemedalreadybyuser="";
-                                                            totalordervalue_tillnow="";
-                                                            totalredeempointsuserhave="";
-                                                            ponits_redeemed_text_widget.setText("");
-                                                            redeemed_points_text_widget.setText("");
-                                                            redeemPointsLayout.setVisibility(View.GONE);
-                                                            discount_textview_labelwidget.setVisibility(View.VISIBLE);
-                                                            discount_rs_text_widget.setVisibility(View.VISIBLE);
-                                                            redeemedpoints_Labeltextwidget.setVisibility(View.GONE);
-                                                            ponits_redeemed_text_widget.setVisibility(View.GONE);
-                                                            //discountlayout visible
-                                                            discountAmountLayout.setVisibility(View.GONE);                                                        }
-
-                                                              */
                                                         @Override
                                                         public void onNo() {
 
@@ -13703,6 +16445,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                                     }
+                                    */
 
                                 }
                                 else {
@@ -13712,6 +16455,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                 @Override
                                                 public void onYes() {
                                                     isPrintedSecondTimeDialogGotClicked = true;
+
                                                     if (!isinventorycheck) {
                                                         turnoffProgressBarAndResetArray();
                                                     }
@@ -13722,105 +16466,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                     }
 
 
-                                                /*
-                                                    customerMobileno_global="";
-                                                    customerName ="";
-                                                    userAddressArrayList.clear();
-                                                    userAddressKeyArrayList.clear();
-                                                    //selectedAddressKey = String.valueOf("");
-                                                    //selectedAddress = String.valueOf("");
-                                                    //userLatitude = String.valueOf("0");
-                                                    //userLongitude = String.valueOf("0");
-                                                    //deliveryDistance ="";
-
-                                                    user_key_toAdd_Address ="";
-                                                    uniqueUserkeyFromDB ="";
-                                                    selected_Address_modal = new Modal_Address();
-
-                                                    selectedAddress_textWidget.setText("");
-                                                    autoComplete_customerNameText_widget.setText("");
-                                                    autoComplete_customerNameText_widget.dismissDropDown();
-
-                                                    selected_Address_modal = new Modal_Address();
-                                                    isPhoneOrderSelected = false;
-                                                    updateUserName = false;
-                                                    isNewUser = false;
-                                                    isAddress_Added_ForUser = false;
-                                                    isAddressForPhoneOrderSelected = false;
-                                                    isUsertype_AlreadyPhone = false;
-                                                    isUsertype_AlreadyPos = false;
-                                                    userFetchedManually = false;
-
-
-                                                    StockBalanceChangedForThisItemList.clear();
-                                                    isStockOutGoingAlreadyCalledForthisItem =false;
-                                                    autoComplete_customerNameText_widget.setText("");
-                                                    autoComplete_customerNameText_widget.dismissDropDown();
-                                                    NewOrders_MenuItem_Fragment.cart_Item_List.clear();
-                                                    NewOrders_MenuItem_Fragment.cartItem_hashmap.clear();
-
-                                                    ispaymentMode_Clicked = false;
-                                                    isOrderDetailsMethodCalled = false;
-                                                    isCustomerOrdersTableServiceCalled  = false;
-                                                    isCustomerOrdersTableServiceCalled  = false;
-                                                    isPaymentDetailsMethodCalled = false;
-                                                    isOrderTrackingDetailsMethodCalled = false;
-                                                    new_to_pay_Amount = 0;
-                                                    new_totalAmount_withGst =0;
-                                                    old_taxes_and_charges_Amount = 0;
-                                                    old_total_Amount = 0;
-                                                    createEmptyRowInListView("empty");
-                                                    CallAdapter();
-                                                    discountAmount_StringGlobal = "0";
-                                                    isDiscountApplied = false;
-                                                    discount_Edit_widget.setText("0");
-                                                     finaltoPayAmount = "0";
-                                                    deliveryAmount_for_this_order="0";
-                                                    tokenNo="0";
-                                                    discount_rs_text_widget.setText(discountAmount_StringGlobal);
-                                                    OrderTypefromSpinner = "POS Order";
-                                                    orderTypeSpinner.setSelection(0);
-                                                    total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                                                    taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                                                    total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-
-                                                    mobileNo_Edit_widget.setText("");
-                                                    isPrintedSecondTime = false;
-                                                    showProgressBar(false);
-                                                    useStoreNumberCheckBox.setChecked(false);
-                                                      updateUserNameCheckBox.setChecked(false);
-                                                    ispointsApplied_redeemClicked=false;
-                                                    isProceedtoCheckoutinRedeemdialogClicked =false;
-                                                    isRedeemDialogboxOpened=false;
-                                                    isUpdateRedeemPointsMethodCalled=false;
-                                                    isUpdateCouponTransactionMethodCalled=false;
-                                                    isUpdateRedeemPointsWithoutKeyMethodCalled=false;
-                                                    totalAmounttopay=0;
-                                                    finalamounttoPay=0;
-                                                    pointsalreadyredeemDouble=0;
-                                                    totalpointsuserhave_afterapplypoints=0;
-                                                    pointsenteredToredeem_double=0;
-                                                    pointsenteredToredeem="";
-
-                                                    finaltoPayAmountwithRedeemPoints="";
-                                                    redeemPoints_String="";
-                                                    redeemKey="";
-                                                    mobileno_redeemKey="";
-                                                    discountAmountalreadyusedtoday="";
-                                                    totalpointsredeemedalreadybyuser="";
-                                                    totalordervalue_tillnow="";
-                                                    totalredeempointsuserhave="";
-                                                    ponits_redeemed_text_widget.setText("");
-                                                    redeemed_points_text_widget.setText("");
-                                                    redeemPointsLayout.setVisibility(View.GONE);
-                                                    discount_textview_labelwidget.setVisibility(View.VISIBLE);
-                                                    discount_rs_text_widget.setVisibility(View.VISIBLE);
-                                                    redeemedpoints_Labeltextwidget.setVisibility(View.GONE);
-                                                    ponits_redeemed_text_widget.setVisibility(View.GONE);
-                                                    //discountlayout visible
-                                                    discountAmountLayout.setVisibility(View.GONE);
-
-                                                 */
                                                 }
 
                                                 @Override
@@ -13836,70 +16481,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                             }
-/*
-                            autoComplete_customerNameText_widget.setText("");
-                                    autoComplete_customerNameText_widget.dismissDropDown();
-                            StockBalanceChangedForThisItemList.clear();
-                            cart_Item_List.clear();
-                            cartItem_hashmap.clear();
-                            ispaymentMode_Clicked = false;
-                            isOrderDetailsMethodCalled = false;
-
-                            isPaymentDetailsMethodCalled = false;
-                            isOrderTrackingDetailsMethodCalled = false;
-                            new_to_pay_Amount = 0;
-                                    new_totalAmount_withGst =0;
-                            old_taxes_and_charges_Amount = 0;
-                            old_total_Amount = 0;
-                            createEmptyRowInListView("empty");
-                            CallAdapter();
-                            discountAmount = "0";
-                            useStoreNumberCheckBox.setChecked(false);
-                           updateUserNameCheckBox.setChecked(false);
-                            isDiscountApplied = false;
-                            discount_Edit_widget.setText("0");
-                             finaltoPayAmount = "0";
-                                    deliveryAmount_for_this_order="0";
-                                    tokenNo="0";
-                            discount_rs_text_widget.setText(discountAmount);
-                            OrderTypefromSpinner = "POS Order";
-                            orderTypeSpinner.setSelection(0);
-                            total_item_Rs_text_widget.setText(String.valueOf(old_total_Amount));
-                            taxes_and_Charges_rs_text_widget.setText(String.valueOf((old_taxes_and_charges_Amount)));
-                            total_Rs_to_Pay_text_widget.setText(String.valueOf(new_to_pay_Amount));
-
-                            mobileNo_Edit_widget.setText("");
-                            isPrintedSecondTime = false;
-                            showProgressBar(false);
-
-                            ispointsApplied_redeemClicked=false;
-                            isProceedtoCheckoutinRedeemdialogClicked =false;
-                            isRedeemDialogboxOpened=false;
-                            isUpdateRedeemPointsMethodCalled=false;
-                            isUpdateCouponTransactionMethodCalled=false;
-                            isUpdateRedeemPointsWithoutKeyMethodCalled=false;
-                            totalAmounttopay=0;
-                            finalamounttoPay=0;
-
-                            pointsalreadyredeemDouble=0;
-                            totalpointsuserhave_afterapplypoints=0;
-                            pointsenteredToredeem_double=0;
-                            pointsenteredToredeem="";
-
-                            finaltoPayAmountwithRedeemPoints="";
-                            redeemPoints_String="";
-                            redeemKey="";
-                            mobileno_redeemKey="";
-                            discountAmountalreadyusedtoday="";
-                            totalpointsredeemedalreadybyuser="";
-                            totalordervalue_tillnow="";
-                            totalredeempointsuserhave="";
-
-                            redeemed_points_text_widget.setText("");
-                            redeemPointsLayout.setVisibility(View.GONE);
-                            //discountlayout visible
-                                    discountAmountLayout.setVisibility(View.GONE);
-*/
 
 
 
@@ -13955,6 +16536,345 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
     }
+
+    private void printReceiptUsingAsyncTak(String userMobile, String itemTotalwithoutGst, String taxAmount, String payableAmount, String orderid, String payment_mode, String discountAmount_StringGlobal, String ordertype, String orderplacedTime , String tokenNo) {
+         modal_forPrintReceipt = new Modal_forPrintReceipt();
+        modal_forPrintReceipt.setUserMobile(userMobile);
+        modal_forPrintReceipt.setItemTotalwithoutGst(itemTotalwithoutGst);
+        modal_forPrintReceipt.setTaxAmount(taxAmount);
+        modal_forPrintReceipt.setPayableAmount(payableAmount);
+        modal_forPrintReceipt.setOrderid(orderid);
+        modal_forPrintReceipt.setPayment_mode(payment_mode);
+        modal_forPrintReceipt.setRedeemPoints_String(redeemPoints_String);
+        modal_forPrintReceipt.setDiscountAmount_StringGlobal(discountAmount_StringGlobal);
+        modal_forPrintReceipt.setOrdertype(ordertype);
+        modal_forPrintReceipt.setOrderplacedTime(orderplacedTime);
+        modal_forPrintReceipt.setCart_Item_List(cart_Item_List);
+        modal_forPrintReceipt.setCartItem_hashmap(cartItem_hashmap);
+        modal_forPrintReceipt.setVendorKey(vendorKey);
+        modal_forPrintReceipt.setVendorName(vendorName);
+        modal_forPrintReceipt.setStoreAddressLine1(StoreAddressLine1);
+        modal_forPrintReceipt.setStoreAddressLine2(StoreAddressLine2);
+        modal_forPrintReceipt.setStoreAddressLine3(StoreAddressLine3);
+        modal_forPrintReceipt.setStoreLanLine(StoreLanLine);
+        modal_forPrintReceipt.setPhoneOrderSelected(isPhoneOrderSelected);
+        modal_forPrintReceipt.setDeliveryAmount(deliveryAmount_for_this_order);
+        modal_forPrintReceipt.setAmountRecieved_String(amountRecieved_String);
+        modal_forPrintReceipt.setBalanceAmount_String(balanceAmount_String);
+        modal_forPrintReceipt.setTotalredeempointsusergetfromorder((totalredeempointsusergetfromorder));
+        modal_forPrintReceipt.setTotalamountUserHaveAsCredit((totalamountUserHaveAsCredit));
+        modal_forPrintReceipt.setSelected_Address_modal(selected_Address_modal);
+        modal_forPrintReceipt.setTokenno(tokenNo);
+
+        callBackAsyncTaskListener_forPrintReceipt = new AsyncTaskListener_forPrintReceipt() {
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onTaskCompleted(String result) {
+
+               // if(isPrintedSecondTimeDialogGotClicked){
+                 //   isPrintedSecondTime = true;
+               // }
+
+                try{
+              //      Log.v("printer status after close 1 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,1)));
+
+                    PrinterFunctions.ClosePort(portName);
+               //     Log.v("printer status after close 1 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,1)));
+                 //   Log.v("printer status after close 2 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,2)));
+                 //   Log.v("printer status after close 3 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,3)));
+                 //   Log.v("printer status after close 4 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,4)));
+
+
+
+                }
+                catch (Exception e){
+                    Log.v("printer Error in closing printer",String.valueOf(e));
+
+                    e.printStackTrace();
+                }
+
+
+
+
+                if(isPrintedSecondTime){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+
+                            new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
+                                    R.string.Yes_Text, R.string.No_Text,
+                                    new TMCAlertDialogClass.AlertListener() {
+                                        @Override
+                                        public void onYes() {
+
+
+
+
+
+                                            isPrintedSecondTimeDialogGotClicked = true;
+                                            //Toast.makeText(mContext, String.valueOf(stockUpdatedItemsCount)+" stockUpdatedItemsCount on yes", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(mContext, String.valueOf(StockBalanceChangedForThisItemList.size())+" StockBalanceChangedForThisItemList on yes", Toast.LENGTH_SHORT).show();
+
+                                            AsyncTakWithServiceForPrintReceipt asyncTaskForPrintingReceipt = new AsyncTakWithServiceForPrintReceipt(mContext , callBackAsyncTaskListener_forPrintReceipt,modal_forPrintReceipt,myReceiverforPrintingService , selected_Address_modal);
+                                            asyncTaskForPrintingReceipt.execute();
+
+                                        }
+
+                                        @Override
+                                        public void onNo() {
+                                            //Toast.makeText(mContext, String.valueOf(stockUpdatedItemsCount)+" stockUpdatedItemsCount on no", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(mContext, String.valueOf(StockBalanceChangedForThisItemList.size())+" StockBalanceChangedForThisItemList on no", Toast.LENGTH_SHORT).show();
+                                            isPrintedSecondTimeDialogGotClicked = true;
+                                            if (!isinventorycheck) {
+                                                turnoffProgressBarAndResetArray();
+                                            }
+                                            else{
+                                                if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                                                    turnoffProgressBarAndResetArray();
+                                                }
+                                            }
+
+
+                                        }
+                                    });
+                        }
+                    });
+                }
+                else{
+                    if (!isinventorycheck) {
+                        turnoffProgressBarAndResetArray();
+                    }
+                    else{
+                        if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                            turnoffProgressBarAndResetArray();
+                        }
+                    }
+
+                }
+
+            }
+        };
+
+
+
+
+
+
+
+
+        serviceIntent.putExtra("modalData",modal_forPrintReceipt);
+        serviceIntent.putExtra("hashmapdata",cartItem_hashmap);
+        serviceIntent.putExtra("isCalledSecondtime", false);
+        serviceIntent.putExtra("selectedAddress", selected_Address_modal);
+
+
+        IntentFilter filter = new IntentFilter("receiverForCompletePrintingtheReceipt");
+        mContext.registerReceiver(myReceiverforPrintingService, filter);
+
+        mContext.startService(serviceIntent);
+
+
+
+
+    }
+    public void onResume() {
+        super.onResume();
+        try {
+            IntentFilter filter = new IntentFilter();
+            getActivity().registerReceiver(myReceiverforPrintingService, filter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    @SuppressLint("LongLogTag")
+
+    public BroadcastReceiver myReceiverforPrintingService = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Handle the broadcast message here
+            String message ="";
+            message =  intent.getStringExtra("message");
+
+            if(message.equals("success")){
+                try{
+                    Log.v("printer status broad close 1 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,1)));
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                Thread backgroundThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Perform background task
+
+                      //  performBackgroundTask();
+
+                    }
+                });
+
+                // Start the background thread
+               // backgroundThread.start();
+
+                if (!isinventorycheck) {
+                    turnoffProgressBarAndResetArray();
+                }
+                else{
+
+
+
+                    if(!isPrintedSecondTimeDialogGotClicked) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+
+                                new TMCAlertDialogClass(mContext, R.string.app_name, R.string.RePrint_Instruction,
+                                        R.string.Yes_Text, R.string.No_Text,
+                                        new TMCAlertDialogClass.AlertListener() {
+                                            @Override
+                                            public void onYes() {
+
+
+                                                isPrintedSecondTimeDialogGotClicked = true;
+                                                //Toast.makeText(mContext, String.valueOf(stockUpdatedItemsCount)+" stockUpdatedItemsCount on yes", Toast.LENGTH_SHORT).show();
+                                                //Toast.makeText(mContext, String.valueOf(StockBalanceChangedForThisItemList.size())+" StockBalanceChangedForThisItemList on yes", Toast.LENGTH_SHORT).show();
+
+                                                printReceiptUsingAsyncTak(modal_forPrintReceipt.getUserMobile(),  modal_forPrintReceipt.getItemTotalwithoutGst(), modal_forPrintReceipt.getTaxAmount(), modal_forPrintReceipt.getPayableAmount(), String.valueOf(modal_forPrintReceipt.getOrderid()),  modal_forPrintReceipt.getPayment_mode(), discountAmount_StringGlobal,ordertype,modal_forPrintReceipt.getOrderplacedTime(),tokenNo);
+
+                                            }
+
+                                            @Override
+                                            public void onNo() {
+                                                //Toast.makeText(mContext, String.valueOf(stockUpdatedItemsCount)+" stockUpdatedItemsCount on no", Toast.LENGTH_SHORT).show();
+                                                //Toast.makeText(mContext, String.valueOf(StockBalanceChangedForThisItemList.size())+" StockBalanceChangedForThisItemList on no", Toast.LENGTH_SHORT).show();
+                                                isPrintedSecondTimeDialogGotClicked = true;
+                                                if (!isinventorycheck) {
+                                                    turnoffProgressBarAndResetArray();
+                                                } else {
+                                                    if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                                                        turnoffProgressBarAndResetArray();
+                                                    }
+                                                }
+
+
+                                            }
+                                        });
+                            }
+                        });
+                    }
+                    else{
+                        turnoffProgressBarAndResetArray();
+                    }
+
+
+
+/*
+                    if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                        turnoffProgressBarAndResetArray();
+
+                    }
+                    else{
+                        isPrintedSecondTimeDialogGotClicked = true;
+                    }
+
+
+ */
+
+                }
+
+
+                try{
+
+
+                  //  Log.v("printer status broad close 1 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,1)));
+                  //  Log.v("printer status broad close 2 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,2)));
+                 //   Log.v("printer status broad close 3 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,3)));
+                 //   Log.v("printer status broad close 4 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,4)));
+
+
+
+                }
+                catch (Exception e){
+                    Log.v("printer Error in closing printer",String.valueOf(e));
+
+                    e.printStackTrace();
+                }
+
+            }
+            else{
+
+                try{
+
+
+                 //   Log.v("printer status broadelse close 1 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,1)));
+                 //   Log.v("printer status broadelse close 2 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,2)));
+                  //  Log.v("printer status broadelse close 3 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,3)));
+                  //  Log.v("printer status broadelse close 4 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,4)));
+
+
+
+                }
+                catch (Exception e){
+                    Log.v("printer Error in closing printer",String.valueOf(e));
+
+                    e.printStackTrace();
+                }
+
+
+
+                if (!isinventorycheck) {
+                    turnoffProgressBarAndResetArray();
+                }
+                else{
+                    if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                        turnoffProgressBarAndResetArray();
+                    }
+                    else{
+                        isPrintedSecondTimeDialogGotClicked = true;
+                    }
+                }
+
+            }
+
+        }
+    };
+
+
+    private String performBackgroundTask() {
+        // Simulate a time-consuming task
+        try {
+            Thread.sleep(1500); // Sleep for 3 seconds
+            PrinterFunctions.ClosePort(portName);
+
+            try{
+
+
+            //    Log.v("printer status broad close 1 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,1)));
+            //    Log.v("printer status broad close 2 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,2)));
+             //   Log.v("printer status broad close 3 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,3)));
+           //     Log.v("printer status broad close 4 ",String.valueOf(PrinterFunctions.CheckStatus(portName,portSettings,4)));
+
+
+
+            }
+            catch (Exception e){
+            //   Log.v("printer Error in closing printer",String.valueOf(e));
+
+                e.printStackTrace();
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "Background task completed!";
+    }
+
 
     /*
     private void updateDatainCreditOrderDetailsTable(double payableAmount_double, String orderid, String usermobileno, String orderplacedTime) {
@@ -14199,9 +17119,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
         if((!stockIncomingKey_avlDetails.equals("")) && (!stockIncomingKey_avlDetails.equals(" - ")) &&(!stockIncomingKey_avlDetails.equals("null")) && (!stockIncomingKey_avlDetails.equals(null)) && (!stockIncomingKey_avlDetails.equals("0")) && (!stockIncomingKey_avlDetails.equals(" 0 ")) && (!stockIncomingKey_avlDetails.equals("-")) && (!stockIncomingKey_avlDetails.equals("nil"))) {
 
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
                     showProgressBar(true);
                     final String[] outgoingtype_stockOutGngDetails_String = {""};
                     final String[] stockincomingkey_stockOutGngDetails_String = {""};
@@ -14360,6 +17277,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                             receivedStock_AvlDetails_double[0] = Double.parseDouble(receivedStock_AvlDetails);
 
                                         } catch (Exception e) {
+                                            receivedStock_AvlDetails_double[0] =0;
+                                            Log.i("itemnaame",itemName);
                                             e.printStackTrace();
                                         }
                                         double stockBalanceBeforeMinusCurrentItem = 0;
@@ -14406,8 +17325,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                         }
 
                                     } catch (Exception e) {
-                                        UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
-
+                                        stockUpdatedItemsCount ++;
+                                      //  UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
+                                        if (isPrintedSecondTimeDialogGotClicked) {
+                                            if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                                                turnoffProgressBarAndResetArray();
+                                            }
+                                        }
                                         e.printStackTrace();
                                     }
 
@@ -14435,7 +17359,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                 errorCode = "Parse Error";
                             }
                             Toast.makeText(mContext, "Error in Getting Stock outgoing details  :  " + errorCode, Toast.LENGTH_LONG).show();
-
+                            stockUpdatedItemsCount ++;
+                            //UpdateStockBalanceinMenuItemStockAvlDetail(key_avlDetails, finalStockBalance_double[0], false, isitemAvailable, menuItemKey_avlDetails, tmcSubCtgyKey_stockOutGngDetails_String[0], itemName);
+                            if (isPrintedSecondTimeDialogGotClicked) {
+                                if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                                    turnoffProgressBarAndResetArray();
+                                }
+                            }
 
                            // showProgressBar(false);
 
@@ -14470,18 +17400,13 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
 
                 }
-            };
 
-
-            new Thread(runnable).start();//to work in Background
-
-
-        }
 
 
         else{
             stockUpdatedItemsCount++;
             if (isPrintedSecondTimeDialogGotClicked) {
+
                 if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
                     turnoffProgressBarAndResetArray();
                 }
@@ -14629,6 +17554,12 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     message = response.getString("message");
                 } catch (JSONException e) {
                     e.printStackTrace();
+                }
+
+                if (isPrintedSecondTimeDialogGotClicked) {
+                    if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
+                        turnoffProgressBarAndResetArray();
+                    }
                 }
                 if(changeItemAvailability) {
                     for (int iterator_menuitemStockAvlDetails = 0; iterator_menuitemStockAvlDetails < completemenuItem.size(); iterator_menuitemStockAvlDetails++) {
@@ -15044,8 +17975,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                       //  //Toast.makeText(mContext, String.valueOf(StockBalanceChangedForThisItemList.size())+" StockBalanceChangedForThisItemList outgoing response", Toast.LENGTH_SHORT).show();
                       //  //Toast.makeText(mContext, String.valueOf(isPrintedSecondTimeDialogGotClicked)+" isPrintedSecondTimeDialogGotClicked outgoing response", Toast.LENGTH_SHORT).show();
                        /////////removethisaftertesting
-                     //   turnoffProgressBarAndResetArray();
-
                         if (isPrintedSecondTimeDialogGotClicked) {
                             if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
                                 turnoffProgressBarAndResetArray();
@@ -15068,7 +17997,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                 } catch (JSONException e) {
                     // showProgressBar(false);
-
                     stockUpdatedItemsCount++;
                     if(isPrintedSecondTimeDialogGotClicked) {
                         if (stockUpdatedItemsCount == StockBalanceChangedForThisItemList.size()) {
@@ -15215,7 +18143,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                                 String gstamountt, String vendorkeyy, String currenttime,
                                                 long sTime, String vendorkey, String vendorName, String grossWeightingrams, double grossweightingrams_double){
 
-            String orderid = String.valueOf(sTime);
+             String orderid = String.valueOf(sTime);
 
             JSONObject jsonObject = new JSONObject();
             try {
@@ -15267,7 +18195,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                         }
 
-                    } else {
+                    }
+                    else {
                         jsonObject.put("grossweight", itemweightt);
                         if(Grossweight.equals("")){
                             jsonObject.put("netweight", Netweight);
@@ -15859,7 +18788,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (usbManager != null && usbDevice != null) {
                             try {
-                                if (intent.getCategories().toString().equals("Billing Screen")) {
+                             //   if (intent.getCategories().toString().equals("Billing Screen")) {
 
                                     new AsyncUsbEscPosPrint(
                                             context, new AsyncEscPosPrint.OnPrintFinished() {
@@ -15880,7 +18809,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
-
                                             if (!isinventorycheck) {
                                                 turnoffProgressBarAndResetArray();
                                             } else {
@@ -16009,7 +18937,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
-
+                                           // isPrintedSecondTime = true;
+                                           // isPrintedSecondTimeDialogGotClicked = true;
                                             if (!isPrintedSecondTime) {
                                                 isPrintedSecondTime = true;
                                                 //  showProgressBar(true);
@@ -16095,7 +19024,6 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                                                                                     @Override
                                                                                     public void onNo() {
-
                                                                                         isPrintedSecondTimeDialogGotClicked = true;
                                                                                         if (!isinventorycheck) {
                                                                                             turnoffProgressBarAndResetArray();
@@ -16310,7 +19238,7 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                                     }
                                     )
                                             .execute(getAsyncEscPosPrinterNewItem(new UsbConnection(usbManager, usbDevice)));
-                                }
+                             //   }
                             }
                             catch (Exception e){
                                 e.printStackTrace();
@@ -16788,7 +19716,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
     @SuppressLint("SimpleDateFormat")
     public AsyncEscPosPrinter getAsyncEscPosPrinterNewItem(DeviceConnection printerConnection) {
-
+        try {
+            printerConnection.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 48f, 44);
 
@@ -16882,8 +19814,8 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
                             }
 
-                            if (fullitemName.length() > 21) {
-                                itemName = fullitemName.substring(0, 21);
+                            if (fullitemName.length() > 15) {
+                                itemName = fullitemName.substring(0, 15);
                                 itemName = itemName + "...";
 
 
@@ -17080,20 +20012,29 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
 
             text_to_Print = "[c]<b><font size='big'>MK Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
         else if((vendorKey.equals("vendor_5")) ) {
 
 
             text_to_Print = "[c]<b><font size='big'>Bismillah Proteins</b>\n\n";
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
+
+        else if((vendorKey.equals("vendor_6")) ) {
+
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah </b>\n\n";
+           // text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Chicken and Mutton \n";
+        }
+
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
-
+            text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         }
-        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine1 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine2 + "\n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>Postal Code :" + StoreAddressLine3 + " \n";
@@ -17892,6 +20833,11 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
         }
 
 
+
+
+
+
+
         return printer.addTextToPrint(text_to_Print);
 
 
@@ -18024,10 +20970,10 @@ public class NewOrders_MenuItem_Fragment extends Fragment implements SerialInput
                 String placedtime = String.valueOf(sdff.format(calendar.getTime()));
                 calendar.add(Calendar.MINUTE, timeoftheSlotDouble);
 
-                System.out.println("Time here " + sdff.format(calendar.getTime()));
-                System.out.println("Time here 90 mins" + orderplacedtime);
+                //System.out.println("Time here " + sdff.format(calendar.getTime()));
+                //System.out.println("Time here 90 mins" + orderplacedtime);
                 result = placedtime +" - "+String.valueOf(sdff.format(calendar.getTime()));
-                System.out.println("Time here 90 mins" + result);
+                //System.out.println("Time here 90 mins" + result);
 
                 result = result.replaceAll("GMT[+]05:30", "");
 

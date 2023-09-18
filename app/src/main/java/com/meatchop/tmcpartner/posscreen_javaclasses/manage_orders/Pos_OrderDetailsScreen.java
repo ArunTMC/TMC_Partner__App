@@ -514,6 +514,7 @@ Button changeDeliveryPartner;
                 if(json.has("marinadeitemdesp")) {
                     JSONObject marinadesObject = json.getJSONObject("marinadeitemdesp");
                     Modal_ManageOrders_Pojo_Class marinades_manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                    marinades_manageOrders_pojo_class.setOrderType(modal_manageOrders_pojo_class.getOrderType());
                     try {
                         if(marinadesObject.has("tmcsubctgykey")) {
                             subCtgyKey = String.valueOf(marinadesObject.get("tmcsubctgykey"));
@@ -562,6 +563,7 @@ Button changeDeliveryPartner;
 
                 }
                 Modal_ManageOrders_Pojo_Class manageOrders_pojo_class = new Modal_ManageOrders_Pojo_Class();
+                manageOrders_pojo_class.setOrderType(modal_manageOrders_pojo_class.getOrderType());
                 if (json.has("netweight")) {
                     manageOrders_pojo_class.ItemFinalWeight = String.valueOf(json.get("netweight"));
 
@@ -1432,9 +1434,21 @@ Button changeDeliveryPartner;
         }
         new_to_pay_Amount =new_to_pay_Amount +deliveryCharges_double;
 
-        int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        //int new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
+        double new_totalAmount_withGst = 0;
+        try{
+            if(modal_manageOrders_pojo_class.getOrderType().toUpperCase().equals(Constants.APPORDER)){
+                new_totalAmount_withGst = Double.parseDouble(decimalFormat.format(new_to_pay_Amount));
+            }
+            else{
+                new_totalAmount_withGst = (Math.round(new_to_pay_Amount));
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
-        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst)+".00");
+        total_Rs_to_Pay_text_widget.setText(String.valueOf(new_totalAmount_withGst));
         old_total_Amount=0;
         old_taxes_and_charges_Amount=0;
         new_to_pay_Amount=0;

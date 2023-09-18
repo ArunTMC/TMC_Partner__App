@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -33,6 +35,9 @@ import com.android.volley.toolbox.Volley;
 import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.R;
+import com.meatchop.tmcpartner.asynctaskforprinter.AsyncTakWithServiceForPrintReceipt;
+import com.meatchop.tmcpartner.asynctaskforprinter.AsyncTaskListener_forPrintReceipt;
+import com.meatchop.tmcpartner.asynctaskforprinter.Modal_forPrintReceipt;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +72,7 @@ public class testActivty extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
     // Member object for the chat services
     private BluetoothPrintDriver mChatService = null;
+    AsyncTaskListener_forPrintReceipt callBackAsyncTaskListener_forPrintReceipt = null ;
 
     String starttime="",endtime="";
     // Message types sent from the BluetoothChatService Handler
@@ -151,13 +157,22 @@ public class testActivty extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-        getNotesData();
-
+   //     getNotesData();
+    showProgressBar(false);
 
         ACNotesnew.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //fetchOrderDetailsnewusingmobileno("7010779096");
+
+                showProgressBar(true);
+                Modal_forPrintReceipt modal_forPrintReceipt = new Modal_forPrintReceipt();
+                modal_forPrintReceipt.setOrderid("grgrgrgre");
+                modal_forPrintReceipt.setOrdertype("msmrgorglse");
+                Modal_Address selected_Address_modal = new Modal_Address();
+
+                AsyncTakWithServiceForPrintReceipt asyncTaskForPrintingReceipt = new AsyncTakWithServiceForPrintReceipt(getApplicationContext() , callBackAsyncTaskListener_forPrintReceipt,modal_forPrintReceipt,myReceiverforPrintingService , selected_Address_modal);
+                asyncTaskForPrintingReceipt.execute();
 
             }
         });
@@ -509,7 +524,35 @@ public class testActivty extends AppCompatActivity {
             }
 
         });
+
+
+
+        callBackAsyncTaskListener_forPrintReceipt = new AsyncTaskListener_forPrintReceipt() {
+            @Override
+            public void onTaskCompleted(String result) {
+                showProgressBar(false);
+            }
+        };
+
+
     }
+
+
+
+
+    BroadcastReceiver myReceiverforPrintingService = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Handle the broadcast message here
+
+
+
+
+        }
+    };
+
+
+
 
     private void fetchOrderDetailsfrompaymentOrderid() {
 

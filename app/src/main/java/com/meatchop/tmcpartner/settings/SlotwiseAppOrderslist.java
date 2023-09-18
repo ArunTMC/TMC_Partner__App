@@ -134,9 +134,28 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
         catch (Exception e ){
             e.printStackTrace();
         }
+
         try {
 
-            getTmcSubCtgyList("vendorKey");
+
+
+            SharedPreferences sharedPreferences
+                    = getSharedPreferences("VendorLoginData",
+                    MODE_PRIVATE);
+
+            vendorKey = sharedPreferences.getString("VendorKey", "");
+            orderdetailsnewschema = (sharedPreferences.getBoolean("orderdetailsnewschema_settings", false));
+
+        }
+        catch (Exception e ){
+            e.printStackTrace();
+        }
+
+
+
+        try {
+
+            getTmcSubCtgyList(vendorKey);
             Adjusting_Widgets_Visibility(true);
 
         }
@@ -191,21 +210,6 @@ public class SlotwiseAppOrderslist extends AppCompatActivity {
 
 
 
-        try {
-
-
-
-            SharedPreferences sharedPreferences
-                    = getSharedPreferences("VendorLoginData",
-                    MODE_PRIVATE);
-
-            vendorKey = sharedPreferences.getString("VendorKey", "");
-            orderdetailsnewschema = (sharedPreferences.getBoolean("orderdetailsnewschema_settings", false));
-
-        }
-        catch (Exception e ){
-            e.printStackTrace();
-        }
 
 
 

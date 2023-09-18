@@ -975,8 +975,85 @@ TextView vendorName_textWidget, usermobileno_text_widget,lastupdatedtime_textwid
                                                     }
 
                                                 }
+                                                else  if(transactionType.toUpperCase().equals(Constants.CREDIT_AMOUNT_CANCELLED)){
+                                                    String cancelledAmount = modal_creditOrderDetails.getTotalCancelledAmount().toString();
+                                                    cancelledAmount = cancelledAmount.replaceAll("[^\\d.]", "");
+
+                                                    String totalCreditAmount = "0";
+
+                                                    totalCreditAmount = modal_creditOrderDetails.getTotalAmountGivenAsCredit().toString();
+                                                    totalCreditAmount = totalCreditAmount.replaceAll("[^\\d.]", "");
+
+                                                    double  totalCreditAmountDouble =0;
+                                                    double cancelledAmountDouble = 0;
+                                                    double transactionValueDouble =0;
+
+                                                    if((!cancelledAmount.equals("")) &&(!cancelledAmount.equals("null"))){
+                                                        cancelledAmountDouble = 0;
+                                                        try{
+                                                            cancelledAmountDouble = Double.parseDouble(cancelledAmount);
+
+                                                        }
+                                                        catch (Exception e){
+                                                            cancelledAmountDouble = 0;
+                                                            e.printStackTrace();
+                                                        }
+
+
+                                                    }
+                                                    else {
+                                                        cancelledAmountDouble = 0;
+
+                                                    }
+
+                                                    if((!totalCreditAmount.equals("")) &&(!totalCreditAmount.equals("null"))){
+                                                        totalCreditAmountDouble = 0;
+                                                        try{
+                                                            totalCreditAmountDouble = Double.parseDouble(totalCreditAmount);
+
+                                                        }
+                                                        catch (Exception e){
+                                                            totalCreditAmountDouble = 0;
+                                                            e.printStackTrace();
+                                                        }
+
+
+                                                    }
+                                                    else {
+                                                        totalCreditAmountDouble = 0;
+
+                                                    }
+
+                                                    if((!transactionValue.equals("")) &&(!transactionValue.equals("null"))) {
+                                                        transactionValueDouble =0;
+                                                        try {
+                                                            transactionValueDouble = Double.parseDouble(transactionValue);
+
+                                                        } catch (Exception e) {
+                                                            transactionValueDouble = 0;
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                    else{
+                                                        transactionValueDouble = 0;
+
+                                                    }
+
+                                                    try{
+                                                        cancelledAmountDouble = cancelledAmountDouble + transactionValueDouble;
+                                                        totalCreditAmountDouble = totalCreditAmountDouble - cancelledAmountDouble;
+                                                        modal_creditOrderDetails.setTotalAmountGivenAsCredit(String.valueOf(totalCreditAmountDouble));
+                                                        modal_creditOrderDetails.setTotalCancelledAmount(String.valueOf(cancelledAmountDouble));
+                                                    }
+                                                    catch (Exception e){
+                                                        e.printStackTrace();
+                                                    }
+
+                                                }
+
                                                 modal_creditOrdersTransactionDetails.setTransactionvalue(json.getString("transactionvalue"));
                                             }
+
                                             else{
                                                 modal_creditOrdersTransactionDetails.setTransactionvalue("0");
                                                 Toast.makeText(CreditOrders_MobileNumberwise_Report.this,"There is no transactionvalue", Toast.LENGTH_LONG).show();
@@ -1602,6 +1679,21 @@ TextView vendorName_textWidget, usermobileno_text_widget,lastupdatedtime_textwid
                         itemtypecell = new PdfPCell(new Phrase(transactionType_array));
                         itemtypecell.setBorderColor(BaseColor.RED);
                        // itemtypecell.setBackgroundColor(BaseColor.GREEN);
+                        itemtypecell.setMinimumHeight(30);
+                        itemtypecell.setBorderWidthRight(01);
+                        itemtypecell.setBorderWidthBottom(01);
+                        itemtypecell.setBorderWidthTop(01);
+                        itemtypecell.setBorderWidthLeft(01);
+                        itemtypecell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        itemtypecell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                        itemtypecell.setPaddingRight(10);
+                        table.addCell(itemtypecell);
+                    }
+                    else  if(transactionType_array.equals(Constants.CREDIT_AMOUNT_CANCELLED)){
+                        transactionType_array = "Order Cancelled";
+                        itemtypecell = new PdfPCell(new Phrase(transactionType_array));
+                        itemtypecell.setBorderColor(BaseColor.RED);
+                        // itemtypecell.setBackgroundColor(BaseColor.GREEN);
                         itemtypecell.setMinimumHeight(30);
                         itemtypecell.setBorderWidthRight(01);
                         itemtypecell.setBorderWidthBottom(01);

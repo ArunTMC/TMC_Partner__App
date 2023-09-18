@@ -342,6 +342,8 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
         //  final SharedPreferences sharedPreferencesMenuitem = requireContext().getSharedPreferences("MenuList", MODE_PRIVATE);
         //  MenuItems = sharedPreferencesMenuitem.getString("MenuList", "");
 
+
+
         SharedPreferences shared = requireContext().getSharedPreferences("VendorLoginData", MODE_PRIVATE);
         UserPhoneNumber = (shared.getString("UserPhoneNumber", "+91"));
         vendorkey = shared.getString("VendorKey", "");
@@ -362,6 +364,9 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
         userMobileNo.setText(UserPhoneNumber);
         storeName.setText(vendorName);
+
+
+
         try {
             ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
             screenInches = screenSizeOfTheDevice.getDisplaySize(getActivity());
@@ -639,11 +644,18 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
                 printerParentLayout.setVisibility(GONE);
                 if (printerType_sharedPreference.equals(Constants.Bluetooth_PrinterType)) {
-                    connect_printer_button_widget.setVisibility(VISIBLE);
+                    mobilePrinterConnectLayout.setVisibility(VISIBLE);
 
                 } else {
-                    connect_printer_button_widget.setVisibility(GONE);
+                    mobilePrinterConnectLayout.setVisibility(GONE);
 
+                }
+                if (!isinventorycheck) {
+                    changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+                    changeMenuItemStatus.setVisibility(VISIBLE);
+                } else {
+                    changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+                    changeMenuItemStatus.setVisibility(GONE);
                 }
             } else {
                 //if Mobile
@@ -662,7 +674,13 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                     editPaymentModeOftheOrder.setVisibility(GONE);
 
                 }
-
+                if (!isinventorycheck) {
+                    changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+                    changeMenuItemStatus.setVisibility(VISIBLE);
+                } else {
+                    changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
+                    changeMenuItemStatus.setVisibility(GONE);
+                }
                 if (UserRole.equals(Constants.DELIVERYMANAGER_ROLENAME)) {
                     salesLinearLayout.setVisibility(VISIBLE);
                     consolidatedSalesReport.setVisibility(GONE);
@@ -671,17 +689,16 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
                     phone_sales_report.setVisibility(GONE);
                     consolidatedSalesReportWeekwise.setVisibility(GONE);
                     delivered_orders_timewiseReport.setVisibility(VISIBLE);
-
-
+                    changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+                    changeMenuItemStatus.setVisibility(GONE);
+                    changeDeliverySlotdetails.setVisibility(VISIBLE);
+                    changeMenuItemVisibilityinTv.setVisibility(GONE);
+                    changeMenuItemPrice.setVisibility(GONE);
+                    menuTransactionDetailsLayout.setVisibility(GONE);
+                    menuItemAvailabiltyStatusReport.setVisibility(GONE);
                 }
             }
-            if (!isinventorycheck) {
-                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
-                changeMenuItemStatus.setVisibility(VISIBLE);
-            } else {
-                changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
-                changeMenuItemStatus.setVisibility(GONE);
-            }
+
 
 
             ShowOrHideUI_AccordingTo_UserPhoneNumber();
@@ -707,6 +724,33 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
             });
         }
       // setSettingsUIBasedONManagementRole();
+
+
+
+
+        try{
+            if(vendorkey.equals("vendor_6")){
+                changeDeliverySlotdetails.setVisibility(GONE);
+                changeMenuItemAvail_allowNegativeStock.setVisibility(GONE);
+                changeMenuItemStatus.setVisibility(GONE);
+                menuItemAvailabiltyStatusReport.setVisibility(GONE);
+                menuTransactionDetailsLayout.setVisibility(GONE);
+                deliveryStatusTransactionLayout.setVisibility(GONE);
+
+                searchOrdersUsingMobileNumbers.setVisibility(GONE);
+                orderRating_report.setVisibility(GONE);
+                manageordersLinearLayout.setVisibility(GONE);
+                AppSalesReport.setVisibility(GONE);
+                deliveryPartnerSettlementReport.setVisibility(GONE);
+
+                ShowOrHideUI_AccordingTo_UserPhoneNumber();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
 
         phone_sales_report.setOnClickListener(new OnClickListener() {
             @Override
@@ -2506,13 +2550,14 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
 
     private void ShowOrHideUI_AccordingTo_UserPhoneNumber() {
 
-        if (UserPhoneNumber.equals("+9195975808") || UserPhoneNumber.equals("+917010779096")) {
+        if (UserPhoneNumber.equals("+919597580128") || UserPhoneNumber.equals("+917010779096")) {
             changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
             testlayout.setVisibility(VISIBLE);
             changeMenuItemPrice_weight.setVisibility(GONE);
             changeMenuItemAvail_allowNegativeStock.setVisibility(VISIBLE);
             changeMenuItemStatus.setVisibility(VISIBLE);
             generateUserDetailsButton.setVisibility(VISIBLE);
+            manageordersLinearLayout.setVisibility(VISIBLE);
         }
 
 
@@ -2546,7 +2591,7 @@ public class SettingsFragment extends Fragment implements EasyPermissions.Permis
             deliveryPartnerSettlementReport.setVisibility(VISIBLE);
 
             menuItemAvailabiltyStatusReport.setVisibility(GONE);
-            testlayout.setVisibility(GONE);
+            testlayout.setVisibility(VISIBLE);
 
 
 

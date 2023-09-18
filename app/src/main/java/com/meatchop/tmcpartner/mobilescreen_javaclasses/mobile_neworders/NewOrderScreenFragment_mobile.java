@@ -83,6 +83,8 @@ import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Add_CustomerOrder_TrackingTableInterface;
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Add_CustomerOrder_TrackingTable_AsyncTask;
 import com.meatchop.tmcpartner.mobilescreen_javaclasses.other_classes.MobileScreen_Dashboard;
+import com.meatchop.tmcpartner.orderplacing_microservice_architectures.OrderPlacingModuleHandler_AsyncTask;
+import com.meatchop.tmcpartner.orderplacing_microservice_architectures.OrderPlacingModuleHandler_Interface;
 import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.posscreen_javaclasses.other_java_classes.Modal_MenuItem;
 import com.meatchop.tmcpartner.posscreen_javaclasses.pos_new_orders.Modal_NewOrderItems;
@@ -176,7 +178,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     private  boolean isOrderTrackingDetailsMethodCalled =false;
     private  boolean isPaymentDetailsMethodCalled =false;
     boolean isMobileAppDataFetchedinDashboard=false;
-    boolean isanyProducthaveZeroAsweight=false;
+    boolean isanyProducthaveZeroAsweight=false ,isanyProducthaveZeroAsPrice = false;
     boolean isUpdateRedeemPointsWithoutKeyMethodCalled =false;
     boolean ispaymentMode_Clicked =false;
     boolean isPrintedSecondTime=false;
@@ -231,7 +233,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     Adapter_AutoCompleteWholeSaleCustomers_Mobile adapter_autoCompleteWholeSaleCustomers;
     HashMap<String,String>wholeSaleCustomersMobileNoStringHashmap = new HashMap<>();
 
-    boolean orderdetailsnewschema = false , localDBcheck =false;
+    boolean orderdetailsnewschema = false , localDBcheck =false , isStoreNumberSelected = false;
 
     Add_CustomerOrder_TrackingTableInterface mResultCallback_Add_CustomerOrder_TrackingTableInterface = null;
     boolean  isCustomerOrdersTableServiceCalled = false;
@@ -276,6 +278,16 @@ public class NewOrderScreenFragment_mobile extends Fragment {
     private static final int REQUEST_CAMERA_PERMISSION = 201;
     TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
 
+
+    boolean  isOrderPlacingMicroserviceisActive = false;
+    OrderPlacingModuleHandler_Interface orderPlacingModuleHandler_interface = null;
+    OrderPlacingModuleHandler_AsyncTask orderPlacingModuleHandler_asyncTask = null;
+    JSONObject redeemPointsJson = new JSONObject();
+    
+    
+
+
+
     public NewOrderScreenFragment_mobile() {
         // Required empty public constructor
     }
@@ -304,6 +316,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         isAddressForPhoneOrderSelected = false;
         isNewUser =false;
         updateUserName = false;
+        isStoreNumberSelected = false;
         isUsertype_AlreadyPhone =false;
         customermobileno = "";
         customerName ="";
@@ -311,6 +324,8 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         user_key_toAdd_Address = "";
         userAddressKeyArrayList.clear();
         userAddressArrayList.clear();
+        redeemPointsJson = new JSONObject();
+        redeemPointsJson = new JSONObject();
         selected_Address_modal = new Modal_Address();
         try {
             ScreenSizeOfTheDevice screenSizeOfTheDevice = new ScreenSizeOfTheDevice();
@@ -346,6 +361,9 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             StoreAddressLine3 = (shared.getString("VendorPincode", ""));
             StoreLanLine = (shared.getString("VendorMobileNumber", ""));
             orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+            isOrderPlacingMicroserviceisActive = (shared.getBoolean("enableorderplacingmicroservice", false));
+
+                //   isOrderPlacingMicroserviceisActive= false;
              localDBcheck = (shared.getBoolean("localdbcheck", false));
 
                 SharedPreferences printerDatasharedPreferences
@@ -1346,6 +1364,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         customermobileno="";
         customerName ="";
         userAddressArrayList.clear();
+        redeemPointsJson = new JSONObject();
         userAddressKeyArrayList.clear();
         selectedAddressKey = String.valueOf("");
         selectedAddress = String.valueOf("");
@@ -1370,7 +1389,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         isAddressForPhoneOrderSelected = false;
         isUsertype_AlreadyPhone = false;
         userFetchedManually = false;
-
+        isStoreNumberSelected = false;
 
         Objects.requireNonNull(itemtotal_textWidget).setText(itemTotal);
         Objects.requireNonNull(toPay_textWidget).setText(itemTotal);
@@ -1424,7 +1443,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             public void afterTextChanged(Editable s) {
                 String defaultStoreNumber = "";
                 if(vendorKey.equals("vendor_1")){
-                    defaultStoreNumber =  ("8939189102");
+                    defaultStoreNumber =  ("6380050384");
 
                 }
                 else if(vendorKey.equals("vendor_2")){
@@ -1512,6 +1531,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                             customermobileno = mobileno;
                             fulladdress_textview.setText("Please select an Address");
                             userAddressArrayList.clear();
+                              redeemPointsJson = new JSONObject();
                             userAddressKeyArrayList.clear();
                             selectedAddressKey = String.valueOf("");
                             selectedAddress = String.valueOf("");
@@ -1533,6 +1553,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                         customermobileno = mobileno;
                         fulladdress_textview.setText("Please select an Address");
                         userAddressArrayList.clear();
+                       redeemPointsJson = new JSONObject();
                         userAddressKeyArrayList.clear();
                         selectedAddressKey = String.valueOf("");
                         selectedAddress = String.valueOf("");
@@ -1571,10 +1592,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         Objects.requireNonNull(userstoreNumberCheckboxWidget).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+                isStoreNumberSelected = isChecked;
                 if(isChecked){
                     if(vendorKey.equals("vendor_1")){
-                        Objects.requireNonNull(customermobileno_editwidget).setText("8939189102");
+                        Objects.requireNonNull(customermobileno_editwidget).setText("6380050384");
 
                     }
                     else if(vendorKey.equals("vendor_2")){
@@ -1968,7 +1989,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             public void onClick(View v) {
                 String addressKey = "";
                 try{
-                    addressKey =  String.valueOf(UUID.randomUUID())+"-"+String.valueOf(System.currentTimeMillis());
+                    addressKey =  String.valueOf(UUID.randomUUID());
                 }
                 catch (Exception e){
                     addressKey = "";
@@ -2335,6 +2356,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
         userAddressKeyArrayList.clear();
         userAddressArrayList.clear();
+        redeemPointsJson = new JSONObject();
         isAddressForPhoneOrderSelected = false;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.api_GetAddressUsingUserKey + key,null,
@@ -2949,16 +2971,18 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
 
                if( !isUsertype_AlreadyPhone || updateUserName){
-                   Add_OR_Update_Entry_inTMCUserTable("PHONE");
-
+                   if(!isStoreNumberSelected) {
+                       Add_OR_Update_Entry_inTMCUserTable("PHONE");
+                   }
                }
 
 
             }
             else
             {
-                Add_OR_Update_Entry_inTMCUserTable("WALKIN");
-
+                if(!isStoreNumberSelected) {
+                    Add_OR_Update_Entry_inTMCUserTable("WALKIN");
+                }
 
             }
 
@@ -2992,6 +3016,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     customermobileno="";
                                     customerName ="";
                                     userAddressArrayList.clear();
+                                       redeemPointsJson = new JSONObject();
                                     userAddressKeyArrayList.clear();
                                     selectedAddressKey = String.valueOf("");
                                     selectedAddress = String.valueOf("");
@@ -3013,6 +3038,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     isAddressForPhoneOrderSelected = false;
                                     isUsertype_AlreadyPhone = false;
                                     userFetchedManually = false;
+                                    isStoreNumberSelected = false;
 
                                     cart_Item_List.clear();
                                     cartItem_hashmap.clear();
@@ -3093,51 +3119,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
             if(defaultPrinterType.equals(Constants.PDF_PrinterType)) {
 
 
-                if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
-                    GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
-                }
-                else{
-
-                    if(!isCustomerOrdersTableServiceCalled){
-                        try{
-                            if(orderdetailsnewschema){
-                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                if(isPhoneOrderSelected){
-                                    ordertype = Constants.PhoneOrder;
-                                }
-                                else{
-                                    ordertype = Constants.POSORDER;
-
-                                }
-                                isCustomerOrdersTableServiceCalled =true;
-
-
-                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
-                                asyncTask.execute();
-
-                            }
-
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-
-                        }
-                    }
-
-                    if (!isOrderDetailsMethodCalled) {
-                        shouldGetPrintNow_Global = false;
-                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                    }
-                    if (!isOrderTrackingDetailsMethodCalled) {
-
-                        PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
-                    }
-                }
-
-
-
-
-
                 try{
                     totalredeempointsusergetfromorder =   Math.round((pointsfor100rs_double*totalAmounttopay)/100);
 
@@ -3150,7 +3131,109 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                 //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
                 //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+
+                if(isOrderPlacingMicroserviceisActive){
+                    redeemPointsJson = new JSONObject();
+                    try {
+                        redeemPointsJson.put("mobileno",UserMobile);
+                        redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                        redeemPointsJson.put("havetodocalculation",true);
+                        redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                        redeemPointsJson.put("vendorname",vendorName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+                else{
+
+                    updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+                }
+
+
+
+                if(String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)){
+                    GetDatafromCreditOrderDetailsTable(paymentMode,sTime,currenttime);
+                }
+                else{
+
+
+                    if(isOrderPlacingMicroserviceisActive) {
+
+                        try{
+                            if(orderdetailsnewschema){
+
+                                if(isPhoneOrderSelected){
+                                    ordertype = Constants.PhoneOrder;
+                                }
+                                else{
+                                    ordertype = Constants.POSORDER;
+
+                                }
+
+
+
+                                initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, payableAmount, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+
+
+                            }
+
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+
+                        }
+
+
+                    }
+                    else{
+                        if(!isCustomerOrdersTableServiceCalled){
+                            try{
+                                if(orderdetailsnewschema){
+                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                    if(isPhoneOrderSelected){
+                                        ordertype = Constants.PhoneOrder;
+                                    }
+                                    else{
+                                        ordertype = Constants.POSORDER;
+
+                                    }
+                                    isCustomerOrdersTableServiceCalled =true;
+
+
+                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
+                                    asyncTask.execute();
+
+                                }
+
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+
+                            }
+                        }
+
+                        if (!isOrderDetailsMethodCalled) {
+                            shouldGetPrintNow_Global = false;
+                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                        }
+                        if (!isOrderTrackingDetailsMethodCalled) {
+
+                            PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                        }
+                    }
+
+
+                }
+
+
+
+
+
 
 
 
@@ -3175,43 +3258,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                 @Override
                                 public void onNo() {
-                                    if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
-                                        GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
-                                    } else {
 
-                                        if (!isCustomerOrdersTableServiceCalled) {
-                                            try {
-                                                if (orderdetailsnewschema) {
-                                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                    if (isPhoneOrderSelected) {
-                                                        ordertype = Constants.PhoneOrder;
-                                                    } else {
-                                                        ordertype = Constants.POSORDER;
-
-                                                    }
-                                                    isCustomerOrdersTableServiceCalled = true;
-
-
-                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus ,customerName,"0");
-                                                    asyncTask.execute();
-
-                                                }
-
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-
-                                            }
-                                        }
-
-                                        if (!isOrderDetailsMethodCalled) {
-                                            shouldGetPrintNow_Global = false;
-                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                                        }
-                                        if (!isOrderTrackingDetailsMethodCalled) {
-
-                                            PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
-                                        }
-                                    }
 
 
                                     try {
@@ -3225,7 +3272,96 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                     //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
                                     //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                                    updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+                                    // updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+                                    if(isOrderPlacingMicroserviceisActive){
+                                        redeemPointsJson = new JSONObject();
+                                        try {
+                                            redeemPointsJson.put("mobileno",UserMobile);
+                                            redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                                            redeemPointsJson.put("havetodocalculation",true);
+                                            redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                                            redeemPointsJson.put("vendorname",vendorName);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+
+                                    }
+                                    else{
+
+                                        updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+                                    }
+
+
+                                    if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
+                                        GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
+                                    }
+                                    else {
+                                        if(isOrderPlacingMicroserviceisActive) {
+
+                                            try{
+                                                if(orderdetailsnewschema){
+
+                                                    if(isPhoneOrderSelected){
+                                                        ordertype = Constants.PhoneOrder;
+                                                    }
+                                                    else{
+                                                        ordertype = Constants.POSORDER;
+
+                                                    }
+
+
+
+                                                    initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, payableAmount, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+
+
+                                                }
+
+                                            }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+
+                                            }
+
+
+                                        }
+                                        else {
+                                            if (!isCustomerOrdersTableServiceCalled) {
+                                                try {
+                                                    if (orderdetailsnewschema) {
+                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                        if (isPhoneOrderSelected) {
+                                                            ordertype = Constants.PhoneOrder;
+                                                        } else {
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+                                                        isCustomerOrdersTableServiceCalled = true;
+
+
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                                        asyncTask.execute();
+
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+
+                                                }
+                                            }
+                                            if (!isOrderDetailsMethodCalled) {
+                                                shouldGetPrintNow_Global = false;
+                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                            }
+                                            if (!isOrderTrackingDetailsMethodCalled) {
+
+                                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                            }
+                                        }
+                                    }
+
 
 
                                     return;
@@ -3252,44 +3388,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                                     @Override
                                     public void onNo() {
-
-                                        if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
-                                            GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
-                                        } else {
-                                            if (!isCustomerOrdersTableServiceCalled) {
-                                                try {
-                                                    if (orderdetailsnewschema) {
-                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                        if (isPhoneOrderSelected) {
-                                                            ordertype = Constants.PhoneOrder;
-                                                        } else {
-                                                            ordertype = Constants.POSORDER;
-
-                                                        }
-                                                        isCustomerOrdersTableServiceCalled = true;
-                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus ,customerName,"0");
-                                                        asyncTask.execute();
-
-                                                    }
-
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-
-                                                }
-                                            }
-
-
-                                            if (!isOrderDetailsMethodCalled) {
-                                                shouldGetPrintNow_Global = false;
-                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                                            }
-                                            if (!isOrderTrackingDetailsMethodCalled) {
-
-                                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
-                                            }
-                                        }
-
-
                                         try {
                                             totalredeempointsusergetfromorder = Math.round((pointsfor100rs_double * totalAmounttopay) / 100);
 
@@ -3300,8 +3398,95 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                         String UserMobile = "+91" + customermobileno;
 
                                         //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
-                                        //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                                        updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+                                        //   Toast.makeText(mContext,"pointsupdateRedeemPointsDetailsInDBWithoutkey :"+se,Toast.LENGTH_LONG).show();
+                                        //  (UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+                                        if(isOrderPlacingMicroserviceisActive){
+                                            redeemPointsJson = new JSONObject();
+                                            try {
+                                                redeemPointsJson.put("mobileno",UserMobile);
+                                                redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                                                redeemPointsJson.put("havetodocalculation",true);
+                                                redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                                                redeemPointsJson.put("vendorname",vendorName);
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+
+
+                                        }
+                                        else{
+
+                                            updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+                                        }
+
+                                        if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
+                                            GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
+                                        } else {
+
+                                            if(isOrderPlacingMicroserviceisActive) {
+
+                                                try{
+                                                    if(orderdetailsnewschema){
+
+                                                        if(isPhoneOrderSelected){
+                                                            ordertype = Constants.PhoneOrder;
+                                                        }
+                                                        else{
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+
+
+
+                                                        initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, payableAmount, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+
+
+                                                    }
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+
+                                                }
+
+
+                                            }
+                                            else {
+
+                                                if (!isCustomerOrdersTableServiceCalled) {
+                                                    try {
+                                                        if (orderdetailsnewschema) {
+                                                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                            if (isPhoneOrderSelected) {
+                                                                ordertype = Constants.PhoneOrder;
+                                                            } else {
+                                                                ordertype = Constants.POSORDER;
+
+                                                            }
+                                                            isCustomerOrdersTableServiceCalled = true;
+                                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                                            asyncTask.execute();
+
+                                                        }
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+
+                                                    }
+                                                }
+                                                if (!isOrderDetailsMethodCalled) {
+                                                    shouldGetPrintNow_Global = false;
+                                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                                }
+                                                if (!isOrderTrackingDetailsMethodCalled) {
+
+                                                    PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                                }
+                                            }
+                                        }
+
 
 
                                         return;
@@ -3309,45 +3494,6 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                 });
 
                     } else {
-
-                        if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
-                            GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
-                        } else {
-
-                            if (!isCustomerOrdersTableServiceCalled) {
-                                try {
-                                    if (orderdetailsnewschema) {
-                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                        if (isPhoneOrderSelected) {
-                                            ordertype = Constants.PhoneOrder;
-                                        } else {
-                                            ordertype = Constants.POSORDER;
-
-                                        }
-                                        isCustomerOrdersTableServiceCalled = true;
-                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus,customerName,"0");
-                                        asyncTask.execute();
-
-                                    }
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-
-                                }
-                            }
-
-
-                            if (!isOrderDetailsMethodCalled) {
-                                shouldGetPrintNow_Global = true;
-                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                            }
-                            if (!isOrderTrackingDetailsMethodCalled) {
-
-                                PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
-                            }
-                        }
-
-
                         try {
                             totalredeempointsusergetfromorder = Math.round((pointsfor100rs_double * totalAmounttopay) / 100);
 
@@ -3359,7 +3505,93 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                         //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
                         //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                        updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+                        // updateRedeemPointsDetailsInDBWithoutkey(UserMobile, totalAmounttopay, totalredeempointsusergetfromorder);
+
+                        if(isOrderPlacingMicroserviceisActive){
+                            redeemPointsJson = new JSONObject();
+                            try {
+                                redeemPointsJson.put("mobileno",UserMobile);
+                                redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                                redeemPointsJson.put("havetodocalculation",true);
+                                redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                                redeemPointsJson.put("vendorname",vendorName);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                        else{
+
+                            updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+                        }
+                        if (String.valueOf(paymentMode).toUpperCase().equals(Constants.CREDIT)) {
+                            GetDatafromCreditOrderDetailsTable(paymentMode, sTime, currenttime);
+                        }
+                        else {
+                            if(isOrderPlacingMicroserviceisActive) {
+
+                                try{
+                                    if(orderdetailsnewschema){
+
+                                        if(isPhoneOrderSelected){
+                                            ordertype = Constants.PhoneOrder;
+                                        }
+                                        else{
+                                            ordertype = Constants.POSORDER;
+
+                                        }
+
+
+
+                                        initAndCallingOrderPlacingModuleHandlerInterface(mContext, paymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, payableAmount, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+
+
+                                    }
+
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+
+                                }
+
+
+                            }
+                            else {
+                                if (!isCustomerOrdersTableServiceCalled) {
+                                    try {
+                                        if (orderdetailsnewschema) {
+                                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                            if (isPhoneOrderSelected) {
+                                                ordertype = Constants.PhoneOrder;
+                                            } else {
+                                                ordertype = Constants.POSORDER;
+
+                                            }
+                                            isCustomerOrdersTableServiceCalled = true;
+                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                            asyncTask.execute();
+
+                                        }
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+
+                                    }
+                                }
+                                if (!isOrderDetailsMethodCalled) {
+                                    shouldGetPrintNow_Global = true;
+                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, paymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                }
+                                if (!isOrderTrackingDetailsMethodCalled) {
+
+                                    PlaceOrder_in_OrderTrackingDetails(sTime, currenttime, finaltoPayAmountinmethod);
+                                }
+                            }
+                        }
+
 
 
                     }
@@ -3395,7 +3627,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                if (user_key_toAdd_Address.equals("")) {
                    String userKey = "";
                    try {
-                       userKey = String.valueOf(UUID.randomUUID()) + "-" + String.valueOf(System.currentTimeMillis());
+                       userKey = String.valueOf(UUID.randomUUID());
                    } catch (Exception e) {
                        userKey = "";
                        e.printStackTrace();
@@ -4226,9 +4458,10 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                 // new_totalAmount_withGst = (int) Math.round(new_to_pay_Amount);
                 finaltoPayAmount = String.valueOf((int) Math.round(new_to_pay_Amount)) + ".00";
                 mobile_ToPay_textwidget.setText(String.valueOf(finaltoPayAmount));
-                toPay_textWidget.setText(String.valueOf(finaltoPayAmount));
+                //toPay_textWidget.setText(String.valueOf(finaltoPayAmount));
 
-                deliveryChargeTextWidget.setText(String.valueOf(deliveryAmount_for_this_order));
+              //  Objects.requireNonNull(toPay_textWidget).setText(finaltoPayAmount);
+              //  deliveryChargeTextWidget.setText(String.valueOf(deliveryAmount_for_this_order));
                 totalAmounttopay = Double.parseDouble(finaltoPayAmount);
             } catch (Exception e) {
              //   e.printStackTrace();
@@ -4263,6 +4496,73 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         //Log.i(TAG, "call adapter cart_Item " + getData());
 
       //  completemenuItem= getMenuItemfromString(MenuItems);
+    }
+
+
+    private void initAndCallingOrderPlacingModuleHandlerInterface(Context mContext, String Payment_mode, String discountAmount_stringGlobal, String orderplacedTime, String UserMobile, String ordertype, String vendorKey, String vendorName, long sTime, String payableAmount, Modal_Address selected_address_modal, String tokenNo, String userStatus, String customerName_string, boolean isinventorycheck, double newamountUserHaveAsCredit, double oldamountUserHaveAsCredit) {
+        String taxAmount = String.valueOf(newGst+".00");
+        JSONArray itemDespArray = new JSONArray();
+
+
+        orderPlacingModuleHandler_interface = new OrderPlacingModuleHandler_Interface() {
+            @Override
+            public void notifySuccess(String requestType, String success) {
+                try {
+
+                    try {
+                        if(defaultPrinterType.toUpperCase().equals(Constants.PDF_PrinterType)) {
+
+                            GeneratePDF(orderplacedTime, UserMobile, tokenNo, taxAmount, taxAmount, finaltoPayAmountinmethod, String.valueOf(sTime), cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype, itemDespArray);
+
+                        }
+                        else{
+
+                            if(shouldGetPrintNow_Global) {
+                                printRecipt(orderplacedTime, UserMobile, tokenNo, taxAmount, taxAmount, finaltoPayAmountinmethod, String.valueOf(sTime), cart_Item_List, cartItem_hashmap, Payment_mode, discountAmount, ordertype, itemDespArray);
+                            }
+                            else{
+
+
+
+                                    turnoffProgressBarAndResetArray();
+
+
+                            }
+                            isOrderPlacedinOrderdetails = true;
+                            //  showProgressBar(false);
+                        }
+
+
+
+                    }
+                    catch(Exception e ){
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    showProgressBar(false);
+                    isOrderDetailsMethodCalled = false;
+
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void notifyError(String requestType, String error) {
+
+                isOrderDetailsMethodCalled = false;
+                showProgressBar(false);
+                Toast.makeText(mContext,"OrderDetails is not updated in DB",Toast.LENGTH_SHORT).show();
+
+                turnoffProgressBarAndResetArray();
+            }
+
+        };
+
+        orderPlacingModuleHandler_asyncTask = new OrderPlacingModuleHandler_AsyncTask(mContext, orderPlacingModuleHandler_interface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, Payment_mode, discountAmount, "0", orderplacedTime, UserMobile, ordertype, vendorKey, vendorName, sTime, payableAmount, isinventorycheck, user_key_toAdd_Address,redeemPointsJson , newamountUserHaveAsCredit , oldamountUserHaveAsCredit,selected_address_modal,tokenNo);
+
+        orderPlacingModuleHandler_asyncTask.execute();
+
+
     }
 
 
@@ -4346,6 +4646,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     customermobileno="";
                                     customerName ="";
                                     userAddressArrayList.clear();
+                                     redeemPointsJson = new JSONObject();
                                     userAddressKeyArrayList.clear();
                                     selectedAddressKey = String.valueOf("");
                                     selectedAddress = String.valueOf("");
@@ -4367,7 +4668,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                                     isUsertype_AlreadyPhone = false;
                                     userFetchedManually = false;
 
-
+                                    isStoreNumberSelected = false;
                                     orderTypeSpinner_newWidget.setSelection(0);
                                     cart_Item_List.clear();
                                     cartItem_hashmap.clear();
@@ -6954,7 +7255,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
             Font normalFont = new Font(Font.FontFamily.TIMES_ROMAN, 13,
                     Font.NORMAL);
-            
+
             /*Anchor anchor = new Anchor("First Chapter", catFont);
             anchor.setName("First Chapter");
             Chapter catPart = new Chapter(new Paragraph(anchor), 1);
@@ -7151,14 +7452,14 @@ public class NewOrderScreenFragment_mobile extends Fragment {
 
                         }
 
-                        if (fullitemName.length() > 21) {
-                            itemName = fullitemName.substring(0, 21);
+                        if (fullitemName.length() > 18) {
+                            itemName = fullitemName.substring(0, 18);
                             itemName = itemName + "...";
 
-                            fullitemName = fullitemName.substring(0, 21);
+                            fullitemName = fullitemName.substring(0, 18);
                             fullitemName = fullitemName + "...";
                         }
-                        if (fullitemName.length() < 21) {
+                        if (fullitemName.length() < 18) {
                             itemName = fullitemName;
 
                             fullitemName = fullitemName;
@@ -7170,11 +7471,11 @@ public class NewOrderScreenFragment_mobile extends Fragment {
                             itemName = fullitemName.substring(0, indexofbraces);
 
                         }
-                        if (fullitemName.length() > 21) {
-                            itemName = fullitemName.substring(0, 21);
+                        if (fullitemName.length() > 18) {
+                            itemName = fullitemName.substring(0, 18);
                             itemName = itemName + "...";
                         }
-                        if (fullitemName.length() < 21) {
+                        if (fullitemName.length() < 18) {
                             itemName = fullitemName;
 
                         }
@@ -7673,7 +7974,7 @@ public class NewOrderScreenFragment_mobile extends Fragment {
         }
     }
 
-    
+
 
     private void AddDataInStockOutGoingTable(double grossweightingrams_double, String orderid, String stockIncomingKey_avlDetails, String itemName, String barcode, String priceTypeForPOS, String tmcCtgy, String tmcSubCtgyKey) {
 
@@ -8907,8 +9208,8 @@ showProgressBar(true);
 
                                         }
 
-                                        if (fullitemName.length() > 21) {
-                                            itemName = fullitemName.substring(0, 21);
+                                        if (fullitemName.length() > 18) {
+                                            itemName = fullitemName.substring(0, 18);
                                             itemName = itemName + "...";
 
 
@@ -9147,8 +9448,8 @@ showProgressBar(true);
 
                                     }
 
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 18) {
+                                        itemName = fullitemName.substring(0, 18);
                                         itemName = itemName + "...";
 
 
@@ -9392,6 +9693,28 @@ showProgressBar(true);
                         BluetoothPrintDriver.BT_Write("\r");
                         BluetoothPrintDriver.LF();
                     }
+                    else if(vendorKey.equals("vendor_6")){
+
+                        Title = "New NS Bismillah";
+
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x04);
+                        BluetoothPrintDriver.SetFontEnlarge((byte) 0x20);
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString(Title);
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+
+                      /*  BluetoothPrintDriver.Begin();
+                        BluetoothPrintDriver.SetBold((byte) 0x01);//´ÖÌå
+                        BluetoothPrintDriver.SetAlignMode((byte) 49);
+                        BluetoothPrintDriver.printString("Powered by The Meat Chop");
+                        BluetoothPrintDriver.BT_Write("\r");
+                        BluetoothPrintDriver.LF();
+
+                       */
+                    }
                     else {
                         Title = "The Meat Chop";
 
@@ -9561,14 +9884,14 @@ showProgressBar(true);
 
                                     }
 
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 18) {
+                                        itemName = fullitemName.substring(0, 18);
                                         itemName = itemName + "...";
 
-                                        fullitemName = fullitemName.substring(0, 21);
+                                        fullitemName = fullitemName.substring(0, 18);
                                         fullitemName = fullitemName + "...";
                                     }
-                                    if (fullitemName.length() < 21) {
+                                    if (fullitemName.length() < 18) {
                                         itemName = fullitemName;
 
                                         fullitemName = fullitemName;
@@ -9580,11 +9903,11 @@ showProgressBar(true);
                                         itemName = fullitemName.substring(0, indexofbraces);
 
                                     }
-                                    if (fullitemName.length() > 21) {
-                                        itemName = fullitemName.substring(0, 21);
+                                    if (fullitemName.length() > 18) {
+                                        itemName = fullitemName.substring(0, 18);
                                         itemName = itemName + "...";
                                     }
-                                    if (fullitemName.length() < 21) {
+                                    if (fullitemName.length() < 18) {
                                         itemName = fullitemName;
 
                                     }
@@ -10610,6 +10933,7 @@ showProgressBar(true);
                 customermobileno="";
                 customerName ="";
                 userAddressArrayList.clear();
+                redeemPointsJson = new JSONObject();
                 userAddressKeyArrayList.clear();
                 selectedAddressKey = String.valueOf("");
                 selectedAddress = String.valueOf("");
@@ -10634,7 +10958,7 @@ showProgressBar(true);
                 isAddressForPhoneOrderSelected = false;
                 isUsertype_AlreadyPhone = false;
                 userFetchedManually = false;
-
+                isStoreNumberSelected = false;
 
                 cart_Item_List.clear();
                 cartItem_hashmap.clear();
@@ -11335,45 +11659,6 @@ showProgressBar(true);
                             // setTitle(R.string.title_connected_to);
                             //setTitle(mConnectedDeviceName);
                             SaveDatainSharedPreferences(isPrinterCnnected,printerName,printerStatus);
-                            if(String.valueOf(selectedPaymentMode).toUpperCase().equals(Constants.CREDIT)){
-                                GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
-                            }
-                            else{
-
-                                if(!isCustomerOrdersTableServiceCalled){
-                                    try{
-                                        if(orderdetailsnewschema){
-                                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                            if(isPhoneOrderSelected){
-                                                ordertype = Constants.PhoneOrder;
-                                            }
-                                            else{
-                                                ordertype = Constants.POSORDER;
-
-                                            }
-                                            isCustomerOrdersTableServiceCalled =true;
-                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
-                                            asyncTask.execute();
-
-                                        }
-
-                                    }
-                                    catch (Exception e){
-                                        e.printStackTrace();
-
-                                    }
-                                }
-
-
-                                if (!isOrderDetailsMethodCalled) {
-                                    shouldGetPrintNow_Global = true;
-                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                                }
-                                if (!isOrderTrackingDetailsMethodCalled) {
-
-                                    PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
-                                }
-                            }
 
 
 
@@ -11390,7 +11675,95 @@ showProgressBar(true);
 
                             //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
                             //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                            updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+                            // updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+                            if(isOrderPlacingMicroserviceisActive){
+                                redeemPointsJson = new JSONObject();
+                                try {
+                                    redeemPointsJson.put("mobileno",UserMobile);
+                                    redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                                    redeemPointsJson.put("havetodocalculation",true);
+                                    redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                                    redeemPointsJson.put("vendorname",vendorName);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+                            else{
+
+                                updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+                            }
+
+
+                            if(String.valueOf(selectedPaymentMode).toUpperCase().equals(Constants.CREDIT)){
+                                GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
+                            }
+                            else{
+                                if(isOrderPlacingMicroserviceisActive) {
+
+                                    try{
+                                        if(orderdetailsnewschema){
+
+                                            if(isPhoneOrderSelected){
+                                                ordertype = Constants.PhoneOrder;
+                                            }
+                                            else{
+                                                ordertype = Constants.POSORDER;
+
+                                            }
+
+
+
+                                            initAndCallingOrderPlacingModuleHandlerInterface(mContext, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+
+
+                                        }
+
+                                    }
+                                    catch (Exception e){
+                                        e.printStackTrace();
+
+                                    }
+
+
+                                }
+                                else {
+                                    if (!isCustomerOrdersTableServiceCalled) {
+                                        try {
+                                            if (orderdetailsnewschema) {
+                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                if (isPhoneOrderSelected) {
+                                                    ordertype = Constants.PhoneOrder;
+                                                } else {
+                                                    ordertype = Constants.POSORDER;
+
+                                                }
+                                                isCustomerOrdersTableServiceCalled = true;
+                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                                asyncTask.execute();
+
+                                            }
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+
+                                        }
+                                    }
+                                    if (!isOrderDetailsMethodCalled) {
+                                        shouldGetPrintNow_Global = true;
+                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                    }
+                                    if (!isOrderTrackingDetailsMethodCalled) {
+
+                                        PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                    }
+                                }
+                            }
+
+
 
                             break;
                         case BluetoothPrintDriver.STATE_CONNECTING:
@@ -11466,47 +11839,6 @@ showProgressBar(true);
 
                                     @Override
                                     public void onNo() {
-                                        if(String.valueOf(selectedPaymentMode).toUpperCase().equals(Constants.CREDIT)){
-                                            GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
-                                        }
-                                        else{
-
-
-                                            if(!isCustomerOrdersTableServiceCalled){
-                                                try{
-                                                    if(orderdetailsnewschema){
-                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                        if(isPhoneOrderSelected){
-                                                            ordertype = Constants.PhoneOrder;
-                                                        }
-                                                        else{
-                                                            ordertype = Constants.POSORDER;
-
-                                                        }
-                                                        isCustomerOrdersTableServiceCalled =true;
-                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
-                                                        asyncTask.execute();
-
-                                                    }
-
-                                                }
-                                                catch (Exception e){
-                                                    e.printStackTrace();
-
-                                                }
-                                            }
-
-
-
-                                            if (!isOrderDetailsMethodCalled) {
-                                                shouldGetPrintNow_Global = false;
-                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime,finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                                            }
-                                            if (!isOrderTrackingDetailsMethodCalled) {
-
-                                                PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
-                                            }
-                                        }
 
 
 
@@ -11523,7 +11855,96 @@ showProgressBar(true);
 
                                         //  String se =   String.valueOf((int)(totalredeempointsusergetfromorder));
                                         //   Toast.makeText(mContext,"points :"+se,Toast.LENGTH_LONG).show();
-                                        updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+                                        // updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+                                        if(isOrderPlacingMicroserviceisActive){
+                                            redeemPointsJson = new JSONObject();
+                                            try {
+                                                redeemPointsJson.put("mobileno",UserMobile);
+                                                redeemPointsJson.put("totalordervalue",totalAmounttopay);
+                                                redeemPointsJson.put("havetodocalculation",true);
+                                                redeemPointsJson.put("totalredeempoints",totalredeempointsusergetfromorder);
+                                                redeemPointsJson.put("vendorname",vendorName);
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+
+
+                                        }
+                                        else{
+
+                                            updateRedeemPointsDetailsInDBWithoutkey(UserMobile,totalAmounttopay,totalredeempointsusergetfromorder);
+
+                                        }
+
+
+
+                                        if(String.valueOf(selectedPaymentMode).toUpperCase().equals(Constants.CREDIT)){
+                                            GetDatafromCreditOrderDetailsTable(selectedPaymentMode,sTime,Currenttime);
+                                        }
+                                        else{
+                                            if(isOrderPlacingMicroserviceisActive) {
+
+                                                try{
+                                                    if(orderdetailsnewschema){
+
+                                                        if(isPhoneOrderSelected){
+                                                            ordertype = Constants.PhoneOrder;
+                                                        }
+                                                        else{
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+
+
+
+                                                        initAndCallingOrderPlacingModuleHandlerInterface(mContext, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+
+
+                                                    }
+
+                                                }
+                                                catch (Exception e){
+                                                    e.printStackTrace();
+
+                                                }
+
+
+                                            }
+                                            else {
+
+                                                if (!isCustomerOrdersTableServiceCalled) {
+                                                    try {
+                                                        if (orderdetailsnewschema) {
+                                                            initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                            if (isPhoneOrderSelected) {
+                                                                ordertype = Constants.PhoneOrder;
+                                                            } else {
+                                                                ordertype = Constants.POSORDER;
+
+                                                            }
+                                                            isCustomerOrdersTableServiceCalled = true;
+                                                            Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                                            asyncTask.execute();
+
+                                                        }
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+
+                                                    }
+                                                }
+                                                if (!isOrderDetailsMethodCalled) {
+                                                    shouldGetPrintNow_Global = false;
+                                                    PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                                }
+                                                if (!isOrderTrackingDetailsMethodCalled) {
+
+                                                    PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                                }
+                                            }
+                                        }
+
 
 
 
@@ -11649,42 +12070,84 @@ showProgressBar(true);
                                         }
 
 
+                                        if(isOrderPlacingMicroserviceisActive) {
+                                            if (isPhoneOrderSelected) {
+                                                ordertype = Constants.PhoneOrder;
+                                            } else {
+                                                ordertype = Constants.POSORDER;
 
-                                        if(!isCustomerOrdersTableServiceCalled){
+                                            }
+
+
+                                            double payableAmount_double = 0 , newamountUserHaveAsCredit =0;
+                                            String usermobileno = "";
                                             try{
-                                                if(orderdetailsnewschema){
-                                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                    if(isPhoneOrderSelected){
-                                                        ordertype = Constants.PhoneOrder;
-                                                    }
-                                                    else{
-                                                        ordertype = Constants.POSORDER;
+                                                usermobileno = "+91"+customermobileno;
+                                            }
+                                            catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
 
-                                                    }
-                                                    isCustomerOrdersTableServiceCalled =true;
-                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
-                                                    asyncTask.execute();
+                                            try{
+                                                if((!finaltoPayAmountinmethod.equals("null")) && (!finaltoPayAmountinmethod.equals("")) && (!finaltoPayAmountinmethod.equals(null)) ){
+                                                    payableAmount_double  = Double.parseDouble(finaltoPayAmountinmethod);
 
                                                 }
 
                                             }
                                             catch (Exception e){
                                                 e.printStackTrace();
+                                            }
+
+                                            try {
+                                                newamountUserHaveAsCredit = payableAmount_double + totalamountUserHaveAsCredit;
+                                                initAndCallingOrderPlacingModuleHandlerInterface(mContext, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, newamountUserHaveAsCredit, totalamountUserHaveAsCredit);
 
                                             }
+                                            catch (Exception e){
+                                                e.printStackTrace();
+
+
+                                            }
+
+
+
+
                                         }
+                                        else {
+                                            if (!isCustomerOrdersTableServiceCalled) {
+                                                try {
+                                                    if (orderdetailsnewschema) {
+                                                        initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                        if (isPhoneOrderSelected) {
+                                                            ordertype = Constants.PhoneOrder;
+                                                        } else {
+                                                            ordertype = Constants.POSORDER;
+
+                                                        }
+                                                        isCustomerOrdersTableServiceCalled = true;
+                                                        Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                                        asyncTask.execute();
+
+                                                    }
+
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+
+                                                }
+                                            }
 
 
-                                        if (!isOrderDetailsMethodCalled) {
+                                            if (!isOrderDetailsMethodCalled) {
 
-                                            shouldGetPrintNow_Global = false;
-                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                                shouldGetPrintNow_Global = false;
+                                                PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                            }
+                                            if (!isOrderTrackingDetailsMethodCalled) {
+
+                                                PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                            }
                                         }
-                                        if (!isOrderTrackingDetailsMethodCalled) {
-
-                                            PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
-                                        }
-
                                     } catch (Exception e) {
                                         Toast.makeText(mContext, "Can't get CreditOrder Details", Toast.LENGTH_LONG).show();
                                         totalamountUserHaveAsCredit = 0;
@@ -11695,36 +12158,84 @@ showProgressBar(true);
                             else{
                                     totalamountUserHaveAsCredit = 0;
 
-                                    if(!isCustomerOrdersTableServiceCalled){
-                                        try{
-                                            if(orderdetailsnewschema){
-                                                initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
-                                                if(isPhoneOrderSelected){
-                                                    ordertype = Constants.PhoneOrder;
-                                                }
-                                                else{
-                                                    ordertype = Constants.POSORDER;
 
-                                                }
-                                                isCustomerOrdersTableServiceCalled =true;
-                                                Add_CustomerOrder_TrackingTable_AsyncTask asyncTask=new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface,NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode,discountAmount,Currenttime,customermobileno,ordertype,vendorKey,vendorName, sTime,finaltoPayAmountinmethod,selected_Address_modal,tokenNo,userStatus,customerName,"0");
-                                                asyncTask.execute();
+                                    if(isOrderPlacingMicroserviceisActive) {
+                                        if (isPhoneOrderSelected) {
+                                            ordertype = Constants.PhoneOrder;
+                                        } else {
+                                            ordertype = Constants.POSORDER;
+
+                                        }
+
+
+                                        double payableAmount_double = 0 , newamountUserHaveAsCredit =0;
+                                        String usermobileno = "";
+                                        try{
+                                            usermobileno = "+91"+customermobileno;
+                                        }
+                                        catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        try{
+                                            if((!finaltoPayAmountinmethod.equals("null")) && (!finaltoPayAmountinmethod.equals("")) && (!finaltoPayAmountinmethod.equals(null)) ){
+                                                payableAmount_double  = Double.parseDouble(finaltoPayAmountinmethod);
 
                                             }
 
                                         }
                                         catch (Exception e){
                                             e.printStackTrace();
+                                        }
+
+                                        try {
+                                            newamountUserHaveAsCredit = payableAmount_double + totalamountUserHaveAsCredit;
+                                            initAndCallingOrderPlacingModuleHandlerInterface(mContext, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, newamountUserHaveAsCredit, totalamountUserHaveAsCredit);
 
                                         }
-                                    }
-                                    if (!isOrderDetailsMethodCalled) {
-                                        shouldGetPrintNow_Global = false;
-                                        PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
-                                    }
-                                    if (!isOrderTrackingDetailsMethodCalled) {
+                                        catch (Exception e){
+                                            e.printStackTrace();
 
-                                        PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+
+                                        }
+
+
+
+                                        //initAndCallingOrderPlacingModuleHandlerInterface(mContext, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName , isinventorycheck, 0, 0);
+
+                                    }
+                                    else {
+
+
+                                        if (!isCustomerOrdersTableServiceCalled) {
+                                            try {
+                                                if (orderdetailsnewschema) {
+                                                    initAndPlaceOrderinCustomerOrder_TrackingInterface(mContext);
+                                                    if (isPhoneOrderSelected) {
+                                                        ordertype = Constants.PhoneOrder;
+                                                    } else {
+                                                        ordertype = Constants.POSORDER;
+
+                                                    }
+                                                    isCustomerOrdersTableServiceCalled = true;
+                                                    Add_CustomerOrder_TrackingTable_AsyncTask asyncTask = new Add_CustomerOrder_TrackingTable_AsyncTask(mContext, mResultCallback_Add_CustomerOrder_TrackingTableInterface, NewOrderScreenFragment_mobile.cart_Item_List, NewOrderScreenFragment_mobile.cartItem_hashmap, selectedPaymentMode, discountAmount, Currenttime, customermobileno, ordertype, vendorKey, vendorName, sTime, finaltoPayAmountinmethod, selected_Address_modal, tokenNo, userStatus, customerName, "0");
+                                                    asyncTask.execute();
+
+                                                }
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+
+                                            }
+                                        }
+                                        if (!isOrderDetailsMethodCalled) {
+                                            shouldGetPrintNow_Global = false;
+                                            PlaceOrder_in_OrderDetails(NewOrderScreenFragment_mobile.cart_Item_List, selectedPaymentMode, sTime, finaltoPayAmountinmethod, shouldGetPrintNow_Global);
+                                        }
+                                        if (!isOrderTrackingDetailsMethodCalled) {
+
+                                            PlaceOrder_in_OrderTrackingDetails(sTime, Currenttime, finaltoPayAmountinmethod);
+                                        }
                                     }
                             }
                             } catch (Exception e) {

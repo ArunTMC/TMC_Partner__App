@@ -71,7 +71,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Consolidated_Sales_Report extends AppCompatActivity {
-    LinearLayout generateReport_Layout,dateSelectorLayout,loadingpanelmask,loadingPanel;
+    LinearLayout storename_totalSale_layout,generateReport_Layout,dateSelectorLayout,loadingpanelmask,loadingPanel;
+    View dividerbelowheader;
     DatePickerDialog datepicker;
     TextView totalSales_headingText,appsales,possales,dateSelector_text,totalAmt_without_GST,totalCouponDiscount_Amt,totalAmt_with_CouponDiscount,totalGST_Amt,final_sales;
     String vendorKey,ordertype,slotname,DateString;
@@ -120,6 +121,8 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
         possales = findViewById(R.id.posSales);
         totalSales_headingText = findViewById(R.id.totalRating_headingText);
         scrollView  = findViewById(R.id.scrollView);
+        storename_totalSale_layout  = findViewById(R.id.storename_totalSale_layout);
+        dividerbelowheader = findViewById(R.id.dividerbelowheader);
 
         loadingpanelmask = findViewById(R.id.loadingpanelmask_dailyItemWisereport);
         loadingPanel = findViewById(R.id.loadingPanel_dailyItemWisereport);
@@ -165,6 +168,20 @@ public class Consolidated_Sales_Report extends AppCompatActivity {
             }
 
 
+        }
+
+
+        if(screenInches>Constants.default_mobileScreenSize){
+            dividerbelowheader.setVisibility(View.GONE);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 30);
+            storename_totalSale_layout.setLayoutParams(layoutParams);
+            storename_totalSale_layout.setOrientation(LinearLayout.HORIZONTAL);
+        }
+        else{
+            dividerbelowheader.setVisibility(View.VISIBLE);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 200);
+            storename_totalSale_layout.setLayoutParams(layoutParams);
+            storename_totalSale_layout.setOrientation(LinearLayout.VERTICAL);
         }
 
         SharedPreferences sharedPreferences

@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Modal_MenuItem implements Parcelable {
-    public String tmcpriceWithMarkupValue ="0"  ,tmcpriceperkgWithMarkupValue ="0" ,appmarkuppercentage = "" ,showinpos = "" ,showinapp = "" ,allownegativestock = "" , barcode_AvlDetails = "" ,itemavailability_AvlDetails = "" ,key_AvlDetails = "" ,lastupdatedtime_AvlDetails = "" ,menuitemkey_AvlDetails = "" ,receivedstock_AvlDetails = "" ,stockbalance_AvlDetails = "" ,stockincomingkey_AvlDetails = "" ,vendorkey_AvlDetails = "" ,
+    public String tmcpriceWithMarkupValue ="0000"  ,tmcpriceperkgWithMarkupValue ="0000" ,appmarkuppercentage = "" ,showinpos = "" ,showinapp = "" ,allownegativestock = "" , barcode_AvlDetails = "" ,itemavailability_AvlDetails = "" ,key_AvlDetails = "" ,lastupdatedtime_AvlDetails = "" ,menuitemkey_AvlDetails = "" ,receivedstock_AvlDetails = "" ,stockbalance_AvlDetails = "" ,stockincomingkey_AvlDetails = "" ,vendorkey_AvlDetails = "" ,
             inventorydetails = "" ,itemcutdetails = "" ,itemweightdetails = "" ,bigbasketprice = "" ,dunzoprice = "" ,swiggyprice = "" ,reportname = "" ,grossweightingrams = "" ,applieddiscountpercentage = "" ,barcode = "" ,checkoutimageurl = "" ,displayno = "" ,grossweight = "" ,gstpercentage = "" ,imageurl = "" ,itemavailability = "" ,
             localDB_id = "" ,itemcalories = "" ,itemname = "" ,itemuniquecode = "" ,key = "" ,marinadelinkedcodes = "" ,menuboarddisplayname = "" ,menutype = "" ,netweight = "" ,portionsize = "" ,preparationsteps = "" ,
             menuItemId = "" ,preparationtime = "" ,pricetypeforpos = "" ,showinmenuboard = "" ,tmcctgykey = "" ,tmcprice = "" ,tmcpriceperkg = "" ,tmcsubctgykey = "" ,vendorkey = "" ,vendorname = "" ,wholesaleprice;

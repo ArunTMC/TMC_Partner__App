@@ -10,12 +10,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -41,6 +46,7 @@ import com.meatchop.tmcpartner.AlertDialogClass;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Update_CustomerOrderDetails_TrackingTableInterface;
 import com.meatchop.tmcpartner.customerorder_trackingdetails.Update_CustomerOrderDetails_TrackingTable_AsyncTask;
+import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.AssignDeliveryPartner_PojoClass;
 import com.meatchop.tmcpartner.posscreen_javaclasses.manage_orders.Modal_ManageOrders_Pojo_Class;
 import com.meatchop.tmcpartner.posscreen_javaclasses.other_java_classes.Modal_MenuItem;
 import com.meatchop.tmcpartner.R;
@@ -58,6 +64,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -1627,11 +1634,11 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 try {
                     if ((!(deliverypartnerName.length() ==0))&&(!deliverypartnerName.equals("null"))  ) {
                         String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                        showBottomSheetDialog(Orderkey, deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                       mobile_manageOrders1. showBottomSheetDialog(Orderkey, deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
                     } else {
                         String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                        showBottomSheetDialog(Orderkey, "null",orderid,customerMobileNo,vendorkey);
+                        mobile_manageOrders1.  showBottomSheetDialog(Orderkey, "null",orderid,customerMobileNo,vendorkey);
 
                     }
                 }
@@ -1666,12 +1673,12 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 }
                 if((!deliverypartnerName.equals("null"))&&(!deliverypartnerName.equals(null))) {
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                    mobile_manageOrders1. showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
                 }
                 else{
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,"null",orderid,customerMobileNo,vendorkey);
+                    mobile_manageOrders1. showBottomSheetDialog(Orderkey,"null",orderid,customerMobileNo,vendorkey);
 
                 }
 
@@ -1700,12 +1707,12 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
                 }
                 if(!deliverypartnerName.equals("null")) {
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
+                    mobile_manageOrders1. showBottomSheetDialog(Orderkey,deliverypartnerName,orderid,customerMobileNo,vendorkey);
 
                 }
                 else{
                     String Orderkey = modal_manageOrders_pojo_class.getKeyfromtrackingDetails();
-                    showBottomSheetDialog(Orderkey,"null",orderid,customerMobileNo,vendorkey);
+                    mobile_manageOrders1. showBottomSheetDialog(Orderkey,"null",orderid,customerMobileNo,vendorkey);
 
                 }
 
@@ -2959,24 +2966,22 @@ public class Adapter_Mobile_ManageOrders_ListView1 extends ArrayAdapter<Modal_Ma
     }
 
 
-    private void showBottomSheetDialog(String orderkey, String deliverypartnerName, String orderid, String customerMobileNo, String vendorkey) {
-        try {
-            bottomSheetDialog = new BottomSheetDialog(mContext);
-            bottomSheetDialog.setContentView(R.layout.mobilescreen_assigndeliverypartner_bottom_sheet_dialog);
-             ListView ListView1 = bottomSheetDialog.findViewById(R.id.listview);
-
-            Adapter_Mobile_AssignDeliveryPartner1 adapter_mobile_assignDeliveryPartner1 = new Adapter_Mobile_AssignDeliveryPartner1(mContext, mobile_manageOrders1.deliveryPartnerList, orderkey, "MobileManageOrders", deliverypartnerName,orderid,customerMobileNo,vendorkey);
-
-            ListView1.setAdapter(adapter_mobile_assignDeliveryPartner1);
-            //mobile_manageOrders1.Adjusting_Widgets_Visibility(false);
-
-            bottomSheetDialog.show();
+        private void hideKeyboard(EditText editText) {
+            InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+            Objects.requireNonNull(imm).hideSoftInputFromWindow(editText.getWindowToken(), 0);
         }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+    private void showKeyboard(final EditText editText) {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                editText.requestFocus();
+                InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                mgr.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+                editText.setSelection(editText.getText().length());
+            }
+        },0);
     }
-
 
 
 

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -51,14 +52,19 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.dantsu.escposprinter.connection.DeviceConnection;
 import com.dantsu.escposprinter.connection.usb.UsbConnection;
+import com.google.gson.reflect.TypeToken;
 import com.meatchop.tmcpartner.Constants;
 import com.meatchop.tmcpartner.NukeSSLCerts;
+import com.meatchop.tmcpartner.posscreen_javaclasses.other_java_classes.Modal_MenuItem;
 import com.meatchop.tmcpartner.posscreen_javaclasses.other_java_classes.Pos_Dashboard_Screen;
 import com.meatchop.tmcpartner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
+import com.meatchop.tmcpartner.posscreen_javaclasses.pos_new_orders.Modal_NewOrderItems;
 import com.meatchop.tmcpartner.settings.DeviceListActivity;
 import com.meatchop.tmcpartner.TMCAlertDialogClass;
+import com.meatchop.tmcpartner.settings.Modal_MenuItemStockAvlDetails;
+import com.meatchop.tmcpartner.sqlite.TMCMenuItemSQL_DB_Manager;
 import com.meatchop.tmcpartner.vendor_order_tracking_details.VendorOrdersTableInterface;
 import com.meatchop.tmcpartner.vendor_order_tracking_details.VendorOrdersTableService;
 import com.pos.printer.AsyncEscPosPrint;
@@ -73,6 +79,7 @@ import org.json.JSONObject;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -166,11 +173,16 @@ public class Pos_ManageOrderFragment extends Fragment {
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION.ManageOrders";
 
     Modal_USBPrinter modal_usbPrinter = new Modal_USBPrinter();
-    boolean orderdetailsnewschema = false;
+    boolean orderdetailsnewschema = false  ,localDBcheck = false;
     VendorOrdersTableInterface mResultCallback = null;
     VendorOrdersTableService mVolleyService;
     boolean  isVendorOrdersTableServiceCalled = false;
 
+
+
+    TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
+    boolean isinventorycheck =false;
+    List<Modal_MenuItem>MenuItem = new ArrayList<>();
     public Pos_ManageOrderFragment() {
         // Required empty public constructor
     }
@@ -202,7 +214,15 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
     }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        bottomNavigationView = ((Pos_Dashboard_Screen) requireActivity()).findViewById(R.id.bottomnav);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver,new IntentFilter("YOUR"));
 
+        return inflater.inflate(R.layout.pos_manage_order_fragment, container, false);
+    }
 
 
     @Override
@@ -249,6 +269,9 @@ public class Pos_ManageOrderFragment extends Fragment {
         StoreAddressLine3 = (shared.getString("VendorPincode", ""));
         StoreLanLine = (shared.getString("VendorMobileNumber", ""));
         orderdetailsnewschema = (shared.getBoolean("orderdetailsnewschema", false));
+        localDBcheck = (shared.getBoolean("localdbcheck", false));
+        isinventorycheck = (shared.getBoolean("inventoryCheckBool", false));
+
         //orderdetailsnewschema = true;
 
 
@@ -256,6 +279,26 @@ public class Pos_ManageOrderFragment extends Fragment {
         SharedPreferences shared2 = requireContext().getSharedPreferences("CurrentSelectedStatus", MODE_PRIVATE);
         orderStatus = (shared2.getString("currentstatus", ""));
         TodaysDate=getDate();
+
+        MenuItem.clear();
+        try{
+
+            if(localDBcheck) {
+                getDataFromSQL();
+            }
+            else{
+                //   MenuItems=getData();
+
+                //   completemenuItem= getMenuItemfromString(MenuItems);
+                getMenuItemArrayFromSharedPreferences();
+            }
+
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
 
 
         loadingpanelmask.setOnClickListener(new View.OnClickListener() {
@@ -591,7 +634,7 @@ public class Pos_ManageOrderFragment extends Fragment {
                             manageOrders_ListView.setVisibility(View.VISIBLE);
                             orderinstruction.setVisibility(View.GONE);
 
-                            manageOrdersListViewAdapter = new Adapter_Pos_ManageOrders_ListView(mContext, sorted_OrdersList, Pos_ManageOrderFragment.this, orderstatus);
+                            manageOrdersListViewAdapter = new Adapter_Pos_ManageOrders_ListView(mContext, sorted_OrdersList, Pos_ManageOrderFragment.this, orderstatus,MenuItem);
                             manageOrders_ListView.setAdapter(manageOrdersListViewAdapter);
                         } else {
                             manageOrders_ListView.setVisibility(View.GONE);
@@ -817,6 +860,187 @@ public class Pos_ManageOrderFragment extends Fragment {
 
 
     }
+
+
+    @SuppressLint("Range")
+    private void getDataFromSQL() {
+
+        if(tmcMenuItemSQL_db_manager== null) {
+            tmcMenuItemSQL_db_manager = new TMCMenuItemSQL_DB_Manager(mContext);
+            try {
+                tmcMenuItemSQL_db_manager.open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        try{
+            Cursor cursor = tmcMenuItemSQL_db_manager.Fetch();
+            MenuItem.clear();
+            try {
+                // if (cursor.moveToFirst()) {
+
+                Log.i(" cursor Col count ::  ", String.valueOf(cursor.getColumnCount()));
+                Log.i(" cursor count  ::  ", String.valueOf(cursor.getCount()));
+
+                if(cursor.getCount()>0){
+
+                    if(cursor.moveToFirst()) {
+                        do {
+                            Modal_MenuItem modal_newOrderItems = new Modal_MenuItem();
+                            modal_newOrderItems.setItemname(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.itemName)));
+                            modal_newOrderItems.setTmcprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcPrice)));
+                            modal_newOrderItems.setMenuItemId(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.menuItemId)));
+                            modal_newOrderItems.setLocalDB_id(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.localDB_id)));
+                            modal_newOrderItems.setApplieddiscountpercentage(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.applieddiscountpercentage)));
+                            modal_newOrderItems.setBarcode(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.barcode)));
+                            modal_newOrderItems.setCheckoutimageurl(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.checkoutimageurl)));
+                            modal_newOrderItems.setDisplayno(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.displayno)));
+                            modal_newOrderItems.setGrossweight(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.grossweight)));
+                            modal_newOrderItems.setGstpercentage(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.gstpercentage)));
+                            modal_newOrderItems.setItemavailability(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.itemavailability)));
+                            modal_newOrderItems.setItemuniquecode(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.itemuniquecode)));
+                            modal_newOrderItems.setNetweight(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.netweight)));
+                            modal_newOrderItems.setPortionsize(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.portionsize)));
+                            modal_newOrderItems.setPricetypeforpos(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.pricetypeforpos)));
+                            modal_newOrderItems.setTmcctgykey(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcctgykey)));
+                            modal_newOrderItems.setTmcpriceperkg(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkg)));
+                            modal_newOrderItems.setTmcprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcPrice)));
+                            modal_newOrderItems.setTmcsubctgykey(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcsubctgykey)));
+                            modal_newOrderItems.setVendorkey(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.vendorkey)));
+                            modal_newOrderItems.setVendorname(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.vendorname)));
+                            modal_newOrderItems.setMenuItemId(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.menuItemId)));
+                            modal_newOrderItems.setItemname(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.itemName)));
+                            modal_newOrderItems.setTmcprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcPrice)));
+                            modal_newOrderItems.setMenuItemId(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.menuItemId)));
+                            modal_newOrderItems.setGrossweight(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.grossweight)));
+                            modal_newOrderItems.setSwiggyprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.swiggyprice)));
+                            modal_newOrderItems.setDunzoprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.dunzoprice)));
+                            modal_newOrderItems.setBigbasketprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.bigbasketprice)));
+                            modal_newOrderItems.setWholesaleprice(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.wholesaleprice)));
+                            modal_newOrderItems.setAppmarkuppercentage(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.appmarkuppercentage)));
+                            modal_newOrderItems.setTmcpriceperkgWithMarkupValue(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceperkgWithMarkupValue)));
+                            modal_newOrderItems.setTmcpriceWithMarkupValue(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.tmcpriceWithMarkupValue)));
+                            modal_newOrderItems.setKey(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.menuItemId)));
+                            modal_newOrderItems.setInventorydetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.inventoryDetails)));
+
+
+                            if (!isinventorycheck) {
+
+                                String barcode_AvlDetails = "nil", itemavailability_AvlDetails = "nil", key_AvlDetails = "nil", lastupdatedtime_AvlDetails = "nil", menuitemkey_AvlDetails = "nil",
+                                        receivedstock_AvlDetails = "nil", stockbalance_AvlDetails = "nil", stockincomingkey_AvlDetails = "nil", vendorkey_AvlDetails = "nil", allownegativestock_AvlDetails = "nil";
+
+
+                                modal_newOrderItems.setBarcode_AvlDetails(barcode_AvlDetails);
+                                modal_newOrderItems.setItemavailability_AvlDetails(itemavailability_AvlDetails);
+                                modal_newOrderItems.setKey_AvlDetails(key_AvlDetails);
+                                modal_newOrderItems.setLastupdatedtime_AvlDetails(lastupdatedtime_AvlDetails);
+                                modal_newOrderItems.setMenuitemkey_AvlDetails(menuitemkey_AvlDetails);
+                                modal_newOrderItems.setReceivedstock_AvlDetails(receivedstock_AvlDetails);
+                                modal_newOrderItems.setStockbalance_AvlDetails(stockbalance_AvlDetails);
+                                modal_newOrderItems.setStockincomingkey_AvlDetails(stockincomingkey_AvlDetails);
+                                modal_newOrderItems.setVendorkey_AvlDetails(vendorkey_AvlDetails);
+                                modal_newOrderItems.setAllownegativestock(allownegativestock_AvlDetails);
+
+
+                                Modal_MenuItemStockAvlDetails modal_menuItemStockAvlDetails = new Modal_MenuItemStockAvlDetails();
+                                modal_menuItemStockAvlDetails.setBarcode(barcode_AvlDetails);
+                                modal_menuItemStockAvlDetails.setItemavailability(itemavailability_AvlDetails);
+                                modal_menuItemStockAvlDetails.setKey(key_AvlDetails);
+                                modal_menuItemStockAvlDetails.setMenuitemkey(menuitemkey_AvlDetails);
+                                modal_menuItemStockAvlDetails.setStockincomingkey(stockincomingkey_AvlDetails);
+                                modal_menuItemStockAvlDetails.setVendorkey(vendorkey_AvlDetails);
+                                modal_menuItemStockAvlDetails.setStockbalance(stockbalance_AvlDetails);
+                                modal_menuItemStockAvlDetails.setAllownegativestock(allownegativestock_AvlDetails);
+                                modal_menuItemStockAvlDetails.setLastupdatedtime(lastupdatedtime_AvlDetails);
+                                modal_menuItemStockAvlDetails.setReceivedstock(receivedstock_AvlDetails);
+                            //    MenuItemStockAvlDetails.add(modal_menuItemStockAvlDetails);
+
+
+
+
+                            }
+                            else{
+
+
+                                if(String.valueOf(modal_newOrderItems.getBarcode().toString()).equals("999001100")){
+                                    Toast.makeText(mContext, "", Toast.LENGTH_SHORT).show();
+                                }
+
+                                modal_newOrderItems.setBarcode_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.barcode_AvlDetails)));
+                                modal_newOrderItems.setItemavailability_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.itemavailability_AvlDetails)));
+                                modal_newOrderItems.setKey_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.key_AvlDetails)));
+                                modal_newOrderItems.setLastupdatedtime_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.lastupdatedtime_AvlDetails)));
+                                modal_newOrderItems.setMenuitemkey_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.menuItemId_AvlDetails)));
+                                modal_newOrderItems.setReceivedstock_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.receivedStock_AvlDetails)));
+                                modal_newOrderItems.setStockbalance_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.stockBalance_AvlDetails)));
+                                modal_newOrderItems.setStockincomingkey_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.stockIncomingKey_AvlDetails)));
+                                modal_newOrderItems.setVendorkey_AvlDetails(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.vendorkey_AvlDetails)));
+                                modal_newOrderItems.setAllownegativestock(cursor.getString(cursor.getColumnIndex(TMCMenuItemSQL_DB_Manager.allowNegativeStock_AvlDetails)));
+
+
+                            }
+
+                            MenuItem.add(modal_newOrderItems);
+                        }
+                        while (cursor.moveToNext());
+
+
+                    }
+
+
+
+                }
+                else{
+                    Toast.makeText(mContext, "There is no menuItem Please Refresh the App", Toast.LENGTH_SHORT).show();
+
+                }
+
+
+
+
+                //  }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            try{
+                if(tmcMenuItemSQL_db_manager != null){
+                    tmcMenuItemSQL_db_manager.close();
+                    tmcMenuItemSQL_db_manager = null;
+                }
+
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+
+
+    }
+
+    private void getMenuItemArrayFromSharedPreferences() {
+        final SharedPreferences sharedPreferencesMenuitem = mContext.getApplicationContext().getSharedPreferences("MenuList", MODE_PRIVATE);
+
+        Gson gson = new Gson();
+        String json = sharedPreferencesMenuitem.getString("MenuList", "");
+        if (json.isEmpty()) {
+            Toast.makeText(mContext.getApplicationContext(),"There is something error",Toast.LENGTH_LONG).show();
+        } else {
+            Type type = new TypeToken<List<Modal_MenuItem>>() {
+            }.getType();
+            MenuItem  = gson.fromJson(json, type);
+        }
+
+    }
+
 
     private void saveCurrentStatusInSharedPref(String orderStatus) {
         SharedPreferences sharedPreferences
@@ -1116,15 +1340,7 @@ public class Pos_ManageOrderFragment extends Fragment {
         });
 
     }
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        bottomNavigationView = ((Pos_Dashboard_Screen) requireActivity()).findViewById(R.id.bottomnav);
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver,new IntentFilter("YOUR"));
 
-        return inflater.inflate(R.layout.pos_manage_order_fragment, container, false);
-    }
 
     public void printReciptUsingUSBPrinter(List<Modal_ManageOrders_Pojo_Class> selectedBillDetails) {
         if(isUSBPrintReciptMethodCalled){
@@ -1568,10 +1784,20 @@ public class Pos_ManageOrderFragment extends Fragment {
             text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
 
         }
+        else if((vendorKey.equals("vendor_6"))) {
+
+
+            text_to_Print = "[c]<b><font size='big'>New NS Bismillah</b>\n\n";
+            text_to_Print = text_to_Print + "[c]<b><font size='normal'>Powered By The Meat Chop</b>\n\n";
+
+        }
         else {
             text_to_Print = "[c]<b><font size='big'>The Meat Chop</b>\n\n";
 
-        }        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
+        }
+
+
+        text_to_Print = text_to_Print + "[c]  <font size='normal'>Fresh Meat and Seafood \n";
         text_to_Print = text_to_Print + "[c]    <font size='normal'>" + StoreAddressLine1 ;
         text_to_Print = text_to_Print + "<font size='normal'>" + StoreAddressLine2 + " \n";
         text_to_Print = text_to_Print + "[c]  <font size='normal'>" + StoreAddressLine3 + " \n";
@@ -6085,7 +6311,7 @@ public class Pos_ManageOrderFragment extends Fragment {
 
                 isnewOrdersSyncButtonClicked = false;
 
-                manageOrdersListViewAdapter = new Adapter_Pos_ManageOrders_ListView(mContext, sorted_OrdersList, Pos_ManageOrderFragment.this, orderStatus);
+                manageOrdersListViewAdapter = new Adapter_Pos_ManageOrders_ListView(mContext, sorted_OrdersList, Pos_ManageOrderFragment.this, orderStatus,MenuItem);
                 manageOrders_ListView.setAdapter(manageOrdersListViewAdapter);
                 showProgressBar(false);
 

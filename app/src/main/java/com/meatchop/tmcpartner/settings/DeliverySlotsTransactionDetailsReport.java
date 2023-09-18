@@ -204,6 +204,7 @@ public class DeliverySlotsTransactionDetailsReport extends AppCompatActivity {
                                 int arrayLength = JArray.length();
                                 //Log.d("Constants.TAG", "convertingJsonStringintoArray Response: " + arrayLength);
                                 if (arrayLength == 0) {
+                                    setAdapter();
                                     showProgressBar(false);
                                     return;
                                 }

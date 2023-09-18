@@ -107,7 +107,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     View dividerbelowheader;
 
     DatePickerDialog datepicker,enddatepicker;
-    TextView phoneProductSales,totalPhone_MarkupAmount,totalAppSales,totalApp_MarkupAmount, deliveryCharge_label,instruction_textview,wholesalesOrderSales,refundAmount_textwidget, replacementAmount_textwidget,vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText, appsales, possales,swiggySales,dunzoSales,creditSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST, totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales;
+    TextView phoneProductSales,totalPhone_MarkupAmount,totalAppSales,totalApp_MarkupAmount, deliveryCharge_label,instruction_textview,wholesalesOrderSales,
+            refundAmount_textwidget, replacementAmount_textwidget,vendorName,deliveryChargeAmount_textwidget,endDateSelector_text,totalSales_headingText,
+            appsales, possales,swiggySales,dunzoSales,creditSales,bigBasketSales,phoneOrderSales, dateSelector_text, totalAmt_without_GST,
+            totalCouponDiscount_Amt, totalAmt_with_CouponDiscount, totalGST_Amt, final_sales,creditMarkupAmount,creditProductSales;
     String vendorname,deliveryamount="0", deliveryAmountPhoneOrder ="0",deliveryAmountForCreditOrders ="0",vendorKey, ordertype, paymentMode ,slotname, DateString;
     public static HashMap<String, Modal_OrderDetails> OrderItem_hashmap = new HashMap();
     public static List<String> Order_Item_List;
@@ -235,7 +238,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
     boolean orderdetailsnewschema = false;
     boolean  isVendorOrdersTableServiceCalled = false;
     String ordertype_forDebug ="";
-    double totalappMarkupPercentageValue =0,totalPhoneMarkupPercentageValue =0;
+    double totalappMarkupPercentageValue =0,totalPhoneMarkupPercentageValue =0  ,totalCreditMarkupPercentageValue =0;
     TMCMenuItemSQL_DB_Manager tmcMenuItemSQL_db_manager;
     boolean localDBcheck = false;
     TMCSubCtgyItemSQL_DB_Manager tmcSubCtgyItemSQL_db_manager;
@@ -290,6 +293,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         storename_totalSale_layout  = findViewById(R.id.storename_totalSale_layout);
         generateSubCtgyReport_Layout = findViewById(R.id.generateSubCtgyReport_Layout);
         dividerbelowheader = findViewById(R.id.dividerbelowheader);
+        creditMarkupAmount = findViewById(R.id.creditMarkupAmount);
+        creditProductSales = findViewById(R.id.creditProductSales);
+
+
 
         Order_Item_List = new ArrayList<>();
         finalBillDetails = new ArrayList<>();
@@ -312,8 +319,11 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
         ordertypeArray = new ArrayList<>();
         Order_Item_List.clear();
+        
         totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
         OrderItem_hashmap.clear();
         finalBillDetails.clear();
         FinalBill_hashmap.clear();
@@ -423,7 +433,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
         if(screenInches>Constants.default_mobileScreenSize){
             dividerbelowheader.setVisibility(View.GONE);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 100);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 30);
             storename_totalSale_layout.setLayoutParams(layoutParams);
             storename_totalSale_layout.setOrientation(LinearLayout.HORIZONTAL);
         }
@@ -455,6 +465,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
         try {
             totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
             Order_Item_List.clear();
             OrderItem_hashmap.clear();
             finalBillDetails.clear();
@@ -512,7 +523,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
                 if (!isgetDataButtonClicked) {
                     totalappMarkupPercentageValue =0;
-                     totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                     isgetDataButtonClicked = true;
                     Order_Item_List.clear();
                     OrderItem_hashmap.clear();
@@ -547,7 +559,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     tmcSubCtgykey.clear();
 
                     totalappMarkupPercentageValue =0;
-                    totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                     Order_Item_List.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
@@ -796,7 +809,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                             }
                         }
 
-                    } else {
+                    }
+                    else {
 
 
                         int writeExternalStoragePermission = ContextCompat.checkSelfPermission(ConsolidatedSalesReportWeekwise.this, WRITE_EXTERNAL_STORAGE);
@@ -1354,6 +1368,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                         try {
                             totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                             Order_Item_List.clear();
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
@@ -1649,6 +1664,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                         try {
                             totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                             Order_Item_List.clear();
                             OrderItem_hashmap.clear();
                             finalBillDetails.clear();
@@ -2074,7 +2090,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                         }
                         else{
                             totalappMarkupPercentageValue =0;
-                            totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                             Adjusting_Widgets_Visibility(false);
                             isVendorOrdersTableServiceCalled =false;
                             scrollView.setVisibility(View.GONE);
@@ -2134,7 +2151,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             @Override
             public void notifyError(String error) {
                 totalappMarkupPercentageValue =0;
-                totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                 Adjusting_Widgets_Visibility(false);
                 isVendorOrdersTableServiceCalled =false;
                 scrollView.setVisibility(View.GONE);
@@ -2236,7 +2254,8 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                 }
                 else{
                     totalappMarkupPercentageValue =0;
-                    totalPhoneMarkupPercentageValue =0;
+        totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                     Adjusting_Widgets_Visibility(false);
                     isVendorOrdersTableServiceCalled =false;
                     scrollView.setVisibility(View.GONE);
@@ -2293,6 +2312,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             public void notifyError(String requestType,VolleyError error) {
                 totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                 Adjusting_Widgets_Visibility(false);
                 isVendorOrdersTableServiceCalled =false;
                 scrollView.setVisibility(View.GONE);
@@ -2852,6 +2872,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                 } else {
                     totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
                     Order_Item_List.clear();
                     OrderItem_hashmap.clear();
                     finalBillDetails.clear();
@@ -3754,6 +3775,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
 
             totalappMarkupPercentageValue =0;
         totalPhoneMarkupPercentageValue =0;
+        totalCreditMarkupPercentageValue =0;
             Order_Item_List.clear();
             OrderItem_hashmap.clear();
             finalBillDetails.clear();
@@ -4727,6 +4749,14 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                     else if(ordertype.equals(Constants.PhoneOrder)){
                         try{
                             totalPhoneMarkupPercentageValue = markupValue + totalPhoneMarkupPercentageValue;
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    }else if(ordertype.toUpperCase().equals(Constants.CREDIT)){
+                        try{
+                            totalCreditMarkupPercentageValue = markupValue + totalCreditMarkupPercentageValue;
                         }
                         catch (Exception e){
                             e.printStackTrace();
@@ -6298,9 +6328,10 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             }
 
             try{
-                totalApp_MarkupAmount.setText(String.valueOf(Math.round(totalappMarkupPercentageValue)));
+                totalApp_MarkupAmount.setText(String.valueOf(decimalFormat.format(totalappMarkupPercentageValue)));
+               // totalApp_MarkupAmount.setText(String.valueOf(Math.round(totalappMarkupPercentageValue)));
 
-              //  totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
+                //  totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -6328,7 +6359,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
                 e.printStackTrace();
             }
             try{
-                totalPhone_MarkupAmount.setText(String.valueOf(Math.round(totalPhoneMarkupPercentageValue)));
+                totalPhone_MarkupAmount.setText(String.valueOf(decimalFormat.format(Math.round(totalPhoneMarkupPercentageValue))));
 
                 //  totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
             }
@@ -6341,6 +6372,49 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             catch (Exception e){
                 e.printStackTrace();
             }
+
+
+
+
+
+            try{
+                totalCreditMarkupPercentageValue  = Double.parseDouble(decimalFormat.format(totalCreditMarkupPercentageValue));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+            try{
+                creditSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                creditorder_Amount  = creditorder_Amount - totalCreditMarkupPercentageValue ;
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                creditMarkupAmount.setText(String.valueOf(decimalFormat.format(Math.round(totalCreditMarkupPercentageValue))));
+
+                //  totalApp_MarkupAmount.setText(String.valueOf(totalappMarkupPercentageValue));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try{
+                creditProductSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
 
             double totalAmountWithoutGst = totalAmountWithhGst-GST;
             discountAmount = discountAmount+pos_discountAmount+wholeSaleOrders_discountAmount+swiggyDiscount_amount+phoneOrders_discountAmount+dunzoOrders_discountAmount+bigBasketOrders_discountAmount + creditDiscount_amount;
@@ -6364,7 +6438,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             possales.setText(String.valueOf(decimalFormat.format(posorder_Amount)));
             swiggySales.setText(String.valueOf(decimalFormat.format(swiggyorder_Amount)));
             dunzoSales.setText(String.valueOf(decimalFormat.format(dunzoorder_Amount)));
-            creditSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
+           // creditSales.setText(String.valueOf(decimalFormat.format(creditorder_Amount)));
 
             bigBasketSales.setText(String.valueOf(decimalFormat.format(bigBasketorder_Amount)));
             wholesalesOrderSales.setText(String.valueOf(decimalFormat.format(wholeSaleorder_Amount)));
@@ -6374,7 +6448,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             catch (Exception e){
                 e.printStackTrace();
             }
-            deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder)));
+            deliveryChargeAmount_textwidget .setText(String.valueOf(decimalFormat.format(deliveryChargee+deliveryCharge_phoneOrder+deliveryCharge_creditOrder)));
             
             totalSales_headingText.setText(String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_GST_refund_replacement))+" .Rs");
 
@@ -6387,7 +6461,7 @@ public class ConsolidatedSalesReportWeekwise extends AppCompatActivity {
             finalBillDetails.add("REPLACEMENT : ");
             FinalBill_hashmap.put("REPLACEMENT : ", String.valueOf(decimalFormat.format(totalReplacementAmount)));
             finalBillDetails.add("DELIVERY CHARGES  : ");
-            FinalBill_hashmap.put("DELIVERY CHARGES  : ", String.valueOf(deliveryamount+deliveryAmountPhoneOrder));
+            FinalBill_hashmap.put("DELIVERY CHARGES  : ", String.valueOf(deliveryChargee+deliveryCharge_phoneOrder+deliveryCharge_creditOrder));
             finalBillDetails.add("SUBTOTAL : ");
             FinalBill_hashmap.put("SUBTOTAL : ", String.valueOf(decimalFormat.format(totalAmt_with_CouponDiscount__deliverycharge_refund_replacement)));
             finalBillDetails.add("GST : ");
